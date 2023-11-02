@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AssetInfoResponse",
+  "type": "object",
+  "required": [
+    "asset_info"
+  ],
+  "properties": {
+    "asset_info": {
+      "$ref": "#/definitions/AssetInfo"
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "AssetInfo": {
+      "type": "object",
+      "required": [
+        "band_ticker",
+        "decimal",
+        "denom",
+        "display",
+        "elys_ticker"
+      ],
+      "properties": {
+        "band_ticker": {
+          "type": "string"
+        },
+        "decimal": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "denom": {
+          "type": "string"
+        },
+        "display": {
+          "type": "string"
+        },
+        "elys_ticker": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

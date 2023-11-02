@@ -1,5 +1,6 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::Binary;
+use cosmwasm_std::Coin;
 use cosmwasm_std::Decimal;
 use cosmwasm_std::StdError;
 
@@ -10,6 +11,35 @@ pub struct AssetInfo {
     pub band_ticker: String,
     pub elys_ticker: String,
     pub decimal: u64,
+}
+
+#[cfg(test)]
+impl AssetInfo {
+    pub fn new(
+        denom: String,
+        display: String,
+        band_ticker: String,
+        elys_ticker: String,
+        decimal: u64,
+    ) -> Self {
+        Self {
+            denom,
+            display,
+            band_ticker,
+            elys_ticker,
+            decimal,
+        }
+    }
+
+    pub fn default(denom: String, decimal: u64) -> Self {
+        Self {
+            denom,
+            display: "".to_string(),
+            band_ticker: "".to_string(),
+            elys_ticker: "".to_string(),
+            decimal,
+        }
+    }
 }
 
 #[cw_serde]
@@ -72,6 +102,40 @@ impl MarginPosition {
             1 => Ok(Self::Long),
             2 => Ok(Self::Short),
             _ => Err(StdError::generic_err("MarginPosition out of range")),
+        }
+    }
+}
+
+#[cw_serde]
+pub struct MarginOrder {
+    pub order_id: u64,
+    pub position: MarginPosition,
+    pub collateral: Coin,
+    pub borrow_token: Coin,
+    pub creator: String,
+    pub leverage: Decimal,
+    pub take_profit_price: Decimal,
+}
+
+impl MarginOrder {
+    pub fn new(
+        position: MarginPosition,
+        creator: impl Into<String>,
+        collateral: Coin,
+        leverage: Decimal,
+        borrow_token: Coin,
+        take_profit_price: Decimal,
+    ) -> Self {
+        let order_id: u64 = 0;
+
+        Self {
+            order_id,
+            position,
+            collateral,
+            borrow_token,
+            creator: creator.into(),
+            leverage,
+            take_profit_price,
         }
     }
 }
