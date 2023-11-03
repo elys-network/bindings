@@ -4,8 +4,8 @@ use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
     coin, coins,
     testing::{MockApi, MockStorage},
-    to_binary, Addr, BankMsg, BlockInfo, Coin, Decimal, Empty, Int64, Querier, StdError, StdResult,
-    Storage,
+    to_json_binary, Addr, BankMsg, BlockInfo, Coin, Decimal, Empty, Int64, Querier, StdError,
+    StdResult, Storage,
 };
 use cw_multi_test::{App, AppResponse, BankKeeper, BankSudo, BasicAppBuilder, Module, WasmKeeper};
 use cw_storage_plus::Item;
@@ -68,18 +68,14 @@ impl Module for ElysModule {
     ) -> AnyResult<cosmwasm_std::Binary> {
         match request {
             ElysQuery::Oracle(oracle_req) => match oracle_req {
-                OracleQuery::PriceAll { pagination } => {
-                    Ok(to_binary(&self.get_all_price(storage)?)?)
-                }
+                OracleQuery::PriceAll { .. } => Ok(to_json_binary(&self.get_all_price(storage)?)?),
                 OracleQuery::AssetInfo { denom } => {
                     let infos = ASSET_INFO.load(storage)?;
                     let may_have_info = infos.iter().find(|asset| asset.denom == denom);
 
                     match may_have_info {
-                        Some(info) => Ok(to_binary(info)?),
-                        None => Err(Error::new(StdError::NotFound {
-                            kind: "asset denom".to_string(),
-                        })),
+                        Some(info) => Ok(to_json_binary(info)?),
+                        None => Err(Error::new(StdError::not_found("asset denom"))),
                     }
                 }
             },
@@ -101,7 +97,7 @@ impl Module for ElysModule {
                             .atomics()
                             .u128();
 
-                    Ok(to_binary(&QuerySwapEstimationResponse {
+                    Ok(to_json_binary(&QuerySwapEstimationResponse {
                         spot_price,
                         token_out: coin(token_out_amount, &routes[0].token_out_denom),
                     })?)
@@ -149,7 +145,12 @@ impl Module for ElysModule {
                         (token_in.amount * price_in.amount / price_out.amount).u128(),
                         route.token_out_denom,
                     );
-                    let data = to_binary(&MsgSwapExactAmountInResp {
+
+                    if mint_amount[0].amount.u128() as i128 <= token_out_min_amount.i128() {
+                        return Err(Error::new(StdError::generic_err("not enough token")));
+                    }
+
+                    let data = to_json_binary(&MsgSwapExactAmountInResp {
                         token_out_amount: Int64::new(mint_amount[0].amount.u128() as i64),
 
                         meta_data,
@@ -221,7 +222,7 @@ impl Module for ElysModule {
 
                     let resp = AppResponse {
                         events: vec![],
-                        data: Some(to_binary(&msg_resp)?),
+                        data: Some(to_json_binary(&msg_resp)?),
                     };
 
                     order_vec.push(order);
@@ -236,11 +237,7 @@ impl Module for ElysModule {
                     Ok(resp)
                 }
 
-                MarginMsg::MsgClose {
-                    creator,
-                    id,
-                    meta_data,
-                } => {
+                MarginMsg::MsgClose { .. } => {
                     bail!("margin close msg not implemented yet")
                 }
             },
@@ -310,6 +307,9 @@ impl ElysApp {
                             .init_balance(storage, &Addr::unchecked(wallet_owner), wallet_contenent)
                             .unwrap();
                     }
+                    MARGIN_OPENED_POSITION.save(storage, &vec![]).unwrap();
+                    ASSET_INFO.save(storage, &vec![]).unwrap();
+                    PRICES.save(storage, &vec![]).unwrap();
                 }),
         )
     }
@@ -318,7 +318,11 @@ impl ElysApp {
         Self(
             BasicAppBuilder::<ElysMsg, ElysQuery>::new_custom()
                 .with_custom(ElysModule {})
-                .build(|_roouter, _, _storage| {}),
+                .build(|_roouter, _, storage| {
+                    MARGIN_OPENED_POSITION.save(storage, &vec![]).unwrap();
+                    ASSET_INFO.save(storage, &vec![]).unwrap();
+                    PRICES.save(storage, &vec![]).unwrap();
+                }),
         )
     }
     pub fn block_info(&self) -> BlockInfo {
