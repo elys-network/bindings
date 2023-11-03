@@ -21,3 +21,4 @@ jobs:
         run: |
           cargo build --verbose
           cargo test --verbose
+        working-directory: bindings-test
