@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MsgSwapExactAmountInResp",
+  "type": "object",
+  "required": [
+    "token_out_amount"
+  ],
+  "properties": {
+    "meta_data": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/Binary"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "token_out_amount": {
+      "$ref": "#/definitions/Int64"
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "Binary": {
+      "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>. See also <https://github.com/CosmWasm/cosmwasm/blob/main/docs/MESSAGE_TYPES.md>.",
+      "type": "string"
+    },
+    "Int64": {
+      "description": "An implementation of i64 that is using strings for JSON encoding/decoding, such that the full i64 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `i64` to get the value out:\n\n``` # use cosmwasm_std::Int64; let a = Int64::from(258i64); assert_eq!(a.i64(), 258); ```",
+      "type": "string"
+    }
+  }
+}
