@@ -179,6 +179,16 @@ pub struct SwapAmountInRoute {
     pub token_out_denom: String,
 }
 
+#[cfg(feature = "testing")]
+impl SwapAmountInRoute {
+    pub fn new(pool_id: u64, token_out_denom: impl Into<String>) -> Self {
+        Self {
+            pool_id,
+            token_out_denom: token_out_denom.into(),
+        }
+    }
+}
+
 #[cw_serde]
 pub enum MarginPosition {
     Unspecified = 0,
@@ -206,7 +216,6 @@ pub struct MarginOrder {
     pub creator: String,
     pub leverage: Decimal,
     pub take_profit_price: Decimal,
-    pub token_price: Decimal,
 }
 
 impl MarginOrder {
@@ -217,7 +226,6 @@ impl MarginOrder {
         leverage: Decimal,
         borrow_token: Coin,
         take_profit_price: Decimal,
-        token_price: Decimal,
     ) -> Self {
         let order_id: u64 = 0;
 
@@ -229,7 +237,6 @@ impl MarginOrder {
             creator: creator.into(),
             leverage,
             take_profit_price,
-            token_price,
         }
     }
 }

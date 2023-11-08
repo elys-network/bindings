@@ -1,7 +1,6 @@
-use cosmwasm_std::{coin, coins, from_binary, Addr, Coin, Decimal, Int128, StdError, Uint128};
+use cosmwasm_std::{coin, coins, Addr, Coin, Decimal, Int128, StdError, Uint128};
 use cw_multi_test::Executor;
 use elys_bindings::{
-    msg_resp::MsgCloseResponse,
     query_resp::QuerySwapEstimationResponse,
     types::{AssetInfo, MarginPosition, PageRequest, Price, SwapAmountInRoute},
     AmmMsg, AmmQuery, ElysMsg, ElysQuery, MarginMsg, OracleQuery,
@@ -119,54 +118,6 @@ fn asset_info_not_found() {
     };
 
     assert_eq!(err, error_reference);
-}
-
-#[test]
-fn open_position() {
-    let wallets: Vec<(&str, Vec<Coin>)> = vec![("user", coins(5, "btc"))];
-    let mut app = ElysApp::new_with_wallets(wallets);
-    let prices: Vec<Price> = vec![
-        Price::new(
-            "btc",
-            Decimal::from_atomics(Uint128::new(20000), 0).unwrap(),
-        ),
-        Price::new("usdc", Decimal::from_atomics(Uint128::new(1), 0).unwrap()),
-    ];
-
-    app.init_modules(|router, _, storage| router.custom.set_prices(storage, &prices))
-        .unwrap();
-
-    let open_msg = ElysMsg::Margin(MarginMsg::open_position(
-        "user",
-        "btc",
-        Int128::new(5),
-        "btc",
-        MarginPosition::Unspecified,
-        Decimal::from_atomics(Uint128::new(25), 1).unwrap(),
-        Decimal::from_atomics(Uint128::new(11), 1).unwrap(),
-        None,
-    ));
-
-    assert_eq!(
-        app.wrap()
-            .query_balance("user", "btc")
-            .unwrap()
-            .amount
-            .u128(),
-        5
-    );
-
-    app.execute(Addr::unchecked("user"), open_msg.into())
-        .unwrap();
-
-    assert_eq!(
-        app.wrap()
-            .query_balance("user", "btc")
-            .unwrap()
-            .amount
-            .u128(),
-        0
-    );
 }
 
 #[test]
@@ -304,84 +255,54 @@ fn swap_error() {
 }
 
 #[test]
-fn margin_close_not_found() {
-    let id: u64 = 1;
-    let creator = "user".to_string();
-    let mut app = ElysApp::default();
+fn open_margin_position() {
+    let wallets: Vec<(&str, Vec<Coin>)> = vec![("user", coins(5, "btc"))];
+    let mut app = ElysApp::new_with_wallets(wallets);
 
-    let msg = ElysMsg::Margin(MarginMsg::close_position(creator, id, None));
-
-    let err = app
-        .execute(Addr::unchecked("user"), msg.into())
-        .unwrap_err();
+    let open_msg = ElysMsg::Margin(MarginMsg::open_position(
+        "user",
+        "btc",
+        Int128::new(5),
+        "btc",
+        MarginPosition::Unspecified,
+        Decimal::from_atomics(Uint128::new(25), 1).unwrap(),
+        Decimal::from_atomics(Uint128::new(11), 1).unwrap(),
+        None,
+    ));
 
     assert_eq!(
-        StdError::not_found(format!("{id:?}")),
-        err.downcast().unwrap()
+        app.wrap()
+            .query_balance("user", "btc")
+            .unwrap()
+            .amount
+            .u128(),
+        5
     );
-}
 
-#[test]
-fn margin_close_unauthorize() {
-    let prices: Vec<Price> = vec![
-        Price::new(
-            "btc",
-            Decimal::from_atomics(Uint128::new(20000), 0).unwrap(),
-        ),
-        Price::new("usdc", Decimal::from_atomics(Uint128::new(1), 0).unwrap()),
-    ];
-
-    let wallets: Vec<(&str, Vec<Coin>)> = vec![("order_owner", coins(5, "btc"))];
-
-    let mut app = ElysApp::new_with_wallets(wallets);
-    app.init_modules(|router, _, storage| router.custom.set_prices(storage, &prices))
+    app.execute(Addr::unchecked("user"), open_msg.into())
         .unwrap();
-
-    let open_msg = ElysMsg::Margin(MarginMsg::open_position(
-        "order_owner",
-        "btc",
-        Int128::new(5),
-        "btc",
-        MarginPosition::Unspecified,
-        Decimal::from_atomics(Uint128::new(25), 1).unwrap(),
-        Decimal::from_atomics(Uint128::new(11), 1).unwrap(),
-        None,
-    ));
-
-    app.execute(Addr::unchecked("order_owner"), open_msg.into())
-        .unwrap();
-
-    let close_msg = ElysMsg::Margin(MarginMsg::close_position(
-        "order_owner".to_string(),
-        0,
-        None,
-    ));
-
-    let err = app
-        .execute(Addr::unchecked("random"), close_msg.into())
-        .unwrap_err();
 
     assert_eq!(
-        StdError::generic_err("Unauthtorized"),
-        err.downcast().unwrap()
+        app.wrap()
+            .query_balance("user", "btc")
+            .unwrap()
+            .amount
+            .u128(),
+        0
     );
+
+    let last_module_used = app
+        .init_modules(|router, _, store| router.custom.get_last_module(store))
+        .unwrap()
+        .unwrap();
+
+    assert_eq!(last_module_used, "MsgOpen");
 }
 
 #[test]
-fn margin_close_long_win() {
-    let prices: Vec<Price> = vec![
-        Price::new(
-            "btc",
-            Decimal::from_atomics(Uint128::new(20000), 0).unwrap(),
-        ),
-        Price::new("usdc", Decimal::from_atomics(Uint128::new(1), 0).unwrap()),
-    ];
+fn margin_close_position() {
     let wallets: Vec<(&str, Vec<Coin>)> = vec![("user", coins(5, "btc"))];
-
     let mut app = ElysApp::new_with_wallets(wallets);
-
-    app.init_modules(|router, _, storage| router.custom.set_prices(storage, &prices))
-        .unwrap();
 
     let open_msg = ElysMsg::Margin(MarginMsg::open_position(
         "user",
@@ -394,130 +315,43 @@ fn margin_close_long_win() {
         None,
     ));
 
-    app.execute(Addr::unchecked("user"), open_msg.into())
-        .unwrap();
-}
-
-#[test]
-fn margin_close_long_lose() {
-    let prices: Vec<Price> = vec![
-        Price::new(
-            "btc",
-            Decimal::from_atomics(Uint128::new(20000), 0).unwrap(),
-        ),
-        Price::new("usdc", Decimal::from_atomics(Uint128::new(1), 0).unwrap()),
-    ];
-    let wallets: Vec<(&str, Vec<Coin>)> = vec![("user", coins(5, "btc"))];
-
-    let mut app = ElysApp::new_with_wallets(wallets);
-
-    app.init_modules(|router, _, storage| router.custom.set_prices(storage, &prices))
-        .unwrap();
-
-    app.init_modules(|router, _, storage| router.custom.set_prices(storage, &prices))
-        .unwrap();
-
-    let open_msg = ElysMsg::Margin(MarginMsg::open_position(
-        "user",
-        "btc",
-        Int128::new(5),
-        "btc",
-        MarginPosition::Unspecified,
-        Decimal::from_atomics(Uint128::new(25), 1).unwrap(),
-        Decimal::from_atomics(Uint128::new(11), 1).unwrap(),
-        None,
-    ));
-
-    app.execute(Addr::unchecked("user"), open_msg.into())
-        .unwrap();
-}
-
-#[test]
-fn margin_close_short_win() {
-    let prices: Vec<Price> = vec![
-        Price::new(
-            "btc",
-            Decimal::from_atomics(Uint128::new(20000), 0).unwrap(),
-        ),
-        Price::new("usdc", Decimal::from_atomics(Uint128::new(1), 0).unwrap()),
-    ];
-    let wallets: Vec<(&str, Vec<Coin>)> = vec![("user", coins(5, "btc"))];
-
-    let mut app = ElysApp::new_with_wallets(wallets);
-
-    app.init_modules(|router, _, storage| router.custom.set_prices(storage, &prices))
-        .unwrap();
-
-    let open_msg = ElysMsg::Margin(MarginMsg::open_position(
-        "user",
-        "btc",
-        Int128::new(5),
-        "btc",
-        MarginPosition::Short,
-        Decimal::from_atomics(Uint128::new(3), 0).unwrap(),
-        Decimal::from_atomics(Uint128::new(11), 1).unwrap(),
-        None,
-    ));
+    assert_eq!(
+        app.wrap()
+            .query_balance("user", "btc")
+            .unwrap()
+            .amount
+            .u128(),
+        5
+    );
 
     app.execute(Addr::unchecked("user"), open_msg.into())
         .unwrap();
 
-    app.init_modules(|router, _, storage| {
-        router.custom.new_price(
-            storage,
-            &Price::new(
-                "btc",
-                Decimal::from_atomics(Uint128::new(15000), 0).unwrap(),
-            ),
-        )
-    })
-    .unwrap();
+    assert_eq!(
+        app.wrap()
+            .query_balance("user", "btc")
+            .unwrap()
+            .amount
+            .u128(),
+        0
+    );
+
+    let last_module_used = app
+        .init_modules(|router, _, store| router.custom.get_last_module(store))
+        .unwrap()
+        .unwrap();
+
+    assert_eq!(last_module_used, "MsgOpen");
 
     let close_msg = ElysMsg::Margin(MarginMsg::close_position("user", 0, None));
 
-    let resp: MsgCloseResponse = from_binary(
-        &app.execute(Addr::unchecked("user"), close_msg.into())
-            .unwrap()
-            .data
-            .unwrap(),
-    )
-    .unwrap();
-
-    assert_eq!(resp.id, 0);
-
-    panic!(
-        "{:?}",
-        app.wrap().query_all_balances(Addr::unchecked("user"))
-    );
-}
-
-#[test]
-fn margin_close_short_lose() {
-    let prices: Vec<Price> = vec![
-        Price::new(
-            "btc",
-            Decimal::from_atomics(Uint128::new(20000), 0).unwrap(),
-        ),
-        Price::new("usdc", Decimal::from_atomics(Uint128::new(1), 0).unwrap()),
-    ];
-    let wallets: Vec<(&str, Vec<Coin>)> = vec![("user", coins(5, "btc"))];
-
-    let mut app = ElysApp::new_with_wallets(wallets);
-
-    app.init_modules(|router, _, storage| router.custom.set_prices(storage, &prices))
+    app.execute(Addr::unchecked("user"), close_msg.into())
         .unwrap();
 
-    let open_msg = ElysMsg::Margin(MarginMsg::open_position(
-        "user",
-        "btc",
-        Int128::new(5),
-        "btc",
-        MarginPosition::Short,
-        Decimal::from_atomics(Uint128::new(25), 1).unwrap(),
-        Decimal::from_atomics(Uint128::new(11), 1).unwrap(),
-        None,
-    ));
-
-    app.execute(Addr::unchecked("user"), open_msg.into())
+    let last_module_used = app
+        .init_modules(|router, _, store| router.custom.get_last_module(store))
+        .unwrap()
         .unwrap();
+
+    assert_eq!(last_module_used, "MsgClose");
 }

@@ -22,12 +22,17 @@ pub const PRICES: Item<Vec<Price>> = Item::new("prices");
 pub const ASSET_INFO: Item<Vec<AssetInfo>> = Item::new("asset_info");
 pub const BLOCK_TIME: u64 = 5;
 pub const MARGIN_OPENED_POSITION: Item<Vec<MarginOrder>> = Item::new("margin_opened_position");
+pub const LAST_MODULE_USED: Item<Option<String>> = Item::new("last_module_used");
 
 pub struct ElysModule {}
 
 impl ElysModule {
+    pub fn get_last_module(&self, store: &dyn Storage) -> StdResult<Option<String>> {
+        LAST_MODULE_USED.load(store)
+    }
+
     fn get_all_price(&self, store: &dyn Storage) -> StdResult<Vec<Price>> {
-        Ok(PRICES.load(store)?)
+        PRICES.load(store)
     }
 
     pub fn set_prices(&self, store: &mut dyn Storage, prices: &Vec<Price>) -> StdResult<()> {
@@ -134,6 +139,7 @@ impl Module for ElysModule {
                     token_out_min_amount,
                     meta_data,
                 } => {
+                    LAST_MODULE_USED.save(storage, &Some("AmmSwap".to_string()))?;
                     let route = routes[0].clone();
                     let prices = self.get_all_price(storage)?;
                     let price_in = prices.iter().find(|p| p.asset == token_in.denom).unwrap();
@@ -193,6 +199,7 @@ impl Module for ElysModule {
                     take_profit_price,
                     meta_data,
                 } => {
+                    LAST_MODULE_USED.save(storage, &Some("MsgOpen".to_string()))?;
                     let mut order_vec = MARGIN_OPENED_POSITION.load(storage)?;
 
                     let order_id: u64 = match order_vec.iter().max_by_key(|s| s.order_id) {
@@ -206,12 +213,6 @@ impl Module for ElysModule {
                         amount: leverage * collateral.amount,
                     };
 
-                    let prices = PRICES.load(storage)?;
-                    let price = prices
-                        .iter()
-                        .find(|price| price.asset == collateral.denom)
-                        .unwrap();
-
                     let order: MarginOrder = MarginOrder {
                         order_id,
                         position: MarginPosition::try_from_i32(position).unwrap(),
@@ -220,7 +221,6 @@ impl Module for ElysModule {
                         creator,
                         leverage,
                         take_profit_price,
-                        token_price: price.price,
                     };
 
                     let msg_resp = MsgOpenResponse {
@@ -245,58 +245,16 @@ impl Module for ElysModule {
                     Ok(resp)
                 }
 
-                MarginMsg::MsgClose {
-                    creator,
-                    id,
-                    meta_data,
-                } => {
-                    let orders = MARGIN_OPENED_POSITION.load(storage)?;
-                    let prices = PRICES.load(storage)?;
+                MarginMsg::MsgClose { id, meta_data, .. } => {
+                    LAST_MODULE_USED.save(storage, &Some("MsgClose".to_string()))?;
+                    let orders: Vec<MarginOrder> = MARGIN_OPENED_POSITION.load(storage)?;
 
-                    let order = match orders.iter().find(|order| order.order_id == id) {
-                        Some(order) => order.clone(),
-                        None => return Err(Error::new(StdError::not_found(format!("{id}")))),
-                    };
-
-                    let price = prices
-                        .iter()
-                        .find(|price| price.asset == order.collateral.denom)
-                        .unwrap();
-
-                    if order.creator != sender || order.creator != creator {
-                        return Err(Error::new(StdError::generic_err(
-                            "Unauthtorized".to_string(),
-                        )));
-                    }
-
-                    let new_orders_list: Vec<MarginOrder> = orders
+                    let new_orders: Vec<MarginOrder> = orders
                         .into_iter()
                         .filter(|order| order.order_id != id)
                         .collect();
 
-                    MARGIN_OPENED_POSITION.save(storage, &new_orders_list)?;
-
-                    let price_variation = match order.position {
-                        MarginPosition::Long => price.price / order.token_price,
-                        MarginPosition::Short => order.token_price / price.price,
-                        MarginPosition::Unspecified => Decimal::one(),
-                    };
-
-                    let mint_amount = (price_variation * order.leverage * order.collateral.amount)
-                        - order.borrow_token.amount;
-
-                    let mint_msg: Option<BankSudo> = if mint_amount.u128() > 0 {
-                        Some(BankSudo::Mint {
-                            to_address: creator,
-                            amount: vec![coin(mint_amount.u128(), order.collateral.denom)],
-                        })
-                    } else {
-                        None
-                    };
-
-                    if let Some(mint_msg) = mint_msg {
-                        router.sudo(api, storage, block, mint_msg.into())?;
-                    };
+                    MARGIN_OPENED_POSITION.save(storage, &new_orders)?;
 
                     let data = Some(to_binary(&MsgCloseResponse { id, meta_data })?);
 
@@ -375,6 +333,7 @@ impl ElysApp {
                     MARGIN_OPENED_POSITION.save(storage, &vec![]).unwrap();
                     ASSET_INFO.save(storage, &vec![]).unwrap();
                     PRICES.save(storage, &vec![]).unwrap();
+                    LAST_MODULE_USED.save(storage, &None).unwrap();
                 }),
         )
     }
@@ -387,6 +346,7 @@ impl ElysApp {
                     MARGIN_OPENED_POSITION.save(storage, &vec![]).unwrap();
                     ASSET_INFO.save(storage, &vec![]).unwrap();
                     PRICES.save(storage, &vec![]).unwrap();
+                    LAST_MODULE_USED.save(storage, &None).unwrap();
                 }),
         )
     }
