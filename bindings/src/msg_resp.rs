@@ -15,5 +15,6 @@ pub struct MsgOpenResponse {
 
 #[cw_serde]
 pub struct MsgCloseResponse {
+    pub id: u64,
     pub meta_data: Option<Binary>,
 }

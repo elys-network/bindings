@@ -17,7 +17,7 @@ pub struct AssetInfo {
     pub decimal: u64,
 }
 
-#[cfg(test)]
+#[cfg(feature = "testing")]
 impl AssetInfo {
     pub fn new(
         denom: String,
@@ -161,6 +161,19 @@ pub struct Price {
     pub timestamp: u64,
 }
 
+#[cfg(feature = "testing")]
+impl Price {
+    pub fn new(asset: impl Into<String>, price: Decimal) -> Price {
+        Price {
+            asset: asset.into(),
+            price,
+            source: "".to_string(),
+            provider: "".to_string(),
+            timestamp: 0,
+        }
+    }
+}
+
 #[cw_serde]
 pub struct SwapAmountInRoute {
     pub pool_id: u64,
@@ -194,6 +207,7 @@ pub struct MarginOrder {
     pub creator: String,
     pub leverage: Decimal,
     pub take_profit_price: Decimal,
+    pub token_price: Decimal,
 }
 
 impl MarginOrder {
@@ -204,6 +218,7 @@ impl MarginOrder {
         leverage: Decimal,
         borrow_token: Coin,
         take_profit_price: Decimal,
+        token_price: Decimal,
     ) -> Self {
         let order_id: u64 = 0;
 
@@ -215,6 +230,7 @@ impl MarginOrder {
             creator: creator.into(),
             leverage,
             take_profit_price,
+            token_price,
         }
     }
 }

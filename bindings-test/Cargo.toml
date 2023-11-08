@@ -7,7 +7,9 @@ edition = "2021"
 
 [dependencies]
 itertools = "0.10"
-elys-bindings = { version = "0.1.0", path = "../bindings" }
+elys-bindings = { version = "0.1.0", path = "../bindings", features = [
+    "testing",
+] }
 schemars = "0.8"
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 anyhow = "1"

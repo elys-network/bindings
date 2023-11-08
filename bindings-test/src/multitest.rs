@@ -10,14 +10,14 @@ use cosmwasm_std::{
 use cw_multi_test::{App, AppResponse, BankKeeper, BankSudo, BasicAppBuilder, Module, WasmKeeper};
 use cw_storage_plus::Item;
 use elys_bindings::{
-    msg_resp::{MsgOpenResponse, MsgSwapExactAmountInResp},
+    msg_resp::{MsgCloseResponse, MsgOpenResponse, MsgSwapExactAmountInResp},
     query_resp::QuerySwapEstimationResponse,
-    types::{AssetInfo, MarginOrder, MarginPosition},
+    types::{AssetInfo, MarginOrder, MarginPosition, Price},
     AmmMsg, AmmQuery, ElysMsg, ElysQuery, MarginMsg, OracleQuery,
 };
 use std::cmp::max;
 
-pub const PRICES: Item<Vec<Coin>> = Item::new("prices");
+pub const PRICES: Item<Vec<Price>> = Item::new("prices");
 pub const ASSET_INFO: Item<Vec<AssetInfo>> = Item::new("asset_info");
 pub const BLOCK_TIME: u64 = 5;
 pub const MARGIN_OPENED_POSITION: Item<Vec<MarginOrder>> = Item::new("margin_opened_position");
@@ -25,19 +25,19 @@ pub const MARGIN_OPENED_POSITION: Item<Vec<MarginOrder>> = Item::new("margin_ope
 pub struct ElysModule {}
 
 impl ElysModule {
-    fn get_all_price(&self, store: &dyn Storage) -> StdResult<Vec<Coin>> {
+    fn get_all_price(&self, store: &dyn Storage) -> StdResult<Vec<Price>> {
         Ok(PRICES.load(store)?)
     }
 
-    pub fn set_prices(&self, store: &mut dyn Storage, prices: &Vec<Coin>) -> StdResult<()> {
+    pub fn set_prices(&self, store: &mut dyn Storage, prices: &Vec<Price>) -> StdResult<()> {
         PRICES.save(store, prices)
     }
 
-    pub fn new_price(&self, store: &mut dyn Storage, new_price: &Coin) -> StdResult<()> {
+    pub fn new_price(&self, store: &mut dyn Storage, new_price: &Price) -> StdResult<()> {
         let mut prices = PRICES.load(store)?;
         for price in prices.iter_mut() {
-            if price.denom == new_price.denom {
-                price.amount = new_price.amount;
+            if price.asset == new_price.asset {
+                *price = new_price.clone();
                 return PRICES.save(store, &prices);
             }
         }
@@ -84,13 +84,13 @@ impl Module for ElysModule {
                     let prices = &self.get_all_price(storage)?;
                     let price_in = prices
                         .iter()
-                        .find(|price| price.denom == token_in.denom)
+                        .find(|price| price.asset == token_in.denom)
                         .unwrap();
                     let price_out = prices
                         .iter()
-                        .find(|price| price.denom == routes[0].token_out_denom)
+                        .find(|price| price.asset == routes[0].token_out_denom)
                         .unwrap();
-                    let spot_price = Decimal::from_ratio(price_in.amount, price_out.amount);
+                    let spot_price = price_in.price / price_out.price;
                     let token_out_amount =
                         (Decimal::from_atomics(token_in.amount, spot_price.decimal_places())?
                             * spot_price)
@@ -135,14 +135,14 @@ impl Module for ElysModule {
                 } => {
                     let route = routes[0].clone();
                     let prices = self.get_all_price(storage)?;
-                    let price_in = prices.iter().find(|p| p.denom == token_in.denom).unwrap();
+                    let price_in = prices.iter().find(|p| p.asset == token_in.denom).unwrap();
                     let price_out = prices
                         .iter()
-                        .find(|p| p.denom == route.token_out_denom)
+                        .find(|p| p.asset == route.token_out_denom)
                         .unwrap();
 
                     let mint_amount = coins(
-                        (token_in.amount * price_in.amount / price_out.amount).u128(),
+                        (token_in.amount * (price_in.price / price_out.price)).u128(),
                         route.token_out_denom,
                     );
 
@@ -205,6 +205,12 @@ impl Module for ElysModule {
                         amount: leverage * collateral.amount,
                     };
 
+                    let prices = PRICES.load(storage)?;
+                    let price = prices
+                        .iter()
+                        .find(|price| price.asset == collateral.denom)
+                        .unwrap();
+
                     let order: MarginOrder = MarginOrder {
                         order_id,
                         position: MarginPosition::try_from_i32(position).unwrap(),
@@ -213,6 +219,7 @@ impl Module for ElysModule {
                         creator,
                         leverage,
                         take_profit_price,
+                        token_price: price.price,
                     };
 
                     let msg_resp = MsgOpenResponse {
@@ -237,8 +244,65 @@ impl Module for ElysModule {
                     Ok(resp)
                 }
 
-                MarginMsg::MsgClose { .. } => {
-                    bail!("margin close msg not implemented yet")
+                MarginMsg::MsgClose {
+                    creator,
+                    id,
+                    meta_data,
+                } => {
+                    let orders = MARGIN_OPENED_POSITION.load(storage)?;
+                    let prices = PRICES.load(storage)?;
+
+                    let order = match orders.iter().find(|order| order.order_id == id) {
+                        Some(order) => order.clone(),
+                        None => return Err(Error::new(StdError::not_found(format!("{id}")))),
+                    };
+
+                    let price = prices
+                        .iter()
+                        .find(|price| price.asset == order.collateral.denom)
+                        .unwrap();
+
+                    if order.creator != sender || order.creator != creator {
+                        return Err(Error::new(StdError::generic_err(
+                            "Unauthtorized".to_string(),
+                        )));
+                    }
+
+                    let new_orders_list: Vec<MarginOrder> = orders
+                        .into_iter()
+                        .filter(|order| order.order_id != id)
+                        .collect();
+
+                    MARGIN_OPENED_POSITION.save(storage, &new_orders_list)?;
+
+                    let price_variation = match order.position {
+                        MarginPosition::Long => price.price / order.token_price,
+                        MarginPosition::Short => order.token_price / price.price,
+                        MarginPosition::Unspecified => Decimal::one(),
+                    };
+
+                    let mint_amount = (price_variation * order.leverage * order.collateral.amount)
+                        - order.borrow_token.amount;
+
+                    let mint_msg: Option<BankSudo> = if mint_amount.u128() > 0 {
+                        Some(BankSudo::Mint {
+                            to_address: creator,
+                            amount: vec![coin(mint_amount.u128(), order.collateral.denom)],
+                        })
+                    } else {
+                        None
+                    };
+
+                    if let Some(mint_msg) = mint_msg {
+                        router.sudo(api, storage, block, mint_msg.into())?;
+                    };
+
+                    let data = Some(to_json_binary(&MsgCloseResponse { id, meta_data })?);
+
+                    Ok(AppResponse {
+                        events: vec![],
+                        data,
+                    })
                 }
             },
         }
@@ -261,7 +325,7 @@ impl Module for ElysModule {
             + 'static,
         QueryC: cosmwasm_std::CustomQuery + serde::de::DeserializeOwned + 'static,
     {
-        bail!("execute is not implemented for ElysMsg")
+        bail!("sudo is not implemented for ElysMsg")
     }
 }
 
