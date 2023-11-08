@@ -1,8 +1,12 @@
 use cosmwasm_schema::cw_serde;
+use cosmwasm_std::from_binary;
+use cosmwasm_std::from_json;
+use cosmwasm_std::to_json_binary;
 use cosmwasm_std::Binary;
 use cosmwasm_std::Coin;
 use cosmwasm_std::Decimal;
 use cosmwasm_std::StdError;
+use cosmwasm_std::StdResult;
 
 #[cw_serde]
 pub struct AssetInfo {
@@ -45,7 +49,19 @@ impl AssetInfo {
 #[cw_serde]
 pub struct PageResponse {
     pub next_key: Option<Binary>,
-    // pub total: Option<u64>,
+    pub total: Option<u64>,
+}
+
+impl PageResponse {
+    pub fn new(next_key: Option<Binary>, total: Option<u64>) -> Self {
+        Self { next_key, total }
+    }
+    pub fn empty(count_total: bool) -> Self {
+        Self {
+            next_key: None,
+            total: if count_total { Some(0) } else { None },
+        }
+    }
 }
 
 #[cw_serde]
@@ -55,6 +71,69 @@ pub struct PageRequest {
     limit: u64,
     count_total: bool,
     reverse: bool,
+}
+
+impl PageRequest {
+    pub fn filter<T>(&self, static_vec: Vec<T>) -> StdResult<(Vec<T>, PageResponse)>
+    where
+        T: PartialEq,
+        T: Clone,
+    {
+        let mut filter_vec = static_vec.clone();
+
+        let key = if let Some(key) = &self.key {
+            let key: u64 = from_json(key)?;
+            if key + 1 >= filter_vec.len() as u64 {
+                return Ok((vec![], PageResponse::empty(self.count_total)));
+            } else {
+                filter_vec = filter_vec.split_off(key as usize);
+                key
+            }
+        } else {
+            0
+        };
+
+        let offset = if let Some(offset) = self.offset {
+            if offset >= filter_vec.len() as u64 {
+                return Ok((vec![], PageResponse::empty(self.count_total)));
+            } else {
+                filter_vec = filter_vec.split_off(offset as usize);
+                offset
+            }
+        } else {
+            0
+        };
+
+        if filter_vec.is_empty() {
+            return Ok((vec![], PageResponse::empty(self.count_total)));
+        };
+
+        let _ = filter_vec.split_off(self.limit as usize);
+
+        if filter_vec.is_empty() {
+            return Ok((vec![], PageResponse::empty(self.count_total)));
+        };
+
+        let next_key = if static_vec.last() == filter_vec.last() {
+            None
+        } else {
+            Some(to_json_binary(&(key + self.limit + offset))?)
+        };
+
+        let total = if self.count_total {
+            Some(filter_vec.len() as u64)
+        } else {
+            None
+        };
+
+        if self.reverse {
+            filter_vec.reverse();
+        };
+
+        let page_response = PageResponse::new(next_key, total);
+
+        Ok((filter_vec, page_response))
+    }
 }
 
 impl PageRequest {
