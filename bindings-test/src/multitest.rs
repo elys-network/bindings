@@ -1,11 +1,12 @@
 use std::ops::{Deref, DerefMut};
 
 use anyhow::{bail, Error, Result as AnyResult};
+#[allow(deprecated)]
 use cosmwasm_std::{
     coin, coins,
     testing::{MockApi, MockStorage},
-    to_json_binary, Addr, BankMsg, BlockInfo, Coin, Decimal, Empty, Int64, Querier, StdError,
-    StdResult, Storage,
+    to_binary, Addr, BankMsg, BlockInfo, Coin, Decimal, Empty, Int64, Querier, StdError, StdResult,
+    Storage,
 };
 use cw_multi_test::{App, AppResponse, BankKeeper, BankSudo, BasicAppBuilder, Module, WasmKeeper};
 use cw_storage_plus::Item;
@@ -68,13 +69,13 @@ impl Module for ElysModule {
     ) -> AnyResult<cosmwasm_std::Binary> {
         match request {
             ElysQuery::Oracle(oracle_req) => match oracle_req {
-                OracleQuery::PriceAll { .. } => Ok(to_json_binary(&self.get_all_price(storage)?)?),
+                OracleQuery::PriceAll { .. } => Ok(to_binary(&self.get_all_price(storage)?)?),
                 OracleQuery::AssetInfo { denom } => {
                     let infos = ASSET_INFO.load(storage)?;
                     let may_have_info = infos.iter().find(|asset| asset.denom == denom);
 
                     match may_have_info {
-                        Some(info) => Ok(to_json_binary(info)?),
+                        Some(info) => Ok(to_binary(info)?),
                         None => Err(Error::new(StdError::not_found("asset denom"))),
                     }
                 }
@@ -97,7 +98,7 @@ impl Module for ElysModule {
                             .atomics()
                             .u128();
 
-                    Ok(to_json_binary(&QuerySwapEstimationResponse {
+                    Ok(to_binary(&QuerySwapEstimationResponse {
                         spot_price,
                         token_out: coin(token_out_amount, &routes[0].token_out_denom),
                     })?)
@@ -150,7 +151,7 @@ impl Module for ElysModule {
                         return Err(Error::new(StdError::generic_err("not enough token")));
                     }
 
-                    let data = to_json_binary(&MsgSwapExactAmountInResp {
+                    let data = to_binary(&MsgSwapExactAmountInResp {
                         token_out_amount: Int64::new(mint_amount[0].amount.u128() as i64),
 
                         meta_data,
@@ -229,7 +230,7 @@ impl Module for ElysModule {
 
                     let resp = AppResponse {
                         events: vec![],
-                        data: Some(to_json_binary(&msg_resp)?),
+                        data: Some(to_binary(&msg_resp)?),
                     };
 
                     order_vec.push(order);
@@ -297,7 +298,7 @@ impl Module for ElysModule {
                         router.sudo(api, storage, block, mint_msg.into())?;
                     };
 
-                    let data = Some(to_json_binary(&MsgCloseResponse { id, meta_data })?);
+                    let data = Some(to_binary(&MsgCloseResponse { id, meta_data })?);
 
                     Ok(AppResponse {
                         events: vec![],

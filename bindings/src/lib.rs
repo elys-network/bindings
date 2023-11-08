@@ -3,6 +3,7 @@ pub mod msg_resp;
 mod querier;
 mod query;
 pub mod query_resp;
+#[allow(deprecated)]
 pub mod types;
 
 pub use msg::*;

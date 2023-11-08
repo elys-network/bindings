@@ -1,4 +1,4 @@
-use cosmwasm_std::{coin, coins, from_json, Addr, Coin, Decimal, Int128, StdError, Uint128};
+use cosmwasm_std::{coin, coins, from_binary, Addr, Coin, Decimal, Int128, StdError, Uint128};
 use cw_multi_test::Executor;
 use elys_bindings::{
     msg_resp::MsgCloseResponse,
@@ -475,8 +475,8 @@ fn margin_close_short_win() {
 
     let close_msg = ElysMsg::Margin(MarginMsg::close_position("user", 0, None));
 
-    let resp: MsgCloseResponse = from_json(
-        app.execute(Addr::unchecked("user"), close_msg.into())
+    let resp: MsgCloseResponse = from_binary(
+        &app.execute(Addr::unchecked("user"), close_msg.into())
             .unwrap()
             .data
             .unwrap(),

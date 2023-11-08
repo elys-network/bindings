@@ -1,7 +1,6 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::from_binary;
-use cosmwasm_std::from_json;
-use cosmwasm_std::to_json_binary;
+use cosmwasm_std::to_binary;
 use cosmwasm_std::Binary;
 use cosmwasm_std::Coin;
 use cosmwasm_std::Decimal;
@@ -82,7 +81,7 @@ impl PageRequest {
         let mut filter_vec = static_vec.clone();
 
         let key = if let Some(key) = &self.key {
-            let key: u64 = from_json(key)?;
+            let key: u64 = from_binary(key)?;
             if key + 1 >= filter_vec.len() as u64 {
                 return Ok((vec![], PageResponse::empty(self.count_total)));
             } else {
@@ -117,7 +116,7 @@ impl PageRequest {
         let next_key = if static_vec.last() == filter_vec.last() {
             None
         } else {
-            Some(to_json_binary(&(key + self.limit + offset))?)
+            Some(to_binary(&(key + self.limit + offset))?)
         };
 
         let total = if self.count_total {
