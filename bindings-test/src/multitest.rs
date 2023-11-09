@@ -1,43 +1,49 @@
 use std::ops::{Deref, DerefMut};
 
 use anyhow::{bail, Error, Result as AnyResult};
+#[allow(deprecated)]
 use cosmwasm_std::{
     coin, coins,
     testing::{MockApi, MockStorage},
-    to_json_binary, Addr, BankMsg, BlockInfo, Coin, Decimal, Empty, Int64, Querier, StdError,
-    StdResult, Storage,
+    to_binary, Addr, BankMsg, BlockInfo, Coin, Decimal, Empty, Int64, Querier, StdError, StdResult,
+    Storage,
 };
 use cw_multi_test::{App, AppResponse, BankKeeper, BankSudo, BasicAppBuilder, Module, WasmKeeper};
 use cw_storage_plus::Item;
 use elys_bindings::{
-    msg_resp::{MsgOpenResponse, MsgSwapExactAmountInResp},
+    msg_resp::{MsgCloseResponse, MsgOpenResponse, MsgSwapExactAmountInResp},
     query_resp::QuerySwapEstimationResponse,
-    types::{AssetInfo, MarginOrder, MarginPosition},
+    types::{AssetInfo, MarginOrder, MarginPosition, Price},
     AmmMsg, AmmQuery, ElysMsg, ElysQuery, MarginMsg, OracleQuery,
 };
 use std::cmp::max;
 
-pub const PRICES: Item<Vec<Coin>> = Item::new("prices");
+pub const PRICES: Item<Vec<Price>> = Item::new("prices");
 pub const ASSET_INFO: Item<Vec<AssetInfo>> = Item::new("asset_info");
 pub const BLOCK_TIME: u64 = 5;
 pub const MARGIN_OPENED_POSITION: Item<Vec<MarginOrder>> = Item::new("margin_opened_position");
+pub const LAST_MODULE_USED: Item<Option<String>> = Item::new("last_module_used");
 
 pub struct ElysModule {}
 
 impl ElysModule {
-    fn get_all_price(&self, store: &dyn Storage) -> StdResult<Vec<Coin>> {
-        Ok(PRICES.load(store)?)
+    pub fn get_last_module(&self, store: &dyn Storage) -> StdResult<Option<String>> {
+        LAST_MODULE_USED.load(store)
     }
 
-    pub fn set_prices(&self, store: &mut dyn Storage, prices: &Vec<Coin>) -> StdResult<()> {
+    fn get_all_price(&self, store: &dyn Storage) -> StdResult<Vec<Price>> {
+        PRICES.load(store)
+    }
+
+    pub fn set_prices(&self, store: &mut dyn Storage, prices: &Vec<Price>) -> StdResult<()> {
         PRICES.save(store, prices)
     }
 
-    pub fn new_price(&self, store: &mut dyn Storage, new_price: &Coin) -> StdResult<()> {
+    pub fn new_price(&self, store: &mut dyn Storage, new_price: &Price) -> StdResult<()> {
         let mut prices = PRICES.load(store)?;
         for price in prices.iter_mut() {
-            if price.denom == new_price.denom {
-                price.amount = new_price.amount;
+            if price.asset == new_price.asset {
+                *price = new_price.clone();
                 return PRICES.save(store, &prices);
             }
         }
@@ -68,13 +74,13 @@ impl Module for ElysModule {
     ) -> AnyResult<cosmwasm_std::Binary> {
         match request {
             ElysQuery::Oracle(oracle_req) => match oracle_req {
-                OracleQuery::PriceAll { .. } => Ok(to_json_binary(&self.get_all_price(storage)?)?),
+                OracleQuery::PriceAll { .. } => Ok(to_binary(&self.get_all_price(storage)?)?),
                 OracleQuery::AssetInfo { denom } => {
                     let infos = ASSET_INFO.load(storage)?;
                     let may_have_info = infos.iter().find(|asset| asset.denom == denom);
 
                     match may_have_info {
-                        Some(info) => Ok(to_json_binary(info)?),
+                        Some(info) => Ok(to_binary(info)?),
                         None => Err(Error::new(StdError::not_found("asset denom"))),
                     }
                 }
@@ -84,20 +90,20 @@ impl Module for ElysModule {
                     let prices = &self.get_all_price(storage)?;
                     let price_in = prices
                         .iter()
-                        .find(|price| price.denom == token_in.denom)
+                        .find(|price| price.asset == token_in.denom)
                         .unwrap();
                     let price_out = prices
                         .iter()
-                        .find(|price| price.denom == routes[0].token_out_denom)
+                        .find(|price| price.asset == routes[0].token_out_denom)
                         .unwrap();
-                    let spot_price = Decimal::from_ratio(price_in.amount, price_out.amount);
+                    let spot_price = price_in.price / price_out.price;
                     let token_out_amount =
                         (Decimal::from_atomics(token_in.amount, spot_price.decimal_places())?
                             * spot_price)
                             .atomics()
                             .u128();
 
-                    Ok(to_json_binary(&QuerySwapEstimationResponse {
+                    Ok(to_binary(&QuerySwapEstimationResponse {
                         spot_price,
                         token_out: coin(token_out_amount, &routes[0].token_out_denom),
                     })?)
@@ -133,16 +139,17 @@ impl Module for ElysModule {
                     token_out_min_amount,
                     meta_data,
                 } => {
+                    LAST_MODULE_USED.save(storage, &Some("AmmSwap".to_string()))?;
                     let route = routes[0].clone();
                     let prices = self.get_all_price(storage)?;
-                    let price_in = prices.iter().find(|p| p.denom == token_in.denom).unwrap();
+                    let price_in = prices.iter().find(|p| p.asset == token_in.denom).unwrap();
                     let price_out = prices
                         .iter()
-                        .find(|p| p.denom == route.token_out_denom)
+                        .find(|p| p.asset == route.token_out_denom)
                         .unwrap();
 
                     let mint_amount = coins(
-                        (token_in.amount * price_in.amount / price_out.amount).u128(),
+                        (token_in.amount * (price_in.price / price_out.price)).u128(),
                         route.token_out_denom,
                     );
 
@@ -150,7 +157,7 @@ impl Module for ElysModule {
                         return Err(Error::new(StdError::generic_err("not enough token")));
                     }
 
-                    let data = to_json_binary(&MsgSwapExactAmountInResp {
+                    let data = to_binary(&MsgSwapExactAmountInResp {
                         token_out_amount: Int64::new(mint_amount[0].amount.u128() as i64),
 
                         meta_data,
@@ -192,6 +199,7 @@ impl Module for ElysModule {
                     take_profit_price,
                     meta_data,
                 } => {
+                    LAST_MODULE_USED.save(storage, &Some("MsgOpen".to_string()))?;
                     let mut order_vec = MARGIN_OPENED_POSITION.load(storage)?;
 
                     let order_id: u64 = match order_vec.iter().max_by_key(|s| s.order_id) {
@@ -222,7 +230,7 @@ impl Module for ElysModule {
 
                     let resp = AppResponse {
                         events: vec![],
-                        data: Some(to_json_binary(&msg_resp)?),
+                        data: Some(to_binary(&msg_resp)?),
                     };
 
                     order_vec.push(order);
@@ -237,8 +245,23 @@ impl Module for ElysModule {
                     Ok(resp)
                 }
 
-                MarginMsg::MsgClose { .. } => {
-                    bail!("margin close msg not implemented yet")
+                MarginMsg::MsgClose { id, meta_data, .. } => {
+                    LAST_MODULE_USED.save(storage, &Some("MsgClose".to_string()))?;
+                    let orders: Vec<MarginOrder> = MARGIN_OPENED_POSITION.load(storage)?;
+
+                    let new_orders: Vec<MarginOrder> = orders
+                        .into_iter()
+                        .filter(|order| order.order_id != id)
+                        .collect();
+
+                    MARGIN_OPENED_POSITION.save(storage, &new_orders)?;
+
+                    let data = Some(to_binary(&MsgCloseResponse { id, meta_data })?);
+
+                    Ok(AppResponse {
+                        events: vec![],
+                        data,
+                    })
                 }
             },
         }
@@ -261,7 +284,7 @@ impl Module for ElysModule {
             + 'static,
         QueryC: cosmwasm_std::CustomQuery + serde::de::DeserializeOwned + 'static,
     {
-        bail!("execute is not implemented for ElysMsg")
+        bail!("sudo is not implemented for ElysMsg")
     }
 }
 
@@ -310,6 +333,7 @@ impl ElysApp {
                     MARGIN_OPENED_POSITION.save(storage, &vec![]).unwrap();
                     ASSET_INFO.save(storage, &vec![]).unwrap();
                     PRICES.save(storage, &vec![]).unwrap();
+                    LAST_MODULE_USED.save(storage, &None).unwrap();
                 }),
         )
     }
@@ -322,6 +346,7 @@ impl ElysApp {
                     MARGIN_OPENED_POSITION.save(storage, &vec![]).unwrap();
                     ASSET_INFO.save(storage, &vec![]).unwrap();
                     PRICES.save(storage, &vec![]).unwrap();
+                    LAST_MODULE_USED.save(storage, &None).unwrap();
                 }),
         )
     }
