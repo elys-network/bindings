@@ -66,11 +66,11 @@ impl PageResponse {
 
 #[cw_serde]
 pub struct PageRequest {
-    key: Option<Binary>,
-    offset: Option<u64>,
-    limit: u64,
-    count_total: bool,
-    reverse: bool,
+    pub key: Option<Binary>,
+    pub offset: Option<u64>,
+    pub limit: u64,
+    pub count_total: bool,
+    pub reverse: bool,
 }
 
 impl PageRequest {
@@ -83,7 +83,8 @@ impl PageRequest {
 
         let key = if let Some(key) = &self.key {
             let key: u64 = from_binary(key)?;
-            if key + 1 >= filter_vec.len() as u64 {
+            if key >= filter_vec.len() as u64 {
+                println!("Returning early - key condition");
                 return Ok((vec![], PageResponse::empty(self.count_total)));
             } else {
                 filter_vec = filter_vec.split_off(key as usize);
@@ -108,7 +109,9 @@ impl PageRequest {
             return Ok((vec![], PageResponse::empty(self.count_total)));
         };
 
-        let _ = filter_vec.split_off(self.limit as usize);
+        if self.limit < filter_vec.len() as u64 {
+            let _ = filter_vec.split_off(self.limit as usize);
+        };
 
         if filter_vec.is_empty() {
             return Ok((vec![], PageResponse::empty(self.count_total)));
