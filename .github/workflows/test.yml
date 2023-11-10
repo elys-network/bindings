@@ -17,8 +17,14 @@ jobs:
           profile: minimal
           toolchain: stable
 
-      - name: Build and test
+      - name: Build and test bindings-multitest
         run: |
           cargo build --verbose
           cargo test --verbose
         working-directory: bindings-test
+
+      - name: Build and test bindings
+        run: |
+          cargo build --verbose
+          cargo test --verbose
+        working-directory: bindings
