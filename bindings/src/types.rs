@@ -4,6 +4,7 @@ use cosmwasm_std::to_binary;
 use cosmwasm_std::Binary;
 use cosmwasm_std::Coin;
 use cosmwasm_std::Decimal;
+use cosmwasm_std::Int128;
 use cosmwasm_std::StdError;
 use cosmwasm_std::StdResult;
 
@@ -239,4 +240,25 @@ impl MarginOrder {
             take_profit_price,
         }
     }
+}
+
+#[cw_serde]
+pub struct MTP {
+    address: String,
+    collaterals: Vec<Coin>,
+    liabilities: Int128,
+    interest_paid_collaterals: Vec<Coin>,
+    interest_paid_custodies: Vec<Coin>,
+    interest_unpaid_collaterals: Vec<Coin>,
+    custodies: Vec<Coin>,
+    take_profit_liabilities: Int128,
+    take_profit_custodies: Vec<Coin>,
+    leverages: Vec<Decimal>,
+    mtp_health: Decimal,
+    position: i32,
+    id: u64,
+    amm_pool_id: u64,
+    consolidate_leverage: Decimal,
+    sum_collateral: Int128,
+    take_profit_price: Decimal,
 }

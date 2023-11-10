@@ -42,11 +42,21 @@ impl AmmQuery {
     }
 }
 
+#[cw_serde]
+#[derive(QueryResponses)]
+pub enum MarginQuery {
+    #[returns(PositionsResponse)]
+    Positions { pagination: PageRequest },
+    #[returns(MTPResponse)]
+    MTP { address: String, id: u64 },
+}
+
 // Now define ElysQuery to include the new OracleQuery and AmmQuery
 #[cw_serde]
 pub enum ElysQuery {
     Oracle(OracleQuery),
     Amm(AmmQuery),
+    Margin(MarginQuery),
 }
 
 impl CustomQuery for ElysQuery {}
