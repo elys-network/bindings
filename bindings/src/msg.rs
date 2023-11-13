@@ -5,7 +5,7 @@ use crate::types::{MarginPosition, SwapAmountInRoute};
 
 #[cw_serde]
 pub enum ElysMsg {
-    MsgOpen {
+    MarginOpen {
         creator: String,
         collateral_asset: String,
         collateral_amount: Int128,
@@ -15,12 +15,12 @@ pub enum ElysMsg {
         take_profit_price: Decimal,
         meta_data: Option<Binary>,
     },
-    MsgClose {
+    MarginClose {
         creator: String,
         id: u64,
         meta_data: Option<Binary>,
     },
-    MsgSwapExactAmountIn {
+    AmmSwapExactAmountIn {
         sender: String,
         routes: Vec<SwapAmountInRoute>,
         token_in: Coin,
@@ -30,14 +30,14 @@ pub enum ElysMsg {
 }
 
 impl ElysMsg {
-    pub fn swap_exact_amount_in(
+    pub fn amm_swap_exact_amount_in(
         sender: &str,
         token_in: &Coin,
         token_route: &Vec<SwapAmountInRoute>,
         token_out_min_amount: Int128,
         meta_data: Option<Binary>,
     ) -> Self {
-        Self::MsgSwapExactAmountIn {
+        Self::AmmSwapExactAmountIn {
             sender: sender.to_owned(),
             routes: token_route.to_owned(),
             token_in: token_in.to_owned(),
@@ -46,7 +46,7 @@ impl ElysMsg {
         }
     }
 
-    pub fn open_position(
+    pub fn margin_open_position(
         creator: impl Into<String>,
         collateral_asset: impl Into<String>,
         collateral_amount: Int128,
@@ -56,7 +56,7 @@ impl ElysMsg {
         take_profit_price: Decimal,
         meta_data: Option<Binary>,
     ) -> Self {
-        Self::MsgOpen {
+        Self::MarginOpen {
             creator: creator.into(),
             collateral_asset: collateral_asset.into(),
             collateral_amount,
@@ -68,8 +68,12 @@ impl ElysMsg {
         }
     }
 
-    pub fn close_position(creator: impl Into<String>, id: u64, meta_data: Option<Binary>) -> Self {
-        Self::MsgClose {
+    pub fn margin_close_position(
+        creator: impl Into<String>,
+        id: u64,
+        meta_data: Option<Binary>,
+    ) -> Self {
+        Self::MarginClose {
             creator: creator.into(),
             id,
             meta_data,

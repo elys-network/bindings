@@ -14,11 +14,11 @@ impl<'a> ElysQuerier<'a> {
     pub fn new(querier: &'a QuerierWrapper<'a, ElysQuery>) -> Self {
         ElysQuerier { querier }
     }
-    pub fn get_all_prices(&self, pagination: &mut PageRequest) -> StdResult<Vec<Coin>> {
-        let prices_query = ElysQuery::get_all_prices(pagination.clone());
+    pub fn oracle_get_all_prices(&self, pagination: &mut PageRequest) -> StdResult<Vec<Coin>> {
+        let prices_query = ElysQuery::oracle_get_all_prices(pagination.clone());
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(prices_query);
 
-        let resp: AllPriceResponse = self.querier.query(&request)?;
+        let resp: OraclePriceAllResponse = self.querier.query(&request)?;
 
         pagination.update(resp.pagination.next_key);
         let result: Vec<Coin> = resp
@@ -28,12 +28,12 @@ impl<'a> ElysQuerier<'a> {
             .collect();
         Ok(result)
     }
-    pub fn swap_estimation(
+    pub fn amm_swap_estimation(
         &self,
         routes: &Vec<SwapAmountInRoute>,
         token_in: &Coin,
     ) -> StdResult<AmmSwapEstimationResponse> {
-        let request = QueryRequest::Custom(ElysQuery::swap_estimation(
+        let request = QueryRequest::Custom(ElysQuery::amm_swap_estimation(
             routes.to_owned(),
             token_in.to_owned(),
         ));

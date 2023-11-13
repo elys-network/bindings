@@ -11,7 +11,7 @@ use cosmwasm_std::{
 use cw_multi_test::{App, AppResponse, BankKeeper, BankSudo, BasicAppBuilder, Module, WasmKeeper};
 use cw_storage_plus::Item;
 use elys_bindings::{
-    msg_resp::{MsgCloseResponse, MsgOpenResponse, MsgSwapExactAmountInResp},
+    msg_resp::{AmmSwapExactAmountInResp, MarginCloseResponse, MarginOpenResponse},
     query_resp::AmmSwapEstimationResponse,
     types::{MarginOrder, MarginPosition, OracleAssetInfo, Price},
     ElysMsg, ElysQuery,
@@ -127,7 +127,7 @@ impl Module for ElysModule {
         QueryC: cosmwasm_std::CustomQuery + serde::de::DeserializeOwned + 'static,
     {
         match msg {
-            ElysMsg::MsgSwapExactAmountIn {
+            ElysMsg::AmmSwapExactAmountIn {
                 sender,
                 routes,
                 token_in,
@@ -152,7 +152,7 @@ impl Module for ElysModule {
                     return Err(Error::new(StdError::generic_err("not enough token")));
                 }
 
-                let data = to_binary(&MsgSwapExactAmountInResp {
+                let data = to_binary(&AmmSwapExactAmountInResp {
                     token_out_amount: Int64::new(mint_amount[0].amount.u128() as i64),
 
                     meta_data,
@@ -183,7 +183,7 @@ impl Module for ElysModule {
                 })
             }
 
-            ElysMsg::MsgOpen {
+            ElysMsg::MarginOpen {
                 creator,
                 collateral_asset,
                 collateral_amount,
@@ -193,7 +193,7 @@ impl Module for ElysModule {
                 take_profit_price,
                 meta_data,
             } => {
-                LAST_MODULE_USED.save(storage, &Some("MsgOpen".to_string()))?;
+                LAST_MODULE_USED.save(storage, &Some("MarginOpen".to_string()))?;
                 let mut order_vec = MARGIN_OPENED_POSITION.load(storage)?;
 
                 let order_id: u64 = match order_vec.iter().max_by_key(|s| s.order_id) {
@@ -217,7 +217,7 @@ impl Module for ElysModule {
                     take_profit_price,
                 };
 
-                let msg_resp = MsgOpenResponse {
+                let msg_resp = MarginOpenResponse {
                     id: order_id,
                     meta_data,
                 };
@@ -239,8 +239,8 @@ impl Module for ElysModule {
                 Ok(resp)
             }
 
-            ElysMsg::MsgClose { id, meta_data, .. } => {
-                LAST_MODULE_USED.save(storage, &Some("MsgClose".to_string()))?;
+            ElysMsg::MarginClose { id, meta_data, .. } => {
+                LAST_MODULE_USED.save(storage, &Some("MarginClose".to_string()))?;
                 let orders: Vec<MarginOrder> = MARGIN_OPENED_POSITION.load(storage)?;
 
                 let new_orders: Vec<MarginOrder> = orders
@@ -250,7 +250,7 @@ impl Module for ElysModule {
 
                 MARGIN_OPENED_POSITION.save(storage, &new_orders)?;
 
-                let data = Some(to_binary(&MsgCloseResponse { id, meta_data })?);
+                let data = Some(to_binary(&MarginCloseResponse { id, meta_data })?);
 
                 Ok(AppResponse {
                     events: vec![],

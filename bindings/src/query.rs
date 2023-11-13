@@ -17,7 +17,7 @@ pub enum ElysQuery {
         token_in: Coin,
     },
     // Define OracleQuery
-    #[returns(AllPriceResponse)]
+    #[returns(OraclePriceAllResponse)]
     OraclePriceAll { pagination: PageRequest },
     #[returns(OracleAssetInfoResponse)]
     OracleAssetInfo { denom: String },
@@ -26,10 +26,10 @@ pub enum ElysQuery {
 impl CustomQuery for ElysQuery {}
 
 impl ElysQuery {
-    pub fn swap_estimation(routes: Vec<SwapAmountInRoute>, token_in: Coin) -> Self {
+    pub fn amm_swap_estimation(routes: Vec<SwapAmountInRoute>, token_in: Coin) -> Self {
         Self::AmmSwapEstimation { routes, token_in }
     }
-    pub fn get_all_prices(pagination: PageRequest) -> Self {
+    pub fn oracle_get_all_prices(pagination: PageRequest) -> Self {
         Self::OraclePriceAll { pagination }
     }
     pub fn asset_info(denom: String) -> Self {
