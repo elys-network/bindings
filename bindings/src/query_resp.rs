@@ -10,7 +10,7 @@ pub struct AllPriceResponse {
 }
 
 #[cw_serde]
-pub struct QuerySwapEstimationResponse {
+pub struct AmmSwapEstimationResponse {
     pub spot_price: Decimal,
     pub token_out: Coin,
 }

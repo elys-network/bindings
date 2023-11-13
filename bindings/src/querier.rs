@@ -32,12 +32,12 @@ impl<'a> ElysQuerier<'a> {
         &self,
         routes: &Vec<SwapAmountInRoute>,
         token_in: &Coin,
-    ) -> StdResult<QuerySwapEstimationResponse> {
+    ) -> StdResult<AmmSwapEstimationResponse> {
         let request = QueryRequest::Custom(ElysQuery::swap_estimation(
             routes.to_owned(),
             token_in.to_owned(),
         ));
-        let resp: QuerySwapEstimationResponse = self.querier.query(&request)?;
+        let resp: AmmSwapEstimationResponse = self.querier.query(&request)?;
         Ok(resp)
     }
     pub fn asset_info(&self, denom: String) -> StdResult<OracleAssetInfoResponse> {

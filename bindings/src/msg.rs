@@ -4,19 +4,7 @@ use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg, Decimal, Int128};
 use crate::types::{MarginPosition, SwapAmountInRoute};
 
 #[cw_serde]
-pub enum AmmMsg {
-    MsgSwapExactAmountIn {
-        sender: String,
-        routes: Vec<SwapAmountInRoute>,
-        token_in: Coin,
-        token_out_min_amount: Int128,
-        meta_data: Option<Binary>,
-    },
-}
-
-#[cw_serde]
-
-pub enum MarginMsg {
+pub enum ElysMsg {
     MsgOpen {
         creator: String,
         collateral_asset: String,
@@ -32,15 +20,16 @@ pub enum MarginMsg {
         id: u64,
         meta_data: Option<Binary>,
     },
+    MsgSwapExactAmountIn {
+        sender: String,
+        routes: Vec<SwapAmountInRoute>,
+        token_in: Coin,
+        token_out_min_amount: Int128,
+        meta_data: Option<Binary>,
+    },
 }
 
-#[cw_serde]
-pub enum ElysMsg {
-    Amm(AmmMsg),
-    Margin(MarginMsg),
-}
-
-impl AmmMsg {
+impl ElysMsg {
     pub fn swap_exact_amount_in(
         sender: &str,
         token_in: &Coin,
@@ -56,9 +45,7 @@ impl AmmMsg {
             meta_data,
         }
     }
-}
 
-impl MarginMsg {
     pub fn open_position(
         creator: impl Into<String>,
         collateral_asset: impl Into<String>,
