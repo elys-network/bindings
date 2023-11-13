@@ -15,7 +15,7 @@ impl<'a> ElysQuerier<'a> {
         ElysQuerier { querier }
     }
     pub fn get_all_prices(&self, pagination: &mut PageRequest) -> StdResult<Vec<Coin>> {
-        let prices_query = ElysQuery::Oracle(OracleQuery::get_all_prices(pagination.clone()));
+        let prices_query = ElysQuery::get_all_prices(pagination.clone());
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(prices_query);
 
         let resp: AllPriceResponse = self.querier.query(&request)?;
@@ -33,15 +33,15 @@ impl<'a> ElysQuerier<'a> {
         routes: &Vec<SwapAmountInRoute>,
         token_in: &Coin,
     ) -> StdResult<QuerySwapEstimationResponse> {
-        let request = QueryRequest::Custom(ElysQuery::Amm(AmmQuery::swap_estimation(
+        let request = QueryRequest::Custom(ElysQuery::swap_estimation(
             routes.to_owned(),
             token_in.to_owned(),
-        )));
+        ));
         let resp: QuerySwapEstimationResponse = self.querier.query(&request)?;
         Ok(resp)
     }
     pub fn asset_info(&self, denom: String) -> StdResult<OracleAssetInfoResponse> {
-        let request = QueryRequest::Custom(ElysQuery::Oracle(OracleQuery::asset_info(denom)));
+        let request = QueryRequest::Custom(ElysQuery::asset_info(denom));
         let resp: OracleAssetInfoResponse = self.querier.query(&request)?;
         Ok(resp)
     }

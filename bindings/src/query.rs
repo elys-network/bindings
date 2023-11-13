@@ -9,44 +9,40 @@ use cosmwasm_std::{Coin, CustomQuery};
 // Define OracleQuery
 #[cw_serde]
 #[derive(QueryResponses)]
-pub enum OracleQuery {
+pub enum OracleQuery {}
+
+// Define AmmQuery
+#[cw_serde]
+pub enum AmmQuery {}
+
+// Now define ElysQuery to include the new OracleQuery and AmmQuery
+#[cw_serde]
+#[derive(QueryResponses)]
+pub enum ElysQuery {
+    #[returns(QuerySwapEstimationResponse)]
+    QuerySwapEstimation {
+        routes: Vec<SwapAmountInRoute>,
+        token_in: Coin,
+    },
     #[returns(AllPriceResponse)]
     PriceAll { pagination: PageRequest },
     #[returns(OracleAssetInfoResponse)]
     OracleAssetInfo { denom: String },
 }
 
-impl OracleQuery {
+impl CustomQuery for ElysQuery {}
+
+impl ElysQuery {
+    pub fn swap_estimation(routes: Vec<SwapAmountInRoute>, token_in: Coin) -> Self {
+        ElysQuery::QuerySwapEstimation { routes, token_in }
+    }
+}
+
+impl ElysQuery {
     pub fn get_all_prices(pagination: PageRequest) -> Self {
-        OracleQuery::PriceAll { pagination }
+        ElysQuery::PriceAll { pagination }
     }
     pub fn asset_info(denom: String) -> Self {
-        OracleQuery::OracleAssetInfo { denom }
+        ElysQuery::OracleAssetInfo { denom }
     }
 }
-
-// Define AmmQuery
-#[cw_serde]
-#[derive(QueryResponses)]
-pub enum AmmQuery {
-    #[returns(QuerySwapEstimationResponse)]
-    QuerySwapEstimation {
-        routes: Vec<SwapAmountInRoute>,
-        token_in: Coin,
-    },
-}
-
-impl AmmQuery {
-    pub fn swap_estimation(routes: Vec<SwapAmountInRoute>, token_in: Coin) -> Self {
-        AmmQuery::QuerySwapEstimation { routes, token_in }
-    }
-}
-
-// Now define ElysQuery to include the new OracleQuery and AmmQuery
-#[cw_serde]
-pub enum ElysQuery {
-    Oracle(OracleQuery),
-    Amm(AmmQuery),
-}
-
-impl CustomQuery for ElysQuery {}
