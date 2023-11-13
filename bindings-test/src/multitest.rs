@@ -13,13 +13,13 @@ use cw_storage_plus::Item;
 use elys_bindings::{
     msg_resp::{MsgCloseResponse, MsgOpenResponse, MsgSwapExactAmountInResp},
     query_resp::QuerySwapEstimationResponse,
-    types::{AssetInfo, MarginOrder, MarginPosition, Price},
+    types::{MarginOrder, MarginPosition, OracleAssetInfo, Price},
     AmmMsg, AmmQuery, ElysMsg, ElysQuery, MarginMsg, OracleQuery,
 };
 use std::cmp::max;
 
 pub const PRICES: Item<Vec<Price>> = Item::new("prices");
-pub const ASSET_INFO: Item<Vec<AssetInfo>> = Item::new("asset_info");
+pub const ASSET_INFO: Item<Vec<OracleAssetInfo>> = Item::new("asset_info");
 pub const BLOCK_TIME: u64 = 5;
 pub const MARGIN_OPENED_POSITION: Item<Vec<MarginOrder>> = Item::new("margin_opened_position");
 pub const LAST_MODULE_USED: Item<Option<String>> = Item::new("last_module_used");
@@ -53,7 +53,7 @@ impl ElysModule {
     pub fn set_asset_infos(
         &self,
         store: &mut dyn Storage,
-        infos: &Vec<AssetInfo>,
+        infos: &Vec<OracleAssetInfo>,
     ) -> StdResult<()> {
         ASSET_INFO.save(store, infos)
     }
@@ -75,7 +75,7 @@ impl Module for ElysModule {
         match request {
             ElysQuery::Oracle(oracle_req) => match oracle_req {
                 OracleQuery::PriceAll { .. } => Ok(to_binary(&self.get_all_price(storage)?)?),
-                OracleQuery::AssetInfo { denom } => {
+                OracleQuery::OracleAssetInfo { denom } => {
                     let infos = ASSET_INFO.load(storage)?;
                     let may_have_info = infos.iter().find(|asset| asset.denom == denom);
 

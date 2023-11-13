@@ -15,7 +15,7 @@ fn main() {
     export_schema(&schema_for!(ElysQuery), &out_dir);
     export_schema(&schema_for!(AllPriceResponse), &out_dir);
     export_schema(&schema_for!(QuerySwapEstimationResponse), &out_dir);
-    export_schema(&schema_for!(AssetInfoResponse), &out_dir);
+    export_schema(&schema_for!(OracleAssetInfoResponse), &out_dir);
     export_schema(&schema_for!(MsgSwapExactAmountInResp), &out_dir);
     export_schema(&schema_for!(MsgOpenResponse), &out_dir);
     export_schema(&schema_for!(MsgCloseResponse), &out_dir);

@@ -1,7 +1,7 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal};
 
-use crate::types::{AssetInfo, PageResponse, Price};
+use crate::types::{OracleAssetInfo, PageResponse, Price};
 
 #[cw_serde]
 pub struct AllPriceResponse {
@@ -16,6 +16,6 @@ pub struct QuerySwapEstimationResponse {
 }
 
 #[cw_serde]
-pub struct AssetInfoResponse {
-    pub asset_info: AssetInfo,
+pub struct OracleAssetInfoResponse {
+    pub asset_info: OracleAssetInfo,
 }

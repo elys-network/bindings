@@ -2,7 +2,7 @@ use cosmwasm_std::{coin, coins, Addr, Coin, Decimal, Int128, StdError, Uint128};
 use cw_multi_test::Executor;
 use elys_bindings::{
     query_resp::QuerySwapEstimationResponse,
-    types::{AssetInfo, MarginPosition, PageRequest, Price, SwapAmountInRoute},
+    types::{MarginPosition, OracleAssetInfo, PageRequest, Price, SwapAmountInRoute},
     AmmMsg, AmmQuery, ElysMsg, ElysQuery, MarginMsg, OracleQuery,
 };
 
@@ -83,7 +83,7 @@ fn swap_estimation() {
 
 #[test]
 fn asset_info() {
-    let infos: Vec<AssetInfo> = vec![AssetInfo {
+    let infos: Vec<OracleAssetInfo> = vec![OracleAssetInfo {
         denom: "uatom".to_string(),
         display: "ATOM".to_string(),
         band_ticker: "ATOM".to_string(),
@@ -97,7 +97,7 @@ fn asset_info() {
 
     let req = ElysQuery::Oracle(OracleQuery::asset_info("uatom".to_string())).into();
 
-    let queried_infos: AssetInfo = app.wrap().query(&req).unwrap();
+    let queried_infos: OracleAssetInfo = app.wrap().query(&req).unwrap();
 
     assert_eq!(infos[0], queried_infos);
 }
@@ -108,7 +108,7 @@ fn asset_info_not_found() {
 
     let req = ElysQuery::Oracle(OracleQuery::asset_info("uatom".to_string())).into();
 
-    let err: StdError = app.wrap().query::<AssetInfo>(&req).unwrap_err();
+    let err: StdError = app.wrap().query::<OracleAssetInfo>(&req).unwrap_err();
 
     let error_reference = StdError::GenericErr {
         msg: format!(

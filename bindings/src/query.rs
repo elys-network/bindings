@@ -12,8 +12,8 @@ use cosmwasm_std::{Coin, CustomQuery};
 pub enum OracleQuery {
     #[returns(AllPriceResponse)]
     PriceAll { pagination: PageRequest },
-    #[returns(AssetInfoResponse)]
-    AssetInfo { denom: String },
+    #[returns(OracleAssetInfoResponse)]
+    OracleAssetInfo { denom: String },
 }
 
 impl OracleQuery {
@@ -21,7 +21,7 @@ impl OracleQuery {
         OracleQuery::PriceAll { pagination }
     }
     pub fn asset_info(denom: String) -> Self {
-        OracleQuery::AssetInfo { denom }
+        OracleQuery::OracleAssetInfo { denom }
     }
 }
 

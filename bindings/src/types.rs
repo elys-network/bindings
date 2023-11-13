@@ -8,7 +8,7 @@ use cosmwasm_std::StdError;
 use cosmwasm_std::StdResult;
 
 #[cw_serde]
-pub struct AssetInfo {
+pub struct OracleAssetInfo {
     pub denom: String,
     pub display: String,
     pub band_ticker: String,
@@ -17,7 +17,7 @@ pub struct AssetInfo {
 }
 
 #[cfg(feature = "testing")]
-impl AssetInfo {
+impl OracleAssetInfo {
     pub fn new(
         denom: String,
         display: String,
