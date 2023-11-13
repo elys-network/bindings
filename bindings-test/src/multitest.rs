@@ -105,6 +105,7 @@ impl Module for ElysModule {
                     token_out: coin(token_out_amount, &routes[0].token_out_denom),
                 })?)
             }
+            _ => unimplemented!(),
         }
     }
 

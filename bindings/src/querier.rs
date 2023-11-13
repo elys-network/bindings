@@ -46,4 +46,14 @@ impl<'a> ElysQuerier<'a> {
         let resp: OracleAssetInfoResponse = self.querier.query(&request)?;
         Ok(resp)
     }
+    pub fn mtp(&self, address: String, id: u64) -> StdResult<MTPResponse> {
+        let request = QueryRequest::Custom(ElysQuery::mtp(address, id));
+        let resp: MTPResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
+    pub fn positions(&self, pagination: PageRequest) -> StdResult<PositionsResponse> {
+        let request = QueryRequest::Custom(ElysQuery::positions(pagination));
+        let resp: PositionsResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
 }
