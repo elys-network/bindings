@@ -45,4 +45,14 @@ impl<'a> ElysQuerier<'a> {
         let resp: AssetInfoResponse = self.querier.query(&request)?;
         Ok(resp)
     }
+    pub fn mtp(&self, address: String, id: u64) -> StdResult<MTPResponse> {
+        let request = QueryRequest::Custom(ElysQuery::Margin(MarginQuery::mtp(address, id)));
+        let resp: MTPResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
+    pub fn positions(&self, pagination: PageRequest) -> StdResult<PositionsResponse> {
+        let request = QueryRequest::Custom(ElysQuery::Margin(MarginQuery::positions(pagination)));
+        let resp: PositionsResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
 }

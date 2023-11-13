@@ -51,7 +51,19 @@ pub enum MarginQuery {
     MTP { address: String, id: u64 },
 }
 
-// Now define ElysQuery to include the new OracleQuery and AmmQuery
+impl MarginQuery {
+    pub fn mtp(address: impl Into<String>, id: u64) -> Self {
+        Self::MTP {
+            address: address.into(),
+            id,
+        }
+    }
+    pub fn positions(pagination: PageRequest) -> Self {
+        Self::Positions { pagination }
+    }
+}
+
+// Now define ElysQuery to include the new OracleQuery, AmmQuery, and MarginQuery
 #[cw_serde]
 pub enum ElysQuery {
     Oracle(OracleQuery),
