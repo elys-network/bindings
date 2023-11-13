@@ -109,6 +109,10 @@ impl Module for ElysModule {
                     })?)
                 }
             },
+            ElysQuery::Margin(margin_req) => match margin_req {
+                elys_bindings::MarginQuery::Positions { .. } => todo!(),
+                elys_bindings::MarginQuery::MTP { address, id } => todo!(),
+            },
         }
     }
 
