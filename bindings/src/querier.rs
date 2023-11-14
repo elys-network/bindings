@@ -3,7 +3,7 @@ use cosmwasm_std::{coin, Coin, QuerierWrapper, QueryRequest, StdResult};
 use crate::{
     query::*,
     query_resp::*,
-    types::{PageRequest, SwapAmountInRoute},
+    types::{PageRequest, Price, SwapAmountInRoute},
 };
 
 pub struct ElysQuerier<'a> {
@@ -14,19 +14,15 @@ impl<'a> ElysQuerier<'a> {
     pub fn new(querier: &'a QuerierWrapper<'a, ElysQuery>) -> Self {
         ElysQuerier { querier }
     }
-    pub fn oracle_get_all_prices(&self, pagination: &mut PageRequest) -> StdResult<Vec<Coin>> {
+    pub fn oracle_get_all_prices(&self, pagination: &mut PageRequest) -> StdResult<Vec<Price>> {
         let prices_query = ElysQuery::oracle_get_all_prices(pagination.clone());
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(prices_query);
 
         let resp: OracleAllPriceResponse = self.querier.query(&request)?;
 
         pagination.update(resp.pagination.next_key);
-        let result: Vec<Coin> = resp
-            .price
-            .iter()
-            .map(|price| coin(price.price.atomics().u128(), &price.asset))
-            .collect();
-        Ok(result)
+
+        Ok(resp.price)
     }
     pub fn amm_swap_estimation(
         &self,
