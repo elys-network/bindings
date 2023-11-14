@@ -14,16 +14,16 @@ impl<'a> ElysQuerier<'a> {
     pub fn new(querier: &'a QuerierWrapper<'a, ElysQuery>) -> Self {
         ElysQuerier { querier }
     }
-    pub fn oracle_get_all_prices(&self, pagination: &mut PageRequest) -> StdResult<Vec<Price>> {
+    pub fn oracle_get_all_prices(&self, pagination: &mut PageRequest) -> StdResult<Value> {
         let prices_query = ElysQuery::oracle_get_all_prices(pagination.clone());
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(prices_query);
 
         let resp: Value = self.querier.query(&request)?;
 
-        panic!("{resp:?}")
+        // panic!("{resp:?}")
         // pagination.update(resp.pagination.next_key);
 
-        // Ok(resp.price)
+        Ok(resp)
     }
     pub fn amm_swap_estimation(
         &self,
