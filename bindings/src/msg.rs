@@ -1,5 +1,5 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg, Decimal, Int128};
+use cosmwasm_std::{Coin, CosmosMsg, CustomMsg, Decimal, Int128};
 
 use crate::types::{MarginPosition, SwapAmountInRoute};
 
@@ -13,19 +13,16 @@ pub enum ElysMsg {
         position: i32,
         leverage: Decimal,
         take_profit_price: Decimal,
-        meta_data: Option<Binary>,
     },
     MarginClose {
         creator: String,
         id: u64,
-        meta_data: Option<Binary>,
     },
     AmmSwapExactAmountIn {
         sender: String,
         routes: Vec<SwapAmountInRoute>,
         token_in: Coin,
         token_out_min_amount: Int128,
-        meta_data: Option<Binary>,
     },
 }
 
@@ -35,14 +32,12 @@ impl ElysMsg {
         token_in: &Coin,
         token_route: &Vec<SwapAmountInRoute>,
         token_out_min_amount: Int128,
-        meta_data: Option<Binary>,
     ) -> Self {
         Self::AmmSwapExactAmountIn {
             sender: sender.to_owned(),
             routes: token_route.to_owned(),
             token_in: token_in.to_owned(),
             token_out_min_amount,
-            meta_data,
         }
     }
 
@@ -54,7 +49,6 @@ impl ElysMsg {
         position: MarginPosition,
         leverage: Decimal,
         take_profit_price: Decimal,
-        meta_data: Option<Binary>,
     ) -> Self {
         Self::MarginOpen {
             creator: creator.into(),
@@ -64,19 +58,13 @@ impl ElysMsg {
             position: position as i32,
             leverage,
             take_profit_price,
-            meta_data,
         }
     }
 
-    pub fn margin_close_position(
-        creator: impl Into<String>,
-        id: u64,
-        meta_data: Option<Binary>,
-    ) -> Self {
+    pub fn margin_close_position(creator: impl Into<String>, id: u64) -> Self {
         Self::MarginClose {
             creator: creator.into(),
             id,
-            meta_data,
         }
     }
 }

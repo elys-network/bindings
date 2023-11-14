@@ -32,7 +32,7 @@ impl ElysQuery {
     pub fn oracle_get_all_prices(pagination: PageRequest) -> Self {
         Self::OraclePriceAll { pagination }
     }
-    pub fn asset_info(denom: String) -> Self {
+    pub fn oracle_asset_info(denom: String) -> Self {
         Self::OracleAssetInfo { denom }
     }
 }

@@ -95,7 +95,7 @@ fn asset_info() {
     app.init_modules(|router, _, storage| router.custom.set_asset_infos(storage, &infos))
         .unwrap();
 
-    let req = ElysQuery::asset_info("uatom".to_string()).into();
+    let req = ElysQuery::oracle_asset_info("uatom".to_string()).into();
 
     let queried_infos: OracleAssetInfo = app.wrap().query(&req).unwrap();
 
@@ -106,7 +106,7 @@ fn asset_info() {
 fn asset_info_not_found() {
     let app = ElysApp::new();
 
-    let req = ElysQuery::asset_info("uatom".to_string()).into();
+    let req = ElysQuery::oracle_asset_info("uatom".to_string()).into();
 
     let err: StdError = app.wrap().query::<OracleAssetInfo>(&req).unwrap_err();
 
@@ -139,8 +139,7 @@ fn swap() {
         token_out_denom: "usdc".to_string(),
     }];
 
-    let msg =
-        ElysMsg::amm_swap_exact_amount_in("user", &coin(5, "btc"), &routes, Int128::zero(), None);
+    let msg = ElysMsg::amm_swap_exact_amount_in("user", &coin(5, "btc"), &routes, Int128::zero());
 
     assert_eq!(
         app.wrap()
@@ -197,13 +196,8 @@ fn swap_error() {
         token_out_denom: "usdc".to_string(),
     }];
 
-    let msg = ElysMsg::amm_swap_exact_amount_in(
-        "user",
-        &coin(5, "btc"),
-        &routes,
-        Int128::new(100002),
-        None,
-    );
+    let msg =
+        ElysMsg::amm_swap_exact_amount_in("user", &coin(5, "btc"), &routes, Int128::new(100002));
 
     assert_eq!(
         app.wrap()
@@ -262,7 +256,6 @@ fn open_margin_position() {
         MarginPosition::Unspecified,
         Decimal::from_atomics(Uint128::new(25), 1).unwrap(),
         Decimal::from_atomics(Uint128::new(11), 1).unwrap(),
-        None,
     );
 
     assert_eq!(
@@ -307,7 +300,6 @@ fn margin_margin_close_position() {
         MarginPosition::Unspecified,
         Decimal::from_atomics(Uint128::new(25), 1).unwrap(),
         Decimal::from_atomics(Uint128::new(11), 1).unwrap(),
-        None,
     );
 
     assert_eq!(
@@ -338,7 +330,7 @@ fn margin_margin_close_position() {
 
     assert_eq!(last_module_used, "MarginOpen");
 
-    let close_msg = ElysMsg::margin_close_position("user", 0, None);
+    let close_msg = ElysMsg::margin_close_position("user", 0);
 
     app.execute(Addr::unchecked("user"), close_msg.into())
         .unwrap();

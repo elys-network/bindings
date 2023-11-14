@@ -132,7 +132,6 @@ impl Module for ElysModule {
                 routes,
                 token_in,
                 token_out_min_amount,
-                meta_data,
             } => {
                 LAST_MODULE_USED.save(storage, &Some("AmmSwap".to_string()))?;
                 let route = routes[0].clone();
@@ -154,8 +153,6 @@ impl Module for ElysModule {
 
                 let data = to_binary(&AmmSwapExactAmountInResp {
                     token_out_amount: Int64::new(mint_amount[0].amount.u128() as i64),
-
-                    meta_data,
                 })?;
 
                 let mint = BankSudo::Mint {
@@ -191,7 +188,6 @@ impl Module for ElysModule {
                 position,
                 leverage,
                 take_profit_price,
-                meta_data,
             } => {
                 LAST_MODULE_USED.save(storage, &Some("MarginOpen".to_string()))?;
                 let mut order_vec = MARGIN_OPENED_POSITION.load(storage)?;
@@ -217,10 +213,7 @@ impl Module for ElysModule {
                     take_profit_price,
                 };
 
-                let msg_resp = MarginOpenResponse {
-                    id: order_id,
-                    meta_data,
-                };
+                let msg_resp = MarginOpenResponse { id: order_id };
 
                 let resp = AppResponse {
                     events: vec![],
@@ -239,7 +232,7 @@ impl Module for ElysModule {
                 Ok(resp)
             }
 
-            ElysMsg::MarginClose { id, meta_data, .. } => {
+            ElysMsg::MarginClose { id, .. } => {
                 LAST_MODULE_USED.save(storage, &Some("MarginClose".to_string()))?;
                 let orders: Vec<MarginOrder> = MARGIN_OPENED_POSITION.load(storage)?;
 
@@ -250,7 +243,7 @@ impl Module for ElysModule {
 
                 MARGIN_OPENED_POSITION.save(storage, &new_orders)?;
 
-                let data = Some(to_binary(&MarginCloseResponse { id, meta_data })?);
+                let data = Some(to_binary(&MarginCloseResponse { id })?);
 
                 Ok(AppResponse {
                     events: vec![],

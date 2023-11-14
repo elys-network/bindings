@@ -41,7 +41,7 @@ impl<'a> ElysQuerier<'a> {
         Ok(resp)
     }
     pub fn asset_info(&self, denom: String) -> StdResult<OracleAssetInfoResponse> {
-        let request = QueryRequest::Custom(ElysQuery::asset_info(denom));
+        let request = QueryRequest::Custom(ElysQuery::oracle_asset_info(denom));
         let resp: OracleAssetInfoResponse = self.querier.query(&request)?;
         Ok(resp)
     }
