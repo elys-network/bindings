@@ -5,7 +5,7 @@ use crate::types::{OracleAssetInfo, PageResponse, Price};
 
 #[cw_serde]
 pub struct OracleAllPriceResponse {
-    pub price: Vec<Price>,
+    pub price: Option<Vec<Price>>,
     pub pagination: PageResponse,
 }
 
