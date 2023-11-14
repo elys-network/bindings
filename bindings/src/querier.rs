@@ -20,29 +20,17 @@ impl<'a> ElysQuerier<'a> {
     pub fn oracle_get_all_prices(&self, pagination: &mut PageRequest) -> StdResult<Vec<Price>> {
         let prices_query = ElysQuery::oracle_get_all_prices(pagination.clone());
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(prices_query);
-        // let raw = to_json_vec(&request).map_err(|serialize_err| {
-        //     StdError::generic_err(format!("Serializing QueryRequest: {serialize_err}"))
-        // })?;
 
         let resp: OracleAllPriceResponse = self.querier.query(&request)?;
 
-        // let v = match self.querier.raw_query(&raw) {
-        //     SystemResult::Err(system_err) => {
-        //         return Err(StdError::generic_err(format!(
-        //             "Querier system error: {system_err}"
-        //         )))
-        //     }
-        //     SystemResult::Ok(ContractResult::Err(contract_err)) => {
-        //         return Err(StdError::generic_err(format!(
-        //             "Querier contract error: {contract_err}"
-        //         )))
-        //     }
-        //     SystemResult::Ok(ContractResult::Ok(value)) => value,
-        // };
+        pagination.update(resp.pagination.next_key);
 
-        // pagination.update(resp.pagination.next_key);
+        let prices = match resp.price {
+            Some(prices) => prices,
+            None => vec![],
+        };
 
-        Ok(vec![])
+        Ok(prices)
     }
     pub fn amm_swap_estimation(
         &self,
