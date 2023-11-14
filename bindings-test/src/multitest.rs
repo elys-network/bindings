@@ -73,7 +73,7 @@ impl Module for ElysModule {
         request: Self::QueryT,
     ) -> AnyResult<cosmwasm_std::Binary> {
         match request {
-            ElysQuery::OracleAllPrice { .. } => Ok(to_json_binary(&self.get_all_price(storage)?)?),
+            ElysQuery::OraclePriceAll { .. } => Ok(to_json_binary(&self.get_all_price(storage)?)?),
             ElysQuery::OracleAssetInfo { denom } => {
                 let infos = ASSET_INFO.load(storage)?;
                 let may_have_info = infos.iter().find(|asset| asset.denom == denom);
