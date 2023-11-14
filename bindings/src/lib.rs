@@ -6,7 +6,6 @@ pub mod query_resp;
 #[cfg(test)]
 mod test;
 
-#[allow(deprecated)]
 pub mod types;
 
 pub use msg::*;

@@ -5,8 +5,8 @@ use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
     coin, coins,
     testing::{MockApi, MockStorage},
-    to_binary, Addr, BankMsg, BlockInfo, Coin, Decimal, Empty, Int64, Querier, StdError, StdResult,
-    Storage,
+    to_json_binary, Addr, BankMsg, BlockInfo, Coin, Decimal, Empty, Int64, Querier, StdError,
+    StdResult, Storage,
 };
 use cw_multi_test::{App, AppResponse, BankKeeper, BankSudo, BasicAppBuilder, Module, WasmKeeper};
 use cw_storage_plus::Item;
@@ -73,13 +73,13 @@ impl Module for ElysModule {
         request: Self::QueryT,
     ) -> AnyResult<cosmwasm_std::Binary> {
         match request {
-            ElysQuery::OraclePriceAll { .. } => Ok(to_binary(&self.get_all_price(storage)?)?),
+            ElysQuery::OraclePriceAll { .. } => Ok(to_json_binary(&self.get_all_price(storage)?)?),
             ElysQuery::OracleAssetInfo { denom } => {
                 let infos = ASSET_INFO.load(storage)?;
                 let may_have_info = infos.iter().find(|asset| asset.denom == denom);
 
                 match may_have_info {
-                    Some(info) => Ok(to_binary(info)?),
+                    Some(info) => Ok(to_json_binary(info)?),
                     None => Err(Error::new(StdError::not_found("asset denom"))),
                 }
             }
@@ -100,7 +100,7 @@ impl Module for ElysModule {
                         .atomics()
                         .u128();
 
-                Ok(to_binary(&AmmSwapEstimationResponse {
+                Ok(to_json_binary(&AmmSwapEstimationResponse {
                     spot_price,
                     token_out: coin(token_out_amount, &routes[0].token_out_denom),
                 })?)
@@ -151,7 +151,7 @@ impl Module for ElysModule {
                     return Err(Error::new(StdError::generic_err("not enough token")));
                 }
 
-                let data = to_binary(&AmmSwapExactAmountInResp {
+                let data = to_json_binary(&AmmSwapExactAmountInResp {
                     token_out_amount: Int64::new(mint_amount[0].amount.u128() as i64),
                 })?;
 
@@ -217,7 +217,7 @@ impl Module for ElysModule {
 
                 let resp = AppResponse {
                     events: vec![],
-                    data: Some(to_binary(&msg_resp)?),
+                    data: Some(to_json_binary(&msg_resp)?),
                 };
 
                 order_vec.push(order);
@@ -243,7 +243,7 @@ impl Module for ElysModule {
 
                 MARGIN_OPENED_POSITION.save(storage, &new_orders)?;
 
-                let data = Some(to_binary(&MarginCloseResponse { id })?);
+                let data = Some(to_json_binary(&MarginCloseResponse { id })?);
 
                 Ok(AppResponse {
                     events: vec![],
