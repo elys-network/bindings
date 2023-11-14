@@ -4,7 +4,7 @@ use cosmwasm_std::{Coin, Decimal};
 use crate::types::{OracleAssetInfo, PageResponse, Price};
 
 #[cw_serde]
-pub struct OraclePriceAllResponse {
+pub struct OracleAllPriceResponse {
     pub price: Vec<Price>,
     pub pagination: PageResponse,
 }

@@ -18,7 +18,7 @@ impl<'a> ElysQuerier<'a> {
         let prices_query = ElysQuery::oracle_get_all_prices(pagination.clone());
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(prices_query);
 
-        let resp: OraclePriceAllResponse = self.querier.query(&request)?;
+        let resp: OracleAllPriceResponse = self.querier.query(&request)?;
 
         pagination.update(resp.pagination.next_key);
         let result: Vec<Coin> = resp

@@ -13,7 +13,7 @@ fn main() {
 
     export_schema(&schema_for!(ElysMsg), &out_dir);
     export_schema(&schema_for!(ElysQuery), &out_dir);
-    export_schema(&schema_for!(OraclePriceAllResponse), &out_dir);
+    export_schema(&schema_for!(OracleAllPriceResponse), &out_dir);
     export_schema(&schema_for!(AmmSwapEstimationResponse), &out_dir);
     export_schema(&schema_for!(OracleAssetInfoResponse), &out_dir);
     export_schema(&schema_for!(AmmSwapExactAmountInResp), &out_dir);
