@@ -1,10 +1,10 @@
-use cosmwasm_std::{coin, Coin, QuerierWrapper, QueryRequest, StdResult};
-
 use crate::{
     query::*,
     query_resp::*,
     types::{PageRequest, Price, SwapAmountInRoute},
 };
+use cosmwasm_std::{coin, Coin, QuerierWrapper, QueryRequest, StdResult};
+use serde_json::Value;
 
 pub struct ElysQuerier<'a> {
     querier: &'a QuerierWrapper<'a, ElysQuery>,
@@ -18,11 +18,12 @@ impl<'a> ElysQuerier<'a> {
         let prices_query = ElysQuery::oracle_get_all_prices(pagination.clone());
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(prices_query);
 
-        let resp: OracleAllPriceResponse = self.querier.query(&request)?;
+        let resp: Value = self.querier.query(&request)?;
 
-        pagination.update(resp.pagination.next_key);
+        panic!("{resp:?}")
+        // pagination.update(resp.pagination.next_key);
 
-        Ok(resp.price)
+        // Ok(resp.price)
     }
     pub fn amm_swap_estimation(
         &self,
