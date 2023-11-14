@@ -5,21 +5,21 @@ use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
     coin, coins,
     testing::{MockApi, MockStorage},
-    to_binary, Addr, BankMsg, BlockInfo, Coin, Decimal, Empty, Int64, Querier, StdError, StdResult,
-    Storage,
+    to_json_binary, Addr, BankMsg, BlockInfo, Coin, Decimal, Empty, Int64, Querier, StdError,
+    StdResult, Storage,
 };
 use cw_multi_test::{App, AppResponse, BankKeeper, BankSudo, BasicAppBuilder, Module, WasmKeeper};
 use cw_storage_plus::Item;
 use elys_bindings::{
-    msg_resp::{MsgCloseResponse, MsgOpenResponse, MsgSwapExactAmountInResp},
-    query_resp::QuerySwapEstimationResponse,
-    types::{AssetInfo, MarginOrder, MarginPosition, Price},
-    AmmMsg, AmmQuery, ElysMsg, ElysQuery, MarginMsg, OracleQuery,
+    msg_resp::{AmmSwapExactAmountInResp, MarginCloseResponse, MarginOpenResponse},
+    query_resp::AmmSwapEstimationResponse,
+    types::{MarginOrder, MarginPosition, OracleAssetInfo, Price},
+    ElysMsg, ElysQuery,
 };
 use std::cmp::max;
 
 pub const PRICES: Item<Vec<Price>> = Item::new("prices");
-pub const ASSET_INFO: Item<Vec<AssetInfo>> = Item::new("asset_info");
+pub const ASSET_INFO: Item<Vec<OracleAssetInfo>> = Item::new("asset_info");
 pub const BLOCK_TIME: u64 = 5;
 pub const MARGIN_OPENED_POSITION: Item<Vec<MarginOrder>> = Item::new("margin_opened_position");
 pub const LAST_MODULE_USED: Item<Option<String>> = Item::new("last_module_used");
@@ -53,7 +53,7 @@ impl ElysModule {
     pub fn set_asset_infos(
         &self,
         store: &mut dyn Storage,
-        infos: &Vec<AssetInfo>,
+        infos: &Vec<OracleAssetInfo>,
     ) -> StdResult<()> {
         ASSET_INFO.save(store, infos)
     }
@@ -73,42 +73,38 @@ impl Module for ElysModule {
         request: Self::QueryT,
     ) -> AnyResult<cosmwasm_std::Binary> {
         match request {
-            ElysQuery::Oracle(oracle_req) => match oracle_req {
-                OracleQuery::PriceAll { .. } => Ok(to_binary(&self.get_all_price(storage)?)?),
-                OracleQuery::AssetInfo { denom } => {
-                    let infos = ASSET_INFO.load(storage)?;
-                    let may_have_info = infos.iter().find(|asset| asset.denom == denom);
+            ElysQuery::OraclePriceAll { .. } => Ok(to_json_binary(&self.get_all_price(storage)?)?),
+            ElysQuery::OracleAssetInfo { denom } => {
+                let infos = ASSET_INFO.load(storage)?;
+                let may_have_info = infos.iter().find(|asset| asset.denom == denom);
 
-                    match may_have_info {
-                        Some(info) => Ok(to_binary(info)?),
-                        None => Err(Error::new(StdError::not_found("asset denom"))),
-                    }
+                match may_have_info {
+                    Some(info) => Ok(to_json_binary(info)?),
+                    None => Err(Error::new(StdError::not_found("asset denom"))),
                 }
-            },
-            ElysQuery::Amm(amm_req) => match amm_req {
-                AmmQuery::QuerySwapEstimation { routes, token_in } => {
-                    let prices = &self.get_all_price(storage)?;
-                    let price_in = prices
-                        .iter()
-                        .find(|price| price.asset == token_in.denom)
-                        .unwrap();
-                    let price_out = prices
-                        .iter()
-                        .find(|price| price.asset == routes[0].token_out_denom)
-                        .unwrap();
-                    let spot_price = price_in.price / price_out.price;
-                    let token_out_amount =
-                        (Decimal::from_atomics(token_in.amount, spot_price.decimal_places())?
-                            * spot_price)
-                            .atomics()
-                            .u128();
+            }
+            ElysQuery::AmmSwapEstimation { routes, token_in } => {
+                let prices = &self.get_all_price(storage)?;
+                let price_in = prices
+                    .iter()
+                    .find(|price| price.asset == token_in.denom)
+                    .unwrap();
+                let price_out = prices
+                    .iter()
+                    .find(|price| price.asset == routes[0].token_out_denom)
+                    .unwrap();
+                let spot_price = price_in.price / price_out.price;
+                let token_out_amount =
+                    (Decimal::from_atomics(token_in.amount, spot_price.decimal_places())?
+                        * spot_price)
+                        .atomics()
+                        .u128();
 
-                    Ok(to_binary(&QuerySwapEstimationResponse {
-                        spot_price,
-                        token_out: coin(token_out_amount, &routes[0].token_out_denom),
-                    })?)
-                }
-            },
+                Ok(to_json_binary(&AmmSwapEstimationResponse {
+                    spot_price,
+                    token_out: coin(token_out_amount, &routes[0].token_out_denom),
+                })?)
+            }
         }
     }
 
@@ -131,139 +127,129 @@ impl Module for ElysModule {
         QueryC: cosmwasm_std::CustomQuery + serde::de::DeserializeOwned + 'static,
     {
         match msg {
-            ElysMsg::Amm(amm_msg) => match amm_msg {
-                AmmMsg::MsgSwapExactAmountIn {
-                    sender,
-                    routes,
-                    token_in,
-                    token_out_min_amount,
-                    meta_data,
-                } => {
-                    LAST_MODULE_USED.save(storage, &Some("AmmSwap".to_string()))?;
-                    let route = routes[0].clone();
-                    let prices = self.get_all_price(storage)?;
-                    let price_in = prices.iter().find(|p| p.asset == token_in.denom).unwrap();
-                    let price_out = prices
-                        .iter()
-                        .find(|p| p.asset == route.token_out_denom)
-                        .unwrap();
+            ElysMsg::AmmSwapExactAmountIn {
+                sender,
+                routes,
+                token_in,
+                token_out_min_amount,
+            } => {
+                LAST_MODULE_USED.save(storage, &Some("AmmSwap".to_string()))?;
+                let route = routes[0].clone();
+                let prices = self.get_all_price(storage)?;
+                let price_in = prices.iter().find(|p| p.asset == token_in.denom).unwrap();
+                let price_out = prices
+                    .iter()
+                    .find(|p| p.asset == route.token_out_denom)
+                    .unwrap();
 
-                    let mint_amount = coins(
-                        (token_in.amount * (price_in.price / price_out.price)).u128(),
-                        route.token_out_denom,
-                    );
+                let mint_amount = coins(
+                    (token_in.amount * (price_in.price / price_out.price)).u128(),
+                    route.token_out_denom,
+                );
 
-                    if mint_amount[0].amount.u128() as i128 <= token_out_min_amount.i128() {
-                        return Err(Error::new(StdError::generic_err("not enough token")));
-                    }
-
-                    let data = to_binary(&MsgSwapExactAmountInResp {
-                        token_out_amount: Int64::new(mint_amount[0].amount.u128() as i64),
-
-                        meta_data,
-                    })?;
-
-                    let mint = BankSudo::Mint {
-                        to_address: sender.clone(),
-                        amount: mint_amount.clone(),
-                    };
-
-                    let burn = BankMsg::Burn {
-                        amount: vec![token_in],
-                    };
-                    router
-                        .execute(
-                            api,
-                            storage,
-                            block,
-                            Addr::unchecked(sender.clone()),
-                            burn.into(),
-                        )
-                        .unwrap();
-                    router.sudo(api, storage, block, mint.into()).unwrap();
-
-                    Ok(AppResponse {
-                        events: vec![],
-                        data: Some(data),
-                    })
+                if mint_amount[0].amount.u128() as i128 <= token_out_min_amount.i128() {
+                    return Err(Error::new(StdError::generic_err("not enough token")));
                 }
-            },
-            ElysMsg::Margin(margin_msg) => match margin_msg {
-                MarginMsg::MsgOpen {
+
+                let data = to_json_binary(&AmmSwapExactAmountInResp {
+                    token_out_amount: Int64::new(mint_amount[0].amount.u128() as i64),
+                })?;
+
+                let mint = BankSudo::Mint {
+                    to_address: sender.clone(),
+                    amount: mint_amount.clone(),
+                };
+
+                let burn = BankMsg::Burn {
+                    amount: vec![token_in],
+                };
+                router
+                    .execute(
+                        api,
+                        storage,
+                        block,
+                        Addr::unchecked(sender.clone()),
+                        burn.into(),
+                    )
+                    .unwrap();
+                router.sudo(api, storage, block, mint.into()).unwrap();
+
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
+
+            ElysMsg::MarginOpen {
+                creator,
+                collateral_asset,
+                collateral_amount,
+                borrow_asset,
+                position,
+                leverage,
+                take_profit_price,
+            } => {
+                LAST_MODULE_USED.save(storage, &Some("MarginOpen".to_string()))?;
+                let mut order_vec = MARGIN_OPENED_POSITION.load(storage)?;
+
+                let order_id: u64 = match order_vec.iter().max_by_key(|s| s.order_id) {
+                    Some(x) => x.order_id + 1,
+                    None => 0,
+                };
+                let collateral = coin(collateral_amount.i128() as u128, collateral_asset);
+
+                let borrow_token = Coin {
+                    denom: borrow_asset,
+                    amount: leverage * collateral.amount,
+                };
+
+                let order: MarginOrder = MarginOrder {
+                    order_id,
+                    position: MarginPosition::try_from_i32(position).unwrap(),
+                    collateral: collateral.clone(),
+                    borrow_token,
                     creator,
-                    collateral_asset,
-                    collateral_amount,
-                    borrow_asset,
-                    position,
                     leverage,
                     take_profit_price,
-                    meta_data,
-                } => {
-                    LAST_MODULE_USED.save(storage, &Some("MsgOpen".to_string()))?;
-                    let mut order_vec = MARGIN_OPENED_POSITION.load(storage)?;
+                };
 
-                    let order_id: u64 = match order_vec.iter().max_by_key(|s| s.order_id) {
-                        Some(x) => x.order_id + 1,
-                        None => 0,
-                    };
-                    let collateral = coin(collateral_amount.i128() as u128, collateral_asset);
+                let msg_resp = MarginOpenResponse { id: order_id };
 
-                    let borrow_token = Coin {
-                        denom: borrow_asset,
-                        amount: leverage * collateral.amount,
-                    };
+                let resp = AppResponse {
+                    events: vec![],
+                    data: Some(to_json_binary(&msg_resp)?),
+                };
 
-                    let order: MarginOrder = MarginOrder {
-                        order_id,
-                        position: MarginPosition::try_from_i32(position).unwrap(),
-                        collateral: collateral.clone(),
-                        borrow_token,
-                        creator,
-                        leverage,
-                        take_profit_price,
-                    };
+                order_vec.push(order);
 
-                    let msg_resp = MsgOpenResponse {
-                        id: order_id,
-                        meta_data,
-                    };
+                let burn_msg = BankMsg::Burn {
+                    amount: vec![collateral],
+                };
+                router
+                    .execute(api, storage, block, sender, burn_msg.into())
+                    .unwrap();
 
-                    let resp = AppResponse {
-                        events: vec![],
-                        data: Some(to_binary(&msg_resp)?),
-                    };
+                Ok(resp)
+            }
 
-                    order_vec.push(order);
+            ElysMsg::MarginClose { id, .. } => {
+                LAST_MODULE_USED.save(storage, &Some("MarginClose".to_string()))?;
+                let orders: Vec<MarginOrder> = MARGIN_OPENED_POSITION.load(storage)?;
 
-                    let burn_msg = BankMsg::Burn {
-                        amount: vec![collateral],
-                    };
-                    router
-                        .execute(api, storage, block, sender, burn_msg.into())
-                        .unwrap();
+                let new_orders: Vec<MarginOrder> = orders
+                    .into_iter()
+                    .filter(|order| order.order_id != id)
+                    .collect();
 
-                    Ok(resp)
-                }
+                MARGIN_OPENED_POSITION.save(storage, &new_orders)?;
 
-                MarginMsg::MsgClose { id, meta_data, .. } => {
-                    LAST_MODULE_USED.save(storage, &Some("MsgClose".to_string()))?;
-                    let orders: Vec<MarginOrder> = MARGIN_OPENED_POSITION.load(storage)?;
+                let data = Some(to_json_binary(&MarginCloseResponse { id })?);
 
-                    let new_orders: Vec<MarginOrder> = orders
-                        .into_iter()
-                        .filter(|order| order.order_id != id)
-                        .collect();
-
-                    MARGIN_OPENED_POSITION.save(storage, &new_orders)?;
-
-                    let data = Some(to_binary(&MsgCloseResponse { id, meta_data })?);
-
-                    Ok(AppResponse {
-                        events: vec![],
-                        data,
-                    })
-                }
-            },
+                Ok(AppResponse {
+                    events: vec![],
+                    data,
+                })
+            }
         }
     }
 

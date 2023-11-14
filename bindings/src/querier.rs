@@ -1,9 +1,9 @@
-use cosmwasm_std::{coin, Coin, QuerierWrapper, QueryRequest, StdResult};
+use cosmwasm_std::{Coin, QuerierWrapper, QueryRequest, StdResult};
 
 use crate::{
     query::*,
     query_resp::*,
-    types::{PageRequest, SwapAmountInRoute},
+    types::{PageRequest, Price, SwapAmountInRoute},
 };
 
 pub struct ElysQuerier<'a> {
@@ -14,35 +14,36 @@ impl<'a> ElysQuerier<'a> {
     pub fn new(querier: &'a QuerierWrapper<'a, ElysQuery>) -> Self {
         ElysQuerier { querier }
     }
-    pub fn get_all_prices(&self, pagination: &mut PageRequest) -> StdResult<Vec<Coin>> {
-        let prices_query = ElysQuery::Oracle(OracleQuery::get_all_prices(pagination.clone()));
+    pub fn oracle_get_all_prices(&self, pagination: &mut PageRequest) -> StdResult<Vec<Price>> {
+        let prices_query = ElysQuery::oracle_get_all_prices(pagination.clone());
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(prices_query);
 
-        let resp: AllPriceResponse = self.querier.query(&request)?;
+        let resp: OracleAllPriceResponse = self.querier.query(&request)?;
 
         pagination.update(resp.pagination.next_key);
-        let result: Vec<Coin> = resp
-            .price
-            .iter()
-            .map(|price| coin(price.price.atomics().u128(), &price.asset))
-            .collect();
-        Ok(result)
+
+        let prices = match resp.price {
+            Some(prices) => prices,
+            None => vec![],
+        };
+
+        Ok(prices)
     }
-    pub fn swap_estimation(
+    pub fn amm_swap_estimation(
         &self,
         routes: &Vec<SwapAmountInRoute>,
         token_in: &Coin,
-    ) -> StdResult<QuerySwapEstimationResponse> {
-        let request = QueryRequest::Custom(ElysQuery::Amm(AmmQuery::swap_estimation(
+    ) -> StdResult<AmmSwapEstimationResponse> {
+        let request = QueryRequest::Custom(ElysQuery::amm_swap_estimation(
             routes.to_owned(),
             token_in.to_owned(),
-        )));
-        let resp: QuerySwapEstimationResponse = self.querier.query(&request)?;
+        ));
+        let resp: AmmSwapEstimationResponse = self.querier.query(&request)?;
         Ok(resp)
     }
-    pub fn asset_info(&self, denom: String) -> StdResult<AssetInfoResponse> {
-        let request = QueryRequest::Custom(ElysQuery::Oracle(OracleQuery::asset_info(denom)));
-        let resp: AssetInfoResponse = self.querier.query(&request)?;
+    pub fn asset_info(&self, denom: String) -> StdResult<OracleAssetInfoResponse> {
+        let request = QueryRequest::Custom(ElysQuery::oracle_asset_info(denom));
+        let resp: OracleAssetInfoResponse = self.querier.query(&request)?;
         Ok(resp)
     }
 }

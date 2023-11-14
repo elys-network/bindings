@@ -1,6 +1,6 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::from_binary;
-use cosmwasm_std::to_binary;
+use cosmwasm_std::from_json;
+use cosmwasm_std::to_json_binary;
 use cosmwasm_std::Binary;
 use cosmwasm_std::Coin;
 use cosmwasm_std::Decimal;
@@ -8,7 +8,7 @@ use cosmwasm_std::StdError;
 use cosmwasm_std::StdResult;
 
 #[cw_serde]
-pub struct AssetInfo {
+pub struct OracleAssetInfo {
     pub denom: String,
     pub display: String,
     pub band_ticker: String,
@@ -17,7 +17,7 @@ pub struct AssetInfo {
 }
 
 #[cfg(feature = "testing")]
-impl AssetInfo {
+impl OracleAssetInfo {
     pub fn new(
         denom: String,
         display: String,
@@ -81,7 +81,7 @@ impl PageRequest {
         let mut filter_vec = static_vec.clone();
 
         let key = if let Some(key) = &self.key {
-            let key: u64 = from_binary(key)?;
+            let key: u64 = from_json(key)?;
             if key >= filter_vec.len() as u64 {
                 println!("Returning early - key condition");
                 return Ok((vec![], PageResponse::empty(self.count_total)));
@@ -119,7 +119,7 @@ impl PageRequest {
         let next_key = if static_vec.last() == filter_vec.last() {
             None
         } else {
-            Some(to_binary(&(key + self.limit + offset))?)
+            Some(to_json_binary(&(key + self.limit + offset))?)
         };
 
         let total = if self.count_total {

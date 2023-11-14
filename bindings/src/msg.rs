@@ -1,23 +1,11 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg, Decimal, Int128};
+use cosmwasm_std::{Coin, CosmosMsg, CustomMsg, Decimal, Int128};
 
 use crate::types::{MarginPosition, SwapAmountInRoute};
 
 #[cw_serde]
-pub enum AmmMsg {
-    MsgSwapExactAmountIn {
-        sender: String,
-        routes: Vec<SwapAmountInRoute>,
-        token_in: Coin,
-        token_out_min_amount: Int128,
-        meta_data: Option<Binary>,
-    },
-}
-
-#[cw_serde]
-
-pub enum MarginMsg {
-    MsgOpen {
+pub enum ElysMsg {
+    MarginOpen {
         creator: String,
         collateral_asset: String,
         collateral_amount: Int128,
@@ -25,41 +13,35 @@ pub enum MarginMsg {
         position: i32,
         leverage: Decimal,
         take_profit_price: Decimal,
-        meta_data: Option<Binary>,
     },
-    MsgClose {
+    MarginClose {
         creator: String,
         id: u64,
-        meta_data: Option<Binary>,
+    },
+    AmmSwapExactAmountIn {
+        sender: String,
+        routes: Vec<SwapAmountInRoute>,
+        token_in: Coin,
+        token_out_min_amount: Int128,
     },
 }
 
-#[cw_serde]
-pub enum ElysMsg {
-    Amm(AmmMsg),
-    Margin(MarginMsg),
-}
-
-impl AmmMsg {
-    pub fn swap_exact_amount_in(
+impl ElysMsg {
+    pub fn amm_swap_exact_amount_in(
         sender: &str,
         token_in: &Coin,
         token_route: &Vec<SwapAmountInRoute>,
         token_out_min_amount: Int128,
-        meta_data: Option<Binary>,
     ) -> Self {
-        Self::MsgSwapExactAmountIn {
+        Self::AmmSwapExactAmountIn {
             sender: sender.to_owned(),
             routes: token_route.to_owned(),
             token_in: token_in.to_owned(),
             token_out_min_amount,
-            meta_data,
         }
     }
-}
 
-impl MarginMsg {
-    pub fn open_position(
+    pub fn margin_open_position(
         creator: impl Into<String>,
         collateral_asset: impl Into<String>,
         collateral_amount: Int128,
@@ -67,9 +49,8 @@ impl MarginMsg {
         position: MarginPosition,
         leverage: Decimal,
         take_profit_price: Decimal,
-        meta_data: Option<Binary>,
     ) -> Self {
-        Self::MsgOpen {
+        Self::MarginOpen {
             creator: creator.into(),
             collateral_asset: collateral_asset.into(),
             collateral_amount,
@@ -77,15 +58,13 @@ impl MarginMsg {
             position: position as i32,
             leverage,
             take_profit_price,
-            meta_data,
         }
     }
 
-    pub fn close_position(creator: impl Into<String>, id: u64, meta_data: Option<Binary>) -> Self {
-        Self::MsgClose {
+    pub fn margin_close_position(creator: impl Into<String>, id: u64) -> Self {
+        Self::MarginClose {
             creator: creator.into(),
             id,
-            meta_data,
         }
     }
 }

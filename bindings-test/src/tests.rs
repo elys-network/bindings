@@ -1,9 +1,9 @@
 use cosmwasm_std::{coin, coins, Addr, Coin, Decimal, Int128, StdError, Uint128};
 use cw_multi_test::Executor;
 use elys_bindings::{
-    query_resp::QuerySwapEstimationResponse,
-    types::{AssetInfo, MarginPosition, PageRequest, Price, SwapAmountInRoute},
-    AmmMsg, AmmQuery, ElysMsg, ElysQuery, MarginMsg, OracleQuery,
+    query_resp::AmmSwapEstimationResponse,
+    types::{MarginPosition, OracleAssetInfo, PageRequest, Price, SwapAmountInRoute},
+    ElysMsg, ElysQuery,
 };
 
 use super::multitest::*;
@@ -12,7 +12,7 @@ fn check_prices(app: &mut ElysApp, prices: &Vec<Price>) {
     let dummy_req = PageRequest::new(20);
 
     let prices = prices.to_owned();
-    let request = ElysQuery::Oracle(OracleQuery::get_all_prices(dummy_req)).into();
+    let request = ElysQuery::oracle_get_all_prices(dummy_req).into();
     let actual_prices: Vec<Price> = app.wrap().query(&request).unwrap();
     assert_eq!(prices, actual_prices);
 }
@@ -48,7 +48,7 @@ fn query_price() {
 }
 
 #[test]
-fn swap_estimation() {
+fn amm_swap_estimation() {
     let prices: Vec<Price> = vec![
         Price::new(
             "btc",
@@ -66,11 +66,11 @@ fn swap_estimation() {
         token_out_denom: "usdc".to_string(),
     }];
 
-    let swap: QuerySwapEstimationResponse = app
+    let swap: AmmSwapEstimationResponse = app
         .wrap()
-        .query(&cosmwasm_std::QueryRequest::Custom(ElysQuery::Amm(
-            AmmQuery::swap_estimation(routes, coin(5, "btc")),
-        )))
+        .query(&cosmwasm_std::QueryRequest::Custom(
+            ElysQuery::amm_swap_estimation(routes, coin(5, "btc")),
+        ))
         .unwrap();
 
     assert_eq!(
@@ -83,7 +83,7 @@ fn swap_estimation() {
 
 #[test]
 fn asset_info() {
-    let infos: Vec<AssetInfo> = vec![AssetInfo {
+    let infos: Vec<OracleAssetInfo> = vec![OracleAssetInfo {
         denom: "uatom".to_string(),
         display: "ATOM".to_string(),
         band_ticker: "ATOM".to_string(),
@@ -95,9 +95,9 @@ fn asset_info() {
     app.init_modules(|router, _, storage| router.custom.set_asset_infos(storage, &infos))
         .unwrap();
 
-    let req = ElysQuery::Oracle(OracleQuery::asset_info("uatom".to_string())).into();
+    let req = ElysQuery::oracle_asset_info("uatom".to_string()).into();
 
-    let queried_infos: AssetInfo = app.wrap().query(&req).unwrap();
+    let queried_infos: OracleAssetInfo = app.wrap().query(&req).unwrap();
 
     assert_eq!(infos[0], queried_infos);
 }
@@ -106,9 +106,9 @@ fn asset_info() {
 fn asset_info_not_found() {
     let app = ElysApp::new();
 
-    let req = ElysQuery::Oracle(OracleQuery::asset_info("uatom".to_string())).into();
+    let req = ElysQuery::oracle_asset_info("uatom".to_string()).into();
 
-    let err: StdError = app.wrap().query::<AssetInfo>(&req).unwrap_err();
+    let err: StdError = app.wrap().query::<OracleAssetInfo>(&req).unwrap_err();
 
     let error_reference = StdError::GenericErr {
         msg: format!(
@@ -139,13 +139,7 @@ fn swap() {
         token_out_denom: "usdc".to_string(),
     }];
 
-    let msg = ElysMsg::Amm(AmmMsg::swap_exact_amount_in(
-        "user",
-        &coin(5, "btc"),
-        &routes,
-        Int128::zero(),
-        None,
-    ));
+    let msg = ElysMsg::amm_swap_exact_amount_in("user", &coin(5, "btc"), &routes, Int128::zero());
 
     assert_eq!(
         app.wrap()
@@ -202,13 +196,8 @@ fn swap_error() {
         token_out_denom: "usdc".to_string(),
     }];
 
-    let msg = ElysMsg::Amm(AmmMsg::swap_exact_amount_in(
-        "user",
-        &coin(5, "btc"),
-        &routes,
-        Int128::new(100002),
-        None,
-    ));
+    let msg =
+        ElysMsg::amm_swap_exact_amount_in("user", &coin(5, "btc"), &routes, Int128::new(100002));
 
     assert_eq!(
         app.wrap()
@@ -259,7 +248,7 @@ fn open_margin_position() {
     let wallets: Vec<(&str, Vec<Coin>)> = vec![("user", coins(5, "btc"))];
     let mut app = ElysApp::new_with_wallets(wallets);
 
-    let open_msg = ElysMsg::Margin(MarginMsg::open_position(
+    let open_msg = ElysMsg::margin_open_position(
         "user",
         "btc",
         Int128::new(5),
@@ -267,8 +256,7 @@ fn open_margin_position() {
         MarginPosition::Unspecified,
         Decimal::from_atomics(Uint128::new(25), 1).unwrap(),
         Decimal::from_atomics(Uint128::new(11), 1).unwrap(),
-        None,
-    ));
+    );
 
     assert_eq!(
         app.wrap()
@@ -296,15 +284,15 @@ fn open_margin_position() {
         .unwrap()
         .unwrap();
 
-    assert_eq!(last_module_used, "MsgOpen");
+    assert_eq!(last_module_used, "MarginOpen");
 }
 
 #[test]
-fn margin_close_position() {
+fn margin_margin_close_position() {
     let wallets: Vec<(&str, Vec<Coin>)> = vec![("user", coins(5, "btc"))];
     let mut app = ElysApp::new_with_wallets(wallets);
 
-    let open_msg = ElysMsg::Margin(MarginMsg::open_position(
+    let open_msg = ElysMsg::margin_open_position(
         "user",
         "btc",
         Int128::new(5),
@@ -312,8 +300,7 @@ fn margin_close_position() {
         MarginPosition::Unspecified,
         Decimal::from_atomics(Uint128::new(25), 1).unwrap(),
         Decimal::from_atomics(Uint128::new(11), 1).unwrap(),
-        None,
-    ));
+    );
 
     assert_eq!(
         app.wrap()
@@ -341,9 +328,9 @@ fn margin_close_position() {
         .unwrap()
         .unwrap();
 
-    assert_eq!(last_module_used, "MsgOpen");
+    assert_eq!(last_module_used, "MarginOpen");
 
-    let close_msg = ElysMsg::Margin(MarginMsg::close_position("user", 0, None));
+    let close_msg = ElysMsg::margin_close_position("user", 0);
 
     app.execute(Addr::unchecked("user"), close_msg.into())
         .unwrap();
@@ -353,5 +340,5 @@ fn margin_close_position() {
         .unwrap()
         .unwrap();
 
-    assert_eq!(last_module_used, "MsgClose");
+    assert_eq!(last_module_used, "MarginClose");
 }
