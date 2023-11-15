@@ -30,3 +30,9 @@ pub struct MarginQueryPositionsResponse {
 pub struct MarginMTPResponse {
     pub mtp: MTP,
 }
+
+#[cw_serde]
+pub struct PositionsResponse {
+    mtps: MTP,
+    pagination: PageResponse,
+}
