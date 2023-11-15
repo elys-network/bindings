@@ -28,5 +28,5 @@ pub struct MarginQueryPositionsResponse {
 
 #[cw_serde]
 pub struct MarginMtpResponse {
-    pub mtp: Mtp,
+    pub mtp: Option<Mtp>,
 }

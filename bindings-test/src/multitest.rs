@@ -116,7 +116,7 @@ impl Module for ElysModule {
                     .find(|mtp| mtp.id == id && mtp.address == address)
                     .cloned()
                 {
-                    Ok(to_json_binary(&MarginMtpResponse { mtp })?)
+                    Ok(to_json_binary(&MarginMtpResponse { mtp: Some(mtp) })?)
                 } else {
                     return Err(Error::new(StdError::not_found("margin trading position")));
                 }

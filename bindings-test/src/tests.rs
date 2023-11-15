@@ -182,7 +182,7 @@ fn query_single_mtp() {
 
     let mtp_found: MarginMtpResponse = app.wrap().query(&req).unwrap();
 
-    assert_eq!(mtps[0], mtp_found.mtp);
+    assert_eq!(mtps[0], mtp_found.mtp.unwrap());
 }
 
 #[test]
