@@ -51,9 +51,9 @@ impl<'a> ElysQuerier<'a> {
         let resp: MarginMTPResponse = self.querier.query(&request)?;
         Ok(resp)
     }
-    pub fn positions(&self, pagination: PageRequest) -> StdResult<MarginMTPResponse> {
+    pub fn positions(&self, pagination: PageRequest) -> StdResult<MarginQueryPositionsResponse> {
         let request = QueryRequest::Custom(ElysQuery::positions(pagination));
-        let resp: MarginMTPResponse = self.querier.query(&request)?;
+        let resp: MarginQueryPositionsResponse = self.querier.query(&request)?;
         Ok(resp)
     }
 }
