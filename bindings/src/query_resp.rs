@@ -21,12 +21,12 @@ pub struct OracleAssetInfoResponse {
 }
 
 #[cw_serde]
-pub struct PositionsResponse {
-    mtps: MTP,
-    pagination: PageResponse,
+pub struct MarginQueryPositionsResponse {
+    pub mtps: Option<Vec<MTP>>,
+    pub pagination: PageResponse,
 }
 
 #[cw_serde]
-pub struct MTPResponse {
-    mtp: MTP,
+pub struct MarginMTPResponse {
+    pub mtp: MTP,
 }
