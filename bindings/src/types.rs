@@ -245,7 +245,7 @@ impl MarginOrder {
 }
 
 #[cw_serde]
-pub struct MTP {
+pub struct Mtp {
     pub address: String,
     pub collaterals: Vec<Coin>,
     pub liabilities: Int128,

@@ -1,8 +1,8 @@
 use cosmwasm_std::{coin, coins, Addr, Coin, Decimal, Int128, StdError, Uint128};
 use cw_multi_test::Executor;
 use elys_bindings::{
-    query_resp::{AmmSwapEstimationResponse, MarginMTPResponse, MarginQueryPositionsResponse},
-    types::{MarginPosition, OracleAssetInfo, PageRequest, Price, SwapAmountInRoute, MTP},
+    query_resp::{AmmSwapEstimationResponse, MarginMtpResponse, MarginQueryPositionsResponse},
+    types::{MarginPosition, Mtp, OracleAssetInfo, PageRequest, Price, SwapAmountInRoute},
     ElysMsg, ElysQuery,
 };
 
@@ -121,7 +121,7 @@ fn asset_info_not_found() {
 }
 #[test]
 fn query_positions() {
-    let mtps: Vec<MTP> = vec![MTP {
+    let mtps: Vec<Mtp> = vec![Mtp {
         address: "user".to_string(),
         collaterals: vec![],
         liabilities: Int128::zero(),
@@ -154,7 +154,7 @@ fn query_positions() {
 
 #[test]
 fn query_single_mtp() {
-    let mtps: Vec<MTP> = vec![MTP {
+    let mtps: Vec<Mtp> = vec![Mtp {
         address: "user".to_string(),
         collaterals: vec![],
         liabilities: Int128::zero(),
@@ -180,14 +180,14 @@ fn query_single_mtp() {
 
     let req = ElysQuery::mtp("user", 0).into();
 
-    let mtp_found: MarginMTPResponse = app.wrap().query(&req).unwrap();
+    let mtp_found: MarginMtpResponse = app.wrap().query(&req).unwrap();
 
     assert_eq!(mtps[0], mtp_found.mtp);
 }
 
 #[test]
 fn query_mtp_not_found() {
-    let mtps: Vec<MTP> = vec![];
+    let mtps: Vec<Mtp> = vec![];
     let mut app = ElysApp::new();
 
     app.init_modules(|router, _, storage| router.custom.set_mtp(storage, &mtps))
@@ -195,7 +195,7 @@ fn query_mtp_not_found() {
 
     let req = ElysQuery::mtp("user", 0).into();
 
-    let err = app.wrap().query::<MarginMTPResponse>(&req).unwrap_err();
+    let err = app.wrap().query::<MarginMtpResponse>(&req).unwrap_err();
 
     let not_found_err = StdError::not_found("margin trading position");
 

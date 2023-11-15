@@ -46,9 +46,9 @@ impl<'a> ElysQuerier<'a> {
         let resp: OracleAssetInfoResponse = self.querier.query(&request)?;
         Ok(resp)
     }
-    pub fn mtp(&self, address: String, id: u64) -> StdResult<MarginMTPResponse> {
+    pub fn mtp(&self, address: String, id: u64) -> StdResult<MarginMtpResponse> {
         let request = QueryRequest::Custom(ElysQuery::mtp(address, id));
-        let resp: MarginMTPResponse = self.querier.query(&request)?;
+        let resp: MarginMtpResponse = self.querier.query(&request)?;
         Ok(resp)
     }
     pub fn positions(&self, pagination: PageRequest) -> StdResult<MarginQueryPositionsResponse> {

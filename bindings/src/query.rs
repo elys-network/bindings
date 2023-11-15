@@ -24,8 +24,8 @@ pub enum ElysQuery {
     // Define MarginQuery
     #[returns(MarginQueryPositionsResponse)]
     MarginQueryPositions { pagination: PageRequest },
-    #[returns(MarginMTPResponse)]
-    MarginMTP { address: String, id: u64 },
+    #[returns(MarginMtpResponse)]
+    MarginMtp { address: String, id: u64 },
 }
 
 impl CustomQuery for ElysQuery {}
@@ -41,7 +41,7 @@ impl ElysQuery {
         Self::OracleAssetInfo { denom }
     }
     pub fn mtp(address: impl Into<String>, id: u64) -> Self {
-        Self::MarginMTP {
+        Self::MarginMtp {
             address: address.into(),
             id,
         }

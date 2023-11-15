@@ -13,8 +13,8 @@ use cw_multi_test::{App, AppResponse, BankKeeper, BankSudo, BasicAppBuilder, Mod
 use cw_storage_plus::Item;
 use elys_bindings::{
     msg_resp::{AmmSwapExactAmountInResp, MarginCloseResponse, MarginOpenResponse},
-    query_resp::{AmmSwapEstimationResponse, MarginMTPResponse, MarginQueryPositionsResponse},
-    types::{OracleAssetInfo, Price, MTP},
+    query_resp::{AmmSwapEstimationResponse, MarginMtpResponse, MarginQueryPositionsResponse},
+    types::{Mtp, OracleAssetInfo, Price},
     ElysMsg, ElysQuery,
 };
 use std::cmp::max;
@@ -22,7 +22,7 @@ use std::cmp::max;
 pub const PRICES: Item<Vec<Price>> = Item::new("prices");
 pub const ASSET_INFO: Item<Vec<OracleAssetInfo>> = Item::new("asset_info");
 pub const BLOCK_TIME: u64 = 5;
-pub const MARGIN_OPENED_POSITION: Item<Vec<MTP>> = Item::new("margin_opened_position");
+pub const MARGIN_OPENED_POSITION: Item<Vec<Mtp>> = Item::new("margin_opened_position");
 pub const LAST_MODULE_USED: Item<Option<String>> = Item::new("last_module_used");
 
 pub struct ElysModule {}
@@ -58,7 +58,7 @@ impl ElysModule {
     ) -> StdResult<()> {
         ASSET_INFO.save(store, infos)
     }
-    pub fn set_mtp(&self, store: &mut dyn Storage, mtps: &Vec<MTP>) -> StdResult<()> {
+    pub fn set_mtp(&self, store: &mut dyn Storage, mtps: &Vec<Mtp>) -> StdResult<()> {
         MARGIN_OPENED_POSITION.save(store, mtps)
     }
 }
@@ -109,14 +109,14 @@ impl Module for ElysModule {
                     token_out: coin(token_out_amount, &routes[0].token_out_denom),
                 })?)
             }
-            ElysQuery::MarginMTP { address, id } => {
+            ElysQuery::MarginMtp { address, id } => {
                 let mtps = MARGIN_OPENED_POSITION.load(storage)?;
                 if let Some(mtp) = mtps
                     .iter()
                     .find(|mtp| mtp.id == id && mtp.address == address)
                     .cloned()
                 {
-                    Ok(to_json_binary(&MarginMTPResponse { mtp })?)
+                    Ok(to_json_binary(&MarginMtpResponse { mtp })?)
                 } else {
                     return Err(Error::new(StdError::not_found("margin trading position")));
                 }
@@ -222,7 +222,7 @@ impl Module for ElysModule {
                 };
                 let collaterals = coins(collateral_amount.i128() as u128, collateral_asset);
 
-                let order: MTP = MTP {
+                let order: Mtp = Mtp {
                     address: creator,
                     collaterals: collaterals.clone(),
                     liabilities: Int128::zero(),
@@ -263,9 +263,9 @@ impl Module for ElysModule {
 
             ElysMsg::MarginClose { id, .. } => {
                 LAST_MODULE_USED.save(storage, &Some("MarginClose".to_string()))?;
-                let orders: Vec<MTP> = MARGIN_OPENED_POSITION.load(storage)?;
+                let orders: Vec<Mtp> = MARGIN_OPENED_POSITION.load(storage)?;
 
-                let new_orders: Vec<MTP> =
+                let new_orders: Vec<Mtp> =
                     orders.into_iter().filter(|order| order.id != id).collect();
 
                 MARGIN_OPENED_POSITION.save(storage, &new_orders)?;
