@@ -21,6 +21,11 @@ pub enum ElysQuery {
     OraclePriceAll { pagination: PageRequest },
     #[returns(OracleAssetInfoResponse)]
     OracleAssetInfo { denom: String },
+    // Define MarginQuery
+    #[returns(MarginQueryPositionsResponse)]
+    MarginQueryPositions { pagination: PageRequest },
+    #[returns(MarginMtpResponse)]
+    MarginMtp { address: String, id: u64 },
 }
 
 impl CustomQuery for ElysQuery {}
@@ -34,5 +39,14 @@ impl ElysQuery {
     }
     pub fn oracle_asset_info(denom: String) -> Self {
         Self::OracleAssetInfo { denom }
+    }
+    pub fn mtp(address: impl Into<String>, id: u64) -> Self {
+        Self::MarginMtp {
+            address: address.into(),
+            id,
+        }
+    }
+    pub fn positions(pagination: PageRequest) -> Self {
+        Self::MarginQueryPositions { pagination }
     }
 }

@@ -4,6 +4,7 @@ use cosmwasm_std::to_json_binary;
 use cosmwasm_std::Binary;
 use cosmwasm_std::Coin;
 use cosmwasm_std::Decimal;
+use cosmwasm_std::Int128;
 use cosmwasm_std::StdError;
 use cosmwasm_std::StdResult;
 
@@ -83,7 +84,6 @@ impl PageRequest {
         let key = if let Some(key) = &self.key {
             let key: u64 = from_json(key)?;
             if key >= filter_vec.len() as u64 {
-                println!("Returning early - key condition");
                 return Ok((vec![], PageResponse::empty(self.count_total)));
             } else {
                 filter_vec = filter_vec.split_off(key as usize);
@@ -242,4 +242,25 @@ impl MarginOrder {
             take_profit_price,
         }
     }
+}
+
+#[cw_serde]
+pub struct Mtp {
+    pub address: String,
+    pub collaterals: Vec<Coin>,
+    pub liabilities: Int128,
+    pub interest_paid_collaterals: Vec<Coin>,
+    pub interest_paid_custodies: Vec<Coin>,
+    pub interest_unpaid_collaterals: Vec<Coin>,
+    pub custodies: Vec<Coin>,
+    pub take_profit_liabilities: Int128,
+    pub take_profit_custodies: Vec<Coin>,
+    pub leverages: Vec<Decimal>,
+    pub mtp_health: Decimal,
+    pub position: i32,
+    pub id: u64,
+    pub amm_pool_id: u64,
+    pub consolidate_leverage: Decimal,
+    pub sum_collateral: Int128,
+    pub take_profit_price: Decimal,
 }
