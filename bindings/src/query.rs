@@ -52,4 +52,7 @@ impl ElysQuery {
     pub fn positions(pagination: PageRequest) -> Self {
         Self::MarginQueryPositions { pagination }
     }
+    pub fn accounts(pagination: PageRequest) -> Self {
+        Self::AuthAccounts { pagination }
+    }
 }

@@ -56,4 +56,9 @@ impl<'a> ElysQuerier<'a> {
         let resp: MarginQueryPositionsResponse = self.querier.query(&request)?;
         Ok(resp)
     }
+    pub fn accounts(&self, pagination: PageRequest) -> StdResult<AuthAccountsResponse> {
+        let request = QueryRequest::Custom(ElysQuery::accounts(pagination));
+        let resp: AuthAccountsResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
 }
