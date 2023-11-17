@@ -15,3 +15,13 @@ pub struct MarginOpenResponse {
 pub struct MarginCloseResponse {
     pub id: u64,
 }
+
+#[cw_serde]
+pub struct MarginBrokerCloseResResponse {
+    pub id: u64,
+}
+
+#[cw_serde]
+pub struct MarginBrokerOpenResResponse {
+    pub id: u64,
+}
