@@ -264,3 +264,32 @@ pub struct Mtp {
     pub sum_collateral: Int128,
     pub take_profit_price: Decimal,
 }
+
+#[cw_serde]
+pub enum Sum {
+    Ed25519(Binary),
+    Secp256k1(Binary),
+}
+
+#[cw_serde]
+pub struct PublicKey(Sum);
+
+impl PublicKey {
+    pub fn get_sum(&self) -> Sum {
+        self.0.clone()
+    }
+}
+#[cfg(feature = "testing")]
+impl PublicKey {
+    pub fn set(sum: Sum) -> Self {
+        Self(sum)
+    }
+}
+
+#[cw_serde]
+pub struct BaseAccount {
+    pub address: String,
+    pub pub_key: PublicKey,
+    pub account_number: u64,
+    pub sequence: u64,
+}

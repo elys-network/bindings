@@ -1,7 +1,10 @@
 use cosmwasm_std::{coin, coins, Addr, Coin, Decimal, Int128, StdError, Uint128};
 use cw_multi_test::Executor;
 use elys_bindings::{
-    query_resp::{AmmSwapEstimationResponse, MarginMtpResponse, MarginQueryPositionsResponse},
+    query_resp::{
+        AmmSwapEstimationResponse, AuthAccountsResponse, MarginMtpResponse,
+        MarginQueryPositionsResponse,
+    },
     types::{MarginPosition, Mtp, OracleAssetInfo, PageRequest, Price, SwapAmountInRoute},
     ElysMsg, ElysQuery,
 };
@@ -428,4 +431,18 @@ fn margin_margin_close_position() {
         .unwrap();
 
     assert_eq!(last_module_used, "MarginClose");
+}
+#[test]
+fn auth_account() {
+    let wallets: Vec<(&str, Vec<Coin>)> =
+        vec![("user", coins(5, "btc")), ("user2", coins(1, "usdc"))];
+    let app = ElysApp::new_with_wallets(wallets.clone());
+    let req = ElysQuery::AuthAccounts {
+        pagination: PageRequest::new(200),
+    }
+    .into();
+    let resp: AuthAccountsResponse = app.wrap().query(&req).unwrap();
+
+    assert_eq!(resp.accounts[0].address, wallets[0].0);
+    assert_eq!(resp.accounts[1].address, wallets[1].0);
 }

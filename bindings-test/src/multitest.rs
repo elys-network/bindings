@@ -13,8 +13,11 @@ use cw_multi_test::{App, AppResponse, BankKeeper, BankSudo, BasicAppBuilder, Mod
 use cw_storage_plus::Item;
 use elys_bindings::{
     msg_resp::{AmmSwapExactAmountInResp, MarginCloseResponse, MarginOpenResponse},
-    query_resp::{AmmSwapEstimationResponse, MarginMtpResponse, MarginQueryPositionsResponse},
-    types::{Mtp, OracleAssetInfo, Price},
+    query_resp::{
+        AmmSwapEstimationResponse, AuthAccountsResponse, MarginMtpResponse,
+        MarginQueryPositionsResponse,
+    },
+    types::{BaseAccount, Mtp, OracleAssetInfo, Price, PublicKey, Sum},
     ElysMsg, ElysQuery,
 };
 use std::cmp::max;
@@ -24,6 +27,7 @@ pub const ASSET_INFO: Item<Vec<OracleAssetInfo>> = Item::new("asset_info");
 pub const BLOCK_TIME: u64 = 5;
 pub const MARGIN_OPENED_POSITION: Item<Vec<Mtp>> = Item::new("margin_opened_position");
 pub const LAST_MODULE_USED: Item<Option<String>> = Item::new("last_module_used");
+pub const ACCOUNT: Item<Vec<BaseAccount>> = Item::new("account");
 
 pub struct ElysModule {}
 
@@ -38,6 +42,20 @@ impl ElysModule {
 
     pub fn set_prices(&self, store: &mut dyn Storage, prices: &Vec<Price>) -> StdResult<()> {
         PRICES.save(store, prices)
+    }
+
+    pub fn new_account(&self, store: &mut dyn Storage, addr: impl Into<String>) -> StdResult<()> {
+        let mut accounts: Vec<BaseAccount> = ACCOUNT.load(store)?;
+        let addr: String = addr.into();
+
+        accounts.push(BaseAccount {
+            pub_key: PublicKey::set(Sum::Ed25519(to_json_binary(&addr)?)),
+            address: addr,
+            account_number: 0,
+            sequence: 0,
+        });
+
+        ACCOUNT.save(store, &accounts)
     }
 
     pub fn new_price(&self, store: &mut dyn Storage, new_price: &Price) -> StdResult<()> {
@@ -128,6 +146,16 @@ impl Module for ElysModule {
                     mtps: Some(mtps),
                     pagination: page_resp,
                 })?)
+            }
+            ElysQuery::AuthAccounts { pagination } => {
+                let acc = ACCOUNT.load(storage)?;
+                let (accounts, pagination) = pagination.filter(acc)?;
+                let resp = AuthAccountsResponse {
+                    accounts,
+                    pagination,
+                };
+
+                Ok(to_json_binary(&resp)?)
             }
         }
     }
@@ -333,6 +361,7 @@ impl Default for ElysApp {
 
 impl ElysApp {
     pub fn new_with_wallets(wallets: Vec<(&str, Vec<Coin>)>) -> Self {
+        let mut accounts: Vec<BaseAccount> = vec![];
         Self(
             BasicAppBuilder::<ElysMsg, ElysQuery>::new_custom()
                 .with_custom(ElysModule {})
@@ -342,7 +371,16 @@ impl ElysApp {
                             .bank
                             .init_balance(storage, &Addr::unchecked(wallet_owner), wallet_contenent)
                             .unwrap();
+                        accounts.push(BaseAccount {
+                            address: wallet_owner.to_owned(),
+                            pub_key: PublicKey::set(Sum::Ed25519(
+                                to_json_binary(wallet_owner).unwrap(),
+                            )),
+                            account_number: 0,
+                            sequence: 0,
+                        })
                     }
+                    ACCOUNT.save(storage, &accounts).unwrap();
                     MARGIN_OPENED_POSITION.save(storage, &vec![]).unwrap();
                     ASSET_INFO.save(storage, &vec![]).unwrap();
                     PRICES.save(storage, &vec![]).unwrap();

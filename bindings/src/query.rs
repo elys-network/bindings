@@ -26,6 +26,9 @@ pub enum ElysQuery {
     MarginQueryPositions { pagination: PageRequest },
     #[returns(MarginMtpResponse)]
     MarginMtp { address: String, id: u64 },
+    // Define AuthQuery
+    #[returns(AuthAccountsResponse)]
+    AuthAccounts { pagination: PageRequest },
 }
 
 impl CustomQuery for ElysQuery {}
