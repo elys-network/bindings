@@ -16,13 +16,19 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     let expiration = EXPIRATION.load(deps.storage)?;
     let amm_routes = AMM_ROUTES.load(deps.storage)?;
 
+    println!("get_state");
+
     let AuthAccountsResponse {
         accounts,
         pagination: pagination_resp,
     }: AuthAccountsResponse = querier.accounts(pagination.clone())?;
 
+    println!("query ACC");
+
     pagination.update(pagination_resp.next_key);
     PAGINATION.save(deps.storage, &pagination)?;
+
+    println!("pagination UPDATE");
 
     for account in accounts {
         let mut history = if let Some(history) = HISTORY.may_load(deps.storage, &account.address)? {
@@ -30,12 +36,17 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
         } else {
             vec![]
         };
+        println!("get history <<{account:?}>>");
         let elys_coin = deps.querier.query_balance(&account.address, "uelys")?;
+        println!("get balence from {}", account.address);
         let new_part: AccountValue =
             create_new_part(&env.block, &querier, &amm_routes, &expiration, elys_coin)?;
+        println!("new part");
         history.push(new_part);
         HISTORY.save(deps.storage, &account.address, &history)?;
     }
+
+    println!("LOOPED");
 
     Ok(Response::default())
 }
