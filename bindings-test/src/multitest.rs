@@ -12,7 +12,10 @@ use cosmwasm_std::{
 use cw_multi_test::{App, AppResponse, BankKeeper, BankSudo, BasicAppBuilder, Module, WasmKeeper};
 use cw_storage_plus::Item;
 use elys_bindings::{
-    msg_resp::{AmmSwapExactAmountInResp, MarginCloseResponse, MarginOpenResponse},
+    msg_resp::{
+        AmmSwapExactAmountInResp, MarginBrokerCloseResResponse, MarginCloseResponse,
+        MarginOpenResponse,
+    },
     query_resp::{
         AmmSwapEstimationResponse, AuthAccountsResponse, MarginMtpResponse,
         MarginQueryPositionsResponse,
@@ -291,6 +294,69 @@ impl Module for ElysModule {
 
             ElysMsg::MarginClose { id, .. } => {
                 LAST_MODULE_USED.save(storage, &Some("MarginClose".to_string()))?;
+                let orders: Vec<Mtp> = MARGIN_OPENED_POSITION.load(storage)?;
+
+                let new_orders: Vec<Mtp> =
+                    orders.into_iter().filter(|order| order.id != id).collect();
+
+                MARGIN_OPENED_POSITION.save(storage, &new_orders)?;
+
+                let data = Some(to_json_binary(&MarginCloseResponse { id })?);
+
+                Ok(AppResponse {
+                    events: vec![],
+                    data,
+                })
+            }
+            ElysMsg::MarginBrokerOpen {
+                creator,
+                collateral_asset,
+                collateral_amount,
+                position,
+                leverage,
+                take_profit_price,
+                ..
+            } => {
+                let mut order_vec = MARGIN_OPENED_POSITION.load(storage)?;
+
+                let order_id: u64 = match order_vec.iter().max_by_key(|s| s.id) {
+                    Some(x) => x.id + 1,
+                    None => 0,
+                };
+                let collaterals = coins(collateral_amount.i128() as u128, collateral_asset);
+
+                let order: Mtp = Mtp {
+                    address: creator,
+                    collaterals: collaterals.clone(),
+                    liabilities: Int128::zero(),
+                    interest_paid_collaterals: vec![],
+                    interest_paid_custodies: vec![],
+                    interest_unpaid_collaterals: vec![],
+                    custodies: vec![],
+                    take_profit_liabilities: Int128::zero(),
+                    take_profit_custodies: vec![],
+                    leverages: vec![leverage],
+                    mtp_health: Decimal::one(),
+                    position,
+                    id: order_id,
+                    amm_pool_id: 0,
+                    consolidate_leverage: Decimal::zero(),
+                    sum_collateral: Int128::zero(),
+                    take_profit_price,
+                };
+
+                order_vec.push(order);
+
+                LAST_MODULE_USED.save(storage, &Some("MarginBrokerOpen".to_string()))?;
+                Ok(AppResponse {
+                    data: Some(to_json_binary(&MarginBrokerCloseResResponse {
+                        id: order_id,
+                    })?),
+                    events: vec![],
+                })
+            }
+            ElysMsg::MarginBrokerClose { id, .. } => {
+                LAST_MODULE_USED.save(storage, &Some("MarginBrokerClose".to_string()))?;
                 let orders: Vec<Mtp> = MARGIN_OPENED_POSITION.load(storage)?;
 
                 let new_orders: Vec<Mtp> =

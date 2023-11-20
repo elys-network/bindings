@@ -18,6 +18,23 @@ pub enum ElysMsg {
         creator: String,
         id: u64,
     },
+
+    MarginBrokerOpen {
+        creator: String,
+        collateral_asset: String,
+        collateral_amount: Int128,
+        borrow_asset: String,
+        position: i32,
+        leverage: Decimal,
+        take_profit_price: Decimal,
+        owner: String,
+    },
+
+    MarginBrokerClose {
+        creator: String,
+        id: u64,
+        owner: String,
+    },
     AmmSwapExactAmountIn {
         sender: String,
         routes: Vec<SwapAmountInRoute>,
@@ -65,6 +82,39 @@ impl ElysMsg {
         Self::MarginClose {
             creator: creator.into(),
             id,
+        }
+    }
+    pub fn margin_broker_open_position(
+        creator: impl Into<String>,
+        collateral_asset: impl Into<String>,
+        collateral_amount: Int128,
+        borrow_asset: impl Into<String>,
+        position: i32,
+        leverage: Decimal,
+        take_profit_price: Decimal,
+        owner: impl Into<String>,
+    ) -> Self {
+        Self::MarginBrokerOpen {
+            creator: creator.into(),
+            collateral_asset: collateral_asset.into(),
+            collateral_amount,
+            borrow_asset: borrow_asset.into(),
+            position,
+            leverage,
+            take_profit_price,
+            owner: owner.into(),
+        }
+    }
+
+    pub fn margin_broker_close_position(
+        creator: impl Into<String>,
+        id: u64,
+        owner: impl Into<String>,
+    ) -> Self {
+        Self::MarginBrokerClose {
+            creator: creator.into(),
+            id,
+            owner: owner.into(),
         }
     }
 }
