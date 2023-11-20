@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use cosmwasm_std::{coin, coins, Addr, Coin, Decimal, Int128, StdError, Uint128};
 use cw_multi_test::Executor;
 use elys_bindings::{
@@ -445,4 +447,45 @@ fn auth_account() {
 
     assert_eq!(resp.accounts[0].address, wallets[0].0);
     assert_eq!(resp.accounts[1].address, wallets[1].0);
+}
+#[test]
+fn margin_broker_open() {
+    let mut app = ElysApp::new();
+
+    let req = ElysMsg::margin_broker_open_position(
+        "user",
+        "btc",
+        Int128::new(2),
+        "usdc",
+        MarginPosition::Short as i32,
+        Decimal::from_str("5.0").unwrap(),
+        Decimal::from_str("2.2").unwrap(),
+        "owner",
+    )
+    .into();
+
+    app.execute(Addr::unchecked("user"), req).unwrap();
+
+    let last_module_used = app
+        .init_modules(|router, _, store| router.custom.get_last_module(store))
+        .unwrap()
+        .unwrap();
+
+    assert_eq!(last_module_used, "MarginBrokerOpen");
+}
+
+#[test]
+fn margin_broker_close() {
+    let mut app = ElysApp::new();
+
+    let req = ElysMsg::margin_broker_close_position("user", 0, "owner").into();
+
+    app.execute(Addr::unchecked("user"), req).unwrap();
+
+    let last_module_used = app
+        .init_modules(|router, _, store| router.custom.get_last_module(store))
+        .unwrap()
+        .unwrap();
+
+    assert_eq!(last_module_used, "MarginBrokerClose");
 }
