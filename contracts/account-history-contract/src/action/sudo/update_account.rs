@@ -1,8 +1,7 @@
-use cosmwasm_std::{BlockInfo, Coin};
+use cosmwasm_std::{coin, BlockInfo, Coin, Uint128};
 use cw_utils::Expiration;
-use elys_bindings::{
-    query_resp::{AmmSwapEstimationResponse, AuthAccountsResponse},
-    types::SwapAmountInRoute,
+use elys_bindings::query_resp::{
+    AmmSwapEstimationResponse, AuthAccountsResponse, InRouteByDenomResponse,
 };
 
 use crate::types::AccountValue;
@@ -14,21 +13,14 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
 
     let mut pagination = PAGINATION.load(deps.storage)?;
     let expiration = EXPIRATION.load(deps.storage)?;
-    let amm_routes = AMM_ROUTES.load(deps.storage)?;
-
-    println!("get_state");
 
     let AuthAccountsResponse {
         accounts,
         pagination: pagination_resp,
     }: AuthAccountsResponse = querier.accounts(pagination.clone())?;
 
-    println!("query ACC");
-
     pagination.update(pagination_resp.next_key);
     PAGINATION.save(deps.storage, &pagination)?;
-
-    println!("pagination UPDATE");
 
     for account in accounts {
         let mut history = if let Some(history) = HISTORY.may_load(deps.storage, &account.address)? {
@@ -36,17 +28,12 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
         } else {
             vec![]
         };
-        println!("get history <<{account:?}>>");
-        let elys_coin = deps.querier.query_balance(&account.address, "uelys")?;
-        println!("get balence from {}", account.address);
+        let account_balences = deps.querier.query_all_balances(&account.address)?;
         let new_part: AccountValue =
-            create_new_part(&env.block, &querier, &amm_routes, &expiration, elys_coin)?;
-        println!("new part");
+            create_new_part(&env.block, &querier, &expiration, account_balences)?;
         history.push(new_part);
         HISTORY.save(deps.storage, &account.address, &history)?;
     }
-
-    println!("LOOPED");
 
     Ok(Response::default())
 }
@@ -54,9 +41,8 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
 fn create_new_part(
     block: &BlockInfo,
     querier: &ElysQuerier<'_>,
-    amm_routes: &Vec<SwapAmountInRoute>,
     expiration: &Expiration,
-    elys_coin: Coin,
+    account_balences: Vec<Coin>,
 ) -> StdResult<AccountValue> {
     let date = match expiration {
         Expiration::AtHeight(_) => Expiration::AtHeight(block.height),
@@ -64,15 +50,25 @@ fn create_new_part(
         Expiration::Never {} => panic!("never expire"),
     };
 
-    let AmmSwapEstimationResponse {
-        token_out: elys_value,
-        ..
-    }: AmmSwapEstimationResponse = querier.amm_swap_estimation(amm_routes, &elys_coin)?;
+    let mut value = Uint128::zero();
+
+    for balence in account_balences {
+        if balence.denom == "uusdc" {
+            value += balence.amount;
+            continue;
+        }
+        let InRouteByDenomResponse { in_routes } =
+            querier.in_route_by_denom(&balence.denom, "uusdc")?;
+
+        let AmmSwapEstimationResponse { token_out, .. } =
+            querier.amm_swap_estimation(&in_routes, &balence)?;
+
+        value += token_out.amount;
+    }
 
     Ok(AccountValue {
         date,
-        elys_amount: elys_coin.amount,
-        elys_value,
+        account_value: coin(value.u128(), "uusdc"),
     })
 }
 
@@ -85,10 +81,10 @@ fn update_history(
         .into_iter()
         .filter(|history| match (history.date, expiration) {
             (Expiration::AtHeight(time), Expiration::AtHeight(expiration)) => {
-                block_info.height > time + expiration
+                block_info.height < time + expiration
             }
             (Expiration::AtTime(time), Expiration::AtTime(expiration)) => {
-                block_info.time.nanos() > time.nanos() + expiration.nanos()
+                block_info.time.nanos() < time.nanos() + expiration.nanos()
             }
             _ => false,
         })

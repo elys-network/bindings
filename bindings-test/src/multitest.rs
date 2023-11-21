@@ -1,7 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
 use anyhow::{bail, Error, Result as AnyResult};
-use cosmwasm_std::Int128;
 #[allow(deprecated)]
 use cosmwasm_std::{
     coin, coins,
@@ -9,15 +8,16 @@ use cosmwasm_std::{
     to_json_binary, Addr, BankMsg, BlockInfo, Coin, Decimal, Empty, Int64, Querier, StdError,
     StdResult, Storage,
 };
+use cosmwasm_std::{Int128, Response};
 use cw_multi_test::{App, AppResponse, BankKeeper, BankSudo, BasicAppBuilder, Module, WasmKeeper};
 use cw_storage_plus::Item;
 use elys_bindings::{
     msg_resp::{AmmSwapExactAmountInResp, MarginCloseResponse, MarginOpenResponse},
     query_resp::{
-        AmmSwapEstimationResponse, AuthAccountsResponse, MarginMtpResponse,
+        AmmSwapEstimationResponse, AuthAccountsResponse, InRouteByDenomResponse, MarginMtpResponse,
         MarginQueryPositionsResponse,
     },
-    types::{BaseAccount, Mtp, OracleAssetInfo, Price, PublicKey, Sum},
+    types::{BaseAccount, Mtp, OracleAssetInfo, Price, PublicKey, Sum, SwapAmountInRoute},
     ElysMsg, ElysQuery,
 };
 use std::cmp::max;
@@ -153,6 +153,13 @@ impl Module for ElysModule {
                 let resp = AuthAccountsResponse {
                     accounts,
                     pagination,
+                };
+
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::InRouteByDenom { denom_out, .. } => {
+                let resp = InRouteByDenomResponse {
+                    in_routes: vec![SwapAmountInRoute::new(1, denom_out)],
                 };
 
                 Ok(to_json_binary(&resp)?)

@@ -1,16 +1,13 @@
 use super::*;
-use crate::{
-    msg::ExecuteMsg,
-    states::{EXPIRATION, PAGINATION},
-};
+use crate::{msg::ExecuteMsg, states::PAGINATION};
 
+#[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut<ElysQuery>,
-    env: Env,
+    _env: Env,
     _info: MessageInfo,
     msg: ExecuteMsg,
 ) -> StdResult<Response<ElysMsg>> {
-    use action::execute::*;
     use ExecuteMsg::*;
 
     match msg {
@@ -20,10 +17,5 @@ pub fn execute(
             PAGINATION.save(deps.storage, &p)?;
             Ok(Response::new())
         }
-        SetExpiration { expiration } => {
-            EXPIRATION.save(deps.storage, &expiration)?;
-            Ok(Response::new())
-        }
-        UpdateAccounts {} => update_account(deps, env),
     }
 }

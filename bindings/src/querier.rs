@@ -61,4 +61,17 @@ impl<'a> ElysQuerier<'a> {
         let resp: AuthAccountsResponse = self.querier.query(&request)?;
         Ok(resp)
     }
+    pub fn in_route_by_denom(
+        &self,
+        denom_in: impl Into<String>,
+        denom_out: impl Into<String>,
+    ) -> StdResult<InRouteByDenomResponse> {
+        let request = QueryRequest::Custom(ElysQuery::in_route_by_denom(
+            denom_in.into(),
+            denom_out.into(),
+        ));
+        let resp: InRouteByDenomResponse = self.querier.query(&request)?;
+
+        Ok(resp)
+    }
 }

@@ -2,7 +2,7 @@ use elys_bindings::types::PageRequest;
 
 use super::*;
 use crate::msg::InstantiateMsg;
-use crate::states::{AMM_ROUTES, EXPIRATION, PAGINATION};
+use crate::states::{EXPIRATION, PAGINATION};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -22,6 +22,5 @@ pub fn instantiate(
             count_total: false,
         },
     )?;
-    AMM_ROUTES.save(deps.storage, &msg.amm_routes)?;
     Ok(Response::new())
 }

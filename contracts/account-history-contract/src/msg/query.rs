@@ -1,10 +1,10 @@
 #[allow(unused_imports)]
-use crate::types::AccountValue;
+use super::query_resp::UserValueResponse;
 use cosmwasm_schema::{cw_serde, QueryResponses};
 
 #[cw_serde]
 #[derive(QueryResponses)]
 pub enum QueryMsg {
-    #[returns(Vec<AccountValue>)]
-    UserHistory { user_address: String },
+    #[returns(UserValueResponse)]
+    UserValue { user_address: String },
 }
