@@ -1,7 +1,9 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal};
 
-use crate::types::{BaseAccount, Mtp, OracleAssetInfo, PageResponse, Price};
+use crate::types::{
+    BaseAccount, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute, SwapAmountOutRoute,
+};
 
 #[cw_serde]
 pub struct OracleAllPriceResponse {
@@ -35,4 +37,12 @@ pub struct MarginMtpResponse {
 pub struct AuthAccountsResponse {
     pub accounts: Vec<BaseAccount>,
     pub pagination: PageResponse,
+}
+
+#[cw_serde]
+pub struct AmmSwapEstimationByDenomResponse {
+    pub in_route: Option<Vec<SwapAmountInRoute>>,
+    pub out_route: Option<Vec<SwapAmountOutRoute>>,
+    pub spot_price: Decimal,
+    pub amount: Coin,
 }

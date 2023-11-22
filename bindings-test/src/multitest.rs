@@ -17,10 +17,13 @@ use elys_bindings::{
         MarginOpenResponse,
     },
     query_resp::{
-        AmmSwapEstimationResponse, AuthAccountsResponse, MarginMtpResponse,
-        MarginQueryPositionsResponse,
+        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAccountsResponse,
+        MarginMtpResponse, MarginQueryPositionsResponse,
     },
-    types::{BaseAccount, Mtp, OracleAssetInfo, Price, PublicKey, Sum},
+    types::{
+        BaseAccount, Mtp, OracleAssetInfo, Price, PublicKey, Sum, SwapAmountInRoute,
+        SwapAmountOutRoute,
+    },
     ElysMsg, ElysQuery,
 };
 use std::cmp::max;
@@ -129,6 +132,64 @@ impl Module for ElysModule {
                     spot_price,
                     token_out: coin(token_out_amount, &routes[0].token_out_denom),
                 })?)
+            }
+            ElysQuery::AmmSwapEstimationByDenom {
+                amount,
+                denom_in,
+                denom_out,
+            } => {
+                let prices = &self.get_all_price(storage)?;
+                let price_in = prices.iter().find(|price| price.asset == denom_in).unwrap();
+                let price_out = prices
+                    .iter()
+                    .find(|price| price.asset == denom_out)
+                    .unwrap();
+                let spot_price = price_in.price / price_out.price;
+
+                let token_estimation = if amount.denom == denom_in {
+                    coin(
+                        (Decimal::from_atomics(amount.amount, spot_price.decimal_places())?
+                            * &spot_price)
+                            .atomics()
+                            .u128(),
+                        denom_out.clone(),
+                    )
+                } else {
+                    coin(
+                        (Decimal::from_atomics(amount.amount, spot_price.decimal_places())?
+                            / &spot_price)
+                            .atomics()
+                            .u128(),
+                        denom_in.clone(),
+                    )
+                };
+
+                let (in_route, out_route) = if amount.denom == denom_in {
+                    (
+                        Some(vec![SwapAmountInRoute {
+                            pool_id: 1,
+                            token_out_denom: denom_out,
+                        }]),
+                        None,
+                    )
+                } else {
+                    (
+                        None,
+                        Some(vec![SwapAmountOutRoute {
+                            pool_id: 1,
+                            token_in_denom: denom_in,
+                        }]),
+                    )
+                };
+
+                let resp = AmmSwapEstimationByDenomResponse {
+                    in_route,
+                    out_route,
+                    spot_price,
+                    amount: token_estimation,
+                };
+
+                Ok(to_json_binary(&resp)?)
             }
             ElysQuery::MarginMtp { address, id } => {
                 let mtps = MARGIN_OPENED_POSITION.load(storage)?;
