@@ -16,6 +16,8 @@ pub enum ElysQuery {
         routes: Vec<SwapAmountInRoute>,
         token_in: Coin,
     },
+    #[returns(InRouteByDenomResponse)]
+    InRouteByDenom { denom_in: String, denom_out: String },
     // Define OracleQuery
     #[returns(OracleAllPriceResponse)]
     OraclePriceAll { pagination: PageRequest },
@@ -51,5 +53,14 @@ impl ElysQuery {
     }
     pub fn positions(pagination: PageRequest) -> Self {
         Self::MarginQueryPositions { pagination }
+    }
+    pub fn accounts(pagination: PageRequest) -> Self {
+        Self::AuthAccounts { pagination }
+    }
+    pub fn in_route_by_denom(denom_in: String, denom_out: String) -> Self {
+        Self::InRouteByDenom {
+            denom_in,
+            denom_out,
+        }
     }
 }
