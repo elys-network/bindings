@@ -18,6 +18,12 @@ pub enum ElysQuery {
     },
     #[returns(InRouteByDenomResponse)]
     InRouteByDenom { denom_in: String, denom_out: String },
+    #[returns(AmmSwapEstimationByDenomResponse)]
+    AmmSwapEstimationByDenom {
+        amount: Coin,
+        denom_in: String,
+        denom_out: String,
+    },
     // Define OracleQuery
     #[returns(OracleAllPriceResponse)]
     OraclePriceAll { pagination: PageRequest },
@@ -59,6 +65,13 @@ impl ElysQuery {
     }
     pub fn in_route_by_denom(denom_in: String, denom_out: String) -> Self {
         Self::InRouteByDenom {
+            denom_in,
+            denom_out,
+        }
+    }
+    pub fn amm_swap_estimation_by_denom(amount: Coin, denom_in: String, denom_out: String) -> Self {
+        Self::AmmSwapEstimationByDenom {
+            amount,
             denom_in,
             denom_out,
         }

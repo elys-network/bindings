@@ -41,6 +41,21 @@ impl<'a> ElysQuerier<'a> {
         let resp: AmmSwapEstimationResponse = self.querier.query(&request)?;
         Ok(resp)
     }
+    pub fn amm_swap_estimation_by_denom(
+        &self,
+        amount: &Coin,
+        denom_in: impl Into<String>,
+        denom_out: impl Into<String>,
+    ) -> StdResult<AmmSwapEstimationByDenomResponse> {
+        let request = QueryRequest::Custom(ElysQuery::amm_swap_estimation_by_denom(
+            amount.to_owned(),
+            denom_in.into(),
+            denom_out.into(),
+        ));
+        let resp: AmmSwapEstimationByDenomResponse = self.querier.query(&request)?;
+
+        Ok(resp)
+    }
     pub fn asset_info(&self, denom: String) -> StdResult<OracleAssetInfoResponse> {
         let request = QueryRequest::Custom(ElysQuery::oracle_asset_info(denom));
         let resp: OracleAssetInfoResponse = self.querier.query(&request)?;

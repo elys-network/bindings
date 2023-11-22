@@ -193,6 +193,12 @@ impl SwapAmountInRoute {
 }
 
 #[cw_serde]
+pub struct SwapAmountOutRoute {
+    pub pool_id: u64,
+    pub token_in_denom: String,
+}
+
+#[cw_serde]
 pub enum MarginPosition {
     Unspecified = 0,
     Long = 1,
