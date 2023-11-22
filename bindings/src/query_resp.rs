@@ -40,6 +40,11 @@ pub struct AuthAccountsResponse {
 }
 
 #[cw_serde]
+pub struct InRouteByDenomResponse {
+    pub in_routes: Vec<SwapAmountInRoute>,
+}
+
+#[cw_serde]
 pub struct AmmSwapEstimationByDenomResponse {
     pub in_route: Option<Vec<SwapAmountInRoute>>,
     pub out_route: Option<Vec<SwapAmountOutRoute>>,

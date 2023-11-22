@@ -28,3 +28,9 @@ jobs:
           cargo build --verbose
           cargo test --verbose
         working-directory: bindings
+
+      - name: Build and test account history contract
+        run: |
+          cargo build --verbose
+          cargo test --verbose
+        working-directory: contracts/account-history-contract
