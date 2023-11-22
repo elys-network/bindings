@@ -41,7 +41,7 @@ fn history() {
         )
         .unwrap();
 
-    let update_msg = SudoMsg::UpdateAccounts {};
+    let update_msg = SudoMsg::ClockEndBlock {};
 
     app.wasm_sudo(addr.clone(), &update_msg).unwrap();
 
