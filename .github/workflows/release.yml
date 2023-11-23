@@ -24,6 +24,5 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: cosmwasm-artifacts.tar.gz
-          body_path: CHANGELOG.md
-        working-directory: contracts/account-history-contract
+          files: contracts/account-history-contract/cosmwasm-artifacts.tar.gz
+          body_path: contracts/account-history-contract/CHANGELOG.md
