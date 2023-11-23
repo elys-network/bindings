@@ -396,6 +396,7 @@ impl Module for ElysModule {
                 let burn = BankMsg::Burn {
                     amount: collaterals.clone(),
                 };
+
                 router
                     .execute(
                         api,

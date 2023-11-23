@@ -450,7 +450,9 @@ fn auth_account() {
 }
 #[test]
 fn margin_broker_open() {
-    let mut app = ElysApp::new();
+    let wallets = vec![("user", coins(2, "btc"))];
+
+    let mut app = ElysApp::new_with_wallets(wallets);
 
     let req = ElysMsg::margin_broker_open_position(
         "user",
