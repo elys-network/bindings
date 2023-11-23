@@ -393,6 +393,20 @@ impl Module for ElysModule {
                 };
                 let collaterals = coins(collateral_amount.i128() as u128, collateral_asset);
 
+                let burn = BankMsg::Burn {
+                    amount: collaterals.clone(),
+                };
+
+                router
+                    .execute(
+                        api,
+                        storage,
+                        block,
+                        Addr::unchecked(sender.clone()),
+                        burn.into(),
+                    )
+                    .unwrap();
+
                 let order: Mtp = Mtp {
                     address: creator,
                     collaterals: collaterals.clone(),

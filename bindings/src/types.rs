@@ -217,40 +217,6 @@ impl MarginPosition {
 }
 
 #[cw_serde]
-pub struct MarginOrder {
-    pub order_id: u64,
-    pub position: MarginPosition,
-    pub collateral: Coin,
-    pub borrow_token: Coin,
-    pub creator: String,
-    pub leverage: Decimal,
-    pub take_profit_price: Decimal,
-}
-
-impl MarginOrder {
-    pub fn new(
-        position: MarginPosition,
-        creator: impl Into<String>,
-        collateral: Coin,
-        leverage: Decimal,
-        borrow_token: Coin,
-        take_profit_price: Decimal,
-    ) -> Self {
-        let order_id: u64 = 0;
-
-        Self {
-            order_id,
-            position,
-            collateral,
-            borrow_token,
-            creator: creator.into(),
-            leverage,
-            take_profit_price,
-        }
-    }
-}
-
-#[cw_serde]
 pub struct Mtp {
     pub address: String,
     pub collaterals: Vec<Coin>,
