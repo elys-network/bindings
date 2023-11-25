@@ -40,6 +40,7 @@ pub enum ElysMsg {
         routes: Vec<SwapAmountInRoute>,
         token_in: Coin,
         token_out_min_amount: Int128,
+        discount: Decimal,
     },
 }
 
@@ -49,12 +50,14 @@ impl ElysMsg {
         token_in: &Coin,
         token_route: &Vec<SwapAmountInRoute>,
         token_out_min_amount: Int128,
+        discount: Decimal,
     ) -> Self {
         Self::AmmSwapExactAmountIn {
             sender: sender.to_owned(),
             routes: token_route.to_owned(),
             token_in: token_in.to_owned(),
             token_out_min_amount,
+            discount,
         }
     }
 

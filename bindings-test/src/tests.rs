@@ -231,7 +231,7 @@ fn swap() {
         token_out_denom: "usdc".to_string(),
     }];
 
-    let msg = ElysMsg::amm_swap_exact_amount_in("user", &coin(5, "btc"), &routes, Int128::zero());
+    let msg = ElysMsg::amm_swap_exact_amount_in("user", &coin(5, "btc"), &routes, Int128::zero(), Decimal::zero());
 
     assert_eq!(
         app.wrap()
@@ -289,7 +289,7 @@ fn swap_error() {
     }];
 
     let msg =
-        ElysMsg::amm_swap_exact_amount_in("user", &coin(5, "btc"), &routes, Int128::new(100002));
+        ElysMsg::amm_swap_exact_amount_in("user", &coin(5, "btc"), &routes, Int128::new(100002), Decimal::zero());
 
     assert_eq!(
         app.wrap()
