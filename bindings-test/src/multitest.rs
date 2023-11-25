@@ -13,8 +13,8 @@ use cw_multi_test::{App, AppResponse, BankKeeper, BankSudo, BasicAppBuilder, Mod
 use cw_storage_plus::Item;
 use elys_bindings::{
     msg_resp::{
-        AmmSwapExactAmountInResp, MarginBrokerCloseResResponse, MarginCloseResponse,
-        MarginOpenResponse,
+        AmmSwapByDenomResponse, AmmSwapExactAmountInResp, MarginBrokerCloseResResponse,
+        MarginCloseResponse, MarginOpenResponse,
     },
     query_resp::{
         AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAccountsResponse,
@@ -446,6 +446,61 @@ impl Module for ElysModule {
                 Ok(AppResponse {
                     events: vec![],
                     data,
+                })
+            }
+            ElysMsg::AmmSwapByDenom {
+                sender,
+                amount,
+                min_amount,
+                in_denom,
+                out_denom,
+                discount,
+                ..
+            } => {
+                LAST_MODULE_USED.save(storage, &Some("AmmSwapByDenom".to_string()))?;
+                let prices = PRICES.load(storage)?;
+
+                let price_in = prices.iter().find(|p| p.asset == in_denom).unwrap();
+                let price_out = prices.iter().find(|p| p.asset == out_denom).unwrap();
+
+                let spot_price = price_in.price / price_out.price;
+
+                let mint_amount = coins((amount.amount * spot_price).u128(), &out_denom);
+
+                if mint_amount[0].amount.u128() <= min_amount.amount.u128() {
+                    return Err(Error::new(StdError::generic_err("not enough token")));
+                }
+
+                let data = to_json_binary(&AmmSwapByDenomResponse {
+                    amount: mint_amount[0].clone(),
+                    in_route: Some(vec![SwapAmountInRoute::new(1, out_denom)]),
+                    out_route: None,
+                    spot_price,
+                    discount,
+                })?;
+
+                let mint = BankSudo::Mint {
+                    to_address: sender.clone(),
+                    amount: mint_amount.clone(),
+                };
+
+                let burn = BankMsg::Burn {
+                    amount: vec![amount],
+                };
+                router
+                    .execute(
+                        api,
+                        storage,
+                        block,
+                        Addr::unchecked(sender.clone()),
+                        burn.into(),
+                    )
+                    .unwrap();
+                router.sudo(api, storage, block, mint.into()).unwrap();
+
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
                 })
             }
         }

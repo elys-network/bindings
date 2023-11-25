@@ -129,6 +129,25 @@ impl ElysMsg {
             owner: owner.into(),
         }
     }
+    pub fn swap_by_denom(
+        sender: impl Into<String>,
+        amount: Coin,
+        min_amount: Coin,
+        max_amount: Coin,
+        in_denom: impl Into<String>,
+        out_denom: impl Into<String>,
+        discount: Decimal,
+    ) -> Self {
+        Self::AmmSwapByDenom {
+            sender: sender.into(),
+            amount,
+            min_amount,
+            max_amount,
+            in_denom: in_denom.into(),
+            out_denom: out_denom.into(),
+            discount,
+        }
+    }
 }
 
 impl From<ElysMsg> for CosmosMsg<ElysMsg> {
