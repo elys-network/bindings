@@ -1,8 +1,6 @@
 use cosmwasm_std::{coin, BlockInfo, Coin, Uint128};
 use cw_utils::Expiration;
-use elys_bindings::query_resp::{
-    AmmSwapEstimationResponse, AuthAccountsResponse, InRouteByDenomResponse,
-};
+use elys_bindings::query_resp::{AmmSwapEstimationByDenomResponse, AuthAccountsResponse};
 
 use crate::types::AccountValue;
 
@@ -57,13 +55,9 @@ fn create_new_part(
             value += balence.amount;
             continue;
         }
-        let InRouteByDenomResponse { in_routes } =
-            querier.in_route_by_denom(&balence.denom, "uusdc")?;
-
-        let AmmSwapEstimationResponse { token_out, .. } =
-            querier.amm_swap_estimation(&in_routes, &balence)?;
-
-        value += token_out.amount;
+        let AmmSwapEstimationByDenomResponse { amount, .. } =
+            querier.amm_swap_estimation_by_denom(&balence, &balence.denom, "uusdc")?;
+        value += amount.amount;
     }
 
     Ok(AccountValue {

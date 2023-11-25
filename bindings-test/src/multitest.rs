@@ -18,7 +18,7 @@ use elys_bindings::{
     },
     query_resp::{
         AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAccountsResponse,
-        InRouteByDenomResponse, MarginMtpResponse, MarginQueryPositionsResponse,
+        MarginMtpResponse, MarginQueryPositionsResponse,
     },
     types::{
         BaseAccount, Mtp, OracleAssetInfo, Price, PublicKey, Sum, SwapAmountInRoute,
@@ -217,13 +217,6 @@ impl Module for ElysModule {
                 let resp = AuthAccountsResponse {
                     accounts,
                     pagination,
-                };
-
-                Ok(to_json_binary(&resp)?)
-            }
-            ElysQuery::InRouteByDenom { denom_out, .. } => {
-                let resp = InRouteByDenomResponse {
-                    in_routes: vec![SwapAmountInRoute::new(1, denom_out)],
                 };
 
                 Ok(to_json_binary(&resp)?)
