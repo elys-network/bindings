@@ -16,8 +16,6 @@ pub enum ElysQuery {
         routes: Vec<SwapAmountInRoute>,
         token_in: Coin,
     },
-    #[returns(InRouteByDenomResponse)]
-    InRouteByDenom { denom_in: String, denom_out: String },
     #[returns(AmmSwapEstimationByDenomResponse)]
     AmmSwapEstimationByDenom {
         amount: Coin,
@@ -63,12 +61,7 @@ impl ElysQuery {
     pub fn accounts(pagination: PageRequest) -> Self {
         Self::AuthAccounts { pagination }
     }
-    pub fn in_route_by_denom(denom_in: String, denom_out: String) -> Self {
-        Self::InRouteByDenom {
-            denom_in,
-            denom_out,
-        }
-    }
+
     pub fn amm_swap_estimation_by_denom(amount: Coin, denom_in: String, denom_out: String) -> Self {
         Self::AmmSwapEstimationByDenom {
             amount,
