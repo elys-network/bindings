@@ -42,6 +42,15 @@ pub enum ElysMsg {
         token_out_min_amount: Int128,
         discount: Decimal,
     },
+    AmmSwapByDenom {
+        sender: String,
+        amount: Coin,
+        min_amount: Coin,
+        max_amount: Coin,
+        in_denom: String,
+        out_denom: String,
+        discount: Decimal,
+    },
 }
 
 impl ElysMsg {
