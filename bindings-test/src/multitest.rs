@@ -255,6 +255,7 @@ impl Module for ElysModule {
                 routes,
                 token_in,
                 token_out_min_amount,
+                discount,
             } => {
                 LAST_MODULE_USED.save(storage, &Some("AmmSwap".to_string()))?;
                 let route = routes[0].clone();
@@ -276,6 +277,7 @@ impl Module for ElysModule {
 
                 let data = to_json_binary(&AmmSwapExactAmountInResp {
                     token_out_amount: Int64::new(mint_amount[0].amount.u128() as i64),
+                    discount,
                 })?;
 
                 let mint = BankSudo::Mint {
