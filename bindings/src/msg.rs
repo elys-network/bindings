@@ -41,6 +41,7 @@ pub enum ElysMsg {
         token_in: Coin,
         token_out_min_amount: Int128,
         discount: Decimal,
+        recipient: String,
     },
     AmmSwapByDenom {
         sender: String,
@@ -50,23 +51,26 @@ pub enum ElysMsg {
         in_denom: String,
         out_denom: String,
         discount: Decimal,
+        recipient: String,
     },
 }
 
 impl ElysMsg {
     pub fn amm_swap_exact_amount_in(
-        sender: &str,
+        sender: impl Into<String>,
         token_in: &Coin,
         token_route: &Vec<SwapAmountInRoute>,
         token_out_min_amount: Int128,
         discount: Decimal,
+        recipient: impl Into<String>,
     ) -> Self {
         Self::AmmSwapExactAmountIn {
-            sender: sender.to_owned(),
+            sender: sender.into(),
             routes: token_route.to_owned(),
             token_in: token_in.to_owned(),
             token_out_min_amount,
             discount,
+            recipient: recipient.into(),
         }
     }
 
@@ -137,6 +141,7 @@ impl ElysMsg {
         in_denom: impl Into<String>,
         out_denom: impl Into<String>,
         discount: Decimal,
+        recipient: impl Into<String>,
     ) -> Self {
         Self::AmmSwapByDenom {
             sender: sender.into(),
@@ -145,6 +150,7 @@ impl ElysMsg {
             max_amount,
             in_denom: in_denom.into(),
             out_denom: out_denom.into(),
+            recipient: recipient.into(),
             discount,
         }
     }

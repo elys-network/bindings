@@ -249,6 +249,7 @@ impl Module for ElysModule {
                 token_in,
                 token_out_min_amount,
                 discount,
+                recipient,
             } => {
                 LAST_MODULE_USED.save(storage, &Some("AmmSwap".to_string()))?;
                 let route = routes[0].clone();
@@ -274,7 +275,7 @@ impl Module for ElysModule {
                 })?;
 
                 let mint = BankSudo::Mint {
-                    to_address: sender.clone(),
+                    to_address: recipient,
                     amount: mint_amount.clone(),
                 };
 
