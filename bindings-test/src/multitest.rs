@@ -1,4 +1,7 @@
-use std::ops::{Deref, DerefMut};
+use std::{
+    ops::{Deref, DerefMut},
+    str::FromStr,
+};
 
 use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::Int128;
@@ -13,8 +16,8 @@ use cw_multi_test::{App, AppResponse, BankKeeper, BankSudo, BasicAppBuilder, Mod
 use cw_storage_plus::Item;
 use elys_bindings::{
     msg_resp::{
-        AmmSwapExactAmountInResp, MarginBrokerCloseResResponse, MarginCloseResponse,
-        MarginOpenResponse,
+        AmmSwapByDenomResponse, AmmSwapExactAmountInResp, MarginBrokerCloseResResponse,
+        MarginCloseResponse, MarginOpenResponse,
     },
     query_resp::{
         AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAccountsResponse,
@@ -111,7 +114,11 @@ impl Module for ElysModule {
                     None => Err(Error::new(StdError::not_found("asset denom"))),
                 }
             }
-            ElysQuery::AmmSwapEstimation { routes, token_in } => {
+            ElysQuery::AmmSwapEstimation {
+                routes,
+                token_in,
+                discount,
+            } => {
                 let prices = &self.get_all_price(storage)?;
                 let price_in = prices
                     .iter()
@@ -131,12 +138,16 @@ impl Module for ElysModule {
                 Ok(to_json_binary(&AmmSwapEstimationResponse {
                     spot_price,
                     token_out: coin(token_out_amount, &routes[0].token_out_denom),
+                    discount,
+                    swap_fee: Decimal::from_str("0.1").unwrap(),
+                    available_liquidity: coin(999999, &routes[0].token_out_denom),
                 })?)
             }
             ElysQuery::AmmSwapEstimationByDenom {
                 amount,
                 denom_in,
                 denom_out,
+                discount,
             } => {
                 let prices = &self.get_all_price(storage)?;
                 let price_in = prices.iter().find(|price| price.asset == denom_in).unwrap();
@@ -168,7 +179,7 @@ impl Module for ElysModule {
                     (
                         Some(vec![SwapAmountInRoute {
                             pool_id: 1,
-                            token_out_denom: denom_out,
+                            token_out_denom: denom_out.clone(),
                         }]),
                         None,
                     )
@@ -187,6 +198,9 @@ impl Module for ElysModule {
                     out_route,
                     spot_price,
                     amount: token_estimation,
+                    discount,
+                    swap_fee: Decimal::from_str("0.1").unwrap(),
+                    available_liquidity: coin(999999, denom_out),
                 };
 
                 Ok(to_json_binary(&resp)?)
@@ -249,6 +263,7 @@ impl Module for ElysModule {
                 token_in,
                 token_out_min_amount,
                 discount,
+                recipient,
             } => {
                 LAST_MODULE_USED.save(storage, &Some("AmmSwap".to_string()))?;
                 let route = routes[0].clone();
@@ -271,10 +286,12 @@ impl Module for ElysModule {
                 let data = to_json_binary(&AmmSwapExactAmountInResp {
                     token_out_amount: Int64::new(mint_amount[0].amount.u128() as i64),
                     discount,
+                    swap_fee: Decimal::from_str("0.1").unwrap(),
+                    recipient: recipient.clone(),
                 })?;
 
                 let mint = BankSudo::Mint {
-                    to_address: sender.clone(),
+                    to_address: recipient,
                     amount: mint_amount.clone(),
                 };
 
@@ -446,6 +463,64 @@ impl Module for ElysModule {
                 Ok(AppResponse {
                     events: vec![],
                     data,
+                })
+            }
+            ElysMsg::AmmSwapByDenom {
+                sender,
+                amount,
+                min_amount,
+                in_denom,
+                out_denom,
+                discount,
+                recipient,
+                ..
+            } => {
+                LAST_MODULE_USED.save(storage, &Some("AmmSwapByDenom".to_string()))?;
+                let prices = PRICES.load(storage)?;
+
+                let price_in = prices.iter().find(|p| p.asset == in_denom).unwrap();
+                let price_out = prices.iter().find(|p| p.asset == out_denom).unwrap();
+
+                let spot_price = price_in.price / price_out.price;
+
+                let mint_amount = coins((amount.amount * spot_price).u128(), &out_denom);
+
+                if mint_amount[0].amount.u128() <= min_amount.amount.u128() {
+                    return Err(Error::new(StdError::generic_err("not enough token")));
+                }
+
+                let data = to_json_binary(&AmmSwapByDenomResponse {
+                    amount: mint_amount[0].clone(),
+                    in_route: Some(vec![SwapAmountInRoute::new(1, out_denom)]),
+                    out_route: None,
+                    spot_price,
+                    discount,
+                    swap_fee: Decimal::from_str("0.1").unwrap(),
+                    recipient,
+                })?;
+
+                let mint = BankSudo::Mint {
+                    to_address: sender.clone(),
+                    amount: mint_amount.clone(),
+                };
+
+                let burn = BankMsg::Burn {
+                    amount: vec![amount],
+                };
+                router
+                    .execute(
+                        api,
+                        storage,
+                        block,
+                        Addr::unchecked(sender.clone()),
+                        burn.into(),
+                    )
+                    .unwrap();
+                router.sudo(api, storage, block, mint.into()).unwrap();
+
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
                 })
             }
         }

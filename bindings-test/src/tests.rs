@@ -74,7 +74,7 @@ fn amm_swap_estimation() {
     let swap: AmmSwapEstimationResponse = app
         .wrap()
         .query(&cosmwasm_std::QueryRequest::Custom(
-            ElysQuery::amm_swap_estimation(routes, coin(5, "btc")),
+            ElysQuery::amm_swap_estimation(routes, coin(5, "btc"), Decimal::zero()),
         ))
         .unwrap();
 
@@ -231,7 +231,14 @@ fn swap() {
         token_out_denom: "usdc".to_string(),
     }];
 
-    let msg = ElysMsg::amm_swap_exact_amount_in("user", &coin(5, "btc"), &routes, Int128::zero(), Decimal::zero());
+    let msg = ElysMsg::amm_swap_exact_amount_in(
+        "user",
+        &coin(5, "btc"),
+        &routes,
+        Int128::zero(),
+        Decimal::zero(),
+        "user",
+    );
 
     assert_eq!(
         app.wrap()
@@ -288,8 +295,14 @@ fn swap_error() {
         token_out_denom: "usdc".to_string(),
     }];
 
-    let msg =
-        ElysMsg::amm_swap_exact_amount_in("user", &coin(5, "btc"), &routes, Int128::new(100002), Decimal::zero());
+    let msg = ElysMsg::amm_swap_exact_amount_in(
+        "user",
+        &coin(5, "btc"),
+        &routes,
+        Int128::new(100002),
+        Decimal::zero(),
+        "user",
+    );
 
     assert_eq!(
         app.wrap()

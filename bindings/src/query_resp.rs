@@ -15,6 +15,9 @@ pub struct OracleAllPriceResponse {
 pub struct AmmSwapEstimationResponse {
     pub spot_price: Decimal,
     pub token_out: Coin,
+    pub discount: Decimal,
+    pub swap_fee: Decimal,
+    pub available_liquidity: Coin,
 }
 
 #[cw_serde]
@@ -50,4 +53,7 @@ pub struct AmmSwapEstimationByDenomResponse {
     pub out_route: Option<Vec<SwapAmountOutRoute>>,
     pub spot_price: Decimal,
     pub amount: Coin,
+    pub discount: Decimal,
+    pub swap_fee: Decimal,
+    pub available_liquidity: Coin,
 }

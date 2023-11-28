@@ -123,7 +123,7 @@ impl PageRequest {
         };
 
         let total = if self.count_total {
-            Some(filter_vec.len() as u64)
+            Some(static_vec.len() as u64)
         } else {
             None
         };

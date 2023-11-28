@@ -1,4 +1,4 @@
-use cosmwasm_std::{Coin, QuerierWrapper, QueryRequest, StdResult};
+use cosmwasm_std::{Coin, Decimal, QuerierWrapper, QueryRequest, StdResult};
 
 use crate::{
     query::*,
@@ -33,10 +33,12 @@ impl<'a> ElysQuerier<'a> {
         &self,
         routes: &Vec<SwapAmountInRoute>,
         token_in: &Coin,
+        discount: &Decimal,
     ) -> StdResult<AmmSwapEstimationResponse> {
         let request = QueryRequest::Custom(ElysQuery::amm_swap_estimation(
             routes.to_owned(),
             token_in.to_owned(),
+            discount.to_owned(),
         ));
         let resp: AmmSwapEstimationResponse = self.querier.query(&request)?;
         Ok(resp)
@@ -46,11 +48,13 @@ impl<'a> ElysQuerier<'a> {
         amount: &Coin,
         denom_in: impl Into<String>,
         denom_out: impl Into<String>,
+        discount: &Decimal,
     ) -> StdResult<AmmSwapEstimationByDenomResponse> {
         let request = QueryRequest::Custom(ElysQuery::amm_swap_estimation_by_denom(
             amount.to_owned(),
             denom_in.into(),
             denom_out.into(),
+            discount.to_owned(),
         ));
         let resp: AmmSwapEstimationByDenomResponse = self.querier.query(&request)?;
 
