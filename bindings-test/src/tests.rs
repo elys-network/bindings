@@ -74,7 +74,7 @@ fn amm_swap_estimation() {
     let swap: AmmSwapEstimationResponse = app
         .wrap()
         .query(&cosmwasm_std::QueryRequest::Custom(
-            ElysQuery::amm_swap_estimation(routes, coin(5, "btc")),
+            ElysQuery::amm_swap_estimation(routes, coin(5, "btc"), Decimal::zero()),
         ))
         .unwrap();
 

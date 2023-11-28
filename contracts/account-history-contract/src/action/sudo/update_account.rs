@@ -1,4 +1,4 @@
-use cosmwasm_std::{coin, BlockInfo, Coin, Uint128};
+use cosmwasm_std::{coin, BlockInfo, Coin, Decimal, Uint128};
 use cw_utils::Expiration;
 use elys_bindings::query_resp::{AmmSwapEstimationByDenomResponse, AuthAccountsResponse};
 
@@ -55,8 +55,8 @@ fn create_new_part(
             value += balence.amount;
             continue;
         }
-        let AmmSwapEstimationByDenomResponse { amount, .. } =
-            querier.amm_swap_estimation_by_denom(&balence, &balence.denom, "uusdc")?;
+        let AmmSwapEstimationByDenomResponse { amount, .. } = querier
+            .amm_swap_estimation_by_denom(&balence, &balence.denom, "uusdc", &Decimal::zero())?;
         value += amount.amount;
     }
 

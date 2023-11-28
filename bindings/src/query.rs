@@ -4,7 +4,7 @@ use crate::types::{PageRequest, SwapAmountInRoute};
 use super::query_resp::*;
 
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::{Coin, CustomQuery};
+use cosmwasm_std::{Coin, CustomQuery, Decimal};
 
 // Now define ElysQuery to include the new OracleQuery and AmmQuery
 #[cw_serde]
@@ -15,12 +15,14 @@ pub enum ElysQuery {
     AmmSwapEstimation {
         routes: Vec<SwapAmountInRoute>,
         token_in: Coin,
+        discount: Decimal,
     },
     #[returns(AmmSwapEstimationByDenomResponse)]
     AmmSwapEstimationByDenom {
         amount: Coin,
         denom_in: String,
         denom_out: String,
+        discount: Decimal,
     },
     // Define OracleQuery
     #[returns(OracleAllPriceResponse)]
@@ -40,8 +42,16 @@ pub enum ElysQuery {
 impl CustomQuery for ElysQuery {}
 
 impl ElysQuery {
-    pub fn amm_swap_estimation(routes: Vec<SwapAmountInRoute>, token_in: Coin) -> Self {
-        Self::AmmSwapEstimation { routes, token_in }
+    pub fn amm_swap_estimation(
+        routes: Vec<SwapAmountInRoute>,
+        token_in: Coin,
+        discount: Decimal,
+    ) -> Self {
+        Self::AmmSwapEstimation {
+            routes,
+            token_in,
+            discount,
+        }
     }
     pub fn oracle_get_all_prices(pagination: PageRequest) -> Self {
         Self::OraclePriceAll { pagination }
@@ -62,11 +72,17 @@ impl ElysQuery {
         Self::AuthAccounts { pagination }
     }
 
-    pub fn amm_swap_estimation_by_denom(amount: Coin, denom_in: String, denom_out: String) -> Self {
+    pub fn amm_swap_estimation_by_denom(
+        amount: Coin,
+        denom_in: String,
+        denom_out: String,
+        discount: Decimal,
+    ) -> Self {
         Self::AmmSwapEstimationByDenom {
             amount,
             denom_in,
             denom_out,
+            discount,
         }
     }
 }

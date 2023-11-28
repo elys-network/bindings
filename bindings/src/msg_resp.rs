@@ -7,6 +7,8 @@ use crate::types::{SwapAmountInRoute, SwapAmountOutRoute};
 pub struct AmmSwapExactAmountInResp {
     pub token_out_amount: Int64,
     pub discount: Decimal,
+    pub swap_fee: Decimal,
+    pub recipient: String,
 }
 
 #[cw_serde]
@@ -15,6 +17,8 @@ pub struct AmmSwapByDenomResponse {
     pub in_route: Option<Vec<SwapAmountInRoute>>,
     pub out_route: Option<Vec<SwapAmountOutRoute>>,
     pub spot_price: Decimal,
+    pub swap_fee: Decimal,
+    pub recipient: String,
     pub discount: Decimal,
 }
 

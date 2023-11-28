@@ -1,4 +1,7 @@
-use std::ops::{Deref, DerefMut};
+use std::{
+    ops::{Deref, DerefMut},
+    str::FromStr,
+};
 
 use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::Int128;
@@ -111,7 +114,11 @@ impl Module for ElysModule {
                     None => Err(Error::new(StdError::not_found("asset denom"))),
                 }
             }
-            ElysQuery::AmmSwapEstimation { routes, token_in } => {
+            ElysQuery::AmmSwapEstimation {
+                routes,
+                token_in,
+                discount,
+            } => {
                 let prices = &self.get_all_price(storage)?;
                 let price_in = prices
                     .iter()
@@ -131,12 +138,16 @@ impl Module for ElysModule {
                 Ok(to_json_binary(&AmmSwapEstimationResponse {
                     spot_price,
                     token_out: coin(token_out_amount, &routes[0].token_out_denom),
+                    discount,
+                    swap_fee: Decimal::from_str("0.1").unwrap(),
+                    available_liquidity: coin(999999, &routes[0].token_out_denom),
                 })?)
             }
             ElysQuery::AmmSwapEstimationByDenom {
                 amount,
                 denom_in,
                 denom_out,
+                discount,
             } => {
                 let prices = &self.get_all_price(storage)?;
                 let price_in = prices.iter().find(|price| price.asset == denom_in).unwrap();
@@ -168,7 +179,7 @@ impl Module for ElysModule {
                     (
                         Some(vec![SwapAmountInRoute {
                             pool_id: 1,
-                            token_out_denom: denom_out,
+                            token_out_denom: denom_out.clone(),
                         }]),
                         None,
                     )
@@ -187,6 +198,9 @@ impl Module for ElysModule {
                     out_route,
                     spot_price,
                     amount: token_estimation,
+                    discount,
+                    swap_fee: Decimal::from_str("0.1").unwrap(),
+                    available_liquidity: coin(999999, denom_out),
                 };
 
                 Ok(to_json_binary(&resp)?)
@@ -272,6 +286,8 @@ impl Module for ElysModule {
                 let data = to_json_binary(&AmmSwapExactAmountInResp {
                     token_out_amount: Int64::new(mint_amount[0].amount.u128() as i64),
                     discount,
+                    swap_fee: Decimal::from_str("0.1").unwrap(),
+                    recipient: recipient.clone(),
                 })?;
 
                 let mint = BankSudo::Mint {
@@ -456,6 +472,7 @@ impl Module for ElysModule {
                 in_denom,
                 out_denom,
                 discount,
+                recipient,
                 ..
             } => {
                 LAST_MODULE_USED.save(storage, &Some("AmmSwapByDenom".to_string()))?;
@@ -478,6 +495,8 @@ impl Module for ElysModule {
                     out_route: None,
                     spot_price,
                     discount,
+                    swap_fee: Decimal::from_str("0.1").unwrap(),
+                    recipient,
                 })?;
 
                 let mint = BankSudo::Mint {
