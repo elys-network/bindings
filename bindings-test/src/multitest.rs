@@ -351,6 +351,10 @@ impl Module for ElysModule {
                     consolidate_leverage: Decimal::zero(),
                     sum_collateral: Int128::zero(),
                     take_profit_price,
+                    funding_fee_paid_collaterals: vec![],
+                    funding_fee_paid_custodies: vec![],
+                    funding_fee_received_collaterals: vec![],
+                    funding_fee_received_custodies: vec![],
                 };
 
                 let msg_resp = MarginOpenResponse { id: order_id };
@@ -437,6 +441,10 @@ impl Module for ElysModule {
                     consolidate_leverage: Decimal::zero(),
                     sum_collateral: Int128::zero(),
                     take_profit_price,
+                    funding_fee_paid_collaterals: vec![],
+                    funding_fee_paid_custodies: vec![],
+                    funding_fee_received_collaterals: vec![],
+                    funding_fee_received_custodies: vec![],
                 };
 
                 order_vec.push(order);

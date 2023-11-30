@@ -235,6 +235,10 @@ pub struct Mtp {
     pub consolidate_leverage: Decimal,
     pub sum_collateral: Int128,
     pub take_profit_price: Decimal,
+    pub funding_fee_paid_collaterals: Vec<Coin>,
+    pub funding_fee_paid_custodies: Vec<Coin>,
+    pub funding_fee_received_collaterals: Vec<Coin>,
+    pub funding_fee_received_custodies: Vec<Coin>,
 }
 
 #[cw_serde]
