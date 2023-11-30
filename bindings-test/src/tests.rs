@@ -144,6 +144,10 @@ fn query_positions() {
         consolidate_leverage: Decimal::zero(),
         sum_collateral: Int128::zero(),
         take_profit_price: Decimal::zero(),
+        funding_fee_paid_collaterals: vec![],
+        funding_fee_paid_custodies: vec![],
+        funding_fee_received_collaterals: vec![],
+        funding_fee_received_custodies: vec![],
     }];
     let mut app = ElysApp::new();
 
@@ -177,6 +181,10 @@ fn query_single_mtp() {
         consolidate_leverage: Decimal::zero(),
         sum_collateral: Int128::zero(),
         take_profit_price: Decimal::zero(),
+        funding_fee_paid_collaterals: vec![],
+        funding_fee_paid_custodies: vec![],
+        funding_fee_received_collaterals: vec![],
+        funding_fee_received_custodies: vec![],
     }];
     let mut app = ElysApp::new();
 
