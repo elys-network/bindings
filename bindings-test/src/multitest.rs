@@ -4,7 +4,7 @@ use std::{
 };
 
 use anyhow::{bail, Error, Result as AnyResult};
-use cosmwasm_std::Int128;
+use cosmwasm_std::{Int128, Uint128};
 #[allow(deprecated)]
 use cosmwasm_std::{
     coin, coins,
@@ -17,7 +17,7 @@ use cw_storage_plus::Item;
 use elys_bindings::{
     msg_resp::{
         AmmSwapByDenomResponse, AmmSwapExactAmountInResp, MarginBrokerCloseResResponse,
-        MarginCloseResponse, MarginOpenResponse,
+        MarginCloseResponse, MarginOpenResponse, MsgResponse,
     },
     query_resp::{
         AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAccountsResponse,
@@ -25,7 +25,7 @@ use elys_bindings::{
     },
     types::{
         BaseAccount, Mtp, OracleAssetInfo, Price, PublicKey, Sum, SwapAmountInRoute,
-        SwapAmountOutRoute,
+        SwapAmountOutRoute, BalanceAvailable,
     },
     ElysMsg, ElysQuery,
 };
@@ -88,6 +88,11 @@ impl ElysModule {
     pub fn set_mtp(&self, store: &mut dyn Storage, mtps: &Vec<Mtp>) -> StdResult<()> {
         MARGIN_OPENED_POSITION.save(store, mtps)
     }
+
+    pub fn get_balance(&self, store: &mut dyn Storage, mtps: &Vec<Mtp>) -> StdResult<()> {
+        MARGIN_OPENED_POSITION.save(store, mtps)
+    }
+    
 }
 
 impl Module for ElysModule {
@@ -233,6 +238,13 @@ impl Module for ElysModule {
                     pagination,
                 };
 
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::AmmBalance { address, denom} => {
+                let resp = BalanceAvailable {
+                    amount: Uint128::new(100),
+                    usd_amount: Decimal::from_atomics(Uint128::new(100), 0).unwrap(),
+                };
                 Ok(to_json_binary(&resp)?)
             }
         }
@@ -518,6 +530,120 @@ impl Module for ElysModule {
                     .unwrap();
                 router.sudo(api, storage, block, mint.into()).unwrap();
 
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
+            ElysMsg::CommitmentStake {
+                creator,
+                amount,
+                asset,
+                validator_address,
+            } => {
+                LAST_MODULE_USED.save(storage, &Some("Commitment".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
+            ElysMsg::CommitmentUnstake {
+                creator,
+                amount,
+                asset,
+                validator_address,
+            } => {
+                LAST_MODULE_USED.save(storage, &Some("Commitment".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
+            ElysMsg::IncentiveBeginRedelegate {
+                delegator_address,
+                validator_src_address,
+                validator_dst_address,
+                amount,
+            } => {
+                LAST_MODULE_USED.save(storage, &Some("Incentive".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
+            ElysMsg::IncentiveCancelUnbondingDelegation {
+                delegator_address,
+                validator_address,
+                amount,
+                creation_height,
+            } => {
+                LAST_MODULE_USED.save(storage, &Some("Incentive".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
+            ElysMsg::CommitmentVest {
+                creator,
+                amount,
+                denom,
+            } => {
+                LAST_MODULE_USED.save(storage, &Some("Commitment".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
+            ElysMsg::CommitmentCancelVest {
+                creator,
+                amount,
+                denom,
+            } => {
+                LAST_MODULE_USED.save(storage, &Some("Commitment".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
+            ElysMsg::IncentiveWithdrawRewards {
+                delegator_address,
+                withdraw_type,
+            } => {
+                LAST_MODULE_USED.save(storage, &Some("Incentive".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
+            ElysMsg::IncentiveWithdrawValidatorCommission {
+                delegator_address,
+                validator_address,
+            } => {
+                LAST_MODULE_USED.save(storage, &Some("Incentive".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
                 Ok(AppResponse {
                     events: vec![],
                     data: Some(data),
