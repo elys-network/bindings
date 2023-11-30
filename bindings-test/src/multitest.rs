@@ -545,6 +545,7 @@ impl Module for ElysModule {
             }
             ElysMsg::CommitmentStake {
                 creator,
+                address,
                 amount,
                 asset,
                 validator_address,
@@ -560,6 +561,7 @@ impl Module for ElysModule {
             }
             ElysMsg::CommitmentUnstake {
                 creator,
+                address,
                 amount,
                 asset,
                 validator_address,
@@ -574,6 +576,7 @@ impl Module for ElysModule {
                 })
             }
             ElysMsg::IncentiveBeginRedelegate {
+                creator,
                 delegator_address,
                 validator_src_address,
                 validator_dst_address,
@@ -589,6 +592,7 @@ impl Module for ElysModule {
                 })
             }
             ElysMsg::IncentiveCancelUnbondingDelegation {
+                creator,
                 delegator_address,
                 validator_address,
                 amount,
@@ -605,6 +609,7 @@ impl Module for ElysModule {
             }
             ElysMsg::CommitmentVest {
                 creator,
+                address,
                 amount,
                 denom,
             } => {
@@ -619,6 +624,7 @@ impl Module for ElysModule {
             }
             ElysMsg::CommitmentCancelVest {
                 creator,
+                address,
                 amount,
                 denom,
             } => {
@@ -632,6 +638,7 @@ impl Module for ElysModule {
                 })
             }
             ElysMsg::IncentiveWithdrawRewards {
+                creator,
                 delegator_address,
                 withdraw_type,
             } => {
@@ -645,6 +652,7 @@ impl Module for ElysModule {
                 })
             }
             ElysMsg::IncentiveWithdrawValidatorCommission {
+                creator,
                 delegator_address,
                 validator_address,
             } => {
