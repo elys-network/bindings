@@ -3,7 +3,7 @@ use cosmwasm_std::{Coin, Decimal, QuerierWrapper, QueryRequest, StdResult};
 use crate::{
     query::*,
     query_resp::*,
-    types::{PageRequest, Price, SwapAmountInRoute},
+    types::{PageRequest, Price, SwapAmountInRoute, BalanceAvailable},
 };
 
 pub struct ElysQuerier<'a> {
@@ -78,6 +78,16 @@ impl<'a> ElysQuerier<'a> {
     pub fn accounts(&self, pagination: PageRequest) -> StdResult<AuthAccountsResponse> {
         let request = QueryRequest::Custom(ElysQuery::accounts(pagination));
         let resp: AuthAccountsResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
+    
+    pub fn get_balance(&self, address: String, denom: String) -> StdResult<BalanceAvailable> {
+        let balance_query = ElysQuery::AmmBalance {
+            address: address.to_owned(),
+            denom: denom.to_owned(),
+        };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(balance_query);
+        let resp: BalanceAvailable = self.querier.query(&request)?;
         Ok(resp)
     }
 }
