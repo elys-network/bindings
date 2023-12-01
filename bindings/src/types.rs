@@ -5,6 +5,7 @@ use cosmwasm_std::Binary;
 use cosmwasm_std::Coin;
 use cosmwasm_std::Decimal;
 use cosmwasm_std::Int128;
+use cosmwasm_std::Uint128;
 use cosmwasm_std::StdError;
 use cosmwasm_std::StdResult;
 
@@ -268,4 +269,19 @@ pub struct BaseAccount {
     pub pub_key: PublicKey,
     pub account_number: u64,
     pub sequence: u64,
+}
+
+#[cw_serde]
+pub enum EarnType {
+    AllProgram = 0,
+	UsdcProgram = 1,
+	ElysProgram = 2,
+	EdenProgram = 3,
+	EdenBProgram = 4,
+}
+
+#[cw_serde]
+pub struct BalanceAvailable {
+    pub amount: Uint128,
+    pub usd_amount: Decimal,
 }

@@ -1,4 +1,5 @@
-use crate::types::{PageRequest, SwapAmountInRoute};
+#[allow(unused_imports)]
+use crate::types::{PageRequest, SwapAmountInRoute, BalanceAvailable};
 
 #[allow(unused_imports)]
 use super::query_resp::*;
@@ -37,6 +38,8 @@ pub enum ElysQuery {
     // Define AuthQuery
     #[returns(AuthAccountsResponse)]
     AuthAccounts { pagination: PageRequest },
+    #[returns(BalanceAvailable)]
+    AmmBalance { address: String, denom: String },
 }
 
 impl CustomQuery for ElysQuery {}
@@ -84,5 +87,9 @@ impl ElysQuery {
             denom_out,
             discount,
         }
+    }
+
+    pub fn get_balance(address: String, denom: String) -> Self {
+        ElysQuery::AmmBalance{ address, denom }
     }
 }

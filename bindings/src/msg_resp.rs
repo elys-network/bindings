@@ -41,3 +41,8 @@ pub struct MarginBrokerCloseResResponse {
 pub struct MarginBrokerOpenResResponse {
     pub id: u64,
 }
+
+#[cw_serde]
+pub struct MsgResponse {
+    pub result: String,
+}
