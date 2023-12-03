@@ -4,7 +4,6 @@ use std::{
 };
 
 use anyhow::{bail, Error, Result as AnyResult};
-use cosmwasm_std::{Int128, Uint128};
 #[allow(deprecated)]
 use cosmwasm_std::{
     coin, coins,
@@ -12,20 +11,21 @@ use cosmwasm_std::{
     to_json_binary, Addr, BankMsg, BlockInfo, Coin, Decimal, Empty, Int64, Querier, StdError,
     StdResult, Storage,
 };
+use cosmwasm_std::{Int128, Uint128};
 use cw_multi_test::{App, AppResponse, BankKeeper, BankSudo, BasicAppBuilder, Module, WasmKeeper};
 use cw_storage_plus::Item;
 use elys_bindings::{
     msg_resp::{
-        AmmSwapByDenomResponse, AmmSwapExactAmountInResp, MarginBrokerCloseResResponse,
-        MarginCloseResponse, MarginOpenResponse, MsgResponse,
+        AmmSwapByDenomResponse, AmmSwapExactAmountInResp, MarginCloseResponse, MarginOpenResponse,
+        MsgResponse,
     },
     query_resp::{
         AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAccountsResponse,
         MarginMtpResponse, MarginQueryPositionsResponse,
     },
     types::{
-        BaseAccount, Mtp, OracleAssetInfo, Price, PublicKey, Sum, SwapAmountInRoute,
-        SwapAmountOutRoute, BalanceAvailable,
+        BalanceAvailable, BaseAccount, Mtp, OracleAssetInfo, Price, PublicKey, Sum,
+        SwapAmountInRoute, SwapAmountOutRoute,
     },
     ElysMsg, ElysQuery,
 };
@@ -92,7 +92,6 @@ impl ElysModule {
     pub fn get_balance(&self, store: &mut dyn Storage, mtps: &Vec<Mtp>) -> StdResult<()> {
         MARGIN_OPENED_POSITION.save(store, mtps)
     }
-    
 }
 
 impl Module for ElysModule {
@@ -240,7 +239,7 @@ impl Module for ElysModule {
 
                 Ok(to_json_binary(&resp)?)
             }
-            ElysQuery::AmmBalance { address, denom} => {
+            ElysQuery::AmmBalance { .. } => {
                 let resp = BalanceAvailable {
                     amount: Uint128::new(100),
                     usd_amount: Decimal::from_atomics(Uint128::new(100), 0).unwrap(),
@@ -329,8 +328,7 @@ impl Module for ElysModule {
 
             ElysMsg::MarginOpen {
                 creator,
-                collateral_asset,
-                collateral_amount,
+                collateral,
                 position,
                 leverage,
                 take_profit_price,
@@ -343,7 +341,7 @@ impl Module for ElysModule {
                     Some(x) => x.id + 1,
                     None => 0,
                 };
-                let collaterals = coins(collateral_amount.i128() as u128, collateral_asset);
+                let collaterals = vec![collateral];
 
                 let order: Mtp = Mtp {
                     address: creator,
@@ -388,7 +386,7 @@ impl Module for ElysModule {
                 Ok(resp)
             }
 
-            ElysMsg::MarginClose { id, .. } => {
+            ElysMsg::MarginClose { id, amount, .. } => {
                 LAST_MODULE_USED.save(storage, &Some("MarginClose".to_string()))?;
                 let orders: Vec<Mtp> = MARGIN_OPENED_POSITION.load(storage)?;
 
@@ -397,88 +395,7 @@ impl Module for ElysModule {
 
                 MARGIN_OPENED_POSITION.save(storage, &new_orders)?;
 
-                let data = Some(to_json_binary(&MarginCloseResponse { id })?);
-
-                Ok(AppResponse {
-                    events: vec![],
-                    data,
-                })
-            }
-            ElysMsg::MarginBrokerOpen {
-                creator,
-                collateral_asset,
-                collateral_amount,
-                position,
-                leverage,
-                take_profit_price,
-                ..
-            } => {
-                let mut order_vec = MARGIN_OPENED_POSITION.load(storage)?;
-
-                let order_id: u64 = match order_vec.iter().max_by_key(|s| s.id) {
-                    Some(x) => x.id + 1,
-                    None => 0,
-                };
-                let collaterals = coins(collateral_amount.i128() as u128, collateral_asset);
-
-                let burn = BankMsg::Burn {
-                    amount: collaterals.clone(),
-                };
-
-                router
-                    .execute(
-                        api,
-                        storage,
-                        block,
-                        Addr::unchecked(sender.clone()),
-                        burn.into(),
-                    )
-                    .unwrap();
-
-                let order: Mtp = Mtp {
-                    address: creator,
-                    collaterals: collaterals.clone(),
-                    liabilities: Int128::zero(),
-                    interest_paid_collaterals: vec![],
-                    interest_paid_custodies: vec![],
-                    interest_unpaid_collaterals: vec![],
-                    custodies: vec![],
-                    take_profit_liabilities: Int128::zero(),
-                    take_profit_custodies: vec![],
-                    leverages: vec![leverage],
-                    mtp_health: Decimal::one(),
-                    position,
-                    id: order_id,
-                    amm_pool_id: 0,
-                    consolidate_leverage: Decimal::zero(),
-                    sum_collateral: Int128::zero(),
-                    take_profit_price,
-                    funding_fee_paid_collaterals: vec![],
-                    funding_fee_paid_custodies: vec![],
-                    funding_fee_received_collaterals: vec![],
-                    funding_fee_received_custodies: vec![],
-                };
-
-                order_vec.push(order);
-
-                LAST_MODULE_USED.save(storage, &Some("MarginBrokerOpen".to_string()))?;
-                Ok(AppResponse {
-                    data: Some(to_json_binary(&MarginBrokerCloseResResponse {
-                        id: order_id,
-                    })?),
-                    events: vec![],
-                })
-            }
-            ElysMsg::MarginBrokerClose { id, .. } => {
-                LAST_MODULE_USED.save(storage, &Some("MarginBrokerClose".to_string()))?;
-                let orders: Vec<Mtp> = MARGIN_OPENED_POSITION.load(storage)?;
-
-                let new_orders: Vec<Mtp> =
-                    orders.into_iter().filter(|order| order.id != id).collect();
-
-                MARGIN_OPENED_POSITION.save(storage, &new_orders)?;
-
-                let data = Some(to_json_binary(&MarginCloseResponse { id })?);
+                let data = Some(to_json_binary(&MarginCloseResponse { id, amount })?);
 
                 Ok(AppResponse {
                     events: vec![],
@@ -543,13 +460,7 @@ impl Module for ElysModule {
                     data: Some(data),
                 })
             }
-            ElysMsg::CommitmentStake {
-                creator,
-                address,
-                amount,
-                asset,
-                validator_address,
-            } => {
+            ElysMsg::CommitmentStake { .. } => {
                 LAST_MODULE_USED.save(storage, &Some("Commitment".to_string()))?;
                 let data = to_json_binary(&MsgResponse {
                     result: "Ok".to_string(),
@@ -559,13 +470,7 @@ impl Module for ElysModule {
                     data: Some(data),
                 })
             }
-            ElysMsg::CommitmentUnstake {
-                creator,
-                address,
-                amount,
-                asset,
-                validator_address,
-            } => {
+            ElysMsg::CommitmentUnstake { .. } => {
                 LAST_MODULE_USED.save(storage, &Some("Commitment".to_string()))?;
                 let data = to_json_binary(&MsgResponse {
                     result: "Ok".to_string(),
@@ -575,13 +480,7 @@ impl Module for ElysModule {
                     data: Some(data),
                 })
             }
-            ElysMsg::IncentiveBeginRedelegate {
-                creator,
-                delegator_address,
-                validator_src_address,
-                validator_dst_address,
-                amount,
-            } => {
+            ElysMsg::IncentiveBeginRedelegate { .. } => {
                 LAST_MODULE_USED.save(storage, &Some("Incentive".to_string()))?;
                 let data = to_json_binary(&MsgResponse {
                     result: "Ok".to_string(),
@@ -591,13 +490,7 @@ impl Module for ElysModule {
                     data: Some(data),
                 })
             }
-            ElysMsg::IncentiveCancelUnbondingDelegation {
-                creator,
-                delegator_address,
-                validator_address,
-                amount,
-                creation_height,
-            } => {
+            ElysMsg::IncentiveCancelUnbondingDelegation { .. } => {
                 LAST_MODULE_USED.save(storage, &Some("Incentive".to_string()))?;
                 let data = to_json_binary(&MsgResponse {
                     result: "Ok".to_string(),
@@ -607,12 +500,7 @@ impl Module for ElysModule {
                     data: Some(data),
                 })
             }
-            ElysMsg::CommitmentVest {
-                creator,
-                address,
-                amount,
-                denom,
-            } => {
+            ElysMsg::CommitmentVest { .. } => {
                 LAST_MODULE_USED.save(storage, &Some("Commitment".to_string()))?;
                 let data = to_json_binary(&MsgResponse {
                     result: "Ok".to_string(),
@@ -622,12 +510,7 @@ impl Module for ElysModule {
                     data: Some(data),
                 })
             }
-            ElysMsg::CommitmentCancelVest {
-                creator,
-                address,
-                amount,
-                denom,
-            } => {
+            ElysMsg::CommitmentCancelVest { .. } => {
                 LAST_MODULE_USED.save(storage, &Some("Commitment".to_string()))?;
                 let data = to_json_binary(&MsgResponse {
                     result: "Ok".to_string(),
@@ -637,11 +520,7 @@ impl Module for ElysModule {
                     data: Some(data),
                 })
             }
-            ElysMsg::IncentiveWithdrawRewards {
-                creator,
-                delegator_address,
-                withdraw_type,
-            } => {
+            ElysMsg::IncentiveWithdrawRewards { .. } => {
                 LAST_MODULE_USED.save(storage, &Some("Incentive".to_string()))?;
                 let data = to_json_binary(&MsgResponse {
                     result: "Ok".to_string(),
@@ -651,11 +530,7 @@ impl Module for ElysModule {
                     data: Some(data),
                 })
             }
-            ElysMsg::IncentiveWithdrawValidatorCommission {
-                creator,
-                delegator_address,
-                validator_address,
-            } => {
+            ElysMsg::IncentiveWithdrawValidatorCommission { .. } => {
                 LAST_MODULE_USED.save(storage, &Some("Incentive".to_string()))?;
                 let data = to_json_binary(&MsgResponse {
                     result: "Ok".to_string(),
