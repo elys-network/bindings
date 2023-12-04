@@ -38,27 +38,23 @@ pub enum ElysMsg {
     },
     CommitmentStake {
         creator: String,
-        address: String,
         amount: Int128,
         asset: String,
         validator_address: Option<String>,
     },
     CommitmentUnstake {
         creator: String,
-        address: String,
         amount: Int128,
         asset: String,
         validator_address: Option<String>,
     },
     IncentiveBeginRedelegate {
-        creator: String,
         delegator_address: String,
         validator_src_address: String,
         validator_dst_address: String,
         amount: Coin,
     },
     IncentiveCancelUnbondingDelegation {
-        creator: String,
         delegator_address: String,
         validator_address: String,
         amount: Coin,
@@ -66,23 +62,19 @@ pub enum ElysMsg {
     },
     CommitmentVest {
         creator: String,
-        address: String,
         amount: Int128,
         denom: String,
     },
     CommitmentCancelVest {
         creator: String,
-        address: String,
         amount: Int128,
         denom: String,
     },
     IncentiveWithdrawRewards {
-        creator: String,
         delegator_address: String,
         withdraw_type: i32,
     },
     IncentiveWithdrawValidatorCommission {
-        creator: String,
         delegator_address: String,
         validator_address: String,
     },
@@ -156,14 +148,12 @@ impl ElysMsg {
 
     pub fn stake_token(
         creator: String,
-        address: String,
         amount: Int128,
         asset: String,
         validator_address: Option<String>,
     ) -> Self {
         Self::CommitmentStake {
             creator: creator.to_owned(),
-            address: address.to_owned(),
             amount: amount.to_owned(),
             asset: asset.to_owned(),
             validator_address: validator_address.to_owned(),
@@ -172,14 +162,12 @@ impl ElysMsg {
 
     pub fn unstake_token(
         creator: String,
-        address: String,
         amount: Int128,
         asset: String,
         validator_address: Option<String>,
     ) -> Self {
         Self::CommitmentUnstake {
             creator: creator.to_owned(),
-            address: address.to_owned(),
             amount: amount.to_owned(),
             asset: asset.to_owned(),
             validator_address: validator_address.to_owned(),
@@ -187,14 +175,12 @@ impl ElysMsg {
     }
 
     pub fn begin_redelegate(
-        creator: String,
         delegator_address: String,
         validator_src_address: String,
         validator_dst_address: String,
         amount: Coin,
     ) -> Self {
         Self::IncentiveBeginRedelegate {
-            creator: creator.to_owned(),
             delegator_address: delegator_address.to_owned(),
             validator_src_address: validator_src_address.to_owned(),
             validator_dst_address: validator_dst_address.to_owned(),
@@ -203,14 +189,12 @@ impl ElysMsg {
     }
 
     pub fn cancel_unbonding(
-        creator: String,
         delegator_address: String,
         validator_address: String,
         amount: Coin,
         creation_height: i64,
     ) -> Self {
         Self::IncentiveCancelUnbondingDelegation {
-            creator: creator.to_owned(),
             delegator_address: delegator_address.to_owned(),
             validator_address: validator_address.to_owned(),
             amount: amount.to_owned(),
@@ -218,10 +202,13 @@ impl ElysMsg {
         }
     }
 
-    pub fn eden_vesting(creator: String, address: String, amount: Int128, denom: String) -> Self {
+    pub fn eden_vesting(
+        creator: String, 
+        amount: Int128, 
+        denom: String
+    ) -> Self {
         Self::CommitmentVest {
             creator: creator.to_owned(),
-            address: address.to_owned(),
             amount: amount,
             denom: denom.to_owned(),
         }
@@ -229,37 +216,31 @@ impl ElysMsg {
 
     pub fn eden_cancel_vesting(
         creator: String,
-        address: String,
         amount: Int128,
         denom: String,
     ) -> Self {
         Self::CommitmentCancelVest {
             creator: creator.to_owned(),
-            address: address.to_owned(),
             amount: amount,
             denom: denom.to_owned(),
         }
     }
 
     pub fn withdraw_rewards(
-        creator: String,
         delegator_address: String,
         witdhraw_type: EarnType,
     ) -> Self {
         Self::IncentiveWithdrawRewards {
-            creator: creator.to_owned(),
             delegator_address: delegator_address.to_owned(),
             withdraw_type: witdhraw_type as i32,
         }
     }
 
     pub fn withdraw_validator_commissions(
-        creator: String,
         delegator_address: String,
         validator_address: String,
     ) -> Self {
         Self::IncentiveWithdrawValidatorCommission {
-            creator: creator.to_owned(),
             delegator_address: delegator_address.to_owned(),
             validator_address: validator_address.to_owned(),
         }
