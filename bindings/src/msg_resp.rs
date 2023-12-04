@@ -1,5 +1,5 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, Decimal, Int64};
+use cosmwasm_std::{Coin, Decimal, Int128, Int64};
 
 use crate::types::{SwapAmountInRoute, SwapAmountOutRoute};
 
@@ -30,16 +30,7 @@ pub struct MarginOpenResponse {
 #[cw_serde]
 pub struct MarginCloseResponse {
     pub id: u64,
-}
-
-#[cw_serde]
-pub struct MarginBrokerCloseResResponse {
-    pub id: u64,
-}
-
-#[cw_serde]
-pub struct MarginBrokerOpenResResponse {
-    pub id: u64,
+    pub amount: Int128,
 }
 
 #[cw_serde]

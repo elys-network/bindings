@@ -1,39 +1,22 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, CosmosMsg, CustomMsg, Decimal, Int128};
 
-use crate::types::{MarginPosition, SwapAmountInRoute, EarnType};
+use crate::types::{EarnType, MarginPosition, SwapAmountInRoute};
 
 #[cw_serde]
 pub enum ElysMsg {
     MarginOpen {
         creator: String,
-        collateral_asset: String,
-        collateral_amount: Int128,
-        borrow_asset: String,
         position: i32,
+        collateral: Coin,
+        trading_asset: String,
         leverage: Decimal,
         take_profit_price: Decimal,
     },
     MarginClose {
         creator: String,
         id: u64,
-    },
-
-    MarginBrokerOpen {
-        creator: String,
-        collateral_asset: String,
-        collateral_amount: Int128,
-        borrow_asset: String,
-        position: i32,
-        leverage: Decimal,
-        take_profit_price: Decimal,
-        owner: String,
-    },
-
-    MarginBrokerClose {
-        creator: String,
-        id: u64,
-        owner: String,
+        amount: Int128,
     },
     AmmSwapExactAmountIn {
         sender: String,
@@ -84,14 +67,14 @@ pub enum ElysMsg {
     CommitmentVest {
         creator: String,
         address: String,
-        amount:  Int128,
-        denom:   String,
+        amount: Int128,
+        denom: String,
     },
     CommitmentCancelVest {
         creator: String,
         address: String,
-        amount:  Int128,
-        denom:   String,
+        amount: Int128,
+        denom: String,
     },
     IncentiveWithdrawRewards {
         creator: String,
@@ -102,7 +85,7 @@ pub enum ElysMsg {
         creator: String,
         delegator_address: String,
         validator_address: String,
-    }
+    },
 }
 
 impl ElysMsg {
@@ -126,61 +109,27 @@ impl ElysMsg {
 
     pub fn margin_open_position(
         creator: impl Into<String>,
-        collateral_asset: impl Into<String>,
-        collateral_amount: Int128,
-        borrow_asset: impl Into<String>,
+        collateral: Coin,
+        trading_asset: impl Into<String>,
         position: MarginPosition,
         leverage: Decimal,
         take_profit_price: Decimal,
     ) -> Self {
         Self::MarginOpen {
             creator: creator.into(),
-            collateral_asset: collateral_asset.into(),
-            collateral_amount,
-            borrow_asset: borrow_asset.into(),
+            collateral,
             position: position as i32,
             leverage,
             take_profit_price,
+            trading_asset: trading_asset.into(),
         }
     }
 
-    pub fn margin_close_position(creator: impl Into<String>, id: u64) -> Self {
+    pub fn margin_close_position(creator: impl Into<String>, id: u64, amount: i128) -> Self {
         Self::MarginClose {
             creator: creator.into(),
             id,
-        }
-    }
-    pub fn margin_broker_open_position(
-        creator: impl Into<String>,
-        collateral_asset: impl Into<String>,
-        collateral_amount: Int128,
-        borrow_asset: impl Into<String>,
-        position: i32,
-        leverage: Decimal,
-        take_profit_price: Decimal,
-        owner: impl Into<String>,
-    ) -> Self {
-        Self::MarginBrokerOpen {
-            creator: creator.into(),
-            collateral_asset: collateral_asset.into(),
-            collateral_amount,
-            borrow_asset: borrow_asset.into(),
-            position,
-            leverage,
-            take_profit_price,
-            owner: owner.into(),
-        }
-    }
-
-    pub fn margin_broker_close_position(
-        creator: impl Into<String>,
-        id: u64,
-        owner: impl Into<String>,
-    ) -> Self {
-        Self::MarginBrokerClose {
-            creator: creator.into(),
-            id,
-            owner: owner.into(),
+            amount: Int128::new(amount),
         }
     }
     pub fn swap_by_denom(
@@ -204,7 +153,7 @@ impl ElysMsg {
             discount,
         }
     }
-    
+
     pub fn stake_token(
         creator: String,
         address: String,
@@ -213,11 +162,11 @@ impl ElysMsg {
         validator_address: Option<String>,
     ) -> Self {
         Self::CommitmentStake {
-            creator:creator.to_owned(),
-            address:address.to_owned(),
-            amount:amount.to_owned(),
-            asset:asset.to_owned(),
-            validator_address:validator_address.to_owned(),
+            creator: creator.to_owned(),
+            address: address.to_owned(),
+            amount: amount.to_owned(),
+            asset: asset.to_owned(),
+            validator_address: validator_address.to_owned(),
         }
     }
 
@@ -229,11 +178,11 @@ impl ElysMsg {
         validator_address: Option<String>,
     ) -> Self {
         Self::CommitmentUnstake {
-            creator:creator.to_owned(),
-            address:address.to_owned(),
-            amount:amount.to_owned(),
-            asset:asset.to_owned(),
-            validator_address:validator_address.to_owned(),
+            creator: creator.to_owned(),
+            address: address.to_owned(),
+            amount: amount.to_owned(),
+            asset: asset.to_owned(),
+            validator_address: validator_address.to_owned(),
         }
     }
 
@@ -268,26 +217,21 @@ impl ElysMsg {
             creation_height: creation_height.to_owned(),
         }
     }
-    
-    pub fn eden_vesting(
-        creator: String,
-        address: String,
-        amount:  Int128,
-        denom:   String,
-    ) -> Self {
+
+    pub fn eden_vesting(creator: String, address: String, amount: Int128, denom: String) -> Self {
         Self::CommitmentVest {
             creator: creator.to_owned(),
             address: address.to_owned(),
             amount: amount,
             denom: denom.to_owned(),
         }
-    }    
-    
+    }
+
     pub fn eden_cancel_vesting(
         creator: String,
         address: String,
-        amount:  Int128,
-        denom:   String,
+        amount: Int128,
+        denom: String,
     ) -> Self {
         Self::CommitmentCancelVest {
             creator: creator.to_owned(),
@@ -296,7 +240,7 @@ impl ElysMsg {
             denom: denom.to_owned(),
         }
     }
-        
+
     pub fn withdraw_rewards(
         creator: String,
         delegator_address: String,
