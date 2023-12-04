@@ -1,5 +1,5 @@
 #[allow(unused_imports)]
-use crate::types::{PageRequest, SwapAmountInRoute, BalanceAvailable};
+use crate::types::{BalanceAvailable, PageRequest, SwapAmountInRoute};
 
 #[allow(unused_imports)]
 use super::query_resp::*;
@@ -25,6 +25,8 @@ pub enum ElysQuery {
         denom_out: String,
         discount: Decimal,
     },
+    #[returns(BalanceAvailable)]
+    AmmBalance { address: String, denom: String },
     // Define OracleQuery
     #[returns(OracleAllPriceResponse)]
     OraclePriceAll { pagination: PageRequest },
@@ -35,11 +37,18 @@ pub enum ElysQuery {
     MarginQueryPositions { pagination: PageRequest },
     #[returns(MarginMtpResponse)]
     MarginMtp { address: String, id: u64 },
+    #[returns(MarginOpenEstimationResponse)]
+    MarginOpenEstimation {
+        position: i32,
+        leverage: Decimal,
+        trading_asset: String,
+        collateral: Coin,
+        take_profit_price: Decimal,
+        discount: Decimal,
+    },
     // Define AuthQuery
     #[returns(AuthAccountsResponse)]
     AuthAccounts { pagination: PageRequest },
-    #[returns(BalanceAvailable)]
-    AmmBalance { address: String, denom: String },
 }
 
 impl CustomQuery for ElysQuery {}
@@ -90,6 +99,6 @@ impl ElysQuery {
     }
 
     pub fn get_balance(address: String, denom: String) -> Self {
-        ElysQuery::AmmBalance{ address, denom }
+        ElysQuery::AmmBalance { address, denom }
     }
 }
