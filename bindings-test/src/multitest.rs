@@ -21,7 +21,7 @@ use elys_bindings::{
     },
     query_resp::{
         AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAccountsResponse,
-        MarginMtpResponse, MarginQueryPositionsResponse,
+        MarginMtpResponse, MarginOpenEstimationResponse, MarginQueryPositionsResponse,
     },
     types::{
         BalanceAvailable, BaseAccount, Mtp, OracleAssetInfo, Price, PublicKey, Sum,
@@ -245,6 +245,31 @@ impl Module for ElysModule {
                     usd_amount: Decimal::from_atomics(Uint128::new(100), 0).unwrap(),
                 };
                 Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::MarginOpenEstimation {
+                position,
+                leverage,
+                trading_asset,
+                collateral,
+                take_profit_price,
+                discount,
+            } => {
+                return Ok(to_json_binary(&MarginOpenEstimationResponse {
+                    position,
+                    min_collateral: coin(0, &collateral.denom),
+                    available_liquidity: coin(99999999, &trading_asset),
+                    leverage,
+                    collateral,
+                    trading_asset,
+                    discount,
+                    valid_collateral: true,
+                    position_size: coin(1, "btc"),
+                    swap_fee: Decimal::zero(),
+                    open_price: Decimal::zero(),
+                    take_profit_price,
+                    liquidation_price: Decimal::zero(),
+                    estimated_pnl: Int128::zero(),
+                })?)
             }
         }
     }
