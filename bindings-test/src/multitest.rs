@@ -315,7 +315,7 @@ impl Module for ElysModule {
                     route.token_out_denom,
                 );
 
-                if mint_amount[0].amount.u128() as i128 <= token_out_min_amount.i128() {
+                if (mint_amount[0].amount.u128() as i128) < (token_out_min_amount.i128()) {
                     return Err(Error::new(StdError::generic_err("not enough token")));
                 }
 
