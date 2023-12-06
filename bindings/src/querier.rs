@@ -3,7 +3,7 @@ use cosmwasm_std::{Coin, Decimal, QuerierWrapper, QueryRequest, StdResult};
 use crate::{
     query::*,
     query_resp::*,
-    types::{PageRequest, Price, SwapAmountInRoute, BalanceAvailable},
+    types::{BalanceAvailable, MarginPosition, PageRequest, Price, SwapAmountInRoute},
 };
 
 pub struct ElysQuerier<'a> {
@@ -80,7 +80,7 @@ impl<'a> ElysQuerier<'a> {
         let resp: AuthAccountsResponse = self.querier.query(&request)?;
         Ok(resp)
     }
-    
+
     pub fn get_balance(&self, address: String, denom: String) -> StdResult<BalanceAvailable> {
         let balance_query = ElysQuery::AmmBalance {
             address: address.to_owned(),
@@ -88,6 +88,29 @@ impl<'a> ElysQuerier<'a> {
         };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(balance_query);
         let resp: BalanceAvailable = self.querier.query(&request)?;
+        Ok(resp)
+    }
+
+    pub fn margin_open_estimation(
+        &self,
+        position: MarginPosition,
+        leverage: Decimal,
+        trading_asset: impl Into<String>,
+        collateral: Coin,
+        take_profit_price: Decimal,
+        discount: Decimal,
+    ) -> StdResult<MarginOpenEstimationResponse> {
+        let query = ElysQuery::margin_open_estimation(
+            position as i32,
+            leverage,
+            trading_asset.into(),
+            collateral,
+            take_profit_price,
+            discount,
+        );
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
+
+        let resp: MarginOpenEstimationResponse = self.querier.query(&request)?;
         Ok(resp)
     }
 }

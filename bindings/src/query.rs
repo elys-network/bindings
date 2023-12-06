@@ -101,4 +101,21 @@ impl ElysQuery {
     pub fn get_balance(address: String, denom: String) -> Self {
         ElysQuery::AmmBalance { address, denom }
     }
+    pub fn margin_open_estimation(
+        position: i32,
+        leverage: Decimal,
+        trading_asset: String,
+        collateral: Coin,
+        take_profit_price: Decimal,
+        discount: Decimal,
+    ) -> Self {
+        Self::MarginOpenEstimation {
+            position,
+            leverage,
+            trading_asset,
+            collateral,
+            take_profit_price,
+            discount,
+        }
+    }
 }
