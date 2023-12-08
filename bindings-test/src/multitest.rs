@@ -565,6 +565,26 @@ impl Module for ElysModule {
                     data: Some(data),
                 })
             }
+            ElysMsg::AmmJoinPool { .. } => {
+                LAST_MODULE_USED.save(storage, &Some("AmmJoin".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
+            ElysMsg::AmmExitPool { .. } => {
+                LAST_MODULE_USED.save(storage, &Some("AmmExit".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
         }
     }
 

@@ -1,5 +1,5 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, CosmosMsg, CustomMsg, Decimal, Int128};
+use cosmwasm_std::{Coin, CosmosMsg, CustomMsg, Decimal, Int128, Uint128};
 
 use crate::types::{EarnType, MarginPosition, SwapAmountInRoute};
 
@@ -78,6 +78,20 @@ pub enum ElysMsg {
         delegator_address: String,
         validator_address: String,
     },
+    AmmJoinPool {
+        sender: String,
+        pool_id: u64,
+        max_amounts_in: Vec<Coin>,
+        share_amount_out: Uint128,
+        no_remaining: bool,
+    },
+    AmmExitPool {
+        sender: String,
+        pool_id: u64,
+        min_amounts_out: Vec<Coin>,
+        share_amount_in: Uint128,
+        token_out_denom: String,
+    }
 }
 
 impl ElysMsg {
@@ -243,6 +257,28 @@ impl ElysMsg {
         Self::IncentiveWithdrawValidatorCommission {
             delegator_address: delegator_address.to_owned(),
             validator_address: validator_address.to_owned(),
+        }
+    }
+
+    pub fn amm_join_pool(sender: String, pool_id: u64, max_amounts_in: Vec<Coin>, share_amount_out: Uint128, no_remaining: bool
+    ) -> Self {
+        Self::AmmJoinPool {
+            sender: sender,
+            pool_id: pool_id,
+            max_amounts_in: max_amounts_in,
+            share_amount_out: share_amount_out,
+            no_remaining: no_remaining,
+        }
+    }
+    
+    pub fn amm_exit_pool(sender: String, pool_id: u64, min_amounts_out: Vec<Coin>, share_amount_in: Uint128, token_out_denom: String
+    ) -> Self {
+        Self::AmmExitPool {
+            sender: sender,
+            pool_id: pool_id,
+            min_amounts_out: min_amounts_out,
+            share_amount_in: share_amount_in,
+            token_out_denom: token_out_denom,
         }
     }
 }

@@ -285,3 +285,21 @@ pub struct BalanceAvailable {
     pub amount: Uint128,
     pub usd_amount: Decimal,
 }
+
+#[cw_serde]
+pub struct AmmJoinPool {
+    pub sender: String,
+	pub pool_id: u64,
+	pub max_amounts_in: Vec<Coin>,
+	pub share_amount_out: Uint128,
+    pub no_remaining: bool,
+}
+
+#[cw_serde]
+pub struct AmmExitPool {
+    pub sender: String,
+	pub pool_id: u64,
+	pub min_amounts_out: Vec<Coin>,
+	pub share_amount_in: Uint128,
+	pub token_out_denom: String,
+}
