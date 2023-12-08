@@ -37,3 +37,14 @@ pub struct MarginCloseResponse {
 pub struct MsgResponse {
     pub result: String,
 }
+
+#[cw_serde]
+pub struct MsgJoinPoolResponse {
+	pub share_amount_out: Int128,
+	pub token_in: Vec<Coin>,
+}
+
+#[cw_serde]
+pub struct MsgExitPoolResponse {
+	pub token_out: Vec<Coin>,
+}
