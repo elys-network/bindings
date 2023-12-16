@@ -113,4 +113,11 @@ impl<'a> ElysQuerier<'a> {
         let resp: MarginOpenEstimationResponse = self.querier.query(&request)?;
         Ok(resp)
     }
+    
+    pub fn get_asset_profile(&self, base_denom: String ) -> StdResult<QueryGetEntryResponse> {
+        let asset_profile = ElysQuery::get_asset_profile(base_denom.to_owned());
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(asset_profile);
+        let resp: QueryGetEntryResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
 }
