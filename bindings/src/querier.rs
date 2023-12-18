@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use cosmwasm_std::{Coin, Decimal, QuerierWrapper, QueryRequest, StdResult};
 
 use crate::{
@@ -110,11 +112,35 @@ impl<'a> ElysQuerier<'a> {
         );
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
 
-        let resp: MarginOpenEstimationResponse = self.querier.query(&request)?;
+        let raw_resp: MarginOpenEstimationRawResponse = self.querier.query(&request)?;
+
+        let resp: MarginOpenEstimationResponse = MarginOpenEstimationResponse {
+            position: raw_resp.position,
+            leverage: Decimal::from_str(&raw_resp.leverage)
+                .map_or(Decimal::zero(), |leverage| leverage),
+            trading_asset: raw_resp.trading_asset,
+            collateral: raw_resp.collateral,
+            min_collateral: raw_resp.min_collateral,
+            valid_collateral: true, // Hard-coded as 'true' since the field is not found in the response
+            position_size: raw_resp.position_size,
+            swap_fee: Decimal::from_str(&raw_resp.swap_fee)
+                .map_or(Decimal::zero(), |swap_fee| swap_fee),
+            discount: Decimal::from_str(&raw_resp.discount)
+                .map_or(Decimal::zero(), |discount| discount),
+            open_price: Decimal::from_str(&raw_resp.open_price)
+                .map_or(Decimal::zero(), |open_price| open_price),
+            take_profit_price: Decimal::from_str(&raw_resp.take_profit_price)
+                .map_or(Decimal::zero(), |take_profit_price| take_profit_price),
+            liquidation_price: Decimal::from_str(&raw_resp.liquidation_price)
+                .map_or(Decimal::zero(), |liquidation_price| liquidation_price),
+            estimated_pnl: raw_resp.estimated_pnl,
+            available_liquidity: raw_resp.available_liquidity,
+        };
+
         Ok(resp)
     }
-    
-    pub fn get_asset_profile(&self, base_denom: String ) -> StdResult<QueryGetEntryResponse> {
+
+    pub fn get_asset_profile(&self, base_denom: String) -> StdResult<QueryGetEntryResponse> {
         let asset_profile = ElysQuery::get_asset_profile(base_denom.to_owned());
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(asset_profile);
         let resp: QueryGetEntryResponse = self.querier.query(&request)?;
