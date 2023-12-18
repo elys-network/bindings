@@ -5,9 +5,9 @@ use cosmwasm_std::Binary;
 use cosmwasm_std::Coin;
 use cosmwasm_std::Decimal;
 use cosmwasm_std::Int128;
-use cosmwasm_std::Uint128;
 use cosmwasm_std::StdError;
 use cosmwasm_std::StdResult;
+use cosmwasm_std::Uint128;
 
 #[cw_serde]
 pub struct OracleAssetInfo {
@@ -82,6 +82,10 @@ impl PageRequest {
     {
         let mut filter_vec = static_vec.clone();
 
+        if self.reverse {
+            filter_vec.reverse();
+        };
+
         let key = if let Some(key) = &self.key {
             let key: u64 = from_json(key)?;
             if key >= filter_vec.len() as u64 {
@@ -127,10 +131,6 @@ impl PageRequest {
             Some(static_vec.len() as u64)
         } else {
             None
-        };
-
-        if self.reverse {
-            filter_vec.reverse();
         };
 
         let page_response = PageResponse::new(next_key, total);
@@ -274,10 +274,10 @@ pub struct BaseAccount {
 #[cw_serde]
 pub enum EarnType {
     AllProgram = 0,
-	UsdcProgram = 1,
-	ElysProgram = 2,
-	EdenProgram = 3,
-	EdenBProgram = 4,
+    UsdcProgram = 1,
+    ElysProgram = 2,
+    EdenProgram = 3,
+    EdenBProgram = 4,
 }
 
 #[cw_serde]
@@ -289,17 +289,17 @@ pub struct BalanceAvailable {
 #[cw_serde]
 pub struct AmmJoinPool {
     pub sender: String,
-	pub pool_id: u64,
-	pub max_amounts_in: Vec<Coin>,
-	pub share_amount_out: Uint128,
+    pub pool_id: u64,
+    pub max_amounts_in: Vec<Coin>,
+    pub share_amount_out: Uint128,
     pub no_remaining: bool,
 }
 
 #[cw_serde]
 pub struct AmmExitPool {
     pub sender: String,
-	pub pool_id: u64,
-	pub min_amounts_out: Vec<Coin>,
-	pub share_amount_in: Uint128,
-	pub token_out_denom: String,
+    pub pool_id: u64,
+    pub min_amounts_out: Vec<Coin>,
+    pub share_amount_in: Uint128,
+    pub token_out_denom: String,
 }
