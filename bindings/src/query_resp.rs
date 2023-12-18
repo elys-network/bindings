@@ -116,8 +116,8 @@ pub struct Entry {
     // pub ibc_counterparty_denom: String,
     // pub ibc_counterparty_chain_id: String,
     pub authority: String,
-    // pub commit_enabled: bool,
-    // pub withdraw_enabled: bool,
+    pub commit_enabled: bool,
+    pub withdraw_enabled: bool,
 }
 
 #[cw_serde]

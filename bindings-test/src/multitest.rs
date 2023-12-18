@@ -286,6 +286,8 @@ impl Module for ElysModule {
                         external_symbol: "".to_string(),
                         unit_denom: "".to_string(),
                         authority: "".to_string(),
+                        commit_enabled: true,
+                        withdraw_enabled: true,
                     },
                 };
                 Ok(to_json_binary(&resp)?)
