@@ -22,6 +22,7 @@ use elys_bindings::{
     query_resp::{
         AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAccountsResponse,
         MarginMtpResponse, MarginOpenEstimationResponse, MarginQueryPositionsResponse,
+        QueryGetEntryResponse, Entry,
     },
     types::{
         BalanceAvailable, BaseAccount, Mtp, OracleAssetInfo, Price, PublicKey, Sum,
@@ -270,6 +271,24 @@ impl Module for ElysModule {
                     liquidation_price: Decimal::zero(),
                     estimated_pnl: Int128::zero(),
                 })?)
+            }
+            ElysQuery::AssetProfileEntry { .. } => {
+                let resp = QueryGetEntryResponse {
+                    entry: Entry {
+                        base_denom: "uusdc".to_string(),
+                        decimals: 6,
+                        denom: "uusdc".to_string(),
+                        path: "".to_string(),
+                        ibc_channel_id: "".to_string(),
+                        ibc_counterparty_channel_id: "".to_string(),
+                        display_name: "".to_string(),
+                        display_symbol: "".to_string(),
+                        external_symbol: "".to_string(),
+                        unit_denom: "".to_string(),
+                        authority: "".to_string(),
+                    },
+                };
+                Ok(to_json_binary(&resp)?)
             }
         }
     }
