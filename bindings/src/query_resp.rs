@@ -59,6 +59,24 @@ pub struct AmmSwapEstimationByDenomResponse {
 }
 
 #[cw_serde]
+pub struct MarginOpenEstimationRawResponse {
+    pub position: i32,
+    pub leverage: String,
+    pub trading_asset: String,
+    pub collateral: Coin,
+    pub min_collateral: Coin,
+    // pub valid_collateral: bool, not found in the response from the chain
+    pub position_size: Coin,
+    pub swap_fee: String,
+    pub discount: String,
+    pub open_price: String,
+    pub take_profit_price: String,
+    pub liquidation_price: String,
+    pub estimated_pnl: Int128,
+    pub available_liquidity: Coin,
+}
+
+#[cw_serde]
 pub struct MarginOpenEstimationResponse {
     pub position: i32,
     pub leverage: Decimal,
@@ -81,28 +99,28 @@ pub struct MarginOpenEstimationResponse {
 // Until we fix this problem, we keep the items commented to be same result from the live elys testnet asset entry.
 #[cw_serde]
 pub struct Entry {
-	pub base_denom: String,
-	pub decimals: u64,
-	pub denom: String,
-	pub path: String,
-	pub ibc_channel_id: String,
-	pub ibc_counterparty_channel_id: String,
-	pub display_name: String,
-	pub display_symbol: String,
-	// pub network: String,
-	// pub address: String,
-	pub external_symbol: String,
-	// pub transfer_limit:  String,
-	// pub permissions: Vec<String>,
-	pub unit_denom: String,
-	// pub ibc_counterparty_denom: String,
-	// pub ibc_counterparty_chain_id: String,
-	pub authority: String,
-	pub commit_enabled: bool,
-	pub withdraw_enabled: bool,
+    pub base_denom: String,
+    pub decimals: u64,
+    pub denom: String,
+    pub path: String,
+    pub ibc_channel_id: String,
+    pub ibc_counterparty_channel_id: String,
+    pub display_name: String,
+    pub display_symbol: String,
+    // pub network: String,
+    // pub address: String,
+    pub external_symbol: String,
+    // pub transfer_limit:  String,
+    // pub permissions: Vec<String>,
+    pub unit_denom: String,
+    // pub ibc_counterparty_denom: String,
+    // pub ibc_counterparty_chain_id: String,
+    pub authority: String,
+    pub commit_enabled: bool,
+    pub withdraw_enabled: bool,
 }
 
 #[cw_serde]
 pub struct QueryGetEntryResponse {
-	pub entry: Entry,
+    pub entry: Entry,
 }
