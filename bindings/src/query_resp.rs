@@ -65,7 +65,7 @@ pub struct MarginOpenEstimationRawResponse {
     pub trading_asset: String,
     pub collateral: Coin,
     pub min_collateral: Coin,
-    // pub valid_collateral: bool, not found in the response from the chain
+    pub valid_collateral: Option<bool>,
     pub position_size: Coin,
     pub swap_fee: String,
     pub discount: String,

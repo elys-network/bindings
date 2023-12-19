@@ -121,7 +121,9 @@ impl<'a> ElysQuerier<'a> {
             trading_asset: raw_resp.trading_asset,
             collateral: raw_resp.collateral,
             min_collateral: raw_resp.min_collateral,
-            valid_collateral: true, // Hard-coded as 'true' since the field is not found in the response
+            valid_collateral: raw_resp
+                .valid_collateral
+                .map_or(false, |valid_collateral| valid_collateral),
             position_size: raw_resp.position_size,
             swap_fee: Decimal::from_str(&raw_resp.swap_fee)
                 .map_or(Decimal::zero(), |swap_fee| swap_fee),

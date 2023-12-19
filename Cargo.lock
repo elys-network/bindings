@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "account-history-contract"
-version = "0.11.0"
+version = "0.0.0"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
@@ -388,7 +388,7 @@ dependencies = [
 
 [[package]]
 name = "elys-bindings"
-version = "0.11.0"
+version = "0.0.0"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
@@ -397,7 +397,7 @@ dependencies = [
 
 [[package]]
 name = "elys-bindings-test"
-version = "0.11.0"
+version = "0.0.0"
 dependencies = [
  "anyhow",
  "cosmwasm-schema",
