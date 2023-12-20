@@ -107,17 +107,45 @@ pub struct Entry {
     pub ibc_counterparty_channel_id: String,
     pub display_name: String,
     pub display_symbol: String,
-    // pub network: String,
-    // pub address: String,
+    pub network: String,
+    pub address: String,
     pub external_symbol: String,
-    // pub transfer_limit:  String,
-    // pub permissions: Vec<String>,
+    pub transfer_limit: String,
+    pub permissions: Vec<String>,
     pub unit_denom: String,
-    // pub ibc_counterparty_denom: String,
-    // pub ibc_counterparty_chain_id: String,
+    pub ibc_counterparty_denom: String,
+    pub ibc_counterparty_chain_id: String,
     pub authority: String,
     pub commit_enabled: bool,
     pub withdraw_enabled: bool,
+}
+
+#[cw_serde]
+pub struct RawEntry {
+    pub base_denom: String,
+    pub decimals: u64,
+    pub denom: String,
+    pub path: Option<String>,
+    pub ibc_channel_id: Option<String>,
+    pub ibc_counterparty_channel_id: Option<String>,
+    pub display_name: String,
+    pub display_symbol: Option<String>,
+    pub network: Option<String>,
+    pub address: Option<String>,
+    pub external_symbol: Option<String>,
+    pub transfer_limit: Option<String>,
+    pub permissions: Option<Vec<String>>,
+    pub unit_denom: Option<String>,
+    pub ibc_counterparty_denom: Option<String>,
+    pub ibc_counterparty_chain_id: Option<String>,
+    pub authority: String,
+    pub commit_enabled: bool,
+    pub withdraw_enabled: bool,
+}
+
+#[cw_serde]
+pub struct QueryGetEntryResponseRaw {
+    pub entry: RawEntry,
 }
 
 #[cw_serde]
