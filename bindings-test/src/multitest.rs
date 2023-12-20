@@ -21,11 +21,11 @@ use elys_bindings::{
     },
     query_resp::{
         AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAccountsResponse, Entry,
-        MarginMtpResponse, MarginOpenEstimationResponse, MarginQueryPositionsResponse,
-        QueryGetEntryResponse,
+        MarginGetPositionsForAddressResponse, MarginMtpResponse, MarginOpenEstimationResponse,
+        MarginQueryPositionsResponse, QueryGetEntryResponse,
     },
     types::{
-        BalanceAvailable, BaseAccount, Mtp, OracleAssetInfo, Price, PublicKey, Sum,
+        BalanceAvailable, BaseAccount, Mtp, OracleAssetInfo, PageResponse, Price, PublicKey, Sum,
         SwapAmountInRoute, SwapAmountOutRoute,
     },
     ElysMsg, ElysQuery,
@@ -297,6 +297,19 @@ impl Module for ElysModule {
                     },
                 };
                 Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::MarginGetPositionsForAddress { address, .. } => {
+                let all_mtps = MARGIN_OPENED_POSITION.load(storage)?;
+
+                let user_mtps: Vec<Mtp> = all_mtps
+                    .into_iter()
+                    .filter(|mtp| mtp.address == address)
+                    .collect();
+
+                Ok(to_json_binary(&MarginGetPositionsForAddressResponse {
+                    mtps: user_mtps,
+                    pagination: PageResponse::empty(false),
+                })?)
             }
         }
     }

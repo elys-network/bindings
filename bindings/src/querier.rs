@@ -197,4 +197,23 @@ impl<'a> ElysQuerier<'a> {
         };
         Ok(resp)
     }
+
+    pub fn margin_get_position_for_address(
+        &self,
+        address: impl Into<String>,
+        pagination: PageRequest,
+    ) -> StdResult<MarginGetPositionsForAddressResponse> {
+        let request = QueryRequest::Custom(ElysQuery::margin_get_position_for_address(
+            address.into(),
+            pagination,
+        ));
+        let raw_resp: MarginGetPositionsForAddressResponseRaw = self.querier.query(&request)?;
+
+        let resp = MarginGetPositionsForAddressResponse {
+            mtps: raw_resp.mtps.map_or(vec![], |mtps| mtps),
+            pagination: raw_resp.pagination,
+        };
+
+        Ok(resp)
+    }
 }
