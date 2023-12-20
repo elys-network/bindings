@@ -20,9 +20,9 @@ use elys_bindings::{
         MsgResponse,
     },
     query_resp::{
-        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAccountsResponse,
+        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAccountsResponse, Entry,
         MarginMtpResponse, MarginOpenEstimationResponse, MarginQueryPositionsResponse,
-        QueryGetEntryResponse, Entry,
+        QueryGetEntryResponse,
     },
     types::{
         BalanceAvailable, BaseAccount, Mtp, OracleAssetInfo, Price, PublicKey, Sum,
@@ -288,6 +288,12 @@ impl Module for ElysModule {
                         authority: "".to_string(),
                         commit_enabled: true,
                         withdraw_enabled: true,
+                        network: "".to_string(),
+                        address: "".to_string(),
+                        transfer_limit: "".to_string(),
+                        permissions: vec![],
+                        ibc_counterparty_denom: "".to_string(),
+                        ibc_counterparty_chain_id: "".to_string(),
                     },
                 };
                 Ok(to_json_binary(&resp)?)

@@ -145,7 +145,56 @@ impl<'a> ElysQuerier<'a> {
     pub fn get_asset_profile(&self, base_denom: String) -> StdResult<QueryGetEntryResponse> {
         let asset_profile = ElysQuery::get_asset_profile(base_denom.to_owned());
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(asset_profile);
-        let resp: QueryGetEntryResponse = self.querier.query(&request)?;
+        let QueryGetEntryResponseRaw { entry: raw_entry }: QueryGetEntryResponseRaw =
+            self.querier.query(&request)?;
+
+        let resp = QueryGetEntryResponse {
+            entry: Entry {
+                base_denom: raw_entry.base_denom,
+                decimals: raw_entry.decimals,
+                denom: raw_entry.denom,
+                path: raw_entry.path.map_or("".to_string(), |path| path),
+                ibc_channel_id: raw_entry
+                    .ibc_channel_id
+                    .map_or("".to_string(), |ibc_channel_id| ibc_channel_id),
+                ibc_counterparty_channel_id: raw_entry
+                    .ibc_counterparty_channel_id
+                    .map_or("".to_string(), |ibc_counterparty_channel_id| {
+                        ibc_counterparty_channel_id
+                    }),
+                display_name: raw_entry.display_name,
+                display_symbol: raw_entry
+                    .display_symbol
+                    .map_or("".to_string(), |display_symbol| display_symbol),
+                external_symbol: raw_entry
+                    .external_symbol
+                    .map_or("".to_string(), |external_symbol| external_symbol),
+                unit_denom: raw_entry
+                    .unit_denom
+                    .map_or("".to_string(), |unit_denom| unit_denom),
+                authority: raw_entry.authority,
+                commit_enabled: raw_entry.commit_enabled,
+                withdraw_enabled: raw_entry.withdraw_enabled,
+                network: raw_entry.network.map_or("".to_string(), |network| network),
+                address: raw_entry.address.map_or("".to_string(), |address| address),
+                transfer_limit: raw_entry
+                    .transfer_limit
+                    .map_or("".to_string(), |transfer_limit| transfer_limit),
+                ibc_counterparty_denom: raw_entry
+                    .ibc_counterparty_denom
+                    .map_or("".to_string(), |ibc_counterparty_denom| {
+                        ibc_counterparty_denom
+                    }),
+                ibc_counterparty_chain_id: raw_entry
+                    .ibc_counterparty_chain_id
+                    .map_or("".to_string(), |ibc_counterparty_chain_id| {
+                        ibc_counterparty_chain_id
+                    }),
+                permissions: raw_entry
+                    .permissions
+                    .map_or(vec![], |permissions| permissions),
+            },
+        };
         Ok(resp)
     }
 }
