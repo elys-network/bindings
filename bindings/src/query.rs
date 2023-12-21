@@ -46,11 +46,16 @@ pub enum ElysQuery {
         take_profit_price: Decimal,
         discount: Decimal,
     },
+    #[returns(MarginGetPositionsForAddressResponse)]
+    MarginGetPositionsForAddress {
+        address: String,
+        pagination: PageRequest,
+    },
     // Define AuthQuery
     #[returns(AuthAccountsResponse)]
     AuthAccounts { pagination: PageRequest },
     #[returns(QueryGetEntryResponse)]
-    AssetProfileEntry{base_denom: String}
+    AssetProfileEntry { base_denom: String },
 }
 
 impl CustomQuery for ElysQuery {}
@@ -121,6 +126,12 @@ impl ElysQuery {
         }
     }
     pub fn get_asset_profile(base_denom: String) -> Self {
-        Self::AssetProfileEntry{ base_denom }
+        Self::AssetProfileEntry { base_denom }
+    }
+    pub fn margin_get_position_for_address(address: String, pagination: PageRequest) -> Self {
+        Self::MarginGetPositionsForAddress {
+            address,
+            pagination,
+        }
     }
 }
