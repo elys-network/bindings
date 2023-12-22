@@ -126,6 +126,12 @@ fn asset_info_not_found() {
 fn query_positions() {
     let mtps: Vec<Mtp> = vec![Mtp {
         address: "user".to_string(),
+        collateral_asset: "".to_string(),
+        trading_asset: "".to_string(),
+        liabilities_asset: "".to_string(),
+        custody_asset: "".to_string(),
+        take_profit_borrow_rate: Decimal::zero(),
+        open_price: Decimal::zero(),
         collaterals: vec![],
         liabilities: Int128::zero(),
         interest_paid_collaterals: vec![],
@@ -163,6 +169,12 @@ fn query_positions() {
 fn query_single_mtp() {
     let mtps: Vec<Mtp> = vec![Mtp {
         address: "user".to_string(),
+        collateral_asset: "".to_string(),
+        trading_asset: "".to_string(),
+        liabilities_asset: "".to_string(),
+        custody_asset: "".to_string(),
+        take_profit_borrow_rate: Decimal::zero(),
+        open_price: Decimal::zero(),
         collaterals: vec![],
         liabilities: Int128::zero(),
         interest_paid_collaterals: vec![],

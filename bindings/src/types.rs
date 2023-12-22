@@ -240,6 +240,12 @@ pub struct Mtp {
     pub funding_fee_paid_custodies: Vec<Coin>,
     pub funding_fee_received_collaterals: Vec<Coin>,
     pub funding_fee_received_custodies: Vec<Coin>,
+    pub collateral_asset: String,
+    pub trading_asset: String,
+    pub liabilities_asset: String,
+    pub custody_asset: String,
+    pub take_profit_borrow_rate: Decimal,
+    pub open_price: Decimal,
 }
 
 #[cw_serde]

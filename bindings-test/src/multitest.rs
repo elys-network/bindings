@@ -430,6 +430,12 @@ impl Module for ElysModule {
                     funding_fee_paid_custodies: vec![],
                     funding_fee_received_collaterals: vec![],
                     funding_fee_received_custodies: vec![],
+                    collateral_asset: "".to_string(),
+                    trading_asset: "".to_string(),
+                    liabilities_asset: "".to_string(),
+                    custody_asset: "".to_string(),
+                    take_profit_borrow_rate: Decimal::zero(),
+                    open_price: Decimal::zero(),
                 };
 
                 let msg_resp = MarginOpenResponse { id: order_id };
