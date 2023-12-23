@@ -206,6 +206,8 @@ impl Module for ElysModule {
                     discount,
                     swap_fee: Decimal::from_str("0.1").unwrap(),
                     available_liquidity: coin(999999, denom_out),
+                    weight_balance_ratio: Decimal::zero(),
+                    price_impact: Decimal::zero(),
                 };
 
                 Ok(to_json_binary(&resp)?)
