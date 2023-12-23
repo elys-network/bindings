@@ -402,46 +402,52 @@ impl Module for ElysModule {
                 ..
             } => {
                 LAST_MODULE_USED.save(storage, &Some("MarginOpen".to_string()))?;
-                let mut order_vec = MARGIN_OPENED_POSITION.load(storage)?;
+                let mut mtp_vec = MARGIN_OPENED_POSITION.load(storage)?;
 
-                let order_id: u64 = match order_vec.iter().max_by_key(|s| s.id) {
-                    Some(x) => x.id + 1,
+                let mtp_id: u64 = match mtp_vec.iter().max_by_key(|mtp| mtp.id) {
+                    Some(mtp) => mtp.id + 1,
                     None => 0,
                 };
-                let collaterals = vec![collateral];
+                let collaterals = vec![collateral.clone()];
 
-                let order: Mtp = Mtp {
+                let mtp: Mtp = Mtp {
                     address: creator,
-                    collaterals: collaterals.clone(),
                     liabilities: Int128::zero(),
-                    interest_paid_collaterals: vec![],
-                    interest_paid_custodies: vec![],
-                    interest_unpaid_collaterals: vec![],
-                    custodies: vec![],
                     take_profit_liabilities: Int128::zero(),
-                    take_profit_custodies: vec![],
-                    leverages: vec![leverage],
                     mtp_health: Decimal::one(),
                     position,
-                    id: order_id,
+                    id: mtp_id,
                     amm_pool_id: 0,
                     consolidate_leverage: Decimal::zero(),
                     sum_collateral: Int128::zero(),
                     take_profit_price,
-                    funding_fee_paid_collaterals: vec![],
-                    funding_fee_paid_custodies: vec![],
-                    funding_fee_received_collaterals: vec![],
-                    funding_fee_received_custodies: vec![],
+                    borrow_interest_paid_collateral: Int128::zero(),
+                    borrow_interest_paid_custody: Int128::zero(),
+                    borrow_interest_unpaid_collateral: Int128::zero(),
+                    collateral_asset: collateral.denom,
+                    collateral: Int128::new((collateral.amount.u128()) as i128),
+                    custody: Int128::zero(),
+                    custody_asset: "".to_string(),
+                    funding_fee_paid_collateral: Int128::zero(),
+                    funding_fee_paid_custody: Int128::zero(),
+                    funding_fee_received_collateral: Int128::zero(),
+                    funding_fee_received_custody: Int128::zero(),
+                    leverage,
+                    liabilities_asset: "".to_string(),
+                    open_price: Decimal::zero(),
+                    take_profit_borrow_rate: take_profit_price,
+                    take_profit_custody: Int128::zero(),
+                    trading_asset: "".to_string(),
                 };
 
-                let msg_resp = MarginOpenResponse { id: order_id };
+                let msg_resp = MarginOpenResponse { id: mtp.id };
 
                 let resp = AppResponse {
                     events: vec![],
                     data: Some(to_json_binary(&msg_resp)?),
                 };
 
-                order_vec.push(order);
+                mtp_vec.push(mtp);
 
                 let burn_msg = BankMsg::Burn {
                     amount: collaterals,
