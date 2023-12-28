@@ -8,10 +8,10 @@ use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
     coin, coins,
     testing::{MockApi, MockStorage},
-    to_json_binary, Addr, BankMsg, BlockInfo, Coin, Decimal, Empty, Int64, Querier, StdError,
-    StdResult, Storage,
+    to_json_binary, Addr, BankMsg, BlockInfo, Coin, Decimal, Empty, Int64, Querier,
+    SignedDecimal256, StdError, StdResult, Storage,
 };
-use cosmwasm_std::{Int128, Uint128};
+use cosmwasm_std::{Int128, SignedDecimal, Uint128};
 use cw_multi_test::{App, AppResponse, BankKeeper, BankSudo, BasicAppBuilder, Module, WasmKeeper};
 use cw_storage_plus::Item;
 use elys_bindings::{
@@ -144,7 +144,7 @@ impl Module for ElysModule {
                     spot_price,
                     token_out: coin(token_out_amount, &routes[0].token_out_denom),
                     discount,
-                    swap_fee: Decimal::from_str("0.1").unwrap(),
+                    swap_fee: SignedDecimal::from_str("0.1").unwrap(),
                     available_liquidity: coin(999999, &routes[0].token_out_denom),
                 })?)
             }
@@ -203,11 +203,11 @@ impl Module for ElysModule {
                     out_route,
                     spot_price,
                     amount: token_estimation,
-                    discount,
-                    swap_fee: Decimal::from_str("0.1").unwrap(),
+                    discount: SignedDecimal::try_from(discount).unwrap(),
+                    swap_fee: SignedDecimal::from_str("0.1").unwrap(),
                     available_liquidity: coin(999999, denom_out),
-                    weight_balance_ratio: Decimal::zero(),
-                    price_impact: Decimal::zero(),
+                    weight_balance_ratio: SignedDecimal::zero(),
+                    price_impact: SignedDecimal::zero(),
                 };
 
                 Ok(to_json_binary(&resp)?)
@@ -414,13 +414,13 @@ impl Module for ElysModule {
                     address: creator,
                     liabilities: Int128::zero(),
                     take_profit_liabilities: Int128::zero(),
-                    mtp_health: Decimal::one(),
+                    mtp_health: SignedDecimal::one(),
                     position,
                     id: mtp_id,
                     amm_pool_id: 0,
-                    consolidate_leverage: Decimal::zero(),
+                    consolidate_leverage: SignedDecimal::zero(),
                     sum_collateral: Int128::zero(),
-                    take_profit_price,
+                    take_profit_price: SignedDecimal256::try_from(take_profit_price)?,
                     borrow_interest_paid_collateral: Int128::zero(),
                     borrow_interest_paid_custody: Int128::zero(),
                     borrow_interest_unpaid_collateral: Int128::zero(),
@@ -432,10 +432,10 @@ impl Module for ElysModule {
                     funding_fee_paid_custody: Int128::zero(),
                     funding_fee_received_collateral: Int128::zero(),
                     funding_fee_received_custody: Int128::zero(),
-                    leverage,
+                    leverage: SignedDecimal::try_from(leverage)?,
                     liabilities_asset: "".to_string(),
-                    open_price: Decimal::zero(),
-                    take_profit_borrow_rate: take_profit_price,
+                    open_price: SignedDecimal::zero(),
+                    take_profit_borrow_rate: SignedDecimal::try_from(take_profit_price)?,
                     take_profit_custody: Int128::zero(),
                     trading_asset: "".to_string(),
                 };

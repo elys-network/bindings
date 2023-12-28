@@ -5,6 +5,8 @@ use cosmwasm_std::Binary;
 use cosmwasm_std::Coin;
 use cosmwasm_std::Decimal;
 use cosmwasm_std::Int128;
+use cosmwasm_std::SignedDecimal;
+use cosmwasm_std::SignedDecimal256;
 use cosmwasm_std::StdError;
 use cosmwasm_std::StdResult;
 use cosmwasm_std::Uint128;
@@ -226,7 +228,7 @@ pub struct Mtp {
     pub borrow_interest_unpaid_collateral: Int128,
     pub collateral_asset: String,
     pub collateral: Int128,
-    pub consolidate_leverage: Decimal,
+    pub consolidate_leverage: SignedDecimal,
     pub custody: Int128,
     pub custody_asset: String,
     pub funding_fee_paid_collateral: Int128,
@@ -234,17 +236,17 @@ pub struct Mtp {
     pub funding_fee_received_collateral: Int128,
     pub funding_fee_received_custody: Int128,
     pub id: u64,
-    pub leverage: Decimal,
+    pub leverage: SignedDecimal,
     pub liabilities: Int128,
     pub liabilities_asset: String,
-    pub mtp_health: Decimal,
-    pub open_price: Decimal,
+    pub mtp_health: SignedDecimal,
+    pub open_price: SignedDecimal,
     pub position: i32,
     pub sum_collateral: Int128,
-    pub take_profit_borrow_rate: Decimal,
+    pub take_profit_borrow_rate: SignedDecimal,
     pub take_profit_custody: Int128,
     pub take_profit_liabilities: Int128,
-    pub take_profit_price: Decimal,
+    pub take_profit_price: SignedDecimal256,
     pub trading_asset: String,
 }
 

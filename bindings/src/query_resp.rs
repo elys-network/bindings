@@ -1,5 +1,5 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, Decimal, Int128};
+use cosmwasm_std::{Coin, Decimal, Int128, SignedDecimal};
 
 use crate::types::{
     BaseAccount, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute, SwapAmountOutRoute,
@@ -16,7 +16,7 @@ pub struct AmmSwapEstimationResponse {
     pub spot_price: Decimal,
     pub token_out: Coin,
     pub discount: Decimal,
-    pub swap_fee: Decimal,
+    pub swap_fee: SignedDecimal,
     pub available_liquidity: Coin,
 }
 
@@ -53,11 +53,11 @@ pub struct AmmSwapEstimationByDenomResponse {
     pub out_route: Option<Vec<SwapAmountOutRoute>>,
     pub spot_price: Decimal,
     pub amount: Coin,
-    pub discount: Decimal,
-    pub swap_fee: Decimal,
+    pub discount: SignedDecimal,
+    pub swap_fee: SignedDecimal,
     pub available_liquidity: Coin,
-    pub weight_balance_ratio: Decimal,
-    pub price_impact: Decimal,
+    pub weight_balance_ratio: SignedDecimal,
+    pub price_impact: SignedDecimal,
 }
 
 #[cw_serde]
