@@ -1,4 +1,5 @@
 use super::*;
+use cosmwasm_std::{Addr, Decimal, Int64, SignedDecimal, SignedDecimal256, Uint128};
 use std::str::FromStr;
 
 #[test]
@@ -34,9 +35,9 @@ fn coin_number() {
         addr,
         &ExecuteMsg::CreateMarginOrder {
             position: Some(MarginPosition::Short),
-            leverage: Some(Decimal::from_atomics(Uint128::new(500), 2).unwrap()),
+            leverage: Some(SignedDecimal::from_atomics(Int64::new(500), 2).unwrap()),
             trading_asset: Some("uatom".to_string()),
-            take_profit_price: Some(Decimal::from_atomics(Uint128::new(500), 2).unwrap()),
+            take_profit_price: Some(SignedDecimal256::from_atomics(Uint128::new(500), 2).unwrap()),
             order_type: MarginOrderType::LimitOpen,
             trigger_price: Some(OrderPrice {
                 base_denom: "uatom".to_string(),

@@ -1,5 +1,6 @@
 use cosmwasm_std::{
-    coin, coins, Addr, Coin, Decimal, Int128, SignedDecimal, SignedDecimal256, StdError, Uint128,
+    coin, coins, Addr, Coin, Decimal, Int128, Int64, SignedDecimal, SignedDecimal256, StdError,
+    Uint128,
 };
 use cw_multi_test::Executor;
 use elys_bindings::{
@@ -378,8 +379,8 @@ fn open_margin_position() {
         coin(5, "btc"),
         "uusdc",
         MarginPosition::Short,
-        Decimal::from_atomics(Uint128::new(25), 1).unwrap(),
-        Decimal::from_atomics(Uint128::new(11), 1).unwrap(),
+        SignedDecimal::from_atomics(Int64::new(25), 1).unwrap(),
+        SignedDecimal256::from_atomics(Uint128::new(11), 1).unwrap(),
     );
 
     assert_eq!(
@@ -421,8 +422,8 @@ fn margin_margin_close_position() {
         coin(5, "btc"),
         "uusdc",
         MarginPosition::Short,
-        Decimal::from_atomics(Uint128::new(25), 1).unwrap(),
-        Decimal::from_atomics(Uint128::new(11), 1).unwrap(),
+        SignedDecimal::from_atomics(Int64::new(25), 1).unwrap(),
+        SignedDecimal256::from_atomics(Uint128::new(11), 1).unwrap(),
     );
 
     assert_eq!(

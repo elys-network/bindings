@@ -1,5 +1,5 @@
 use super::*;
-use cosmwasm_std::{Coin, Int128};
+use cosmwasm_std::{Addr, Coin, Decimal, Int128, SignedDecimal, SignedDecimal256};
 
 #[test]
 fn successful_process_limit_buy_order() {
@@ -29,14 +29,14 @@ fn successful_process_limit_buy_order() {
         &MarginOrderType::LimitClose,
         &coin(120, "usdc"),
         "ubtc",
-        &Decimal::from_str("1.1").unwrap(),
+        &SignedDecimal::from_str("1.1").unwrap(),
         1,
         &Some(OrderPrice {
             base_denom: "ubtc".to_string(),
             quote_denom: "usdc".to_string(),
             rate: Decimal::from_atomics(Uint128::new(38), 0).unwrap(), // Rate at which ubtc will be bought (38 USDC per ubtc).
         }),
-        &Decimal::from_str("1.1").unwrap(),
+        &SignedDecimal256::from_str("1.1").unwrap(),
         &vec![],
     )
     .unwrap();
@@ -76,13 +76,13 @@ fn successful_process_limit_buy_order() {
                 address: "user".to_string(),
                 liabilities: Int128::zero(),
                 take_profit_liabilities: Int128::zero(),
-                mtp_health: Decimal::one(),
+                mtp_health: SignedDecimal::one(),
                 position: 2,
                 id: 1,
                 amm_pool_id: 1,
-                consolidate_leverage: Decimal::zero(),
+                consolidate_leverage: SignedDecimal::zero(),
                 sum_collateral: Int128::zero(),
-                take_profit_price: Decimal::from_str("1.2").unwrap(),
+                take_profit_price: SignedDecimal256::from_str("1.2").unwrap(),
                 borrow_interest_paid_collateral: Int128::zero(),
                 borrow_interest_paid_custody: Int128::zero(),
                 borrow_interest_unpaid_collateral: Int128::zero(),
@@ -94,10 +94,10 @@ fn successful_process_limit_buy_order() {
                 funding_fee_paid_custody: Int128::zero(),
                 funding_fee_received_collateral: Int128::zero(),
                 funding_fee_received_custody: Int128::zero(),
-                leverage: Decimal::one(),
+                leverage: SignedDecimal::one(),
                 liabilities_asset: "usdc".to_string(),
-                open_price: Decimal::one(),
-                take_profit_borrow_rate: Decimal::one(),
+                open_price: SignedDecimal::one(),
+                take_profit_borrow_rate: SignedDecimal::one(),
                 take_profit_custody: Int128::zero(),
                 trading_asset: "usdc".to_string(),
             }],

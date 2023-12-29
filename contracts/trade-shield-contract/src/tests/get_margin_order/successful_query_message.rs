@@ -1,4 +1,5 @@
 use crate::msg::query_resp::GetMarginOrderResp;
+use cosmwasm_std::{Addr, Decimal, SignedDecimal, SignedDecimal256};
 
 use super::*;
 // This test case verifies the successful query of an existing order in the contract.
@@ -13,8 +14,8 @@ fn successful_query_message() {
         &MarginOrderType::MarketOpen,
         &coin(255, "usdc"),
         "btc",
-        &Decimal::one(),
-        &Decimal::one(),
+        &SignedDecimal::one(),
+        &SignedDecimal256::one(),
         &Some(OrderPrice {
             base_denom: "btc".to_string(),
             quote_denom: "usdc".to_string(),

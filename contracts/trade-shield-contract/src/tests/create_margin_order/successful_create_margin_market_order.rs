@@ -1,3 +1,4 @@
+use cosmwasm_std::{Addr, Decimal, Int64, SignedDecimal, SignedDecimal256, Uint128};
 use std::str::FromStr;
 
 use super::*;
@@ -38,9 +39,9 @@ fn successful_create_margin_market_open_order() {
         addr.clone(),
         &ExecuteMsg::CreateMarginOrder {
             position: Some(MarginPosition::Long),
-            leverage: Some(Decimal::from_atomics(Uint128::new(215), 2).unwrap()),
+            leverage: Some(SignedDecimal::from_atomics(Int64::new(215), 2).unwrap()),
             trading_asset: Some("btc".to_string()),
-            take_profit_price: Some(Decimal::from_atomics(Uint128::new(200), 2).unwrap()),
+            take_profit_price: Some(SignedDecimal256::from_atomics(Uint128::new(200), 2).unwrap()),
             order_type: MarginOrderType::MarketOpen,
             trigger_price: Some(OrderPrice {
                 base_denom: "btc".to_string(),

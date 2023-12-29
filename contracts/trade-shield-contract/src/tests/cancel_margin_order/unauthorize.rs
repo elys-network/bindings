@@ -1,4 +1,5 @@
 use super::*;
+use cosmwasm_std::{Addr, Decimal, SignedDecimal, SignedDecimal256};
 use cw_multi_test::BankSudo;
 
 #[test]
@@ -15,8 +16,8 @@ fn unauthorize() {
             &MarginOrderType::LimitOpen,
             &coin(255, "usdc"),
             "btc",
-            &Decimal::from_str("1.2").unwrap(),
-            &Decimal::from_str("1.2").unwrap(),
+            &SignedDecimal::from_str("1.2").unwrap(),
+            &SignedDecimal256::from_str("1.2").unwrap(),
             &Some(OrderPrice {
                 base_denom: "btc".to_string(),
                 quote_denom: "usdc".to_string(),

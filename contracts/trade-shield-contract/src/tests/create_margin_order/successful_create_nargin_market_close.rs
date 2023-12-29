@@ -1,3 +1,4 @@
+use cosmwasm_std::{Addr, SignedDecimal, SignedDecimal256};
 use std::str::FromStr;
 
 use cosmwasm_std::Int128;
@@ -38,13 +39,13 @@ fn successful_create_margin_market_open_order() {
                 address: "user".to_string(),
                 liabilities: Int128::zero(),
                 take_profit_liabilities: Int128::zero(),
-                mtp_health: Decimal::one(),
+                mtp_health: SignedDecimal::one(),
                 position: 2,
                 id: 1,
                 amm_pool_id: 1,
-                consolidate_leverage: Decimal::zero(),
+                consolidate_leverage: SignedDecimal::zero(),
                 sum_collateral: Int128::zero(),
-                take_profit_price: Decimal::from_str("1.2").unwrap(),
+                take_profit_price: SignedDecimal256::from_str("1.2").unwrap(),
                 borrow_interest_paid_collateral: Int128::zero(),
                 borrow_interest_paid_custody: Int128::zero(),
                 borrow_interest_unpaid_collateral: Int128::zero(),
@@ -56,10 +57,10 @@ fn successful_create_margin_market_open_order() {
                 funding_fee_paid_custody: Int128::zero(),
                 funding_fee_received_collateral: Int128::zero(),
                 funding_fee_received_custody: Int128::zero(),
-                leverage: Decimal::one(),
+                leverage: SignedDecimal::one(),
                 liabilities_asset: "usdc".to_string(),
-                open_price: Decimal::one(),
-                take_profit_borrow_rate: Decimal::one(),
+                open_price: SignedDecimal::one(),
+                take_profit_borrow_rate: SignedDecimal::one(),
                 take_profit_custody: Int128::zero(),
                 trading_asset: "usdc".to_string(),
             }],

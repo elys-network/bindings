@@ -1,5 +1,6 @@
 use super::*;
 use cosmwasm_std::{coins, Coin};
+use cosmwasm_std::{Addr, Decimal, SignedDecimal, SignedDecimal256, Uint128};
 
 #[test]
 fn successful_process_limit_buy_order() {
@@ -30,8 +31,8 @@ fn successful_process_limit_buy_order() {
         &MarginOrderType::LimitOpen,
         &coin(120, "usdc"),
         "ubtc",
-        &Decimal::from_str("1.1").unwrap(),
-        &Decimal::from_str("1.1").unwrap(),
+        &SignedDecimal::from_str("1.1").unwrap(),
+        &SignedDecimal256::from_str("1.1").unwrap(),
         &Some(OrderPrice {
             base_denom: "ubtc".to_string(),
             quote_denom: "usdc".to_string(),
