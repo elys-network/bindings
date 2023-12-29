@@ -33,7 +33,7 @@ jobs:
           wget $URL -O $ELYSD
           chmod +x $ELYSD
           echo ${{ secrets.KEY_MNEMONIC }} | $ELYSD keys add contract-initiator --recover --keyring-backend test
-          OPTIONS="--from contract-initiator --keyring-backend test --gas auto --gas-adjustment=1.3 --broadcast-mode sync --node $NODE --yes"
+          OPTIONS="--from contract-initiator --keyring-backend test --gas auto --gas-adjustment=1.3 --fees 100000uelys --broadcast-mode sync --node $NODE --yes"
           $ELYSD tx wasm store artifacts/account_history_contract.wasm $OPTIONS
           $ELYSD tx wasm store artifacts/financial_snapshot_contract.wasm $OPTIONS
           $ELYSD tx wasm store artifacts/trade_shield_contract.wasm $OPTIONS
