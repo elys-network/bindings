@@ -4,10 +4,13 @@ pub fn margin_get_position_for_address(
     deps: Deps<ElysQuery>,
     address: String,
     pagination: PageRequest,
-) -> Result<MarginGetPositionsForAddressResponse, ContractError> {
+) -> Result<GetMarginPositionsForAddressResp, ContractError> {
     let querier = ElysQuerier::new(&deps.querier);
 
-    let resp = querier.margin_get_position_for_address(address, pagination)?;
+    let MarginGetPositionsForAddressResponse { mtps, pagination } =
+        querier.margin_get_position_for_address(address, pagination)?;
 
-    Ok(resp)
+    let mtps = MarginPositionPlus::news(mtps, deps.storage, &querier)?;
+
+    Ok(GetMarginPositionsForAddressResp { mtps, pagination })
 }
