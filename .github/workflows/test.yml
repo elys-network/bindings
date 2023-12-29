@@ -34,3 +34,15 @@ jobs:
           cargo build --verbose
           cargo test --verbose
         working-directory: contracts/account-history-contract
+
+      - name: Build and test financial snapshot contract
+        run: |
+          cargo build --verbose
+          cargo test --verbose
+        working-directory: contracts/financial-snapshot-contract
+
+      - name: Build and test trade shield contract
+        run: |
+          cargo build --verbose
+          cargo test --verbose
+        working-directory: contracts/trade-shield-contract

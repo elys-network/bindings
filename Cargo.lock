@@ -433,6 +433,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "financial_snapshot_contract"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-multi-test",
+ "cw-storage-plus 0.15.1",
+ "cw-utils",
+ "elys-bindings",
+ "schemars",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
 name = "forward_ref"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -809,6 +825,23 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.41",
+]
+
+[[package]]
+name = "trade_shield_contract"
+version = "0.0.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-multi-test",
+ "cw-storage-plus 0.15.1",
+ "cw-utils",
+ "elys-bindings",
+ "elys-bindings-test",
+ "schemars",
+ "serde",
+ "serde_json",
+ "thiserror",
 ]
 
 [[package]]

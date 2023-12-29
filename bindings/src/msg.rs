@@ -1,5 +1,7 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, CosmosMsg, CustomMsg, Decimal, Int128, Uint128};
+use cosmwasm_std::{
+    Coin, CosmosMsg, CustomMsg, Decimal, Int128, SignedDecimal, SignedDecimal256, Uint128,
+};
 
 use crate::types::{EarnType, MarginPosition, SwapAmountInRoute};
 
@@ -10,8 +12,8 @@ pub enum ElysMsg {
         position: i32,
         collateral: Coin,
         trading_asset: String,
-        leverage: Decimal,
-        take_profit_price: Decimal,
+        leverage: SignedDecimal,
+        take_profit_price: SignedDecimal256,
     },
     MarginClose {
         creator: String,
@@ -91,7 +93,7 @@ pub enum ElysMsg {
         min_amounts_out: Vec<Coin>,
         share_amount_in: Uint128,
         token_out_denom: String,
-    }
+    },
 }
 
 impl ElysMsg {
@@ -118,8 +120,8 @@ impl ElysMsg {
         collateral: Coin,
         trading_asset: impl Into<String>,
         position: MarginPosition,
-        leverage: Decimal,
-        take_profit_price: Decimal,
+        leverage: SignedDecimal,
+        take_profit_price: SignedDecimal256,
     ) -> Self {
         Self::MarginOpen {
             creator: creator.into(),
@@ -216,11 +218,7 @@ impl ElysMsg {
         }
     }
 
-    pub fn eden_vesting(
-        creator: String, 
-        amount: Int128, 
-        denom: String
-    ) -> Self {
+    pub fn eden_vesting(creator: String, amount: Int128, denom: String) -> Self {
         Self::CommitmentVest {
             creator: creator.to_owned(),
             amount: amount,
@@ -228,11 +226,7 @@ impl ElysMsg {
         }
     }
 
-    pub fn eden_cancel_vesting(
-        creator: String,
-        amount: Int128,
-        denom: String,
-    ) -> Self {
+    pub fn eden_cancel_vesting(creator: String, amount: Int128, denom: String) -> Self {
         Self::CommitmentCancelVest {
             creator: creator.to_owned(),
             amount: amount,
@@ -240,10 +234,7 @@ impl ElysMsg {
         }
     }
 
-    pub fn withdraw_rewards(
-        delegator_address: String,
-        witdhraw_type: EarnType,
-    ) -> Self {
+    pub fn withdraw_rewards(delegator_address: String, witdhraw_type: EarnType) -> Self {
         Self::IncentiveWithdrawRewards {
             delegator_address: delegator_address.to_owned(),
             withdraw_type: witdhraw_type as i32,
@@ -260,7 +251,12 @@ impl ElysMsg {
         }
     }
 
-    pub fn amm_join_pool(sender: String, pool_id: u64, max_amounts_in: Vec<Coin>, share_amount_out: Uint128, no_remaining: bool
+    pub fn amm_join_pool(
+        sender: String,
+        pool_id: u64,
+        max_amounts_in: Vec<Coin>,
+        share_amount_out: Uint128,
+        no_remaining: bool,
     ) -> Self {
         Self::AmmJoinPool {
             sender: sender,
@@ -270,8 +266,13 @@ impl ElysMsg {
             no_remaining: no_remaining,
         }
     }
-    
-    pub fn amm_exit_pool(sender: String, pool_id: u64, min_amounts_out: Vec<Coin>, share_amount_in: Uint128, token_out_denom: String
+
+    pub fn amm_exit_pool(
+        sender: String,
+        pool_id: u64,
+        min_amounts_out: Vec<Coin>,
+        share_amount_in: Uint128,
+        token_out_denom: String,
     ) -> Self {
         Self::AmmExitPool {
             sender: sender,
