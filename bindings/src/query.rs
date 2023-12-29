@@ -5,7 +5,7 @@ use crate::types::{BalanceAvailable, PageRequest, SwapAmountInRoute};
 use super::query_resp::*;
 
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::{Coin, CustomQuery, Decimal};
+use cosmwasm_std::{Coin, CustomQuery, Decimal, SignedDecimal, SignedDecimal256};
 
 // Now define ElysQuery to include the new OracleQuery and AmmQuery
 #[cw_serde]
@@ -40,10 +40,10 @@ pub enum ElysQuery {
     #[returns(MarginOpenEstimationResponse)]
     MarginOpenEstimation {
         position: i32,
-        leverage: Decimal,
+        leverage: SignedDecimal,
         trading_asset: String,
         collateral: Coin,
-        take_profit_price: Decimal,
+        take_profit_price: SignedDecimal256,
         discount: Decimal,
     },
     #[returns(MarginGetPositionsForAddressResponse)]
@@ -110,10 +110,10 @@ impl ElysQuery {
     }
     pub fn margin_open_estimation(
         position: i32,
-        leverage: Decimal,
+        leverage: SignedDecimal,
         trading_asset: String,
         collateral: Coin,
-        take_profit_price: Decimal,
+        take_profit_price: SignedDecimal256,
         discount: Decimal,
     ) -> Self {
         Self::MarginOpenEstimation {

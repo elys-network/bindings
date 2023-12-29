@@ -1,6 +1,8 @@
 use std::str::FromStr;
 
-use cosmwasm_std::{Coin, Decimal, QuerierWrapper, QueryRequest, StdResult};
+use cosmwasm_std::{
+    Coin, Decimal, QuerierWrapper, QueryRequest, SignedDecimal, SignedDecimal256, StdResult,
+};
 
 use crate::{
     query::*,
@@ -96,10 +98,10 @@ impl<'a> ElysQuerier<'a> {
     pub fn margin_open_estimation(
         &self,
         position: MarginPosition,
-        leverage: Decimal,
+        leverage: SignedDecimal,
         trading_asset: impl Into<String>,
         collateral: Coin,
-        take_profit_price: Decimal,
+        take_profit_price: SignedDecimal256,
         discount: Decimal,
     ) -> StdResult<MarginOpenEstimationResponse> {
         let query = ElysQuery::margin_open_estimation(
@@ -116,8 +118,8 @@ impl<'a> ElysQuerier<'a> {
 
         let resp: MarginOpenEstimationResponse = MarginOpenEstimationResponse {
             position: raw_resp.position,
-            leverage: Decimal::from_str(&raw_resp.leverage)
-                .map_or(Decimal::zero(), |leverage| leverage),
+            leverage: SignedDecimal::from_str(&raw_resp.leverage)
+                .map_or(SignedDecimal::zero(), |leverage| leverage),
             trading_asset: raw_resp.trading_asset,
             collateral: raw_resp.collateral,
             min_collateral: raw_resp.min_collateral,
@@ -131,8 +133,10 @@ impl<'a> ElysQuerier<'a> {
                 .map_or(Decimal::zero(), |discount| discount),
             open_price: Decimal::from_str(&raw_resp.open_price)
                 .map_or(Decimal::zero(), |open_price| open_price),
-            take_profit_price: Decimal::from_str(&raw_resp.take_profit_price)
-                .map_or(Decimal::zero(), |take_profit_price| take_profit_price),
+            take_profit_price: SignedDecimal256::from_str(&raw_resp.take_profit_price)
+                .map_or(SignedDecimal256::zero(), |take_profit_price| {
+                    take_profit_price
+                }),
             liquidation_price: Decimal::from_str(&raw_resp.liquidation_price)
                 .map_or(Decimal::zero(), |liquidation_price| liquidation_price),
             estimated_pnl: raw_resp.estimated_pnl,

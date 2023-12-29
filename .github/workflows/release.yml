@@ -14,13 +14,15 @@ jobs:
 
       - name: Compile with Docker
         run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          FILE_NAME="elys-bindings-${TAG_NAME}.tar.gz"
           docker run --rm -v "$(pwd)":/code \
           --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
           --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
           cosmwasm/workspace-optimizer:0.14.0
-          tar -zcvf cosmwasm-artifacts.tar.gz artifacts
+          tar -zcvf $FILE_NAME artifacts
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: cosmwasm-artifacts.tar.gz
+          files: ${{ env.FILE_NAME }}

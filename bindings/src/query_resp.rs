@@ -1,5 +1,5 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, Decimal, Int128, SignedDecimal};
+use cosmwasm_std::{Coin, Decimal, Int128, SignedDecimal, SignedDecimal256};
 
 use crate::types::{
     BaseAccount, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute, SwapAmountOutRoute,
@@ -81,7 +81,7 @@ pub struct MarginOpenEstimationRawResponse {
 #[cw_serde]
 pub struct MarginOpenEstimationResponse {
     pub position: i32,
-    pub leverage: Decimal,
+    pub leverage: SignedDecimal,
     pub trading_asset: String,
     pub collateral: Coin,
     pub min_collateral: Coin,
@@ -90,7 +90,7 @@ pub struct MarginOpenEstimationResponse {
     pub swap_fee: Decimal,
     pub discount: Decimal,
     pub open_price: Decimal,
-    pub take_profit_price: Decimal,
+    pub take_profit_price: SignedDecimal256,
     pub liquidation_price: Decimal,
     pub estimated_pnl: Int128,
     pub available_liquidity: Coin,
