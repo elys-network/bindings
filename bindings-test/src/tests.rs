@@ -1,4 +1,6 @@
-use cosmwasm_std::{coin, coins, Addr, Coin, Decimal, Int128, StdError, Uint128};
+use cosmwasm_std::{
+    coin, coins, Addr, Coin, Decimal, Int128, SignedDecimal, SignedDecimal256, StdError, Uint128,
+};
 use cw_multi_test::Executor;
 use elys_bindings::{
     query_resp::{
@@ -129,10 +131,10 @@ fn query_positions() {
         position: 1,
         id: 0,
         amm_pool_id: 0,
-        mtp_health: Decimal::zero(),
-        consolidate_leverage: Decimal::zero(),
+        mtp_health: SignedDecimal::zero(),
+        consolidate_leverage: SignedDecimal::zero(),
         sum_collateral: Int128::zero(),
-        take_profit_price: Decimal::zero(),
+        take_profit_price: SignedDecimal256::zero(),
         take_profit_liabilities: Int128::zero(),
         liabilities: Int128::zero(),
         borrow_interest_paid_collateral: Int128::zero(),
@@ -146,10 +148,10 @@ fn query_positions() {
         funding_fee_paid_custody: Int128::zero(),
         funding_fee_received_collateral: Int128::zero(),
         funding_fee_received_custody: Int128::zero(),
-        leverage: Decimal::zero(),
+        leverage: SignedDecimal::zero(),
         liabilities_asset: "".to_string(),
-        open_price: Decimal::zero(),
-        take_profit_borrow_rate: Decimal::zero(),
+        open_price: SignedDecimal::zero(),
+        take_profit_borrow_rate: SignedDecimal::zero(),
         take_profit_custody: Int128::zero(),
         trading_asset: "".to_string(),
     }];
@@ -171,13 +173,13 @@ fn query_single_mtp() {
         address: "user".to_string(),
         take_profit_liabilities: Int128::zero(),
         liabilities: Int128::zero(),
-        mtp_health: Decimal::zero(),
+        mtp_health: SignedDecimal::zero(),
         position: 1,
         id: 0,
         amm_pool_id: 0,
-        consolidate_leverage: Decimal::zero(),
+        consolidate_leverage: SignedDecimal::zero(),
         sum_collateral: Int128::zero(),
-        take_profit_price: Decimal::zero(),
+        take_profit_price: SignedDecimal256::zero(),
         borrow_interest_paid_collateral: Int128::zero(),
         borrow_interest_paid_custody: Int128::zero(),
         borrow_interest_unpaid_collateral: Int128::zero(),
@@ -189,10 +191,10 @@ fn query_single_mtp() {
         funding_fee_paid_custody: Int128::zero(),
         funding_fee_received_collateral: Int128::zero(),
         funding_fee_received_custody: Int128::zero(),
-        leverage: Decimal::zero(),
+        leverage: SignedDecimal::zero(),
         liabilities_asset: "".to_string(),
-        open_price: Decimal::zero(),
-        take_profit_borrow_rate: Decimal::zero(),
+        open_price: SignedDecimal::zero(),
+        take_profit_borrow_rate: SignedDecimal::zero(),
         take_profit_custody: Int128::zero(),
         trading_asset: "".to_string(),
     }];
