@@ -52,21 +52,21 @@ jobs:
 
           # store and migrate account history contract
           txhash=$($ELYSD tx wasm store artifacts/account_history_contract.wasm $OPTIONS | extract_txhash)
-          sleep 5
-          codeid=$($ELYSD query tx $txhash --node $NODE | extract_code_id)
+          sleep 10
+          codeid=$($ELYSD q tx $txhash --node $NODE | extract_code_id)
           $ELYSD tx wasm migrate $AH_CONTRACT_ADDRESS $codeid '{}' $OPTIONS
-          sleep 5
+          sleep 10
 
           # store and migrate financial snapshot contract
           txhash=$($ELYSD tx wasm store artifacts/financial_snapshot_contract.wasm $OPTIONS | extract_txhash)
-          sleep 5
-          codeid=$($ELYSD query tx $txhash --node $NODE | extract_code_id)
+          sleep 10
+          codeid=$($ELYSD q tx $txhash --node $NODE | extract_code_id)
           $ELYSD tx wasm migrate $FS_CONTRACT_ADDRESS $codeid '{}' $OPTIONS
-          sleep 5
+          sleep 10
 
           # store and migrate trade shield contract
           txhash=$($ELYSD tx wasm store artifacts/trade_shield_contract.wasm $OPTIONS | extract_txhash)
-          sleep 5
-          codeid=$($ELYSD query tx $txhash --node $NODE | extract_code_id)
+          sleep 10
+          codeid=$($ELYSD q tx $txhash --node $NODE | extract_code_id)
           $ELYSD tx wasm migrate $TS_CONTRACT_ADDRESS $codeid '{}' $OPTIONS
-          sleep 5
+          sleep 10
