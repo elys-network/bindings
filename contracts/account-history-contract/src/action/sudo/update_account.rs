@@ -8,6 +8,7 @@ use super::*;
 
 pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<ElysMsg>> {
     let querier = ElysQuerier::new(&deps.querier);
+    let value_denom = VALUE_DENOM.load(deps.storage)?;
 
     let mut pagination = PAGINATION.load(deps.storage)?;
     let expiration = EXPIRATION.load(deps.storage)?;
@@ -24,8 +25,13 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             vec![]
         };
         let account_balences = deps.querier.query_all_balances(&address)?;
-        let new_part: AccountValue =
-            create_new_part(&env.block, &querier, &expiration, account_balences)?;
+        let new_part: AccountValue = create_new_part(
+            &env.block,
+            &querier,
+            &expiration,
+            account_balences,
+            &value_denom,
+        )?;
         history.push(new_part);
         HISTORY.save(deps.storage, &address, &history)?;
     }
@@ -38,6 +44,7 @@ fn create_new_part(
     querier: &ElysQuerier<'_>,
     expiration: &Expiration,
     account_balences: Vec<Coin>,
+    value_denom: &String,
 ) -> StdResult<AccountValue> {
     let date = match expiration {
         Expiration::AtHeight(_) => Expiration::AtHeight(block.height),
@@ -48,18 +55,23 @@ fn create_new_part(
     let mut value = Uint128::zero();
 
     for balence in account_balences {
-        if balence.denom == "uusdc" {
+        if &balence.denom == value_denom {
             value += balence.amount;
             continue;
         }
         let AmmSwapEstimationByDenomResponse { amount, .. } = querier
-            .amm_swap_estimation_by_denom(&balence, &balence.denom, "uusdc", &Decimal::zero())?;
+            .amm_swap_estimation_by_denom(
+                &balence,
+                &balence.denom,
+                value_denom,
+                &Decimal::zero(),
+            )?;
         value += amount.amount;
     }
 
     Ok(AccountValue {
         date,
-        account_value: coin(value.u128(), "uusdc"),
+        account_value: coin(value.u128(), value_denom),
     })
 }
 

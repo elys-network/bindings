@@ -28,6 +28,7 @@ fn history() {
     let init_msg = InstantiateMsg {
         limit: 2,
         expiration: Expiration::AtHeight(2),
+        value_denom: "usdc".to_string(),
     };
 
     let addr = app
