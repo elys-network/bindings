@@ -1,6 +1,7 @@
 #[allow(unused_imports)]
 use super::query_resp::UserValueResponse;
 use cosmwasm_schema::{cw_serde, QueryResponses};
+#[allow(unused_imports)]
 use elys_bindings::query_resp::AuthAddressesResponse;
 use elys_bindings::types::PageRequest;
 
