@@ -79,10 +79,12 @@ impl<'a> ElysQuerier<'a> {
         let resp: MarginQueryPositionsResponse = self.querier.query(&request)?;
         Ok(resp)
     }
-    pub fn accounts(&self, pagination: PageRequest) -> StdResult<AuthAccountsResponse> {
+    pub fn accounts(&self, pagination: Option<PageRequest>) -> StdResult<AuthAddressesResponse> {
         let request = QueryRequest::Custom(ElysQuery::accounts(pagination));
-        let resp: AuthAccountsResponse = self.querier.query(&request)?;
-        Ok(resp)
+
+        let res: AuthAddressesResponse = self.querier.query(&request)?;
+
+        Ok(res)
     }
 
     pub fn get_balance(&self, address: String, denom: String) -> StdResult<BalanceAvailable> {

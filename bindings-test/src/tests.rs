@@ -5,8 +5,8 @@ use cosmwasm_std::{
 use cw_multi_test::Executor;
 use elys_bindings::{
     query_resp::{
-        AmmSwapEstimationResponse, AuthAccountsResponse, MarginMtpResponse,
-        MarginQueryPositionsResponse,
+        AmmSwapEstimationResponse, AuthAddressesResponse, MarginMtpResponse,
+        MarginQueryPositionsResponse, OracleAssetInfoResponse,
     },
     types::{MarginPosition, Mtp, OracleAssetInfo, PageRequest, Price, SwapAmountInRoute},
     ElysMsg, ElysQuery,
@@ -103,9 +103,9 @@ fn asset_info() {
 
     let req = ElysQuery::oracle_asset_info("uatom".to_string()).into();
 
-    let queried_infos: OracleAssetInfo = app.wrap().query(&req).unwrap();
+    let queried_infos: OracleAssetInfoResponse = app.wrap().query(&req).unwrap();
 
-    assert_eq!(infos[0], queried_infos);
+    assert_eq!(infos[0], queried_infos.asset_info);
 }
 
 #[test]
@@ -471,12 +471,9 @@ fn auth_account() {
     let wallets: Vec<(&str, Vec<Coin>)> =
         vec![("user", coins(5, "btc")), ("user2", coins(1, "usdc"))];
     let app = ElysApp::new_with_wallets(wallets.clone());
-    let req = ElysQuery::AuthAccounts {
-        pagination: PageRequest::new(200),
-    }
-    .into();
-    let resp: AuthAccountsResponse = app.wrap().query(&req).unwrap();
+    let req = ElysQuery::AuthAddresses { pagination: None }.into();
+    let resp: AuthAddressesResponse = app.wrap().query(&req).unwrap();
 
-    assert_eq!(resp.accounts[0].address, wallets[0].0);
-    assert_eq!(resp.accounts[1].address, wallets[1].0);
+    assert_eq!(resp.addresses[0], wallets[0].0);
+    assert_eq!(resp.addresses[1], wallets[1].0);
 }

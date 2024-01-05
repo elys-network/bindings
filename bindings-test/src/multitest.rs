@@ -20,13 +20,13 @@ use elys_bindings::{
         MsgResponse,
     },
     query_resp::{
-        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAccountsResponse, Entry,
+        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse, Entry,
         MarginGetPositionsForAddressResponse, MarginMtpResponse, MarginOpenEstimationResponse,
-        MarginQueryPositionsResponse, QueryGetEntryResponse,
+        MarginQueryPositionsResponse, OracleAssetInfoResponse, QueryGetEntryResponse,
     },
     types::{
-        BalanceAvailable, BaseAccount, Mtp, OracleAssetInfo, PageResponse, Price, PublicKey, Sum,
-        SwapAmountInRoute, SwapAmountOutRoute,
+        BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
+        SwapAmountOutRoute,
     },
     ElysMsg, ElysQuery,
 };
@@ -37,7 +37,7 @@ pub const ASSET_INFO: Item<Vec<OracleAssetInfo>> = Item::new("asset_info");
 pub const BLOCK_TIME: u64 = 5;
 pub const MARGIN_OPENED_POSITION: Item<Vec<Mtp>> = Item::new("margin_opened_position");
 pub const LAST_MODULE_USED: Item<Option<String>> = Item::new("last_module_used");
-pub const ACCOUNT: Item<Vec<BaseAccount>> = Item::new("account");
+pub const ACCOUNT: Item<Vec<String>> = Item::new("account");
 
 pub struct ElysModule {}
 
@@ -55,16 +55,9 @@ impl ElysModule {
     }
 
     pub fn new_account(&self, store: &mut dyn Storage, addr: impl Into<String>) -> StdResult<()> {
-        let mut accounts: Vec<BaseAccount> = ACCOUNT.load(store)?;
+        let mut accounts = ACCOUNT.load(store)?;
         let addr: String = addr.into();
-
-        accounts.push(BaseAccount {
-            pub_key: PublicKey::set(Sum::Ed25519(to_json_binary(&addr)?)),
-            address: addr,
-            account_number: 0,
-            sequence: 0,
-        });
-
+        accounts.push(addr);
         ACCOUNT.save(store, &accounts)
     }
 
@@ -115,7 +108,9 @@ impl Module for ElysModule {
                 let may_have_info = infos.iter().find(|asset| asset.denom == denom);
 
                 match may_have_info {
-                    Some(info) => Ok(to_json_binary(info)?),
+                    Some(info) => Ok(to_json_binary(&OracleAssetInfoResponse {
+                        asset_info: info.to_owned(),
+                    })?),
                     None => Err(Error::new(StdError::not_found("asset denom"))),
                 }
             }
@@ -232,16 +227,6 @@ impl Module for ElysModule {
                     pagination: page_resp,
                 })?)
             }
-            ElysQuery::AuthAccounts { pagination } => {
-                let acc = ACCOUNT.load(storage)?;
-                let (accounts, pagination) = pagination.filter(acc)?;
-                let resp = AuthAccountsResponse {
-                    accounts,
-                    pagination,
-                };
-
-                Ok(to_json_binary(&resp)?)
-            }
             ElysQuery::AmmBalance { .. } => {
                 let resp = BalanceAvailable {
                     amount: Uint128::new(100),
@@ -312,6 +297,14 @@ impl Module for ElysModule {
                     mtps: user_mtps,
                     pagination: PageResponse::empty(false),
                 })?)
+            }
+            ElysQuery::AuthAddresses { .. } => {
+                let addresses = ACCOUNT.load(storage)?;
+                let res = AuthAddressesResponse {
+                    addresses,
+                    pagination: PageResponse::empty(false),
+                };
+                Ok(to_json_binary(&res)?)
             }
         }
     }
@@ -689,7 +682,7 @@ impl Default for ElysApp {
 
 impl ElysApp {
     pub fn new_with_wallets(wallets: Vec<(&str, Vec<Coin>)>) -> Self {
-        let mut accounts: Vec<BaseAccount> = vec![];
+        let mut addresses: Vec<String> = vec![];
         Self(
             BasicAppBuilder::<ElysMsg, ElysQuery>::new_custom()
                 .with_custom(ElysModule {})
@@ -699,16 +692,9 @@ impl ElysApp {
                             .bank
                             .init_balance(storage, &Addr::unchecked(wallet_owner), wallet_contenent)
                             .unwrap();
-                        accounts.push(BaseAccount {
-                            address: wallet_owner.to_owned(),
-                            pub_key: PublicKey::set(Sum::Ed25519(
-                                to_json_binary(wallet_owner).unwrap(),
-                            )),
-                            account_number: 0,
-                            sequence: 0,
-                        })
+                        addresses.push(wallet_owner.to_owned())
                     }
-                    ACCOUNT.save(storage, &accounts).unwrap();
+                    ACCOUNT.save(storage, &addresses).unwrap();
                     MARGIN_OPENED_POSITION.save(storage, &vec![]).unwrap();
                     ASSET_INFO.save(storage, &vec![]).unwrap();
                     PRICES.save(storage, &vec![]).unwrap();

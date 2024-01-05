@@ -2,7 +2,7 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal, Int128, SignedDecimal, SignedDecimal256};
 
 use crate::types::{
-    BaseAccount, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute, SwapAmountOutRoute,
+    Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute, SwapAmountOutRoute,
 };
 
 #[cw_serde]
@@ -37,8 +37,8 @@ pub struct MarginMtpResponse {
 }
 
 #[cw_serde]
-pub struct AuthAccountsResponse {
-    pub accounts: Vec<BaseAccount>,
+pub struct AuthAddressesResponse {
+    pub addresses: Vec<String>,
     pub pagination: PageResponse,
 }
 

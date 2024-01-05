@@ -52,8 +52,8 @@ pub enum ElysQuery {
         pagination: PageRequest,
     },
     // Define AuthQuery
-    #[returns(AuthAccountsResponse)]
-    AuthAccounts { pagination: PageRequest },
+    #[returns(AuthAddressesResponse)]
+    AuthAddresses { pagination: Option<PageRequest> },
     #[returns(QueryGetEntryResponse)]
     AssetProfileEntry { base_denom: String },
 }
@@ -87,8 +87,8 @@ impl ElysQuery {
     pub fn positions(pagination: PageRequest) -> Self {
         Self::MarginQueryPositions { pagination }
     }
-    pub fn accounts(pagination: PageRequest) -> Self {
-        Self::AuthAccounts { pagination }
+    pub fn accounts(pagination: Option<PageRequest>) -> Self {
+        Self::AuthAddresses { pagination }
     }
 
     pub fn amm_swap_estimation_by_denom(
