@@ -20,9 +20,9 @@ use elys_bindings::{
         MsgResponse,
     },
     query_resp::{
-        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, Entry,
+        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse, Entry,
         MarginGetPositionsForAddressResponse, MarginMtpResponse, MarginOpenEstimationResponse,
-        MarginQueryPositionsResponse, QueryGetEntryResponse,
+        MarginQueryPositionsResponse, OracleAssetInfoResponse, QueryGetEntryResponse,
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
@@ -108,7 +108,9 @@ impl Module for ElysModule {
                 let may_have_info = infos.iter().find(|asset| asset.denom == denom);
 
                 match may_have_info {
-                    Some(info) => Ok(to_json_binary(info)?),
+                    Some(info) => Ok(to_json_binary(&OracleAssetInfoResponse {
+                        asset_info: info.to_owned(),
+                    })?),
                     None => Err(Error::new(StdError::not_found("asset denom"))),
                 }
             }
@@ -298,7 +300,11 @@ impl Module for ElysModule {
             }
             ElysQuery::AuthAddresses { .. } => {
                 let addresses = ACCOUNT.load(storage)?;
-                Ok(to_json_binary(&addresses)?)
+                let res = AuthAddressesResponse {
+                    addresses,
+                    pagination: PageResponse::empty(false),
+                };
+                Ok(to_json_binary(&res)?)
             }
         }
     }

@@ -6,7 +6,7 @@ use cw_multi_test::Executor;
 use elys_bindings::{
     query_resp::{
         AmmSwapEstimationResponse, AuthAddressesResponse, MarginMtpResponse,
-        MarginQueryPositionsResponse,
+        MarginQueryPositionsResponse, OracleAssetInfoResponse,
     },
     types::{MarginPosition, Mtp, OracleAssetInfo, PageRequest, Price, SwapAmountInRoute},
     ElysMsg, ElysQuery,
@@ -103,9 +103,9 @@ fn asset_info() {
 
     let req = ElysQuery::oracle_asset_info("uatom".to_string()).into();
 
-    let queried_infos: OracleAssetInfo = app.wrap().query(&req).unwrap();
+    let queried_infos: OracleAssetInfoResponse = app.wrap().query(&req).unwrap();
 
-    assert_eq!(infos[0], queried_infos);
+    assert_eq!(infos[0], queried_infos.asset_info);
 }
 
 #[test]

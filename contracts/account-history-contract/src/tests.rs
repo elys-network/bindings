@@ -6,7 +6,7 @@ use crate::{entry_point::*, msg::SudoMsg};
 use cosmwasm_std::{coin, coins, Addr, Coin, Decimal};
 use cw_multi_test::{BankSudo, ContractWrapper, Executor, SudoMsg as AppSudo};
 use cw_utils::Expiration;
-use elys_bindings::types::Price;
+use elys_bindings::types::{OracleAssetInfo, Price};
 use elys_bindings_test::ElysApp;
 
 #[test]
@@ -18,9 +18,21 @@ fn history() {
         Price::new("uusdc", Decimal::from_str("1.0").unwrap()),
     ];
 
+    let infos = vec![OracleAssetInfo::new(
+        "uusdc".to_string(),
+        "UUSDC".to_string(),
+        "".to_string(),
+        "".to_string(),
+        2,
+    )];
+
     let mut app = ElysApp::new_with_wallets(wallets.clone());
-    app.init_modules(|router, _, store| router.custom.set_prices(store, &prices))
-        .unwrap();
+    app.init_modules(|router, _, store| {
+        router.custom.set_prices(store, &prices).unwrap();
+
+        router.custom.set_asset_infos(store, &infos)
+    })
+    .unwrap();
 
     let code = ContractWrapper::new(execute, instantiate, query).with_sudo(sudo);
     let code_id = app.store_code(Box::new(code));
@@ -28,7 +40,7 @@ fn history() {
     let init_msg = InstantiateMsg {
         limit: 2,
         expiration: Expiration::AtHeight(2),
-        value_denom: "usdc".to_string(),
+        value_denom: "uusdc".to_string(),
     };
 
     let addr = app
