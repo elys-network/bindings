@@ -1,12 +1,12 @@
 #[allow(unused_imports)]
-use super::query_resp::pod::*;
-#[allow(unused_imports)]
 use super::query_resp::earn::*;
-use cosmwasm_schema::{cw_serde, QueryResponses};
+#[allow(unused_imports)]
+use super::query_resp::pod::*;
 #[allow(unused_imports)]
 use crate::bindings::query_resp::*;
 #[allow(unused_imports)]
 use crate::types::PageRequest;
+use cosmwasm_schema::{cw_serde, QueryResponses};
 
 #[cw_serde]
 #[derive(QueryResponses)]
@@ -19,23 +19,38 @@ pub enum QueryMsg {
     #[returns(GetRewardsResp)]
     GetPodRewards { address: String },
     #[returns(GetLiquidAssetsResp)]
-    GetPodLiquidAssets { },
+    GetPodLiquidAssets { address: Option<String> },
     #[returns(GetLiquidAssetResp)]
-    GetPodLiquidAsset { asset: String },
+    GetPodLiquidAsset {
+        asset: String,
+        address: Option<String>,
+    },
     #[returns(GetLiquidityPositionsResp)]
-    GetPodLiquidityPositions { },
+    GetPodLiquidityPositions {},
     #[returns(GetLiquidityPositionResp)]
     GetPodLiquidityPosition { pool_id: u64 },
 
     // Earn dashboard
     #[returns(GetEdenEarnProgramResp)]
-    GetEdenEarnProgramDetails { address: Option<String>, asset: String },
+    GetEdenEarnProgramDetails {
+        address: Option<String>,
+        asset: String,
+    },
     #[returns(GetEdenBoostEarnProgramResp)]
-    GetEdenBoostEarnProgramDetails { address: Option<String>, asset: String },
+    GetEdenBoostEarnProgramDetails {
+        address: Option<String>,
+        asset: String,
+    },
     #[returns(GetElysEarnProgramResp)]
-    GetElysEarnProgramDetails { address: Option<String>, asset: String },
+    GetElysEarnProgramDetails {
+        address: Option<String>,
+        asset: String,
+    },
     #[returns(GetUsdcEarnProgramResp)]
-    GetUsdcEarnProgramDetails { address: Option<String>, asset: String },
+    GetUsdcEarnProgramDetails {
+        address: Option<String>,
+        asset: String,
+    },
     #[returns(QueryDelegatorValidatorsResponse)]
     GetAllValidators { delegator_addr: Option<String> },
     #[returns(QueryDelegatorValidatorsResponse)]
@@ -47,7 +62,11 @@ pub enum QueryMsg {
     #[returns(QueryShowCommitmentsResponse)]
     GetCommitments { delegator_addr: String },
     #[returns(QueryEarnPoolResponse)]
-    GetLiquidityPools { pool_ids: Option<Vec<u64>>, filter_type: FilterType, pagination: Option<PageRequest> },
+    GetLiquidityPools {
+        pool_ids: Option<Vec<u64>>,
+        filter_type: FilterType,
+        pagination: Option<PageRequest>,
+    },
     #[returns(GetUsdcPriceResp)]
-    GetUsdcPrice{}
+    GetUsdcPrice {},
 }
