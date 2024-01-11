@@ -20,14 +20,14 @@ pub enum QueryMsg {
     GetMarginOrder { id: u64 },
     #[returns(GetSpotOrdersResp)]
     GetSpotOrders {
-        pagination: PageRequest,
+        pagination: Option<PageRequest>,
         order_owner: Option<String>,
         order_type: Option<SpotOrderType>,
         order_status: Option<Status>,
     },
     #[returns(GetMarginOrdersResp)]
     GetMarginOrders {
-        pagination: PageRequest,
+        pagination: Option<PageRequest>,
         order_owner: Option<String>,
         order_type: Option<MarginOrderType>,
         order_status: Option<Status>,

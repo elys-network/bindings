@@ -2,7 +2,7 @@ use elys_bindings::types::PageRequest;
 
 use super::*;
 use crate::msg::InstantiateMsg;
-use crate::states::{EXPIRATION, PAGINATION, VALUE_DENOM};
+use crate::states::{EXPIRATION, PAGINATION, VALUE_DENOM, TRADE_SHIELD_ADDRESS};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -25,5 +25,6 @@ pub fn instantiate(
     let querier = ElysQuerier::new(&deps.querier);
     querier.asset_info(msg.value_denom.clone())?;
     VALUE_DENOM.save(deps.storage, &msg.value_denom)?;
+    TRADE_SHIELD_ADDRESS.save(deps.storage, &msg.trade_shield_address)?;
     Ok(Response::new())
 }

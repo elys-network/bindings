@@ -1,4 +1,4 @@
-use crate::types::AccountValue;
+use crate::types::AccountSnapshot;
 use cw_storage_plus::Map;
 
-pub const HISTORY: Map<&str, Vec<AccountValue>> = Map::new("history");
+pub const HISTORY: Map<&str, Vec<AccountSnapshot>> = Map::new("history");
