@@ -8,6 +8,10 @@ use cw_multi_test::{BankSudo, ContractWrapper, Executor, SudoMsg as AppSudo};
 use cw_utils::Expiration;
 use elys_bindings::types::{OracleAssetInfo, Price};
 use elys_bindings_test::ElysApp;
+use trade_shield_contract::entry_point::{
+    execute as trade_shield_execute, instantiate as trade_shield_init, query as trade_shield_query,
+};
+use trade_shield_contract::msg::InstantiateMsg as TradeShieldInstantiateMsg;
 
 #[test]
 fn history() {
@@ -34,18 +38,37 @@ fn history() {
     })
     .unwrap();
 
-    let code = ContractWrapper::new(execute, instantiate, query).with_sudo(sudo);
-    let code_id = app.store_code(Box::new(code));
+    let history_code = ContractWrapper::new(execute, instantiate, query).with_sudo(sudo);
+    let history_code_id = app.store_code(Box::new(history_code));
+
+    let trade_shield_code =
+        ContractWrapper::new(trade_shield_execute, trade_shield_init, trade_shield_query);
+
+    let trade_shield_code_id = app.store_code(Box::new(trade_shield_code));
+
+    let trade_shield_init = TradeShieldInstantiateMsg {};
+
+    let trade_shield_address = app
+        .instantiate_contract(
+            trade_shield_code_id,
+            Addr::unchecked("owner"),
+            &trade_shield_init,
+            &[],
+            "Contract",
+            None,
+        )
+        .unwrap();
 
     let init_msg = InstantiateMsg {
         limit: 2,
         expiration: Expiration::AtHeight(2),
         value_denom: "uusdc".to_string(),
+        trade_shield_address: trade_shield_address.to_string(),
     };
 
     let addr = app
         .instantiate_contract(
-            code_id,
+            history_code_id,
             Addr::unchecked("owner"),
             &init_msg,
             &[],

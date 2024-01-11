@@ -87,7 +87,7 @@ fn successful_create_market_buy_order() {
         .query_wasm_smart(
             addr.clone(),
             &QueryMsg::GetSpotOrders {
-                pagination: PageRequest::new(5),
+                pagination: Some(PageRequest::new(5)),
                 order_owner: None,
                 order_type: None,
                 order_status: None,

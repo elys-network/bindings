@@ -128,7 +128,7 @@ This function retrieves information about multiple order by querying a CosmWasm 
 
 #### Parameters
 
-- `pagination` {PageRequest} :
+- `pagination` ({PageRequest} or null) : pagination query
 - `order_type` (OrderType or null): select the order type that should be querried
 - `order_owner` (String or null): select the owner of the order that should be querried
 - `order_status` (String or null) : select the order staus that should be querried (Pending,Executed,Canceled)
@@ -310,7 +310,7 @@ This function retrieves information about multiple order by querying a CosmWasm 
 
 #### Parameters
 
-- `pagination` {PageRequest} :
+- `pagination` ({PageRequest} or null) : pagination query
 - `order_type` (OrderType or null): select the order type that should be querried
 - `order_owner` (String or null): select the owner of the order that should be querried
 - `order_status` (String or null) : select the order staus that should be querried (pending,executed,canceled)

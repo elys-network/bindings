@@ -1,7 +1,7 @@
 use crate::{
     msg::query_resp::UserValueResponse,
     states::{EXPIRATION, HISTORY},
-    types::AccountValue,
+    types::AccountSnapshot,
 };
 use cosmwasm_std::{BlockInfo, Deps, StdError, StdResult};
 use cw_utils::Expiration;
@@ -19,7 +19,7 @@ pub fn user_value(
 
     let expiration = EXPIRATION.load(deps.storage)?;
 
-    let clean_history: Vec<AccountValue> = user_history
+    let clean_history: Vec<AccountSnapshot> = user_history
         .into_iter()
         .filter(|history| match (history.date, expiration) {
             (Expiration::AtHeight(time), Expiration::AtHeight(expiration)) => {

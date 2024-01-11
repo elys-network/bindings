@@ -2,7 +2,7 @@ use super::*;
 
 pub fn get_margin_orders(
     deps: Deps<ElysQuery>,
-    pagination: PageRequest,
+    pagination: Option<PageRequest>,
     order_owner: Option<String>,
     order_type: Option<MarginOrderType>,
     order_status: Option<Status>,
@@ -12,7 +12,13 @@ pub fn get_margin_orders(
         .filter_map(|res| res.ok().map(|r| r.1))
         .collect();
 
-    let (orders, page_response) = pagination.filter(orders)?;
+    let (orders, page_response) = match pagination {
+        Some(pagination) => {
+            let (orders, page_resp) = pagination.filter(orders)?;
+            (orders, Some(page_resp))
+        }
+        None => (orders, None),
+    };
 
     if orders.is_empty() {
         return Ok(GetMarginOrdersResp {
@@ -37,12 +43,16 @@ pub fn get_margin_orders(
         .cloned()
         .collect();
 
-    let page_response = match page_response.total {
-        Some(_) => PageResponse {
-            next_key: page_response.next_key,
-            total: Some(orders.len() as u64),
-        },
-        None => page_response,
+    let page_response = if let Some(page_response) = page_response {
+        match page_response.total {
+            Some(_) => Some(PageResponse {
+                next_key: page_response.next_key,
+                total: Some(orders.len() as u64),
+            }),
+            None => Some(page_response),
+        }
+    } else {
+        None
     };
 
     Ok(GetMarginOrdersResp {

@@ -35,7 +35,7 @@ fn get_spot_orders() {
         .query_wasm_smart(
             &addr,
             &QueryMsg::GetSpotOrders {
-                pagination: page_req.clone(),
+                pagination: Some(page_req.clone()),
                 order_owner: None,
                 order_type: None,
                 order_status: None,
@@ -47,14 +47,14 @@ fn get_spot_orders() {
 
     assert_eq!(&resp.orders, first_third);
 
-    page_req.update(resp.page_response.next_key);
+    page_req.update(resp.page_response.unwrap().next_key);
 
     let resp: GetSpotOrdersResp = app
         .wrap()
         .query_wasm_smart(
             &addr,
             &QueryMsg::GetSpotOrders {
-                pagination: page_req.clone(),
+                pagination: Some(page_req.clone()),
                 order_owner: None,
                 order_type: None,
                 order_status: None,
@@ -66,14 +66,14 @@ fn get_spot_orders() {
 
     assert_eq!(&resp.orders, second_third);
 
-    page_req.update(resp.page_response.next_key);
+    page_req.update(resp.page_response.unwrap().next_key);
 
     let resp: GetSpotOrdersResp = app
         .wrap()
         .query_wasm_smart(
             &addr,
             &QueryMsg::GetSpotOrders {
-                pagination: page_req.clone(),
+                pagination: Some(page_req.clone()),
                 order_owner: None,
                 order_type: None,
                 order_status: None,
