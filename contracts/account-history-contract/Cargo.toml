@@ -15,10 +15,12 @@ schemars = "0.8.1"
 cosmwasm-schema = "1.1.4"
 cw-utils = "0.13"
 elys-bindings = { path = "../../bindings" }
-trade_shield_contract = {path = "../trade-shield-contract"}
+trade_shield_contract = { path = "../trade-shield-contract", features = [
+    "msg_only",
+] }
 
 [dev-dependencies]
-
+trade_shield_contract = { path = "../trade-shield-contract", features = [] }
 cw-multi-test = "0.13.4"
 serde_json = "1.0.107"
 elys-bindings = { path = "../../bindings", features = ["testing"] }
