@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use cosmwasm_std::{BlockInfo, Coin, Decimal, QuerierWrapper, Uint128};
+use cosmwasm_std::{BlockInfo, Coin, Decimal, QuerierWrapper, StdError, Uint128};
 use cw_utils::Expiration;
 use elys_bindings::query_resp::AmmSwapEstimationByDenomResponse;
 use trade_shield_contract::{
@@ -11,7 +11,7 @@ use trade_shield_contract::{
     types::{MarginOrder, MarginOrderType, SpotOrder, Status},
 };
 
-use crate::types::AccountSnapshot;
+use crate::types::{AccountSnapshot, CoinValue};
 
 use super::*;
 
@@ -68,48 +68,25 @@ fn create_new_part(
     let mut account_value = Uint128::zero();
     let mut orders_value = Uint128::zero();
 
-    for balance in &account_balances {
-        if &balance.denom == value_denom {
-            account_value += balance.amount;
-            continue;
-        }
-        let AmmSwapEstimationByDenomResponse { amount, .. } = querier
-            .amm_swap_estimation_by_denom(
-                &balance,
-                &balance.denom,
-                value_denom,
-                &Decimal::zero(),
-            )?;
-        account_value += amount.amount;
-    }
+    let avaible_asset_balance = account_balances
+        .iter()
+        .map(|coin| CoinValue::from_coin(coin, querier, value_denom))
+        .collect::<Result<Vec<CoinValue>, StdError>>()?;
 
-    for balance in &orders_balances {
-        if &balance.denom == value_denom {
-            orders_value += balance.amount;
-            continue;
-        }
-        let AmmSwapEstimationByDenomResponse { amount, .. } = querier
-            .amm_swap_estimation_by_denom(
-                &balance,
-                &balance.denom,
-                value_denom,
-                &Decimal::zero(),
-            )?;
-        orders_value += amount.amount;
-    }
+    let in_orders_asset_balance = orders_balances
+        .iter()
+        .map(|coin| CoinValue::from_coin(coin, querier, value_denom))
+        .collect::<Result<Vec<CoinValue>, StdError>>()?;
+
+    let total_avaible_balance = avaible_asset_balance.iter().map(|balance| )
 
     Ok(AccountSnapshot {
         date,
-        account_value: Coin {
-            denom: value_denom.to_owned(),
-            amount: account_value,
-        },
-        locked_value: Coin {
-            denom: value_denom.to_owned(),
-            amount: orders_value,
-        },
-        account_assets: account_balances,
-        locked_asset: orders_balances,
+        total_liquid_asset_balance: todo!(),
+        total_avaible_balance: todo!(),
+        total_in_orders_balance: todo!(),
+        avaible_asset_balance,
+        in_orders_asset_balance,
     })
 }
 
