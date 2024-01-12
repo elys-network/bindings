@@ -1,6 +1,6 @@
 use super::*;
 use crate::{bindings::{query::ElysQuery, querier::ElysQuerier}, msg::query_resp::pod::GetRewardsResp};
-use cosmwasm_std::{Decimal, Uint128};
+use cosmwasm_std::{Decimal, Uint128, coin};
 
 use elys_bindings::query_resp::AmmSwapEstimationByDenomResponse;
 
@@ -12,6 +12,7 @@ pub fn get_pod_rewards(deps: Deps<ElysQuery>, address: String) -> Result<GetRewa
     let denom_uusdc = denom_usdc_entry.entry.denom;
     let usdc_display_denom = denom_usdc_entry.entry.display_name;
 
+    let denom_uelys = ElysDenom::Elys.as_str().to_string();
     let denom_ueden = ElysDenom::Eden.as_str().to_string();
     let denom_uedenb = ElysDenom::EdenBoost.as_str().to_string();
     
@@ -40,10 +41,12 @@ pub fn get_pod_rewards(deps: Deps<ElysQuery>, address: String) -> Result<GetRewa
                 
                 // ueden
                 if reward.denom == denom_ueden {
+                    // if it is eden, we should elys denom instead of ueden as it is not available in LP pool and has the same value with elys.
+                    let reward_in_elys = coin(reward.amount.u128(), denom_uelys.to_owned());
                     let AmmSwapEstimationByDenomResponse { amount, .. } = querier
                     .amm_swap_estimation_by_denom(
-                        &reward,
-                        reward.denom.to_owned(),
+                        &reward_in_elys,
+                        denom_uelys.to_owned(),
                         denom_uusdc.to_owned(),
                         &Decimal::zero(),
                     )?;
