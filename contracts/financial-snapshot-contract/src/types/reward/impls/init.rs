@@ -4,10 +4,11 @@ use cosmwasm_std::{Decimal, Uint128};
 impl Reward {
     pub fn init() -> Reward {
         Reward {
-            unclaimed_usdc_usd: Decimal::from_atomics(Uint128::new(0), 1).unwrap(),
-            unclaimed_eden_usd: Decimal::from_atomics(Uint128::new(0), 1).unwrap(),
-            unclaimed_eden_boost: 0,
-            external_rewards_usd: Decimal::from_atomics(Uint128::new(0), 1).unwrap(),
+            usdc_usd: Decimal::zero(),
+            eden_usd: Decimal::zero(),
+            eden_boost: Uint128::zero(),
+            other_usd: Decimal::zero(),
+            total_usd: Decimal::zero(),
         }
     }
 }

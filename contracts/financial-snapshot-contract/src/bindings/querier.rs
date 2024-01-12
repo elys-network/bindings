@@ -236,4 +236,22 @@ impl<'a> ElysQuerier<'a> {
         };
         Ok(resp)
     }
+
+    pub fn amm_swap_estimation_by_denom(
+        &self,
+        amount: &Coin,
+        denom_in: impl Into<String>,
+        denom_out: impl Into<String>,
+        discount: &Decimal,
+    ) -> StdResult<AmmSwapEstimationByDenomResponse> {
+        let request = QueryRequest::Custom(ElysQuery::amm_swap_estimation_by_denom(
+            amount.to_owned(),
+            denom_in.into(),
+            denom_out.into(),
+            discount.to_owned(),
+        ));
+        let resp: AmmSwapEstimationByDenomResponse = self.querier.query(&request)?;
+
+        Ok(resp)
+    }
 }

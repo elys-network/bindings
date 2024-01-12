@@ -12,7 +12,7 @@ pub fn get_usdc_earn_program_details(deps: Deps<ElysQuery>, address: Option<Stri
     }
     
     let querier = ElysQuerier::new(&deps.querier);
-       
+
     let usdc_denom_entry = querier.get_asset_profile(ElysDenom::Usdc.as_str().to_string())?;
     let usdc_denom = usdc_denom_entry.entry.denom;
     let usdc_display_denom = usdc_denom_entry.entry.display_name;
