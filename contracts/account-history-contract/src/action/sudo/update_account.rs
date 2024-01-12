@@ -64,7 +64,7 @@ fn create_new_part(
         Expiration::Never {} => panic!("never expire"),
     };
 
-    let avaible_asset_balance = account_balances
+    let available_asset_balance = account_balances
         .iter()
         .map(|coin| CoinValue::from_coin(coin, querier, value_denom))
         .collect::<Result<Vec<CoinValue>, StdError>>()?;
@@ -74,25 +74,25 @@ fn create_new_part(
         .map(|coin| CoinValue::from_coin(coin, querier, value_denom))
         .collect::<Result<Vec<CoinValue>, StdError>>()?;
 
-    let mut total_avaible_balance = DecCoin::new(Decimal256::zero(), value_denom);
+    let mut total_available_balance = DecCoin::new(Decimal256::zero(), value_denom);
     let mut total_in_orders_balance = DecCoin::new(Decimal256::zero(), value_denom);
     
-    for balance in &avaible_asset_balance {
-        total_avaible_balance.amount = total_avaible_balance.amount.checked_add(Decimal256::from(balance.value))?
+    for balance in &available_asset_balance {
+        total_available_balance.amount = total_available_balance.amount.checked_add(Decimal256::from(balance.value))?
     }
 
     for balance in &in_orders_asset_balance {
         total_in_orders_balance.amount = total_in_orders_balance.amount.checked_add(Decimal256::from(balance.value))?
     }
 
-    let total_liquid_asset_balance = DecCoin::new( total_avaible_balance.amount.clone().checked_add(total_in_orders_balance.amount.clone())?, value_denom);
+    let total_liquid_asset_balance = DecCoin::new( total_available_balance.amount.clone().checked_add(total_in_orders_balance.amount.clone())?, value_denom);
 
     Ok(AccountSnapshot {
         date,
         total_liquid_asset_balance,
-        total_avaible_balance,
+        total_available_balance,
         total_in_orders_balance,
-        avaible_asset_balance,
+        available_asset_balance,
         in_orders_asset_balance,
     })
 }
