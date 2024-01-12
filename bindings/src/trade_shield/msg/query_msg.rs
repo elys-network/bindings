@@ -1,11 +1,11 @@
 #[allow(unused_imports)]
 use super::query_resp::*;
-use crate::types::{MarginOrderType, SpotOrderType, Status};
+use crate::trade_shield::types::{MarginOrderType, SpotOrderType, Status};
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Coin, SignedDecimal, SignedDecimal256};
 #[allow(unused_imports)]
-use elys_bindings::query_resp::*;
-use elys_bindings::types::{MarginPosition, PageRequest};
+use crate::query_resp::*;
+use crate::types::{MarginPosition, PageRequest};
 
 #[cw_serde]
 #[derive(QueryResponses)]

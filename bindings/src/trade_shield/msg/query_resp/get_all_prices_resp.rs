@@ -1,5 +1,5 @@
 use cosmwasm_schema::cw_serde;
-use elys_bindings::types::Price;
+use crate::types::Price;
 
 #[cw_serde]
 pub struct GetAllPricesResponse {

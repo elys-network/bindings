@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use cosmwasm_std::{BlockInfo, Coin, Decimal, QuerierWrapper, Uint128};
 use cw_utils::Expiration;
 use elys_bindings::query_resp::AmmSwapEstimationByDenomResponse;
-use trade_shield_contract::{
+use elys_bindings::trade_shield::{
     msg::{
         query_resp::{GetMarginOrdersResp, GetSpotOrdersResp},
         QueryMsg,

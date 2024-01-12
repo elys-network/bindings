@@ -1,6 +1,6 @@
-use crate::types::MarginPositionPlus;
+use crate::trade_shield::types::MarginPositionPlus;
 use cosmwasm_schema::cw_serde;
-use elys_bindings::types::PageResponse;
+use crate::types::PageResponse;
 
 #[cw_serde]
 pub struct GetMarginPositionsResp {

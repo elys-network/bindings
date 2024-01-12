@@ -1,4 +1,4 @@
-use crate::types::*;
+use crate::trade_shield::types::*;
 use cosmwasm_std::{Addr, BlockInfo, Coin, Decimal};
 
 impl SpotOrder {

@@ -1,4 +1,4 @@
-use crate::msg::ReplyType;
+use crate::trade_shield::msg::ReplyType;
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::Binary;
 

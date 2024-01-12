@@ -1,8 +1,8 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{coin, Decimal, Order, SignedDecimal, StdError, StdResult, Storage};
-use elys_bindings::{query_resp::AmmSwapEstimationByDenomResponse, types::Mtp, ElysQuerier};
+use crate::{query_resp::AmmSwapEstimationByDenomResponse, types::Mtp, ElysQuerier};
 
-use crate::{states::PENDING_MARGIN_ORDER, types::MarginOrder};
+use crate::trade_shield::{states::PENDING_MARGIN_ORDER, types::MarginOrder};
 
 use super::{MarginOrderType, OrderPrice};
 
