@@ -2,10 +2,9 @@ pub mod entry_point;
 pub mod msg;
 pub mod types;
 pub use error::ContractError;
-
 mod error;
 mod action;
-mod bindings;
+pub mod bindings;
 use bindings::query::ElysQuery;
 mod states;
 

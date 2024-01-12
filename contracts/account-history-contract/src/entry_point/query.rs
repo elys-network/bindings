@@ -1,5 +1,5 @@
 use super::*;
-use crate::action::query::user_value;
+use crate::action::query::*;
 use msg::QueryMsg;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -14,5 +14,6 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
             let resp = querrier.accounts(pagination)?;
             resp
         }),
+        UserRewards { user_address } => Ok(to_json_binary(&user_rewards(deps, user_address)?)?),
     }
 }

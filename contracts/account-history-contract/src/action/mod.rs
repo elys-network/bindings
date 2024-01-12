@@ -10,5 +10,7 @@ pub mod sudo {
 
 pub mod query {
     mod user_value;
+    mod user_rewards;
     pub use user_value::user_value;
+    pub use user_rewards::user_rewards;
 }

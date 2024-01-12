@@ -11,7 +11,13 @@ use trade_shield_contract::{
     types::{MarginOrder, MarginOrderType, SpotOrder, Status},
 };
 
-use crate::types::AccountSnapshot;
+use financial_snapshot_contract::{
+    bindings::query_resp::QueryShowCommitmentsResponse,
+    msg::query_resp::earn::GetUsdcPriceResp,
+    msg::QueryMsg as FinancialQueryMsg,
+    types::ElysDenom,
+};
+use crate::types::{AccountSnapshot, Rewards};
 
 use super::*;
 
@@ -19,6 +25,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     let querier = ElysQuerier::new(&deps.querier);
     let value_denom = VALUE_DENOM.load(deps.storage)?;
     let trade_shield_address = TRADE_SHIELD_ADDRESS.load(deps.storage)?;
+    let financial_address = FINANCIAL_SNAPSHOT_ADDRESS.load(deps.storage)?;
 
     let mut pagination = PAGINATION.load(deps.storage)?;
     let expiration = EXPIRATION.load(deps.storage)?;
@@ -28,6 +35,11 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     pagination.update(resp.pagination.next_key);
     PAGINATION.save(deps.storage, &pagination)?;
 
+    let usdc_price: GetUsdcPriceResp = deps.querier.query_wasm_smart(
+        &financial_address,
+        &FinancialQueryMsg::GetUsdcPrice { },
+    )?;
+
     for address in resp.addresses {
         let mut history = if let Some(history) = HISTORY.may_load(deps.storage, &address)? {
             update_history(history, &env.block, &expiration)
@@ -36,6 +48,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
         };
         let account_balances = deps.querier.query_all_balances(&address)?;
         let order_balances = get_all_order(&deps.querier, &trade_shield_address, &address)?;
+        let rewards = get_all_rewards(&deps.querier, &financial_address, &address, &value_denom, &usdc_price.price)?;
         let new_part: AccountSnapshot = create_new_part(
             &env.block,
             &querier,
@@ -43,6 +56,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             account_balances,
             order_balances,
             &value_denom,
+            rewards,
         )?;
         history.push(new_part);
         HISTORY.save(deps.storage, &address, &history)?;
@@ -58,6 +72,7 @@ fn create_new_part(
     account_balances: Vec<Coin>,
     orders_balances: Vec<Coin>,
     value_denom: &String,
+    rewards: Rewards,
 ) -> StdResult<AccountSnapshot> {
     let date = match expiration {
         Expiration::AtHeight(_) => Expiration::AtHeight(block.height),
@@ -110,6 +125,7 @@ fn create_new_part(
         },
         account_assets: account_balances,
         locked_asset: orders_balances,
+        rewards: rewards,
     })
 }
 
@@ -176,4 +192,77 @@ pub fn get_all_order(
         .map(|(denom, amount)| Coin { denom, amount })
         .collect();
     Ok(consolidated_coins)
+}
+
+pub fn get_all_rewards(
+    querier: &QuerierWrapper<ElysQuery>,
+    financial_address: &String,
+    user_address: &String,
+    value_denom: &String,
+    usdc_price: &Decimal,
+) -> StdResult<Rewards> {
+    let commitments: QueryShowCommitmentsResponse = querier.query_wasm_smart(
+        financial_address,
+        &FinancialQueryMsg::GetCommitments { delegator_addr: user_address.to_owned() },
+    )?;
+    
+    let elys_querier = ElysQuerier::new(querier);
+
+    let denom_usdc_entry = elys_querier.get_asset_profile(ElysDenom::Usdc.as_str().to_string())?;
+    let denom_uusdc = denom_usdc_entry.entry.denom;
+
+    let denom_ueden = ElysDenom::Eden.as_str().to_string();
+    let denom_uedenb = ElysDenom::EdenBoost.as_str().to_string();
+    
+    let mut rewards = Rewards {
+        usdc: Decimal::zero(),
+        eden:Decimal::zero(),
+        edenb:Uint128::zero(),
+        other:Decimal::zero(),
+    };
+
+    match commitments.commitments.rewards_unclaimed {
+        Some(rewards_unclaimed) => {
+            for reward in rewards_unclaimed { 
+                if reward.denom == denom_uusdc {
+                    let usdc_rewards = Decimal::from_atomics(reward.amount, 0).unwrap();
+                    rewards.usdc = usdc_rewards.checked_mul(*usdc_price).unwrap();
+                    break;
+                }
+                
+                if reward.denom == denom_ueden {
+                    let AmmSwapEstimationByDenomResponse { amount, .. } = elys_querier
+                    .amm_swap_estimation_by_denom(
+                        &reward,
+                        reward.denom.to_owned(),
+                        value_denom,
+                        &Decimal::zero(),
+                    )?;
+                    let rewards_in_usdc = Decimal::from_atomics(amount.amount, 0).unwrap();
+                    rewards.eden = rewards_in_usdc.checked_mul(*usdc_price).unwrap();
+                    break;
+
+                }
+                if reward.denom == denom_uedenb {
+                    rewards.edenb = reward.amount;
+                    break;
+                }
+                
+                // Extra denoms
+                let AmmSwapEstimationByDenomResponse { amount, .. } = elys_querier
+                .amm_swap_estimation_by_denom(
+                    &reward,
+                    reward.denom.to_owned(),
+                    value_denom,
+                    &Decimal::zero(),
+                )?;
+                let rewards_in_usdc = Decimal::from_atomics(amount.amount, 0).unwrap();
+                let rewards_in_usd = rewards_in_usdc.checked_mul(*usdc_price).unwrap();
+
+                rewards.other = rewards.other.checked_add(rewards_in_usd).unwrap();
+            }
+            Ok(rewards)
+        },
+        None =>  Ok(rewards),
+    }
 }

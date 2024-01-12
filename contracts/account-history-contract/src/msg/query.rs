@@ -1,5 +1,5 @@
 #[allow(unused_imports)]
-use super::query_resp::UserValueResponse;
+use super::query_resp::{UserValueResponse, UserRewardsResponse};
 use cosmwasm_schema::{cw_serde, QueryResponses};
 #[allow(unused_imports)]
 use elys_bindings::query_resp::AuthAddressesResponse;
@@ -12,4 +12,6 @@ pub enum QueryMsg {
     UserValue { user_address: String },
     #[returns(AuthAddressesResponse)]
     Accounts { pagination: Option<PageRequest> },
+    #[returns(UserRewardsResponse)]
+    UserRewards { user_address: String },
 }
