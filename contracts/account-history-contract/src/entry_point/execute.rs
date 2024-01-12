@@ -17,6 +17,6 @@ pub fn execute(
             PAGINATION.save(deps.storage, &p)?;
             Ok(Response::new())
         }
-        UpdateAcount {} => update_account(deps, env),
+        UpdateAccount {} => update_account(deps, env),
     }
 }
