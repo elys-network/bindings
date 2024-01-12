@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 
-use cosmwasm_std::{BlockInfo, Coin, Decimal, QuerierWrapper, Uint128};
+use cosmwasm_std::{BlockInfo, Coin, QuerierWrapper, StdError, Uint128, DecCoin, Decimal256};
 use cw_utils::Expiration;
-use elys_bindings::query_resp::AmmSwapEstimationByDenomResponse;
 use elys_bindings::trade_shield::{
     msg::{
         query_resp::{GetMarginOrdersResp, GetSpotOrdersResp},
@@ -11,7 +10,7 @@ use elys_bindings::trade_shield::{
     types::{MarginOrder, MarginOrderType, SpotOrder, Status},
 };
 
-use crate::types::AccountSnapshot;
+use crate::types::{AccountSnapshot, CoinValue};
 
 use super::*;
 
@@ -65,51 +64,36 @@ fn create_new_part(
         Expiration::Never {} => panic!("never expire"),
     };
 
-    let mut account_value = Uint128::zero();
-    let mut orders_value = Uint128::zero();
+    let available_asset_balance = account_balances
+        .iter()
+        .map(|coin| CoinValue::from_coin(coin, querier, value_denom))
+        .collect::<Result<Vec<CoinValue>, StdError>>()?;
 
-    for balance in &account_balances {
-        if &balance.denom == value_denom {
-            account_value += balance.amount;
-            continue;
-        }
-        let AmmSwapEstimationByDenomResponse { amount, .. } = querier
-            .amm_swap_estimation_by_denom(
-                &balance,
-                &balance.denom,
-                value_denom,
-                &Decimal::zero(),
-            )?;
-        account_value += amount.amount;
+    let in_orders_asset_balance = orders_balances
+        .iter()
+        .map(|coin| CoinValue::from_coin(coin, querier, value_denom))
+        .collect::<Result<Vec<CoinValue>, StdError>>()?;
+
+    let mut total_available_balance = DecCoin::new(Decimal256::zero(), value_denom);
+    let mut total_in_orders_balance = DecCoin::new(Decimal256::zero(), value_denom);
+    
+    for balance in &available_asset_balance {
+        total_available_balance.amount = total_available_balance.amount.checked_add(Decimal256::from(balance.value))?
     }
 
-    for balance in &orders_balances {
-        if &balance.denom == value_denom {
-            orders_value += balance.amount;
-            continue;
-        }
-        let AmmSwapEstimationByDenomResponse { amount, .. } = querier
-            .amm_swap_estimation_by_denom(
-                &balance,
-                &balance.denom,
-                value_denom,
-                &Decimal::zero(),
-            )?;
-        orders_value += amount.amount;
+    for balance in &in_orders_asset_balance {
+        total_in_orders_balance.amount = total_in_orders_balance.amount.checked_add(Decimal256::from(balance.value))?
     }
+
+    let total_liquid_asset_balance = DecCoin::new( total_available_balance.amount.clone().checked_add(total_in_orders_balance.amount.clone())?, value_denom);
 
     Ok(AccountSnapshot {
         date,
-        account_value: Coin {
-            denom: value_denom.to_owned(),
-            amount: account_value,
-        },
-        locked_value: Coin {
-            denom: value_denom.to_owned(),
-            amount: orders_value,
-        },
-        account_assets: account_balances,
-        locked_asset: orders_balances,
+        total_liquid_asset_balance,
+        total_available_balance,
+        total_in_orders_balance,
+        available_asset_balance,
+        in_orders_asset_balance,
     })
 }
 

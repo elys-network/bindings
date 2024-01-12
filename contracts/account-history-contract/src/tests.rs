@@ -3,7 +3,7 @@ use std::str::FromStr;
 use crate::msg::query_resp::UserValueResponse;
 use crate::msg::{InstantiateMsg, QueryMsg};
 use crate::{entry_point::*, msg::SudoMsg};
-use cosmwasm_std::{coin, coins, Addr, Coin, Decimal};
+use cosmwasm_std::{coins, Addr, Coin, Decimal, DecCoin, Decimal256};
 use cw_multi_test::{BankSudo, ContractWrapper, Executor, SudoMsg as AppSudo};
 use cw_utils::Expiration;
 use elys_bindings::types::{OracleAssetInfo, Price};
@@ -25,6 +25,12 @@ fn history() {
     let infos = vec![OracleAssetInfo::new(
         "uusdc".to_string(),
         "UUSDC".to_string(),
+        "".to_string(),
+        "".to_string(),
+        2,
+    ),OracleAssetInfo::new(
+        "uelys".to_string(),
+        "UELYS".to_string(),
         "".to_string(),
         "".to_string(),
         2,
@@ -89,7 +95,7 @@ fn history() {
 
     let res: UserValueResponse = app.wrap().query_wasm_smart(&addr, &query_msg).unwrap();
 
-    assert_eq!(res.value.account_value, coin(450, "uusdc"));
+    assert_eq!(res.value.total_liquid_asset_balance, DecCoin::new(Decimal256::from_str("4.50").unwrap(), "uusdc"));
 
     app.sudo(AppSudo::Bank(BankSudo::Mint {
         to_address: "user-a".to_string(),
@@ -102,5 +108,5 @@ fn history() {
 
     let res: UserValueResponse = app.wrap().query_wasm_smart(&addr, &query_msg).unwrap();
 
-    assert_eq!(res.value.account_value, coin(750, "uusdc")); // The previous value wasn't removed yet but wasn't read either since it's expired.
+    assert_eq!(res.value.total_liquid_asset_balance, DecCoin::new(Decimal256::from_str("7.50").unwrap(), "uusdc")); // The previous value wasn't removed yet but wasn't read either since it's expired.
 }

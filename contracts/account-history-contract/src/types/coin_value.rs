@@ -8,10 +8,10 @@ use elys_bindings::{
 
 #[cw_serde]
 pub struct CoinValue {
-    denom: String,
-    amount: Decimal,
-    price: Decimal,
-    value: Decimal,
+    pub denom: String,
+    pub amount: Decimal,
+    pub price: Decimal,
+    pub value: Decimal,
 }
 
 impl CoinValue {
@@ -62,7 +62,7 @@ impl CoinValue {
             .map_err(|err| StdError::generic_err(err.to_string()))?;
 
         Ok(Self {
-            denom: coin.denom,
+            denom: coin.denom.clone(),
             amount,
             price,
             value,
