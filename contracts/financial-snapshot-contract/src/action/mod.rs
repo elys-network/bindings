@@ -9,7 +9,7 @@ pub mod query {
         mod get_pod_total_balance;
 
         use cosmwasm_std::Deps;
-        use crate::{states::PORTFOLIO, states::TOTAL_BALANCE, states::REWARDS, states::LIQUID_ASSETS, states::LIQUIDITY_POSITIONS, types::*, ContractError};
+        use crate::{states::PORTFOLIO, states::TOTAL_BALANCE, states::LIQUID_ASSETS, states::LIQUIDITY_POSITIONS, types::*, ContractError};
         pub use get_pod_liquid_asset::get_pod_liquid_asset;
         pub use get_pod_liquid_assets::get_pod_liquid_assets;
         pub use get_pod_liquidity_position::get_pod_liquidity_position;
@@ -47,3 +47,5 @@ pub mod query {
         pub use get_usdc_price::get_usdc_price;
     }
 }
+
+

@@ -13,7 +13,7 @@ use cosmwasm_std::{Coin, CustomQuery, Decimal};
 #[allow(unused_imports)]
 use crate::msg::query_resp::earn::QueryEarnPoolResponse;
 #[allow(unused_imports)]
-use elys_bindings::query_resp::QueryGetEntryResponse;
+use elys_bindings::query_resp::{QueryGetEntryResponse, AmmSwapEstimationByDenomResponse};
 
 #[cw_serde]
 #[derive(QueryResponses)]
@@ -66,6 +66,13 @@ pub enum ElysQuery {
     },
     #[returns(QueryGetEntryResponse)]
     AssetProfileEntry { base_denom: String },
+    #[returns(AmmSwapEstimationByDenomResponse)]
+    AmmSwapEstimationByDenom {
+        amount: Coin,
+        denom_in: String,
+        denom_out: String,
+        discount: Decimal,
+    },
 }
 
 impl CustomQuery for ElysQuery {}
@@ -155,4 +162,19 @@ impl ElysQuery {
     pub fn get_asset_profile(base_denom: String) -> Self {
         ElysQuery::AssetProfileEntry { base_denom }
     }
+    
+    pub fn amm_swap_estimation_by_denom(
+        amount: Coin,
+        denom_in: String,
+        denom_out: String,
+        discount: Decimal,
+    ) -> Self {
+        Self::AmmSwapEstimationByDenom {
+            amount,
+            denom_in,
+            denom_out,
+            discount,
+        }
+    }
+
 }
