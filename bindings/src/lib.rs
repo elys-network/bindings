@@ -11,3 +11,5 @@ pub mod types;
 pub use msg::*;
 pub use querier::ElysQuerier;
 pub use query::*;
+
+pub mod trade_shield;

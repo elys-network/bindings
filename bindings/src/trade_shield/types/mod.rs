@@ -4,7 +4,7 @@ mod spot_order {
     pub mod spot_order;
     mod impls {
         mod new;
-        #[cfg(test)]
+        #[cfg(feature = "testing")]
         mod new_dummy;
     }
 }
@@ -16,7 +16,7 @@ mod reply_info;
 mod status;
 
 pub use date::Date;
-pub use elys_bindings::types::*;
+pub use crate::types::*;
 pub use margin_order::MarginOrder;
 pub use margin_order_type::MarginOrderType;
 pub use margin_position_plus::MarginPositionPlus;

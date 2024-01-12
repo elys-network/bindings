@@ -1,4 +1,4 @@
-use crate::types::SpotOrder;
+use crate::trade_shield::types::SpotOrder;
 
 use cosmwasm_schema::cw_serde;
 

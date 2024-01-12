@@ -1,4 +1,4 @@
-use crate::types::{spot_order_type::SpotOrderType, Date, OrderPrice, Status};
+use crate::trade_shield::types::{spot_order_type::SpotOrderType, Date, OrderPrice, Status};
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Addr, Coin};
 

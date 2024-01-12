@@ -1,4 +1,4 @@
-use crate::types::{PageResponse, SpotOrder};
+use crate::trade_shield::types::{PageResponse, SpotOrder};
 use cosmwasm_schema::cw_serde;
 
 #[cw_serde]

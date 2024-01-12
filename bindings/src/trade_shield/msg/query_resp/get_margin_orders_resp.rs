@@ -1,7 +1,7 @@
 use cosmwasm_schema::cw_serde;
-use elys_bindings::types::PageResponse;
+use crate::types::PageResponse;
 
-use crate::types::MarginOrder;
+use crate::trade_shield::types::MarginOrder;
 
 #[cw_serde]
 pub struct GetMarginOrdersResp {

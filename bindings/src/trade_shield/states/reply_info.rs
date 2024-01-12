@@ -1,4 +1,4 @@
-use crate::types::ReplyInfo;
+use crate::trade_shield::types::ReplyInfo;
 use cw_storage_plus::{Item, Map};
 
 pub const REPLY_INFO: Map<u64, ReplyInfo> = Map::new("reply_info");

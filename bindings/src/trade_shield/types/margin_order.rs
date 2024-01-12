@@ -1,6 +1,6 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, OverflowError, SignedDecimal, SignedDecimal256, StdError, StdResult};
-use elys_bindings::types::MarginPosition;
+use crate::types::MarginPosition;
 
 use super::{MarginOrderType, OrderPrice, Status};
 
