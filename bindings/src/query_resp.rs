@@ -136,13 +136,13 @@ pub struct Entry {
 
 #[cw_serde]
 pub struct RawEntry {
-    pub base_denom: String,
-    pub decimals: u64,
-    pub denom: String,
+    pub base_denom: Option<String>,
+    pub decimals: Option<u64>,
+    pub denom: Option<String>,
     pub path: Option<String>,
     pub ibc_channel_id: Option<String>,
     pub ibc_counterparty_channel_id: Option<String>,
-    pub display_name: String,
+    pub display_name: Option<String>,
     pub display_symbol: Option<String>,
     pub network: Option<String>,
     pub address: Option<String>,
@@ -152,9 +152,9 @@ pub struct RawEntry {
     pub unit_denom: Option<String>,
     pub ibc_counterparty_denom: Option<String>,
     pub ibc_counterparty_chain_id: Option<String>,
-    pub authority: String,
-    pub commit_enabled: bool,
-    pub withdraw_enabled: bool,
+    pub authority: Option<String>,
+    pub commit_enabled: Option<bool>,
+    pub withdraw_enabled: Option<bool>,
 }
 
 #[cw_serde]

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use cosmwasm_std::{BlockInfo, Coin, QuerierWrapper, StdError, Uint128, DecCoin, Decimal256};
+use cosmwasm_std::{BlockInfo, Coin, DecCoin, Decimal256, QuerierWrapper, StdError, Uint128};
 use cw_utils::Expiration;
 use elys_bindings::trade_shield::{
     msg::{
@@ -76,16 +76,26 @@ fn create_new_part(
 
     let mut total_available_balance = DecCoin::new(Decimal256::zero(), value_denom);
     let mut total_in_orders_balance = DecCoin::new(Decimal256::zero(), value_denom);
-    
+
     for balance in &available_asset_balance {
-        total_available_balance.amount = total_available_balance.amount.checked_add(Decimal256::from(balance.value))?
+        total_available_balance.amount = total_available_balance
+            .amount
+            .checked_add(Decimal256::from(balance.value))?
     }
 
     for balance in &in_orders_asset_balance {
-        total_in_orders_balance.amount = total_in_orders_balance.amount.checked_add(Decimal256::from(balance.value))?
+        total_in_orders_balance.amount = total_in_orders_balance
+            .amount
+            .checked_add(Decimal256::from(balance.value))?
     }
 
-    let total_liquid_asset_balance = DecCoin::new( total_available_balance.amount.clone().checked_add(total_in_orders_balance.amount.clone())?, value_denom);
+    let total_liquid_asset_balance = DecCoin::new(
+        total_available_balance
+            .amount
+            .clone()
+            .checked_add(total_in_orders_balance.amount.clone())?,
+        value_denom,
+    );
 
     Ok(AccountSnapshot {
         date,

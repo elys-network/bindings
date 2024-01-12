@@ -156,9 +156,11 @@ impl<'a> ElysQuerier<'a> {
 
         let resp = QueryGetEntryResponse {
             entry: Entry {
-                base_denom: raw_entry.base_denom,
-                decimals: raw_entry.decimals,
-                denom: raw_entry.denom,
+                base_denom: raw_entry
+                    .base_denom
+                    .map_or("".to_string(), |base_denom| base_denom),
+                decimals: raw_entry.decimals.map_or(0, |decimals| decimals),
+                denom: raw_entry.denom.map_or("".to_string(), |denom| denom),
                 path: raw_entry.path.map_or("".to_string(), |path| path),
                 ibc_channel_id: raw_entry
                     .ibc_channel_id
@@ -168,7 +170,9 @@ impl<'a> ElysQuerier<'a> {
                     .map_or("".to_string(), |ibc_counterparty_channel_id| {
                         ibc_counterparty_channel_id
                     }),
-                display_name: raw_entry.display_name,
+                display_name: raw_entry
+                    .display_name
+                    .map_or("".to_string(), |display_name| display_name),
                 display_symbol: raw_entry
                     .display_symbol
                     .map_or("".to_string(), |display_symbol| display_symbol),
@@ -178,9 +182,15 @@ impl<'a> ElysQuerier<'a> {
                 unit_denom: raw_entry
                     .unit_denom
                     .map_or("".to_string(), |unit_denom| unit_denom),
-                authority: raw_entry.authority,
-                commit_enabled: raw_entry.commit_enabled,
-                withdraw_enabled: raw_entry.withdraw_enabled,
+                authority: raw_entry
+                    .authority
+                    .map_or("".to_string(), |authority| authority),
+                commit_enabled: raw_entry
+                    .commit_enabled
+                    .map_or(false, |commit_enabled| commit_enabled),
+                withdraw_enabled: raw_entry
+                    .withdraw_enabled
+                    .map_or(false, |withdraw_enabled| withdraw_enabled),
                 network: raw_entry.network.map_or("".to_string(), |network| network),
                 address: raw_entry.address.map_or("".to_string(), |address| address),
                 transfer_limit: raw_entry
