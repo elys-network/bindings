@@ -1,10 +1,10 @@
 use super::*;
-use crate::{msg::ExecuteMsg, states::PAGINATION};
+use crate::{action::sudo::update_account, msg::ExecuteMsg, states::PAGINATION};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut<ElysQuery>,
-    _env: Env,
+    env: Env,
     _info: MessageInfo,
     msg: ExecuteMsg,
 ) -> StdResult<Response<ElysMsg>> {
@@ -17,5 +17,6 @@ pub fn execute(
             PAGINATION.save(deps.storage, &p)?;
             Ok(Response::new())
         }
+        UpdateAcount {} => update_account(deps, env),
     }
 }
