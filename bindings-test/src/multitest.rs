@@ -259,12 +259,21 @@ impl Module for ElysModule {
                     estimated_pnl: Int128::zero(),
                 })?)
             }
-            ElysQuery::AssetProfileEntry { .. } => {
+            ElysQuery::AssetProfileEntry { base_denom } => {
+                let asset_info = match ASSET_INFO
+                    .load(storage)?
+                    .into_iter()
+                    .find(|info| info.denom == base_denom)
+                {
+                    Some(i) => i,
+                    None => return Err(Error::new(StdError::not_found(base_denom))),
+                };
+
                 let resp = QueryGetEntryResponse {
                     entry: Entry {
-                        base_denom: "uusdc".to_string(),
-                        decimals: 6,
-                        denom: "uusdc".to_string(),
+                        base_denom: base_denom.clone(),
+                        decimals: asset_info.decimal,
+                        denom: base_denom,
                         path: "".to_string(),
                         ibc_channel_id: "".to_string(),
                         ibc_counterparty_channel_id: "".to_string(),

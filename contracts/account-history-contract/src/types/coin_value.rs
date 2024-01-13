@@ -1,11 +1,7 @@
-use crate::action::sudo::custom_err;
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal, StdError, StdResult};
 use elys_bindings::{
-    query_resp::{
-        AmmSwapEstimationByDenomResponse, Entry, OracleAssetInfoResponse, QueryGetEntryResponse,
-    },
-    types::OracleAssetInfo,
+    query_resp::{AmmSwapEstimationByDenomResponse, QueryGetEntryResponse},
     ElysQuerier,
 };
 
@@ -58,6 +54,8 @@ impl CoinValue {
 
         let QueryGetEntryResponse { entry } = querier.get_asset_profile(value_denom.to_owned())?;
         let decimal_point_value = entry.decimals;
+
+        println!("{:?} || {:?} ", decimal_point_coin, decimal_point_value);
 
         let amount = Decimal::from_atomics(coin.amount, decimal_point_coin as u32)
             .map_err(|err| StdError::generic_err(err.to_string()))?;
