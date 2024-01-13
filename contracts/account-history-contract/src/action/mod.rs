@@ -5,6 +5,7 @@ use elys_bindings::*;
 pub mod sudo {
     use super::*;
     mod update_account;
+    pub use update_account::custom_err;
     pub use update_account::update_account;
 }
 

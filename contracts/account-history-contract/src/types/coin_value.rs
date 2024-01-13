@@ -1,7 +1,10 @@
+use crate::action::sudo::custom_err;
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal, StdError, StdResult};
 use elys_bindings::{
-    query_resp::{AmmSwapEstimationByDenomResponse, OracleAssetInfoResponse},
+    query_resp::{
+        AmmSwapEstimationByDenomResponse, Entry, OracleAssetInfoResponse, QueryGetEntryResponse,
+    },
     types::OracleAssetInfo,
     ElysQuerier,
 };
@@ -28,6 +31,20 @@ impl CoinValue {
         querier: &ElysQuerier<'_>,
         value_denom: &String,
     ) -> StdResult<Self> {
+        let QueryGetEntryResponse { entry } = querier.get_asset_profile(coin.denom.clone())?;
+        let decimal_point_coin = entry.decimals;
+
+        if &coin.denom == value_denom {
+            let amount = Decimal::from_atomics(coin.amount, decimal_point_coin as u32)
+                .map_err(|err| StdError::generic_err(err.to_string()))?;
+            return Ok(Self {
+                denom: coin.denom.clone(),
+                value: amount.clone(),
+                price: Decimal::one(),
+                amount,
+            });
+        }
+
         let AmmSwapEstimationByDenomResponse {
             spot_price: price,
             amount: whole_value,
@@ -39,21 +56,8 @@ impl CoinValue {
             &Decimal::zero(),
         )?;
 
-        let OracleAssetInfoResponse {
-            asset_info:
-                OracleAssetInfo {
-                    decimal: decimal_point_value,
-                    ..
-                },
-        } = querier.asset_info(value_denom.to_owned())?;
-
-        let OracleAssetInfoResponse {
-            asset_info:
-                OracleAssetInfo {
-                    decimal: decimal_point_coin,
-                    ..
-                },
-        } = querier.asset_info(coin.denom.clone())?;
+        let QueryGetEntryResponse { entry } = querier.get_asset_profile(value_denom.to_owned())?;
+        let decimal_point_value = entry.decimals;
 
         let amount = Decimal::from_atomics(coin.amount, decimal_point_coin as u32)
             .map_err(|err| StdError::generic_err(err.to_string()))?;

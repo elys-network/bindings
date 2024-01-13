@@ -1,5 +1,6 @@
 use super::*;
-use crate::action::query::user_value;
+use crate::{action::query::user_value, states::HISTORY, types::AccountSnapshot};
+use cosmwasm_std::{Order, StdError};
 use msg::QueryMsg;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -13,6 +14,20 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
 
             let resp = querrier.accounts(pagination)?;
             resp
+        }),
+        All {} => to_json_binary(&{
+            let list = HISTORY
+                .prefix_range(deps.storage, None, None, Order::Ascending)
+                .filter_map(|res| res.ok())
+                .collect::<Vec<(String, Vec<AccountSnapshot>)>>();
+            list
+        }),
+        LastSnapshot { user_address } => to_json_binary(&{
+            let snapshots = HISTORY.load(deps.storage, &user_address)?;
+            match snapshots.last().cloned() {
+                Some(expr) => expr,
+                None => return Err(StdError::not_found("account snapshot")),
+            }
         }),
     }
 }

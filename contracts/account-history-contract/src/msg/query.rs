@@ -1,3 +1,5 @@
+use crate::types::AccountSnapshot;
+
 #[allow(unused_imports)]
 use super::query_resp::UserValueResponse;
 use cosmwasm_schema::{cw_serde, QueryResponses};
@@ -12,4 +14,8 @@ pub enum QueryMsg {
     UserValue { user_address: String },
     #[returns(AuthAddressesResponse)]
     Accounts { pagination: Option<PageRequest> },
+    #[returns(Vec<(String, Vec<AccountSnapshot>)>)]
+    All {},
+    #[returns(AccountSnapshot)]
+    LastSnapshot { user_address: String },
 }

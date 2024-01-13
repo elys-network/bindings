@@ -3,7 +3,7 @@ use std::str::FromStr;
 use crate::msg::query_resp::UserValueResponse;
 use crate::msg::{InstantiateMsg, QueryMsg};
 use crate::{entry_point::*, msg::SudoMsg};
-use cosmwasm_std::{coins, Addr, Coin, Decimal, DecCoin, Decimal256};
+use cosmwasm_std::{coins, Addr, Coin, DecCoin, Decimal, Decimal256, Uint128};
 use cw_multi_test::{BankSudo, ContractWrapper, Executor, SudoMsg as AppSudo};
 use cw_utils::Expiration;
 use elys_bindings::types::{OracleAssetInfo, Price};
@@ -22,19 +22,22 @@ fn history() {
         Price::new("uusdc", Decimal::from_str("1.0").unwrap()),
     ];
 
-    let infos = vec![OracleAssetInfo::new(
-        "uusdc".to_string(),
-        "UUSDC".to_string(),
-        "".to_string(),
-        "".to_string(),
-        2,
-    ),OracleAssetInfo::new(
-        "uelys".to_string(),
-        "UELYS".to_string(),
-        "".to_string(),
-        "".to_string(),
-        2,
-    )];
+    let infos = vec![
+        OracleAssetInfo::new(
+            "uusdc".to_string(),
+            "UUSDC".to_string(),
+            "".to_string(),
+            "".to_string(),
+            2,
+        ),
+        OracleAssetInfo::new(
+            "uelys".to_string(),
+            "UELYS".to_string(),
+            "".to_string(),
+            "".to_string(),
+            2,
+        ),
+    ];
 
     let mut app = ElysApp::new_with_wallets(wallets.clone());
     app.init_modules(|router, _, store| {
@@ -95,7 +98,13 @@ fn history() {
 
     let res: UserValueResponse = app.wrap().query_wasm_smart(&addr, &query_msg).unwrap();
 
-    assert_eq!(res.value.total_liquid_asset_balance, DecCoin::new(Decimal256::from_str("4.50").unwrap(), "uusdc"));
+    assert_eq!(
+        res.value.total_liquid_asset_balance,
+        DecCoin::new(
+            Decimal256::from_atomics(Uint128::new(45), 1).unwrap(),
+            "uusdc"
+        )
+    );
 
     app.sudo(AppSudo::Bank(BankSudo::Mint {
         to_address: "user-a".to_string(),
@@ -108,5 +117,11 @@ fn history() {
 
     let res: UserValueResponse = app.wrap().query_wasm_smart(&addr, &query_msg).unwrap();
 
-    assert_eq!(res.value.total_liquid_asset_balance, DecCoin::new(Decimal256::from_str("7.50").unwrap(), "uusdc")); // The previous value wasn't removed yet but wasn't read either since it's expired.
+    assert_eq!(
+        res.value.total_liquid_asset_balance,
+        DecCoin::new(
+            Decimal256::from_atomics(Uint128::new(75), 1).unwrap(),
+            "uusdc"
+        )
+    ); // The previous value wasn't removed yet but wasn't read either since it's expired.
 }
