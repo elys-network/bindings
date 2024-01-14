@@ -12,4 +12,5 @@ pub struct AccountSnapshot {
     pub total_in_orders_balance: DecCoin,
     pub available_asset_balance: Vec<CoinValue>,
     pub in_orders_asset_balance: Vec<CoinValue>,
+    pub total_value_per_asset: Vec<CoinValue>,
 }
