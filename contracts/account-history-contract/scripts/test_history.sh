@@ -31,4 +31,4 @@ addr=$(elysd q tx $txhash | extract_contract_address)
 echo history : $addr
 elysd tx wasm exec $addr '{"update_account" : {}}' --from validator --gas-prices 0.25uelys --gas auto --gas-adjustment 1.3 -b sync -y  --keyring-backend=test --chain-id=elystestnet-1
 elysd q wasm contract-state smart $addr2 '{"all" : {}}'
-# elysd q wasm contract-state smart $addr2 '{"total_value_per_asset" : {"user_address" : "WRITE THE USER ADDRESS"}}'
+# elysd q wasm contract-state smart $addr2 '{"get_liquid_assets" : {"user_address" : "WRITE THE USER ADDRESS"}}'
