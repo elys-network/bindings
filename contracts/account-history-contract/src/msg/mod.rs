@@ -14,6 +14,6 @@ pub mod query_resp {
     mod user_value_response;
 
     pub use total_value_of_asset::TotalValueOfAssetResp;
-    pub use total_value_per_asset_resp::TotalValuePerAssetResp;
+    pub use total_value_per_asset_resp::GetLiquidAssetsResp;
     pub use user_value_response::UserValueResponse;
 }

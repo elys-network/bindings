@@ -33,7 +33,7 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
                 None => return Err(StdError::not_found("account snapshot")),
             }
         }),
-        TotalValuePerAsset { user_address } => {
+        GetLiquidAssets { user_address } => {
             to_json_binary(&get_total_value_per_asset(deps, user_address)?)
         }
     }

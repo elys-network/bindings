@@ -18,6 +18,6 @@ pub enum QueryMsg {
     All {},
     #[returns(AccountSnapshot)]
     LastSnapshot { user_address: String },
-    #[returns(TotalValuePerAssetResp)]
-    TotalValuePerAsset { user_address: String },
+    #[returns(GetLiquidAssetsResp)]
+    GetLiquidAssets { user_address: String },
 }

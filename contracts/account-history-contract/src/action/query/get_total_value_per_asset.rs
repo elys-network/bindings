@@ -2,7 +2,7 @@ use cosmwasm_std::{Decimal, Deps, StdError, StdResult};
 use elys_bindings::ElysQuery;
 
 use crate::{
-    msg::query_resp::{TotalValueOfAssetResp, TotalValuePerAssetResp},
+    msg::query_resp::{GetLiquidAssetsResp, TotalValueOfAssetResp},
     states::HISTORY,
     types::CoinValue,
 };
@@ -10,7 +10,7 @@ use crate::{
 pub fn get_total_value_per_asset(
     deps: Deps<ElysQuery>,
     user_address: String,
-) -> StdResult<TotalValuePerAssetResp> {
+) -> StdResult<GetLiquidAssetsResp> {
     let snapshot = match HISTORY.load(deps.storage, &user_address)?.last().cloned() {
         Some(snapshot) => snapshot,
         None => return Err(StdError::not_found("account snapshot")),
@@ -36,7 +36,7 @@ pub fn get_total_value_per_asset(
         });
     }
 
-    Ok(TotalValuePerAssetResp {
+    Ok(GetLiquidAssetsResp {
         list_asset_value,
         total_liquid_asset_balance: snapshot.total_liquid_asset_balance,
     })
