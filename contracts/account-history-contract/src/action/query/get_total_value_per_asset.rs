@@ -36,7 +36,10 @@ pub fn get_total_value_per_asset(
         });
     }
 
-    Ok(TotalValuePerAssetResp { list_asset_value })
+    Ok(TotalValuePerAssetResp {
+        list_asset_value,
+        total_liquid_asset_balance: snapshot.total_liquid_asset_balance,
+    })
 }
 
 fn get_info(list_info: &Vec<CoinValue>, denom: &String) -> (Decimal, Decimal) {
