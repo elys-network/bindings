@@ -9,14 +9,13 @@ docker run --rm -v "$(pwd)":/code \
           --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
           cosmwasm/workspace-optimizer:0.14.0
 
-# store and init trade shield contract
-# txhash=$(elysd tx wasm store artifacts/trade_shield_contract.wasm $OPTIONS | extract_txhash)
-# sleep 10
-# codeid=$(elysd q tx $txhash | extract_code_id)
-# txhash=$(elysd tx wasm init $codeid '{}' $OPTIONS  --label "Contract" --admin validator | extract_txhash)
-# sleep 10
-# addr=$(elysd q tx $txhash | extract_contract_address)
-addr=elys1qeyjez6a9dwlghf9d6cy44fxmsajztw257586akk6xn6k88x0gus3ugsrl
+store and init trade shield contract
+txhash=$(elysd tx wasm store artifacts/trade_shield_contract.wasm $OPTIONS | extract_txhash)
+sleep 10
+codeid=$(elysd q tx $txhash | extract_code_id)
+txhash=$(elysd tx wasm init $codeid '{}' $OPTIONS  --label "Contract" --admin validator | extract_txhash)
+sleep 10
+addr=$(elysd q tx $txhash | extract_contract_address)
 
 echo tradeshield : $addr
 
