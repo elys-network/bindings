@@ -1,5 +1,9 @@
 use super::*;
-use crate::{action::query::user_value, states::HISTORY, types::AccountSnapshot};
+use crate::{
+    action::query::{get_total_value_of_asset, get_total_value_per_asset, user_value},
+    states::HISTORY,
+    types::AccountSnapshot,
+};
 use cosmwasm_std::{Order, StdError};
 use msg::QueryMsg;
 
@@ -29,5 +33,33 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
                 None => return Err(StdError::not_found("account snapshot")),
             }
         }),
+        TotalLiquidAssetBalance { user_address } => to_json_binary(&{
+            let snapshots = HISTORY.load(deps.storage, &user_address)?;
+            match snapshots.last().cloned() {
+                Some(expr) => expr.total_liquid_asset_balance,
+                None => return Err(StdError::not_found("account snapshot")),
+            }
+        }),
+        TotalInOrdersBalance { user_address } => to_json_binary(&{
+            let snapshots = HISTORY.load(deps.storage, &user_address)?;
+            match snapshots.last().cloned() {
+                Some(expr) => expr.total_in_orders_balance,
+                None => return Err(StdError::not_found("account snapshot")),
+            }
+        }),
+        TotalAvailableBalance { user_address } => to_json_binary(&{
+            let snapshots = HISTORY.load(deps.storage, &user_address)?;
+            match snapshots.last().cloned() {
+                Some(expr) => expr.total_available_balance,
+                None => return Err(StdError::not_found("account snapshot")),
+            }
+        }),
+        TotalValueOfAsset {
+            user_address,
+            asset,
+        } => to_json_binary(&get_total_value_of_asset(deps, user_address, asset)?),
+        TotalValuePerAsset { user_address } => {
+            to_json_binary(&get_total_value_per_asset(deps, user_address)?)
+        }
     }
 }

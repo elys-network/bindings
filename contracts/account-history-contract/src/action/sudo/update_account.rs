@@ -119,11 +119,37 @@ fn create_new_part(
             .checked_add(Decimal256::from(balance.value).clone())?
     }
 
+    let mut total_value_per_asset: HashMap<&String, CoinValue> = HashMap::new();
+
+    for available in available_asset_balance.iter() {
+        total_value_per_asset
+            .entry(&available.denom)
+            .and_modify(|e| {
+                e.amount += available.amount;
+                e.value = available.value;
+            })
+            .or_insert_with(|| available.clone());
+    }
+
+    for in_order in in_orders_asset_balance.iter() {
+        total_value_per_asset
+            .entry(&in_order.denom)
+            .and_modify(|e| {
+                e.amount += in_order.amount;
+                e.value = in_order.value;
+            })
+            .or_insert_with(|| in_order.clone());
+    }
+
+    let total_value_per_asset: Vec<CoinValue> = total_value_per_asset.values().cloned().collect();
+
     let total_liquid_asset_balance = DecCoin::new(
-        total_available_balance
-            .amount
-            .clone()
-            .checked_add(total_in_orders_balance.amount.clone())?,
+        Decimal256::from(
+            total_value_per_asset
+                .iter()
+                .map(|v| v.value)
+                .fold(Decimal::zero(), |acc, item| acc + item),
+        ),
         value_denom,
     );
 
@@ -137,6 +163,7 @@ fn create_new_part(
             total_in_orders_balance,
             available_asset_balance,
             in_orders_asset_balance,
+            total_value_per_asset,
         })
     })
 }
