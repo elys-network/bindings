@@ -177,10 +177,10 @@ fn update_history(
         .into_iter()
         .filter(|history| match (history.date, expiration) {
             (Expiration::AtHeight(time), Expiration::AtHeight(expiration)) => {
-                block_info.height < time + expiration
+                block_info.height > time + expiration
             }
             (Expiration::AtTime(time), Expiration::AtTime(expiration)) => {
-                block_info.time.nanos() < time.nanos() + expiration.nanos()
+                block_info.time.nanos() > time.nanos() + expiration.nanos()
             }
             _ => false,
         })
