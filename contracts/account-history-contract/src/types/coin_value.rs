@@ -1,7 +1,7 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal, StdError, StdResult};
 use elys_bindings::{
-    query_resp::{AmmSwapEstimationByDenomResponse, QueryGetEntryResponse},
+    query_resp::{AmmSwapEstimationByDenomResponse, OracleAssetInfoResponse},
     ElysQuerier,
 };
 
@@ -27,8 +27,8 @@ impl CoinValue {
         querier: &ElysQuerier<'_>,
         value_denom: &String,
     ) -> StdResult<Self> {
-        let QueryGetEntryResponse { entry } = querier.get_asset_profile(coin.denom.clone())?;
-        let decimal_point_coin = entry.decimals;
+        let OracleAssetInfoResponse { asset_info } = querier.asset_info(coin.denom.clone())?;
+        let decimal_point_coin = asset_info.decimal;
 
         if &coin.denom == value_denom {
             let amount = Decimal::from_atomics(coin.amount, decimal_point_coin as u32)
@@ -52,10 +52,9 @@ impl CoinValue {
             &Decimal::zero(),
         )?;
 
-        let QueryGetEntryResponse { entry } = querier.get_asset_profile(value_denom.to_owned())?;
-        let decimal_point_value = entry.decimals;
+        let OracleAssetInfoResponse { asset_info } = querier.asset_info(value_denom.to_owned())?;
 
-        println!("{:?} || {:?} ", decimal_point_coin, decimal_point_value);
+        let decimal_point_value = asset_info.decimal;
 
         let amount = Decimal::from_atomics(coin.amount, decimal_point_coin as u32)
             .map_err(|err| StdError::generic_err(err.to_string()))?;

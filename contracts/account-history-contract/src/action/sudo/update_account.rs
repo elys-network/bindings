@@ -110,13 +110,13 @@ fn create_new_part(
     for balance in &available_asset_balance {
         total_available_balance.amount = total_available_balance
             .amount
-            .checked_add(Decimal256::from(balance.value).clone())?
+            .checked_add(Decimal256::from(balance.value.clone()))?
     }
 
     for balance in &in_orders_asset_balance {
         total_in_orders_balance.amount = total_in_orders_balance
             .amount
-            .checked_add(Decimal256::from(balance.value).clone())?
+            .checked_add(Decimal256::from(balance.value.clone()))?
     }
 
     let mut total_value_per_asset: HashMap<&String, CoinValue> = HashMap::new();
@@ -125,8 +125,8 @@ fn create_new_part(
         total_value_per_asset
             .entry(&available.denom)
             .and_modify(|e| {
-                e.amount += available.amount;
-                e.value = available.value;
+                e.amount += available.amount.clone();
+                e.value = available.value.clone();
             })
             .or_insert_with(|| available.clone());
     }
@@ -135,8 +135,8 @@ fn create_new_part(
         total_value_per_asset
             .entry(&in_order.denom)
             .and_modify(|e| {
-                e.amount += in_order.amount;
-                e.value = in_order.value;
+                e.amount += in_order.amount.clone();
+                e.value = in_order.value.clone();
             })
             .or_insert_with(|| in_order.clone());
     }
