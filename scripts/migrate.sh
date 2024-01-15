@@ -5,6 +5,11 @@ migrate_contract() {
     # Optional object parameter with a default value of '{}'
     local instantiate_msg="$2"
 
+    # Check if $2 is provided, otherwise initialize to '{}'
+    if [ -z "$instantiate_msg" ]; then
+        instantiate_msg='{}'
+    fi
+
     # Tries to store the contract and confirms the transaction
     echo "Storing the contract..."
     echo "y" | elysd tx wasm store "$1" --from cw --keyring-backend test --chain-id elystestnet-1 --gas auto --gas-adjustment=1.3 --fees 100000uelys -b sync
