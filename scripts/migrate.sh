@@ -1,9 +1,13 @@
 #!/bin/bash
 
 migrate_contract() {
+    local contract_wasm_path="$1"
+    # Optional object parameter with a default value of '{}'
+    local instantiate_msg="$2"
+
     # Tries to store the contract and confirms the transaction
     echo "Storing the contract..."
-    echo "y" | elysd tx wasm store artifacts/financial_snapshot_contract.wasm --from cw --keyring-backend test --chain-id elystestnet-1 --gas auto --gas-adjustment=1.3 --fees 100000uelys -b sync
+    echo "y" | elysd tx wasm store "$1" --from cw --keyring-backend test --chain-id elystestnet-1 --gas auto --gas-adjustment=1.3 --fees 100000uelys -b sync
 
     # Wait for a few seconds to allow for synchronization
     sleep 1
@@ -17,7 +21,7 @@ migrate_contract() {
 
     # Init the contract
     echo "Initializing the contract..."
-    elysd tx wasm init $code_id '{}' --from cw --keyring-backend test --chain-id elystestnet-1 --gas auto --gas-adjustment=1.3 --fees 100000uelys -b sync -y --admin cw --label contract
+    elysd tx wasm init $code_id "$instantiate_msg" --from cw --keyring-backend test --chain-id elystestnet-1 --gas auto --gas-adjustment=1.3 --fees 100000uelys -b sync -y --admin cw --label contract
 
     # Wait for a few seconds before initiating the contract
     sleep 1
@@ -30,9 +34,9 @@ migrate_contract() {
     elysd tx wasm migrate $contract_address $code_id '{}' --from cw --keyring-backend test --chain-id elystestnet-1 --gas auto --gas-adjustment=1.3 --fees 100000uelys -b sync -y
 
     # Print the contract address (optional)
-    echo "Code ID: $code_id."
-    echo "Contract Address: $contract_address."
-    echo "Contract sucessfully migrated."
+    echo "Code ID: $code_id"
+    echo "Contract Address: $contract_address"
+    echo "Contract sucessfully migrated"
 }
 
-migrate_contract
+migrate_contract "$1" "$2"
