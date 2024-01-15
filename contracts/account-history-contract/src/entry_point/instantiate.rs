@@ -2,7 +2,7 @@ use elys_bindings::types::PageRequest;
 
 use super::*;
 use crate::msg::InstantiateMsg;
-use crate::states::{EXPIRATION, PAGINATION, VALUE_DENOM, TRADE_SHIELD_ADDRESS};
+use crate::states::{EXPIRATION, PAGINATION, TRADE_SHIELD_ADDRESS, VALUE_DENOM};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
