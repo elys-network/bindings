@@ -1,3 +1,4 @@
+use super::*;
 use std::collections::HashMap;
 
 use cosmwasm_std::{
@@ -9,13 +10,11 @@ use elys_bindings::trade_shield::{
         query_resp::{GetMarginOrdersResp, GetSpotOrdersResp},
         QueryMsg,
     },
-    types::{MarginOrder, MarginOrderType, SpotOrder, Status, ElysDenom},
+    types::{MarginOrder, MarginOrderType, SpotOrder, Status},
 };
 
-use crate::types::{AccountSnapshot, CoinValue};
-use crate::action::query::get_eden_boost_earn_program_details;
-
-use super::*;
+use elys_bindings::types::EarnType;
+use crate::{types::{AccountSnapshot, CoinValue, StakedAsset, ElysDenom}, action::query::{get_eden_earn_program_details, get_elys_earn_program_details, get_usdc_earn_program_details, get_eden_boost_earn_program_details}};
 
 pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<ElysMsg>> {
     let querier = ElysQuerier::new(&deps.querier);
@@ -40,9 +39,9 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
         };
         let account_balances = deps.querier.query_all_balances(&address)?;
         let order_balances = get_all_order(&deps.querier, &trade_shield_address, &address)?;
-        let staked_assets = get_staked_assets(&deps, &address)?;
+        let staked_assets = get_staked_assets(&deps, &address);
 
-        let new_part: AccountSnapshot = create_new_part(
+        let new_part = create_new_part(
             &env.block,
             &querier,
             &expiration,
@@ -70,6 +69,7 @@ fn create_new_part(
     expiration: &Expiration,
     account_balances: Vec<Coin>,
     orders_balances: Vec<Coin>,
+    staked_assets: Vec<StakedAsset>,
     value_denom: &String,
 ) -> StdResult<Option<AccountSnapshot>> {
     let date = match expiration {
@@ -247,9 +247,90 @@ pub fn custom_err(line: u64, module: &str, err: StdError) -> StdError {
         "at line :{line}\n when calling:{module}\n getting this error {err:?}"
     ))
 }
+
 pub fn get_staked_assets(
     deps: &DepsMut<ElysQuery>,
     address: &String,
-) -> StdResult<Vec<Coin>> {
-    get_eden_boost_earn_program_details(deps, Some(address.to_owned()), ElysDenom::EdenBoost.as_str().to_string())
+) -> Vec<StakedAsset> {
+    let mut staked_assets: Vec<StakedAsset> = Vec::new();
+    let usdc_details = get_usdc_earn_program_details(deps, Some(address.to_owned()), ElysDenom::Usdc.as_str().to_string()).unwrap();
+    // usdc program
+    let staked_asset_usdc = StakedAsset {
+        program: EarnType::UsdcProgram,
+        apr: Decimal::from_atomics(usdc_details.data.apr.ueden, 0).unwrap(),
+        available: match usdc_details.data.available {
+            Some(r) => r.usd_amount,
+            None => Decimal::zero(),
+        },
+        rewards : match usdc_details.data.rewards {
+            Some(r) => r.iter().map(|f| f.usd_amount.unwrap()).sum(),
+            None => Decimal::zero(),
+        },
+        staked: match usdc_details.data.staked {
+            Some(r) => r.usd_amount,
+            None => Decimal::zero(),
+        }
+    };
+    
+    staked_assets.push(staked_asset_usdc);
+
+    // elys program
+    let elys_details = get_elys_earn_program_details(deps, Some(address.to_owned()), ElysDenom::Elys.as_str().to_string()).unwrap();
+    let staked_asset_elys = StakedAsset {
+        program: EarnType::ElysProgram,
+        apr: Decimal::from_atomics(elys_details.data.apr.ueden, 0).unwrap(),
+        available: match elys_details.data.available {
+            Some(r) => r.usd_amount,
+            None => Decimal::zero(),
+        },
+        rewards : match elys_details.data.rewards {
+            Some(r) => r.iter().map(|f| f.usd_amount.unwrap()).sum(),
+            None => Decimal::zero(),
+        },
+        staked: match elys_details.data.staked {
+            Some(r) => r.usd_amount,
+            None => Decimal::zero(),
+        }
+    };
+    staked_assets.push(staked_asset_elys);
+
+    // eden program
+    let eden_details = get_eden_earn_program_details(deps, Some(address.to_owned()), ElysDenom::Eden.as_str().to_string()).unwrap();
+    let staked_asset_eden = StakedAsset {
+        program: EarnType::EdenProgram,
+        apr: Decimal::from_atomics(eden_details.data.apr.ueden, 0).unwrap(),
+        available: match eden_details.data.available {
+            Some(r) => r.usd_amount,
+            None => Decimal::zero(),
+        },
+        rewards : match eden_details.data.rewards {
+            Some(r) => r.iter().map(|f| f.usd_amount.unwrap()).sum(),
+            None => Decimal::zero(),
+        },
+        staked: match eden_details.data.staked {
+            Some(r) => r.usd_amount,
+            None => Decimal::zero(),
+        }
+    };
+    staked_assets.push(staked_asset_eden);
+
+    let edenb_details = get_eden_boost_earn_program_details(deps, Some(address.to_owned()), ElysDenom::EdenBoost.as_str().to_string()).unwrap();
+    let staked_asset_edenb = StakedAsset {
+        program: EarnType::EdenBProgram,
+        apr: Decimal::from_atomics(edenb_details.data.apr.ueden, 0).unwrap(),
+        available: match edenb_details.data.available {
+            Some(r) => Decimal::from_atomics(r, 0).unwrap(),
+            None => Decimal::zero(),
+        },
+        rewards : match edenb_details.data.rewards {
+            Some(r) => r.iter().map(|f| f.usd_amount.unwrap()).sum(),
+            None => Decimal::zero(),
+        },
+        staked: match edenb_details.data.staked {
+            Some(r) => Decimal::from_atomics(r, 0).unwrap(),
+            None => Decimal::zero(),
+        }
+    };
+    staked_assets.push(staked_asset_edenb);
+    return staked_assets;
 }

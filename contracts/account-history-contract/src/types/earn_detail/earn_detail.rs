@@ -78,24 +78,3 @@ pub struct ValidatorDetail {
     // is sent in request object.
     pub staked: Option<BalanceAvailable>,
 }
-
-#[cw_serde]
-pub struct StakedPosition {
-    // The position ID.
-    pub id: String,
-    // The validator that's being unstaked from.
-    pub validator: StakingValidator,
-    // The amount that's being staked.
-    pub staked: BalanceAvailable,
-}
-
-#[cw_serde]
-pub struct UnstakedPosition {
-    // The position ID.
-    pub id: String,
-    // The validator that's being unstaked from.
-    pub validator: StakingValidator,
-    pub remaining_time: u64, // Remaining time to unstake in days.
-    // The amount that's being staked.
-    pub unstaked: BalanceAvailable,
-}

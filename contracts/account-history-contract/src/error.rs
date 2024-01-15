@@ -1,6 +1,7 @@
 use cosmwasm_std::StdError;
 use thiserror::Error;
 
+#[allow(dead_code)]
 #[derive(Error, Debug, PartialEq)]
 pub enum ContractError {
     #[error("{0}")]

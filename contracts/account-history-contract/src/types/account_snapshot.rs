@@ -1,14 +1,16 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{DecCoin, Decimal};
 use cw_utils::Expiration;
+use elys_bindings::types::EarnType;
 
 use super::CoinValue;
 
 #[cw_serde]
 pub struct StakedAsset {
-    pub program: String,
+    pub program: EarnType,
     pub apr: Decimal,
     pub available: Decimal,
+    pub staked: Decimal,
     pub rewards : Decimal,
 }
 
