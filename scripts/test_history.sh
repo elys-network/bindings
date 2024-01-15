@@ -1,3 +1,5 @@
+#!/bin/bash
+
 extract_txhash() { awk -F 'txhash: ' '/txhash:/{print $2; exit}'; }
 extract_code_id() { awk -F 'key: code_id|value: ' '/key: code_id/ { getline; gsub(/"/, "", $2); print $2; exit }'; }
 extract_contract_address() { awk -F 'key: _contract_address|value: ' '/key: _contract_address/ { getline; gsub(/"/, "", $2); print $2; exit }'; }
@@ -9,7 +11,7 @@ docker run --rm -v "$(pwd)":/code \
           --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
           cosmwasm/workspace-optimizer:0.14.0
 
-store and init trade shield contract
+# store and init trade shield contract
 txhash=$(elysd tx wasm store artifacts/trade_shield_contract.wasm $OPTIONS | extract_txhash)
 sleep 10
 codeid=$(elysd q tx $txhash | extract_code_id)
