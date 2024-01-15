@@ -22,7 +22,8 @@ use elys_bindings::{
     query_resp::{
         AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse, Entry,
         MarginGetPositionsForAddressResponse, MarginMtpResponse, MarginOpenEstimationResponse,
-        MarginQueryPositionsResponse, OracleAssetInfoResponse, QueryGetEntryResponse,
+        MarginQueryPositionsResponse, OracleAssetInfoResponse, QueryGetEntryResponse, 
+        QueryAprResponse, QueryGetPriceResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse, BalanceBorrowed,
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
@@ -314,6 +315,61 @@ impl Module for ElysModule {
                     pagination: PageResponse::empty(false),
                 };
                 Ok(to_json_binary(&res)?)
+            }
+            ElysQuery::IncentiveApr { .. } => {
+                let resp = QueryAprResponse {
+                    apr: Uint128::zero(),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::OraclePrice { .. } => {
+                let resp = QueryGetPriceResponse {
+                    price: Price {
+                        asset: "ueden".to_string(),
+                        price: Decimal::zero(),
+                        source: "uelys".to_string(),
+                        provider: "uelys".to_string(),
+                        timestamp: 0,
+                    },
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::CommitmentRewardsSubBucketBalanceOfDenom { .. } => {
+                let resp = BalanceAvailable {
+                    amount: Uint128::new(100),
+                    usd_amount: Decimal::from_atomics(Uint128::new(100), 0).unwrap(),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::CommitmentStakedBalanceOfDenom { .. } => {
+                let resp = BalanceAvailable {
+                    amount: Uint128::new(100),
+                    usd_amount: Decimal::from_atomics(Uint128::new(100), 0).unwrap(),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::AmmPriceByDenom { .. } => {
+                let resp = Decimal::zero();
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::CommitmentStakedPositions { .. } => {
+                let resp = QueryStakedPositionResponse {
+                    staked_position:None,
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::CommitmentUnStakedPositions { .. } => {
+                let resp = QueryUnstakedPositionResponse {
+                    unstaked_position:None,
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::StableStakeBalanceOfBorrow { .. } => {
+                let resp = BalanceBorrowed {
+                    usd_amount: Decimal::zero(),
+                    percentage: Decimal::zero(),
+                };
+                Ok(to_json_binary(&resp)?)
             }
         }
     }
