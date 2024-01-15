@@ -1,5 +1,5 @@
-use crate::types::{BalanceBorrowed, BalanceReward, AprUsdc};
-use elys_bindings::{query_resp::StakedAvailable, types::BalanceAvailable};
+use crate::types::{BalanceReward, AprUsdc};
+use elys_bindings::{query_resp::{StakedAvailable, BalanceBorrowed}, types::BalanceAvailable};
 
 use cosmwasm_schema::cw_serde;
 

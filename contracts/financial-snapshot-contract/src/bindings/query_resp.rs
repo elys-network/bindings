@@ -1,6 +1,6 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal, Int128};
-use crate::types::{ValidatorDetail, StakedPosition, UnstakedPosition, VestingDetail};
+use crate::types::{ValidatorDetail, VestingDetail};
 use elys_bindings::{types::BalanceAvailable, query_resp::Lockup};
 
 #[cw_serde]
@@ -94,16 +94,6 @@ pub struct QueryShowCommitmentsResponse {
 }
 
 #[cw_serde]
-pub struct QueryStakedPositionResponse {
-	pub staked_position: Option<Vec<StakedPosition>>,
-}
-
-#[cw_serde]
-pub struct QueryUnstakedPositionResponse {
-	pub unstaked_position: Option<Vec<UnstakedPosition>>,
-}
-
-#[cw_serde]
 pub struct QueryVestingInfoResponse {
 	pub vesting: BalanceAvailable,
 	pub vesting_details: Option<Vec<VestingDetail>>,
@@ -116,9 +106,4 @@ pub struct Price {
 	pub source: String,
 	pub provider: String,
 	pub timestamp: u64,
-}
-
-#[cw_serde]
-pub struct QueryGetPriceResponse {
-	pub price: Price,
 }

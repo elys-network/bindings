@@ -58,6 +58,28 @@ pub enum ElysQuery {
     AssetProfileEntry { base_denom: String },
     #[returns(QueryAprResponse)]
     IncentiveApr { withdraw_type: i32, denom: String },
+    #[returns(QueryGetPriceResponse)]
+    OraclePrice {
+        asset: String,
+        source: String,
+        timestamp: u64,
+    },
+    #[returns(BalanceAvailable)]
+    CommitmentRewardsSubBucketBalanceOfDenom {
+        address: String,
+        denom: String,
+        program: i32,
+    },
+    #[returns(BalanceAvailable)]
+    CommitmentStakedBalanceOfDenom { address: String, denom: String },  
+    #[returns(Decimal)]
+    AmmPriceByDenom { token_in: Coin, discount: Decimal },
+    #[returns(QueryStakedPositionResponse)]
+    CommitmentStakedPositions { delegator_address: String },
+    #[returns(QueryUnstakedPositionResponse)]
+    CommitmentUnStakedPositions { delegator_address: String },
+    #[returns(BalanceBorrowed)]
+    StableStakeBalanceOfBorrow { address: String },
 }
 
 impl CustomQuery for ElysQuery {}
@@ -135,5 +157,38 @@ impl ElysQuery {
             address,
             pagination,
         }
+    }
+    pub fn get_sub_bucket_rewards_balance(address: String, denom: String, program: i32) -> Self {
+        ElysQuery::CommitmentRewardsSubBucketBalanceOfDenom {
+            address,
+            denom,
+            program,
+        }
+    }
+    pub fn get_oracle_price(asset: String, source: String, timestamp: u64) -> Self {
+        ElysQuery::OraclePrice {
+            asset,
+            source,
+            timestamp,
+        }
+    }
+    pub fn get_staked_balance(address: String, denom: String) -> Self {
+        ElysQuery::CommitmentStakedBalanceOfDenom { address, denom }
+    }
+    pub fn get_amm_price_by_denom(token_in: Coin, discount: Decimal) -> Self {
+        ElysQuery::AmmPriceByDenom { token_in, discount }
+    }
+    pub fn get_staked_positions(delegator_addr: String) -> Self {
+        ElysQuery::CommitmentStakedPositions {
+            delegator_address: delegator_addr,
+        }
+    }
+    pub fn get_unstaked_positions(delegator_addr: String) -> Self {
+        ElysQuery::CommitmentUnStakedPositions {
+            delegator_address: delegator_addr,
+        }
+    }
+    pub fn get_borrowed_balance(address: String) -> Self {
+        ElysQuery::StableStakeBalanceOfBorrow { address }
     }
 }

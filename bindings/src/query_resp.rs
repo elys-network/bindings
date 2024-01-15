@@ -2,7 +2,7 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal, Int128, SignedDecimal, SignedDecimal256, Uint128};
 
 use crate::types::{
-    Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute, SwapAmountOutRoute,
+    Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute, SwapAmountOutRoute, StakedPosition, UnstakedPosition,
 };
 
 #[cw_serde]
@@ -183,4 +183,25 @@ pub struct StakedAvailable {
 #[cw_serde]
 pub struct QueryAprResponse {
     pub apr: Uint128,
+}
+
+#[cw_serde]
+pub struct QueryGetPriceResponse {
+	pub price: Price,
+}
+
+#[cw_serde]
+pub struct QueryStakedPositionResponse {
+	pub staked_position: Option<Vec<StakedPosition>>,
+}
+
+#[cw_serde]
+pub struct QueryUnstakedPositionResponse {
+	pub unstaked_position: Option<Vec<UnstakedPosition>>,
+}
+
+#[cw_serde]
+pub struct BalanceBorrowed {
+    pub usd_amount: Decimal,
+    pub percentage: Decimal,
 }
