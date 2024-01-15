@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# This command is used to automate the store, init, migrate process of
+# smart contracts.
+# Examples:
+
+# `sh scripts/migrate.sh ./artifacts/financial_snapshot_contract.wasm`
+# `sh scripts/migrate.sh ./artifacts/account_history_contract.wasm '{"limit": 10, "value_denom": "uusdc", "expiration": {"at_time": "604800000000000"}}'`
+
 migrate_contract() {
     local contract_wasm_path="$1"
     # Optional object parameter with a default value of '{}'
