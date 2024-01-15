@@ -1,13 +1,11 @@
 #!/bin/bash
 
-# This command is used to automate the store, init, migrate process of
-# smart contracts.
-# Examples:
-
+# This command is used to automate the store and init process of
+# smart contracts. Examples:
 # `sh scripts/migrate.sh ./artifacts/financial_snapshot_contract.wasm`
 # `sh scripts/migrate.sh ./artifacts/account_history_contract.wasm '{"limit": 10, "value_denom": "uusdc", "expiration": {"at_time": "604800000000000"}}'`
 
-migrate_contract() {
+init_contract() {
     local contract_wasm_path="$1"
     # Optional object parameter with a default value of '{}'
     local instantiate_msg="$2"
@@ -41,14 +39,10 @@ migrate_contract() {
     # Get contract address based on code ID
     contract_address=$(elysd q wasm contracts $code_id | awk '/^contracts:/{getline; print $2}')
 
-    # Migrate the contract
-    echo "Migrating the contract..."
-    elysd tx wasm migrate $contract_address $code_id '{}' --from cw --keyring-backend test --chain-id elystestnet-1 --gas auto --gas-adjustment=1.3 --fees 100000uelys -b sync -y
-
-    # Print the contract address (optional)
+    # Print the contract address
     echo "Code ID: $code_id"
     echo "Contract Address: $contract_address"
-    echo "Contract sucessfully migrated"
+    echo "Contract sucessfully initialized"
 }
 
-migrate_contract "$1" "$2"
+init_contract "$1" "$2"
