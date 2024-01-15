@@ -1,9 +1,9 @@
 use super::*;
-use crate::{bindings::{query::ElysQuery, querier::ElysQuerier}, msg::query_resp::earn::GetUsdcEarnProgramResp};
+use crate::{bindings::{query::ElysQuery, querier::ElysQuerier, query_resp::Lockup}, msg::query_resp::earn::GetUsdcEarnProgramResp};
 use crate::types::{earn_program::usdc_earn::UsdcEarnProgram, ElysDenom};
 use crate::types::{BalanceReward, AprUsdc};
 use cosmwasm_std::{coin, Decimal, Uint128};
-use elys_bindings::{types::EarnType, query_resp::Lockup};
+use elys_bindings::types::EarnType;
 
 pub fn get_usdc_earn_program_details(deps: Deps<ElysQuery>, address: Option<String>, asset: String) -> Result<GetUsdcEarnProgramResp, ContractError> {
     let denom = ElysDenom::Usdc.as_str();

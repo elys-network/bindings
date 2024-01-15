@@ -1,8 +1,16 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::DecCoin;
+use cosmwasm_std::{DecCoin, Decimal};
 use cw_utils::Expiration;
 
 use super::CoinValue;
+
+#[cw_serde]
+pub struct StakedAsset {
+    pub program: String,
+    pub apr: Decimal,
+    pub available: Decimal,
+    pub rewards : Decimal,
+}
 
 #[cw_serde]
 pub struct AccountSnapshot {
@@ -13,4 +21,7 @@ pub struct AccountSnapshot {
     pub available_asset_balance: Vec<CoinValue>,
     pub in_orders_asset_balance: Vec<CoinValue>,
     pub total_value_per_asset: Vec<CoinValue>,
+
+    // staked asset
+    pub staked_assets: Vec<StakedAsset>,
 }

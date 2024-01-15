@@ -1,7 +1,7 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, Decimal, Int128, Uint128};
+use cosmwasm_std::{Coin, Decimal, Int128};
 use crate::types::{ValidatorDetail, StakedPosition, UnstakedPosition, VestingDetail};
-use elys_bindings::types::BalanceAvailable;
+use elys_bindings::{types::BalanceAvailable, query_resp::Lockup};
 
 #[cw_serde]
 pub struct QueryBalanceResponse {
@@ -50,12 +50,6 @@ pub struct QueryDelegatorUnbondingDelegationsResponse {
 #[cw_serde]
 pub struct QueryDelegatorValidatorsResponse {
     pub validators: Option<Vec<ValidatorDetail>>,
-}
-
-#[cw_serde]
-pub struct Lockup {
-	pub amount: Int128,
-	pub unlock_timestamp: u64,
 }
 
 #[cw_serde]
@@ -113,13 +107,6 @@ pub struct QueryUnstakedPositionResponse {
 pub struct QueryVestingInfoResponse {
 	pub vesting: BalanceAvailable,
 	pub vesting_details: Option<Vec<VestingDetail>>,
-}
-
-#[cw_serde]
-pub struct StakedAvailable {
-	pub usd_amount: Decimal,
-	pub amount: Uint128,
-	pub lockups: Option<Vec<Lockup>>,
 }
 
 #[cw_serde]
