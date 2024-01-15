@@ -2,23 +2,35 @@
 
 # This command is used to automate the store and init process of
 # smart contracts. Examples:
-# `sh scripts/migrate.sh ./artifacts/financial_snapshot_contract.wasm`
-# `sh scripts/migrate.sh ./artifacts/account_history_contract.wasm '{"limit": 10, "value_denom": "uusdc", "expiration": {"at_time": "604800000000000"}}'`
+
+# Without params: sh scripts/migrate.sh ./artifacts/financial_snapshot_contract.wasm
+# With init params: sh scripts/migrate.sh ./artifacts/account_history_contract.wasm '{"limit": 10, "value_denom": "uusdc", "expiration": {"at_time": "604800000000000"}}'
+# Common extra aguments: sh scripts/migrate.sh ./artifacts/financial_snapshot_contract.wasm {} '--node test.com'
 
 init_contract() {
     local contract_wasm_path="$1"
     # Optional object parameter with a default value of '{}'
     local instantiate_msg="$2"
 
+    # shared additional params to be sent
+    local additional_params="$3"
+    shift 3  # Shift to remove the first three parameters
+
     # Check if $2 is provided, otherwise initialize to '{}'
     if [ -z "$instantiate_msg" ]; then
         instantiate_msg='{}'
     fi
 
+    local store_command=("elysd" "tx" "wasm" "store" "$contract_wasm_path" "--from" "cw" "--keyring-backend" "test" "--chain-id" "elystestnet-1" "--gas" "auto" "--gas-adjustment=1.3" "--fees" "100000uelys" "-b" "sync" "-y")
+    # Append additional params if provided
+    if [ -n "$additional_params" ]; then
+        store_command+=($additional_params)
+    fi
+
     # Tries to store the contract and confirms the transaction
     echo "Storing the contract..."
-    echo "y" | elysd tx wasm store "$1" --from cw --keyring-backend test --chain-id elystestnet-1 --gas auto --gas-adjustment=1.3 --fees 100000uelys -b sync
-
+    echo "y" | "${store_command[@]}"
+ 
     # Wait for a few seconds to allow for synchronization
     sleep 1
 
@@ -29,9 +41,14 @@ init_contract() {
     # Wait for a few seconds before initiating the contract
     sleep 1
 
+    local init_command=("elysd" "tx" "wasm" "init" "$code_id" "$instantiate_msg" "--from" "cw" "--keyring-backend" "test" "--chain-id" "elystestnet-1" "--gas" "auto" "--gas-adjustment=1.3" "--fees" "100000uelys" "-b" "sync" "-y" "--admin" "cw" "--label" "contract") 
+    if [ -n "$additional_params" ]; then
+        init_command+=($additional_params)
+    fi
+
     # Init the contract
     echo "Initializing the contract..."
-    elysd tx wasm init $code_id "$instantiate_msg" --from cw --keyring-backend test --chain-id elystestnet-1 --gas auto --gas-adjustment=1.3 --fees 100000uelys -b sync -y --admin cw --label contract
+    "${init_command[@]}"
 
     # Wait for a few seconds before initiating the contract
     sleep 1
@@ -45,4 +62,4 @@ init_contract() {
     echo "Contract sucessfully initialized"
 }
 
-init_contract "$1" "$2"
+init_contract "$1" "$2" "$3"
