@@ -56,6 +56,8 @@ pub enum ElysQuery {
     AuthAddresses { pagination: Option<PageRequest> },
     #[returns(QueryGetEntryResponse)]
     AssetProfileEntry { base_denom: String },
+    #[returns(QueryAprResponse)]
+    IncentiveApr { withdraw_type: i32, denom: String },
 }
 
 impl CustomQuery for ElysQuery {}

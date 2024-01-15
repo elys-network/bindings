@@ -232,4 +232,14 @@ impl<'a> ElysQuerier<'a> {
 
         Ok(resp)
     }
+    
+    pub fn get_incentive_apr(&self, program: i32, denom: String, ) -> StdResult<QueryAprResponse> {
+        let incentive_apr_query = ElysQuery::IncentiveApr{
+            withdraw_type: program.to_owned(),
+            denom: denom.to_owned(),
+        };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(incentive_apr_query);
+        let resp: QueryAprResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
 }

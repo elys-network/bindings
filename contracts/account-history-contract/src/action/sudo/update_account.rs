@@ -9,10 +9,11 @@ use elys_bindings::trade_shield::{
         query_resp::{GetMarginOrdersResp, GetSpotOrdersResp},
         QueryMsg,
     },
-    types::{MarginOrder, MarginOrderType, SpotOrder, Status},
+    types::{MarginOrder, MarginOrderType, SpotOrder, Status, ElysDenom},
 };
 
 use crate::types::{AccountSnapshot, CoinValue};
+use crate::action::query::get_eden_boost_earn_program_details;
 
 use super::*;
 
@@ -39,12 +40,15 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
         };
         let account_balances = deps.querier.query_all_balances(&address)?;
         let order_balances = get_all_order(&deps.querier, &trade_shield_address, &address)?;
-        let new_part = create_new_part(
+        let staked_assets = get_staked_assets(&deps, &address)?;
+
+        let new_part: AccountSnapshot = create_new_part(
             &env.block,
             &querier,
             &expiration,
             account_balances,
             order_balances,
+            staked_assets,
             &value_denom,
         )?;
         if let Some(part) = new_part {
@@ -164,6 +168,7 @@ fn create_new_part(
             available_asset_balance,
             in_orders_asset_balance,
             total_value_per_asset,
+            staked_assets,
         })
     })
 }
@@ -241,4 +246,10 @@ pub fn custom_err(line: u64, module: &str, err: StdError) -> StdError {
     StdError::generic_err(format!(
         "at line :{line}\n when calling:{module}\n getting this error {err:?}"
     ))
+}
+pub fn get_staked_assets(
+    deps: &DepsMut<ElysQuery>,
+    address: &String,
+) -> StdResult<Vec<Coin>> {
+    get_eden_boost_earn_program_details(deps, Some(address.to_owned()), ElysDenom::EdenBoost.as_str().to_string())
 }

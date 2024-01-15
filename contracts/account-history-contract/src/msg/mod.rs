@@ -17,6 +17,9 @@ pub mod query_resp {
     pub use total_value_per_asset_resp::GetLiquidAssetsResp;
     pub use user_value_response::UserValueResponse;
 
+    mod staked_assets_response;
+    pub use staked_assets_response::StakedAssetsResponse;
+    
     pub mod earn {
         mod get_eden_boost_earn_details_resp;
         pub use get_eden_boost_earn_details_resp::GetEdenBoostEarnProgramResp;

@@ -1,4 +1,3 @@
-use super::*;
 use crate::{bindings::{query::ElysQuery, querier::ElysQuerier}, msg::query_resp::earn::GetElysEarnProgramResp};
 use crate::types::{earn_program::elys_earn::ElysEarnProgram, ElysDenom, BalanceReward, AprElys, StakedPosition, UnstakedPosition};
 use cosmwasm_std::{coin, Decimal, Uint128};

@@ -179,3 +179,8 @@ pub struct StakedAvailable {
 	pub amount: Uint128,
 	pub lockups: Option<Vec<Lockup>>,
 }
+
+#[cw_serde]
+pub struct QueryAprResponse {
+    pub apr: Uint128,
+}

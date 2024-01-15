@@ -1,4 +1,3 @@
-use super::*;
 use crate::{bindings::{query::ElysQuery, querier::ElysQuerier, query_resp::Lockup}, msg::query_resp::earn::GetUsdcEarnProgramResp};
 use crate::types::{earn_program::usdc_earn::UsdcEarnProgram, ElysDenom};
 use crate::types::{BalanceReward, AprUsdc};

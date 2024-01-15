@@ -1,8 +1,8 @@
 use super::*;
-use crate::{bindings::{query::ElysQuery, querier::ElysQuerier}, msg::query_resp::earn::GetEdenBoostEarnProgramResp};
+use crate::msg::query_resp::earn::GetEdenBoostEarnProgramResp;
 use crate::types::{earn_program::eden_boost_earn::EdenBoostEarnProgram, ElysDenom, BalanceReward, AprUsdc};
-use cosmwasm_std::{coin, Decimal, Uint128};
-use elys_bindings::types::EarnType;
+use cosmwasm_std::{coin, Decimal, Uint128, Deps};
+use elys_bindings::{types::EarnType,ElysQuery, ElysQuerier};
 
 pub fn get_eden_boost_earn_program_details(deps: Deps<ElysQuery>, address: Option<String>, asset: String) -> Result<GetEdenBoostEarnProgramResp, ContractError> {
     let denom = ElysDenom::EdenBoost.as_str();
