@@ -27,9 +27,7 @@ impl CoinValue {
         querier: &ElysQuerier<'_>,
         value_denom: &String,
     ) -> StdResult<Self> {
-        let OracleAssetInfoResponse { asset_info } = querier
-            .asset_info(coin.denom.clone())
-            .map_err(|e| StdError::generic_err("30"))?;
+        let OracleAssetInfoResponse { asset_info } = querier.asset_info(coin.denom.clone())?;
         let decimal_point_coin = asset_info.decimal;
 
         if &coin.denom == value_denom {
@@ -51,9 +49,7 @@ impl CoinValue {
             .amm_swap_estimation_by_denom(&coin, &coin.denom, value_denom, &Decimal::zero())
             .map_err(|e| StdError::generic_err("52"))?;
 
-        let OracleAssetInfoResponse { asset_info } = querier
-            .asset_info(value_denom.to_owned())
-            .map_err(|e| StdError::generic_err(value_denom))?;
+        let OracleAssetInfoResponse { asset_info } = querier.asset_info(value_denom.to_owned())?;
 
         let decimal_point_value = asset_info.decimal;
 
