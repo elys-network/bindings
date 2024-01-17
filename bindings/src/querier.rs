@@ -232,4 +232,97 @@ impl<'a> ElysQuerier<'a> {
 
         Ok(resp)
     }
+    
+    pub fn get_incentive_apr(&self, program: i32, denom: String, ) -> StdResult<QueryAprResponse> {
+        let incentive_apr_query = ElysQuery::IncentiveApr{
+            withdraw_type: program.to_owned(),
+            denom: denom.to_owned(),
+        };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(incentive_apr_query);
+        let resp: QueryAprResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
+
+    pub fn get_sub_bucket_rewards_balance(
+        &self,
+        address: String,
+        denom: String,
+        program: i32,
+    ) -> StdResult<BalanceAvailable> {
+        let sub_bucket_reward_query = ElysQuery::CommitmentRewardsSubBucketBalanceOfDenom {
+            address: address.to_owned(),
+            denom: denom.to_owned(),
+            program: program.to_owned(),
+        };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(sub_bucket_reward_query);
+        let resp: BalanceAvailable = self.querier.query(&request)?;
+        Ok(resp)
+    }
+    
+    pub fn get_oracle_price(
+        &self,
+        asset: String,
+        source: String,
+        timestamp: u64,
+    ) -> StdResult<QueryGetPriceResponse> {
+        let oracle_price_query = ElysQuery::OraclePrice {
+            asset: asset.to_owned(),
+            source: source.to_owned(),
+            timestamp: timestamp.to_owned(),
+        };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(oracle_price_query);
+        let resp: QueryGetPriceResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
+
+    pub fn get_staked_balance(&self, address: String, denom: String) -> StdResult<StakedAvailable> {
+        let staked_balance_query = ElysQuery::CommitmentStakedBalanceOfDenom {
+            address: address.to_owned(),
+            denom: denom.to_owned(),
+        };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(staked_balance_query);
+        let resp: StakedAvailable = self.querier.query(&request)?;
+        Ok(resp)
+    }
+    
+    pub fn get_amm_price_by_denom(&self, token_in: Coin, discount: Decimal) -> StdResult<Decimal> {
+        let amm_price_query = ElysQuery::AmmPriceByDenom {
+            token_in: token_in.to_owned(),
+            discount: discount.to_owned(),
+        };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(amm_price_query);
+        let resp: Decimal = self.querier.query(&request)?;
+        Ok(resp)
+    }
+
+    pub fn get_staked_positions(&self, address: String) -> StdResult<QueryStakedPositionResponse> {
+        let staked_position_query = ElysQuery::CommitmentStakedPositions {
+            delegator_address: address.to_owned(),
+        };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(staked_position_query);
+        let resp: QueryStakedPositionResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
+
+    pub fn get_unstaked_positions(
+        &self,
+        address: String,
+    ) -> StdResult<QueryUnstakedPositionResponse> {
+        let unstaked_position_query = ElysQuery::CommitmentUnStakedPositions {
+            delegator_address: address.to_owned(),
+        };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(unstaked_position_query);
+        let resp: QueryUnstakedPositionResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
+
+    pub fn get_borrowed_balance(&self, address: String) -> StdResult<BalanceBorrowed> {
+        let borrowed_balance_query = ElysQuery::StableStakeBalanceOfBorrow {
+            address: address.to_owned(),
+        };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(borrowed_balance_query);
+        let resp: BalanceBorrowed = self.querier.query(&request)?;
+        Ok(resp)
+    }
+
 }

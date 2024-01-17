@@ -1,8 +1,8 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, Decimal, Int128, SignedDecimal, SignedDecimal256};
+use cosmwasm_std::{Coin, Decimal, Int128, SignedDecimal, SignedDecimal256, Uint128};
 
 use crate::types::{
-    Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute, SwapAmountOutRoute,
+    Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute, SwapAmountOutRoute, StakedPosition, UnstakedPosition,
 };
 
 #[cw_serde]
@@ -165,4 +165,43 @@ pub struct QueryGetEntryResponseRaw {
 #[cw_serde]
 pub struct QueryGetEntryResponse {
     pub entry: Entry,
+}
+
+#[cw_serde]
+pub struct Lockup {
+	pub amount: Int128,
+	pub unlock_timestamp: u64,
+}
+
+#[cw_serde]
+pub struct StakedAvailable {
+	pub usd_amount: Decimal,
+	pub amount: Uint128,
+	pub lockups: Option<Vec<Lockup>>,
+}
+
+#[cw_serde]
+pub struct QueryAprResponse {
+    pub apr: Uint128,
+}
+
+#[cw_serde]
+pub struct QueryGetPriceResponse {
+	pub price: Price,
+}
+
+#[cw_serde]
+pub struct QueryStakedPositionResponse {
+	pub staked_position: Option<Vec<StakedPosition>>,
+}
+
+#[cw_serde]
+pub struct QueryUnstakedPositionResponse {
+	pub unstaked_position: Option<Vec<UnstakedPosition>>,
+}
+
+#[cw_serde]
+pub struct BalanceBorrowed {
+    pub usd_amount: Decimal,
+    pub percentage: Decimal,
 }

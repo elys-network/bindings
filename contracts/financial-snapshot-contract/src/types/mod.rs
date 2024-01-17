@@ -46,7 +46,7 @@ pub use liquidity_position::liquidity_position::LiquidityPosition;
 pub mod earn_detail {
     pub mod earn_detail;
 }
-pub use earn_detail::earn_detail::{AprUsdc, AprElys, BalanceBorrowed, BalanceReward, StakedPosition, UnstakedPosition, VestingDetail, StakingValidator, ValidatorDetail, QueryAprResponse};
+pub use earn_detail::earn_detail::{AprUsdc, AprElys, BalanceReward, VestingDetail, StakingValidator, ValidatorDetail, QueryAprResponse};
 
 pub mod earn_program {
     pub mod eden_boost_earn;
