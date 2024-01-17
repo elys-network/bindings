@@ -4,6 +4,7 @@ pub mod types;
 
 mod action;
 mod states;
+mod error;
 
 #[cfg(test)]
 mod tests;

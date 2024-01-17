@@ -3,7 +3,7 @@ use cosmwasm_std::{Coin, Decimal, QuerierWrapper, QueryRequest, StdResult};
 use super::{query::ElysQuery, query_resp::*};
 
 use crate::msg::query_resp::earn::QueryEarnPoolResponse;
-use crate::types::{BalanceBorrowed, PageRequest, QueryAprResponse};
+use crate::types::{PageRequest, QueryAprResponse};
 use elys_bindings::{query_resp::*, types::BalanceAvailable};
 
 #[allow(dead_code)]
