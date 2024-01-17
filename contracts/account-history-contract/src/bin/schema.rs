@@ -1,10 +1,11 @@
-use account_history_contract::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+use account_history_contract::msg::{InstantiateMsg, QueryMsg};
 use cosmwasm_schema::write_api;
+use cosmwasm_std::Empty;
 
 fn main() {
     write_api! {
         instantiate: InstantiateMsg,
-        execute: ExecuteMsg,
+        execute: Empty,
         query: QueryMsg
     }
 }
