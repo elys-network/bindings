@@ -282,3 +282,38 @@ pub struct AmmExitPool {
     pub share_amount_in: Uint128,
     pub token_out_denom: String,
 }
+
+#[cw_serde]
+pub struct StakingValidator {
+    // The validator address.
+    pub address: String,
+    // The validator name.
+    pub name: String,
+    // Voting power percentage for this validator.
+    pub voting_power: Decimal,
+    // commission percentage for the validator.
+    pub commission: Decimal,
+    // The url of the validator profile picture
+    pub profile_picture_src: Option<String>,
+}
+
+#[cw_serde]
+pub struct StakedPosition {
+    // The position ID.
+    pub id: String,
+    // The validator that's being unstaked from.
+    pub validator: StakingValidator,
+    // The amount that's being staked.
+    pub staked: BalanceAvailable,
+}
+
+#[cw_serde]
+pub struct UnstakedPosition {
+    // The position ID.
+    pub id: String,
+    // The validator that's being unstaked from.
+    pub validator: StakingValidator,
+    pub remaining_time: u64, // Remaining time to unstake in days.
+    // The amount that's being staked.
+    pub unstaked: BalanceAvailable,
+}

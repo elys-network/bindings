@@ -37,6 +37,13 @@ fn history() {
             "".to_string(),
             2,
         ),
+        OracleAssetInfo::new(
+            "ueden".to_string(),
+            "UEDEN".to_string(),
+            "".to_string(),
+            "".to_string(),
+            2,
+        ),
     ];
 
     let mut app = ElysApp::new_with_wallets(wallets.clone());

@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use super::query_resp::*;
 #[allow(unused_imports)]
-use crate::types::{BalanceBorrowed, PageRequest, QueryAprResponse};
+use crate::types::{PageRequest, QueryAprResponse};
 #[allow(unused_imports)]
 use elys_bindings::types::BalanceAvailable;
 
@@ -13,7 +13,7 @@ use cosmwasm_std::{Coin, CustomQuery, Decimal};
 #[allow(unused_imports)]
 use crate::msg::query_resp::earn::QueryEarnPoolResponse;
 #[allow(unused_imports)]
-use elys_bindings::query_resp::{QueryGetEntryResponse, AmmSwapEstimationByDenomResponse};
+use elys_bindings::query_resp::{QueryGetEntryResponse, AmmSwapEstimationByDenomResponse, QueryGetPriceResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse, BalanceBorrowed};
 
 #[cw_serde]
 #[derive(QueryResponses)]
