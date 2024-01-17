@@ -124,11 +124,16 @@ fn create_new_part(
         Expiration::Never {} => panic!("never expire"),
     };
 
+    let mut a = false;
+
     let available_asset_balance: Vec<CoinValue> = account_balances
         .iter()
         .map(
             |coin| match CoinValue::from_coin(coin, querier, value_denom) {
-                Ok(res) => res,
+                Ok(res) => {
+                    a = true;
+                    res
+                }
                 Err(_) => CoinValue {
                     denom: coin.denom.to_owned(),
                     amount: Decimal::zero(),
