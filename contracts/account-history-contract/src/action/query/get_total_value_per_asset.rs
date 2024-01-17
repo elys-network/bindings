@@ -1,7 +1,8 @@
-use cosmwasm_std::{Decimal, Deps, StdError, StdResult};
+use cosmwasm_std::{DecCoin, Decimal, Decimal256, Deps, StdResult};
 use elys_bindings::ElysQuery;
 
 use crate::{
+    action::VALUE_DENOM,
     msg::query_resp::{GetLiquidAssetsResp, TotalValueOfAssetResp},
     states::HISTORY,
     types::CoinValue,
@@ -13,7 +14,13 @@ pub fn get_total_value_per_asset(
 ) -> StdResult<GetLiquidAssetsResp> {
     let snapshot = match HISTORY.load(deps.storage, &user_address)?.last().cloned() {
         Some(snapshot) => snapshot,
-        None => return Err(StdError::not_found("account snapshot")),
+        None => {
+            let value_denom = VALUE_DENOM.load(deps.storage)?;
+            return Ok(GetLiquidAssetsResp {
+                list_asset_value: vec![],
+                total_liquid_asset_balance: DecCoin::new(Decimal256::zero(), value_denom),
+            });
+        }
     };
 
     let mut list_asset_value: Vec<TotalValueOfAssetResp> = vec![];
