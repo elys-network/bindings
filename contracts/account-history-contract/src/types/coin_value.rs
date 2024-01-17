@@ -1,5 +1,5 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, Decimal, StdError, StdResult};
+use cosmwasm_std::{Coin, Decimal, StdError, StdResult, Uint128};
 use elys_bindings::{
     query_resp::{AmmSwapEstimationByDenomResponse, OracleAssetInfoResponse},
     ElysQuerier,
@@ -29,6 +29,7 @@ impl CoinValue {
     ) -> StdResult<Self> {
         let OracleAssetInfoResponse { asset_info } = querier.asset_info(coin.denom.clone())?;
         let decimal_point_coin = asset_info.decimal;
+        let big_denom_unit = u64::checked_pow(10, decimal_point_coin as u32).unwrap();
 
         if &coin.denom == value_denom {
             let amount = Decimal::from_atomics(coin.amount, decimal_point_coin as u32)
@@ -40,14 +41,24 @@ impl CoinValue {
                 amount,
             });
         }
+        
+        let mut coin_to_estimate = Coin{
+            denom: coin.denom.to_owned(),
+            amount: coin.amount.to_owned(),
+        };
 
+        // if the amount is too small, we should big denom amount instead in order to avoid crash in amm
+        if coin_to_estimate.amount < Uint128::from(big_denom_unit) {
+            coin_to_estimate.amount = Uint128::from(big_denom_unit);
+        }
+        
         let AmmSwapEstimationByDenomResponse {
             spot_price: price,
             amount: whole_value,
             ..
         } = querier
-            .amm_swap_estimation_by_denom(&coin, &coin.denom, value_denom, &Decimal::zero())
-            .map_err(|e| StdError::generic_err("52"))?;
+            .amm_swap_estimation_by_denom(&coin_to_estimate, &coin.denom, value_denom, &Decimal::zero())
+            .map_err(|_e| StdError::generic_err("52"))?;
 
         let OracleAssetInfoResponse { asset_info } = querier.asset_info(value_denom.to_owned())?;
 
