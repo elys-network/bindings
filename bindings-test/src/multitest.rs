@@ -348,8 +348,19 @@ impl Module for ElysModule {
                 };
                 Ok(to_json_binary(&resp)?)
             }
-            ElysQuery::AmmPriceByDenom { .. } => {
-                let resp = Decimal::zero();
+            ElysQuery::AmmPriceByDenom {
+                token_in,
+                ..
+            } => {
+                let prices = &self.get_all_price(storage)?;
+                let price_in = prices.iter().find(|price| price.asset == token_in.denom).unwrap();
+                let price_out = prices
+                    .iter()
+                    .find(|price| price.asset == "uusdc".to_string())
+                    .unwrap();
+                let spot_price = price_in.price / price_out.price;
+             
+                let resp = spot_price;
                 Ok(to_json_binary(&resp)?)
             }
             ElysQuery::CommitmentStakedPositions { .. } => {
