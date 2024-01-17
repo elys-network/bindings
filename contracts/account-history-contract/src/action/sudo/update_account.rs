@@ -41,7 +41,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     let eden_denom_entry = querier.get_asset_profile(ElysDenom::Eden.as_str().to_string())?;
     let eden_decimal = u64::checked_pow(10, eden_denom_entry.entry.decimals as u32).unwrap();
 
-    let discount = Decimal::from_atomics(Uint128::new(1000000), 0).unwrap();
+    let discount = Decimal::zero();
     let usdc_oracle_price = querier.get_oracle_price(usdc_display_denom.clone(), ElysDenom::AnySource.as_str().to_string(), 0)?;
     let uusdc_usd_price = usdc_oracle_price.price.price.checked_div(Decimal::from_atomics(Uint128::new(usdc_decimal as u128), 0).unwrap()).unwrap();
     let uelys_price_in_uusdc = querier.get_amm_price_by_denom(coin(Uint128::new(1000000).u128(), ElysDenom::Elys.as_str().to_string()), discount)?;
