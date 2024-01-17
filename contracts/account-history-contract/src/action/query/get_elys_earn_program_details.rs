@@ -1,26 +1,25 @@
 use super::*;
 use crate::msg::query_resp::earn::GetElysEarnProgramResp;
 use crate::types::{earn_program::elys_earn::ElysEarnProgram, ElysDenom, BalanceReward, AprElys};
-use cosmwasm_std::{coin, Decimal, Uint128, DepsMut};
-use elys_bindings::{types::{EarnType, StakedPosition, UnstakedPosition}, ElysQuery, ElysQuerier};
+use cosmwasm_std::{Decimal, DepsMut};
+use elys_bindings::{types::{EarnType, StakedPosition, UnstakedPosition}, ElysQuery, ElysQuerier, query_resp::QueryAprResponse};
 
-pub fn get_elys_earn_program_details(deps: &DepsMut<ElysQuery>, address: Option<String>, asset: String) -> Result<GetElysEarnProgramResp, ContractError> {
+pub fn get_elys_earn_program_details(deps: &DepsMut<ElysQuery>,
+    address: Option<String>,
+    asset: String,
+    usdc_denom: String,
+    uusdc_usd_price: Decimal,
+    uelys_price_in_uusdc: Decimal,
+    usdc_apr: QueryAprResponse,
+    eden_apr: QueryAprResponse,
+    edenb_apr: QueryAprResponse,
+) -> Result<GetElysEarnProgramResp, ContractError> {
     let denom = ElysDenom::Elys.as_str();
     if asset != denom.to_string() {
         return Err(ContractError::AssetDenomError{});
     }
 
     let querier = ElysQuerier::new(&deps.querier);
-   
-    let usdc_denom_entry = querier.get_asset_profile(ElysDenom::Usdc.as_str().to_string())?;
-    let usdc_denom = usdc_denom_entry.entry.denom;
-    let usdc_display_denom = usdc_denom_entry.entry.display_name;
-    let usdc_decimal = u64::checked_pow(10, usdc_denom_entry.entry.decimals as u32).unwrap();
-
-    let usdc_apr = querier.get_incentive_apr(EarnType::ElysProgram as i32, ElysDenom::Usdc.as_str().to_string())?;
-    let eden_apr = querier.get_incentive_apr(EarnType::ElysProgram as i32, ElysDenom::Eden.as_str().to_string())?;
-    let edenb_apr = querier.get_incentive_apr(EarnType::ElysProgram as i32, ElysDenom::EdenBoost.as_str().to_string())?;
-
     let resp = GetElysEarnProgramResp {
         data: match address {
             Some(addr) => {
@@ -33,12 +32,7 @@ pub fn get_elys_earn_program_details(deps: &DepsMut<ElysQuery>, address: Option<
                 let mut staked_positions = querier.get_staked_positions(addr.clone())?;
                 let mut unstaked_positions = querier.get_unstaked_positions(addr.clone())?;
 
-                let uusdc_oracle_price = querier.get_oracle_price(usdc_display_denom.clone(), ElysDenom::AnySource.as_str().to_string(), 0)?;
-                let uusdc_usd_price = uusdc_oracle_price.price.price.checked_div(Decimal::from_atomics(Uint128::new(usdc_decimal as u128), 0).unwrap()).unwrap();
-                
-                let discount = Decimal::from_atomics(Uint128::new(1000000), 0).unwrap();
                 let uusdc_rewards_in_usd = uusdc_rewards.usd_amount.checked_mul(uusdc_usd_price).unwrap();
-                let uelys_price_in_uusdc = querier.get_amm_price_by_denom(coin(Uint128::new(1000000).u128(), ElysDenom::Elys.as_str().to_string()), discount)?;
 
                 // have value in usd
                 let mut ueden_rewards_in_usd = uelys_price_in_uusdc.checked_mul(Decimal::from_atomics(ueden_rewards.amount, 0).unwrap()).unwrap();

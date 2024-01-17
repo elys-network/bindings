@@ -2,7 +2,7 @@ use super::*;
 use std::collections::HashMap;
 
 use cosmwasm_std::{
-    BlockInfo, Coin, DecCoin, Decimal, Decimal256, QuerierWrapper, StdError, Uint128,
+    BlockInfo, Coin, DecCoin, Decimal, Decimal256, QuerierWrapper, StdError, Uint128, coin,
 };
 use cw_utils::Expiration;
 use elys_bindings::trade_shield::{
@@ -13,7 +13,7 @@ use elys_bindings::trade_shield::{
     types::{MarginOrder, MarginOrderType, SpotOrder, Status},
 };
 
-use elys_bindings::types::EarnType;
+use elys_bindings::{types::EarnType, query_resp::QueryAprResponse};
 use crate::{types::{AccountSnapshot, CoinValue, StakedAsset, StakedAssetResponse, ElysDenom}, action::query::{get_eden_earn_program_details, get_elys_earn_program_details, get_usdc_earn_program_details, get_eden_boost_earn_program_details}};
 
 pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<ElysMsg>> {
@@ -31,6 +31,36 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     pagination.update(resp.pagination.next_key);
     PAGINATION.save(deps.storage, &pagination)?;
 
+    // Read common variables before looping
+    // To enhance querying speed.
+    let usdc_denom_entry = querier.get_asset_profile(ElysDenom::Usdc.as_str().to_string())?;
+    let usdc_denom = usdc_denom_entry.entry.denom;
+    let usdc_display_denom = usdc_denom_entry.entry.display_name;
+    let usdc_decimal = u64::checked_pow(10, usdc_denom_entry.entry.decimals as u32).unwrap();
+    
+    let eden_denom_entry = querier.get_asset_profile(ElysDenom::Eden.as_str().to_string())?;
+    let eden_decimal = u64::checked_pow(10, eden_denom_entry.entry.decimals as u32).unwrap();
+
+    let discount = Decimal::from_atomics(Uint128::new(1000000), 0).unwrap();
+    let usdc_oracle_price = querier.get_oracle_price(usdc_display_denom.clone(), ElysDenom::AnySource.as_str().to_string(), 0)?;
+    let uusdc_usd_price = usdc_oracle_price.price.price.checked_div(Decimal::from_atomics(Uint128::new(usdc_decimal as u128), 0).unwrap()).unwrap();
+    let uelys_price_in_uusdc = querier.get_amm_price_by_denom(coin(Uint128::new(1000000).u128(), ElysDenom::Elys.as_str().to_string()), discount)?;
+
+    // APR section
+    let usdc_apr_usdc = querier.get_incentive_apr(EarnType::UsdcProgram as i32, ElysDenom::Usdc.as_str().to_string())?;
+    let eden_apr_usdc = querier.get_incentive_apr(EarnType::UsdcProgram as i32, ElysDenom::Eden.as_str().to_string())?;
+    
+    let usdc_apr_edenb = querier.get_incentive_apr(EarnType::EdenBProgram as i32, ElysDenom::Usdc.as_str().to_string())?;
+    let eden_apr_edenb = querier.get_incentive_apr(EarnType::EdenBProgram as i32, ElysDenom::Eden.as_str().to_string())?;
+    
+    let usdc_apr_eden = querier.get_incentive_apr(EarnType::EdenProgram as i32, ElysDenom::Usdc.as_str().to_string())?;
+    let eden_apr_eden = querier.get_incentive_apr(EarnType::EdenProgram as i32, ElysDenom::Eden.as_str().to_string())?;
+    let edenb_apr_eden = querier.get_incentive_apr(EarnType::EdenProgram as i32, ElysDenom::EdenBoost.as_str().to_string())?;
+
+    let usdc_apr_elys = querier.get_incentive_apr(EarnType::ElysProgram as i32, ElysDenom::Usdc.as_str().to_string())?;
+    let eden_apr_elys = querier.get_incentive_apr(EarnType::ElysProgram as i32, ElysDenom::Eden.as_str().to_string())?;
+    let edenb_apr_elys = querier.get_incentive_apr(EarnType::ElysProgram as i32, ElysDenom::EdenBoost.as_str().to_string())?;
+
     for address in resp.addresses {
         let mut history = if let Some(history) = HISTORY.may_load(deps.storage, &address)? {
             update_history(history, &env.block, &expiration)
@@ -39,7 +69,23 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
         };
         let account_balances = deps.querier.query_all_balances(&address)?;
         let order_balances = get_all_order(&deps.querier, &trade_shield_address, &address)?;
-        let staked_response = get_staked_assets(&deps, &address);
+        let staked_response = get_staked_assets(&deps, 
+            &address,
+            uusdc_usd_price,
+            uelys_price_in_uusdc,
+            usdc_denom.to_owned(),
+            eden_decimal,
+            usdc_apr_usdc.to_owned(),
+            eden_apr_usdc.to_owned(),
+            usdc_apr_edenb.to_owned(),
+            eden_apr_edenb.to_owned(),
+            usdc_apr_eden.to_owned(),
+            eden_apr_eden.to_owned(),
+            edenb_apr_eden.to_owned(),
+            usdc_apr_elys.to_owned(),
+            eden_apr_elys.to_owned(),
+            edenb_apr_elys.to_owned(),
+        );
 
         let new_part = create_new_part(
             &env.block,
@@ -252,11 +298,33 @@ pub fn custom_err(line: u64, module: &str, err: StdError) -> StdError {
 pub fn get_staked_assets(
     deps: &DepsMut<ElysQuery>,
     address: &String,
+    uusdc_usd_price:Decimal,
+    uelys_price_in_uusdc:Decimal,
+    usdc_denom: String,
+    eden_decimal: u64,
+    usdc_apr_usdc: QueryAprResponse,
+    eden_apr_usdc: QueryAprResponse,
+    usdc_apr_edenb: QueryAprResponse,
+    eden_apr_edenb: QueryAprResponse,
+    usdc_apr_eden: QueryAprResponse,
+    eden_apr_eden: QueryAprResponse,
+    edenb_apr_eden: QueryAprResponse,
+    usdc_apr_elys: QueryAprResponse,
+    eden_apr_elys: QueryAprResponse,
+    edenb_apr_elys: QueryAprResponse,
 ) -> StakedAssetResponse {
     let mut staked_assets: Vec<StakedAsset> = Vec::new();
     let mut total_balance = Decimal::zero();
 
-    let usdc_details = get_usdc_earn_program_details(deps, Some(address.to_owned()), ElysDenom::Usdc.as_str().to_string()).unwrap();
+    let usdc_details = get_usdc_earn_program_details(deps,
+        Some(address.to_owned()),
+        ElysDenom::Usdc.as_str().to_string(),
+        usdc_denom.to_owned(),
+        uusdc_usd_price,
+        uelys_price_in_uusdc,
+        usdc_apr_usdc,
+        eden_apr_usdc,
+    ).unwrap();
     // usdc program
     let staked_asset_usdc = StakedAsset {
         program: EarnType::UsdcProgram,
@@ -280,7 +348,16 @@ pub fn get_staked_assets(
     staked_assets.push(staked_asset_usdc);
 
     // elys program
-    let elys_details = get_elys_earn_program_details(deps, Some(address.to_owned()), ElysDenom::Elys.as_str().to_string()).unwrap();
+    let elys_details = get_elys_earn_program_details(deps,
+        Some(address.to_owned()),
+        ElysDenom::Elys.as_str().to_string(),
+        usdc_denom.to_owned(),
+        uusdc_usd_price,
+        uelys_price_in_uusdc,
+        usdc_apr_elys,
+        eden_apr_elys,
+        edenb_apr_elys,
+    ).unwrap();
     let staked_asset_elys = StakedAsset {
         program: EarnType::ElysProgram,
         apr: Decimal::from_atomics(elys_details.data.apr.ueden, 0).unwrap(),
@@ -303,7 +380,16 @@ pub fn get_staked_assets(
     staked_assets.push(staked_asset_elys);
 
     // eden program
-    let eden_details = get_eden_earn_program_details(deps, Some(address.to_owned()), ElysDenom::Eden.as_str().to_string()).unwrap();
+    let eden_details = get_eden_earn_program_details(deps,
+        Some(address.to_owned()),
+        ElysDenom::Eden.as_str().to_string(),
+        usdc_denom.to_owned(),
+        uusdc_usd_price,
+        uelys_price_in_uusdc,
+        usdc_apr_eden,
+        eden_apr_eden,
+        edenb_apr_eden,
+    ).unwrap();
     let staked_asset_eden = StakedAsset {
         program: EarnType::EdenProgram,
         apr: Decimal::from_atomics(eden_details.data.apr.ueden, 0).unwrap(),
@@ -325,7 +411,16 @@ pub fn get_staked_assets(
     total_balance = total_balance.checked_add(staked_asset_eden.staked).unwrap();
     staked_assets.push(staked_asset_eden);
 
-    let edenb_details = get_eden_boost_earn_program_details(deps, Some(address.to_owned()), ElysDenom::EdenBoost.as_str().to_string()).unwrap();
+    let edenb_details = get_eden_boost_earn_program_details(deps,
+        Some(address.to_owned()),
+        ElysDenom::EdenBoost.as_str().to_string(),
+        usdc_denom.to_owned(),
+        uusdc_usd_price,
+        uelys_price_in_uusdc,
+        eden_decimal,
+        usdc_apr_edenb,
+        eden_apr_edenb,
+    ).unwrap();
     let staked_asset_edenb = StakedAsset {
         program: EarnType::EdenBProgram,
         apr: Decimal::from_atomics(edenb_details.data.apr.ueden, 0).unwrap(),
