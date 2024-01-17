@@ -49,16 +49,6 @@ impl CoinValue {
         };
         
         let price = querier.get_amm_price_by_denom(coin_to_estimate, Decimal::zero())?;
-
-        // TODO: Remove the commented functions below once the new query works.
-        // let AmmSwapEstimationByDenomResponse {
-        //     spot_price: price,
-        //     amount: whole_value,
-        //     ..
-        // } = querier
-        //     .get_amm_price_by_denom(coin_to_estimate, Decimal::zero())
-        //     .map_err(|_e| StdError::generic_err("52"))?;
-
         let OracleAssetInfoResponse { asset_info } = querier.asset_info(value_denom.to_owned())?;
 
         let decimal_point_value = asset_info.decimal;
