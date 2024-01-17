@@ -1,3 +1,5 @@
+#!/bin/bash
+
 extract_txhash() { awk -F 'txhash: ' '/txhash:/{print $2; exit}'; }
 extract_code_id() { awk -F 'key: code_id|value: ' '/key: code_id/ { getline; gsub(/"/, "", $2); print $2; exit }'; }
 extract_contract_address() { awk -F 'key: _contract_address|value: ' '/key: _contract_address/ { getline; gsub(/"/, "", $2); print $2; exit }'; }
@@ -9,7 +11,7 @@ docker run --rm -v "$(pwd)":/code \
           --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
           cosmwasm/workspace-optimizer:0.14.0
 
-store and init trade shield contract
+# store and init trade shield contract
 txhash=$(elysd tx wasm store artifacts/trade_shield_contract.wasm $OPTIONS | extract_txhash)
 sleep 10
 codeid=$(elysd q tx $txhash | extract_code_id)
@@ -24,7 +26,7 @@ echo tradeshield : $addr
 txhash=$(elysd tx wasm store artifacts/account_history_contract.wasm $OPTIONS | extract_txhash)
 sleep 10
 codeid=$(elysd q tx $txhash | extract_code_id)
-msg=$(echo '{"limit" : 50, "expiration": {"at_time":"120000000000"}, "value_denom" : "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", "trade_shield_address" :"'$addr'"}')
+msg=$(echo '{"limit" : 50, "expiration": {"at_time":"604800000000000"}, "value_denom" : "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", "trade_shield_address" :"'$addr'"}')
 txhash=$(elysd tx wasm init $codeid "$msg" $OPTIONS --label "Contract" --admin validator | extract_txhash)
 sleep 10
 addr=$(elysd q tx $txhash | extract_contract_address)
