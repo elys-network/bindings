@@ -3,9 +3,9 @@
 # This command is used to automate the store and init process of
 # smart contracts. Examples:
 
-# Without params: sh scripts/migrate.sh ./artifacts/financial_snapshot_contract.wasm
-# With init params: sh scripts/migrate.sh ./artifacts/account_history_contract.wasm '{"limit": 10, "value_denom": "uusdc", "expiration": {"at_time": "604800000000000"}}'
-# Common extra aguments: sh scripts/migrate.sh ./artifacts/financial_snapshot_contract.wasm {} '--node test.com'
+# Without params: sh scripts/init_contract.sh ./artifacts/financial_snapshot_contract.wasm
+# With init params: sh scripts/init_contract.sh ./artifacts/account_history_contract.wasm '{"limit": 10, "value_denom": "uusdc", "expiration": {"at_time": "604800000000000"}}'
+# Common extra aguments: sh scripts/init_contract.sh ./artifacts/financial_snapshot_contract.wasm {} '--node test.com'
 
 init_contract() {
     local contract_wasm_path="$1"
