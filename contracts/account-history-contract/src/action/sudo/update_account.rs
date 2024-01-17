@@ -203,21 +203,18 @@ fn create_new_part(
         value_denom,
     );
 
-    Ok(if total_liquid_asset_balance.amount.is_zero() {
-        None
-    } else {
-        Some(AccountSnapshot {
-            date,
-            total_liquid_asset_balance,
-            total_available_balance,
-            total_in_orders_balance,
-            available_asset_balance,
-            in_orders_asset_balance,
-            total_value_per_asset,
-            total_staked_asset_balance: staked_assets_resp.total_balance,
-            staked_assets: staked_assets_resp.staked_assets,
-        })
-    })
+    // Adds the records all the time as we should return data to the FE even if it is 0 balanced.
+    Ok(Some(AccountSnapshot {
+        date,
+        total_liquid_asset_balance,
+        total_available_balance,
+        total_in_orders_balance,
+        available_asset_balance,
+        in_orders_asset_balance,
+        total_value_per_asset,
+        total_staked_asset_balance: staked_assets_resp.total_balance,
+        staked_assets: staked_assets_resp.staked_assets,
+    }))
 }
 
 fn update_history(
