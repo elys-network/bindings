@@ -45,12 +45,9 @@ impl CoinValue {
             spot_price: price,
             amount: whole_value,
             ..
-        } = querier.amm_swap_estimation_by_denom(
-            &coin,
-            &coin.denom,
-            value_denom,
-            &Decimal::zero(),
-        )?;
+        } = querier
+            .amm_swap_estimation_by_denom(&coin, &coin.denom, value_denom, &Decimal::zero())
+            .map_err(|e| StdError::generic_err("52"))?;
 
         let OracleAssetInfoResponse { asset_info } = querier.asset_info(value_denom.to_owned())?;
 
