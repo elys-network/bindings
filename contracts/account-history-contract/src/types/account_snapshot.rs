@@ -6,6 +6,12 @@ use elys_bindings::types::EarnType;
 use super::CoinValue;
 
 #[cw_serde]
+pub struct StakedAssetResponse {
+    pub staked_assets: Vec<StakedAsset>,
+    pub total_balance: Decimal,
+}
+
+#[cw_serde]
 pub struct StakedAsset {
     pub program: EarnType,
     pub apr: Decimal,
@@ -25,5 +31,6 @@ pub struct AccountSnapshot {
     pub total_value_per_asset: Vec<CoinValue>,
 
     // staked asset
+    pub total_staked_asset_balance: Decimal,
     pub staked_assets: Vec<StakedAsset>,
 }

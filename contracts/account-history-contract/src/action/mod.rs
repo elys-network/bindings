@@ -25,4 +25,6 @@ pub mod query {
     pub use get_elys_earn_program_details::get_elys_earn_program_details;
     mod get_usdc_earn_program_details;
     pub use get_usdc_earn_program_details::get_usdc_earn_program_details;
+    mod get_staked_assets;
+    pub use get_staked_assets::get_staked_assets;
 }

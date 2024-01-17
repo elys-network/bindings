@@ -1,8 +1,7 @@
 mod account_snapshot;
 mod coin_value;
 
-pub use account_snapshot::AccountSnapshot;
-pub use account_snapshot::StakedAsset;
+pub use account_snapshot::{StakedAsset, AccountSnapshot, StakedAssetResponse};
 pub use coin_value::CoinValue;
 
 pub mod earn_detail {

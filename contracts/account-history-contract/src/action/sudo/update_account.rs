@@ -14,7 +14,7 @@ use elys_bindings::trade_shield::{
 };
 
 use elys_bindings::types::EarnType;
-use crate::{types::{AccountSnapshot, CoinValue, StakedAsset, ElysDenom}, action::query::{get_eden_earn_program_details, get_elys_earn_program_details, get_usdc_earn_program_details, get_eden_boost_earn_program_details}};
+use crate::{types::{AccountSnapshot, CoinValue, StakedAsset, StakedAssetResponse, ElysDenom}, action::query::{get_eden_earn_program_details, get_elys_earn_program_details, get_usdc_earn_program_details, get_eden_boost_earn_program_details}};
 
 pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<ElysMsg>> {
     let querier = ElysQuerier::new(&deps.querier);
@@ -39,7 +39,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
         };
         let account_balances = deps.querier.query_all_balances(&address)?;
         let order_balances = get_all_order(&deps.querier, &trade_shield_address, &address)?;
-        let staked_assets = get_staked_assets(&deps, &address);
+        let staked_response = get_staked_assets(&deps, &address);
 
         let new_part = create_new_part(
             &env.block,
@@ -47,7 +47,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             &expiration,
             account_balances,
             order_balances,
-            staked_assets,
+            staked_response,
             &value_denom,
         )?;
         if let Some(part) = new_part {
@@ -69,7 +69,7 @@ fn create_new_part(
     expiration: &Expiration,
     account_balances: Vec<Coin>,
     orders_balances: Vec<Coin>,
-    staked_assets: Vec<StakedAsset>,
+    staked_assets_resp: StakedAssetResponse,
     value_denom: &String,
 ) -> StdResult<Option<AccountSnapshot>> {
     let date = match expiration {
@@ -168,7 +168,8 @@ fn create_new_part(
             available_asset_balance,
             in_orders_asset_balance,
             total_value_per_asset,
-            staked_assets,
+            total_staked_asset_balance: staked_assets_resp.total_balance,
+            staked_assets: staked_assets_resp.staked_assets,
         })
     })
 }
@@ -251,8 +252,10 @@ pub fn custom_err(line: u64, module: &str, err: StdError) -> StdError {
 pub fn get_staked_assets(
     deps: &DepsMut<ElysQuery>,
     address: &String,
-) -> Vec<StakedAsset> {
+) -> StakedAssetResponse {
     let mut staked_assets: Vec<StakedAsset> = Vec::new();
+    let mut total_balance = Decimal::zero();
+
     let usdc_details = get_usdc_earn_program_details(deps, Some(address.to_owned()), ElysDenom::Usdc.as_str().to_string()).unwrap();
     // usdc program
     let staked_asset_usdc = StakedAsset {
@@ -271,7 +274,9 @@ pub fn get_staked_assets(
             None => Decimal::zero(),
         }
     };
-    
+    total_balance = total_balance.checked_add(staked_asset_usdc.available).unwrap();
+    total_balance = total_balance.checked_add(staked_asset_usdc.rewards).unwrap();
+    total_balance = total_balance.checked_add(staked_asset_usdc.staked).unwrap();
     staked_assets.push(staked_asset_usdc);
 
     // elys program
@@ -284,7 +289,7 @@ pub fn get_staked_assets(
             None => Decimal::zero(),
         },
         rewards : match elys_details.data.rewards {
-            Some(r) => r.iter().map(|f| f.usd_amount.unwrap()).sum(),
+            Some(r) => r.iter().filter(|f| f.usd_amount != None).map(|f| f.usd_amount.unwrap()).sum(),
             None => Decimal::zero(),
         },
         staked: match elys_details.data.staked {
@@ -292,6 +297,9 @@ pub fn get_staked_assets(
             None => Decimal::zero(),
         }
     };
+    total_balance = total_balance.checked_add(staked_asset_elys.available).unwrap();
+    total_balance = total_balance.checked_add(staked_asset_elys.rewards).unwrap();
+    total_balance = total_balance.checked_add(staked_asset_elys.staked).unwrap();
     staked_assets.push(staked_asset_elys);
 
     // eden program
@@ -304,7 +312,7 @@ pub fn get_staked_assets(
             None => Decimal::zero(),
         },
         rewards : match eden_details.data.rewards {
-            Some(r) => r.iter().map(|f| f.usd_amount.unwrap()).sum(),
+            Some(r) => r.iter().filter(|f| f.usd_amount != None).map(|f| f.usd_amount.unwrap()).sum(),
             None => Decimal::zero(),
         },
         staked: match eden_details.data.staked {
@@ -312,6 +320,9 @@ pub fn get_staked_assets(
             None => Decimal::zero(),
         }
     };
+    total_balance = total_balance.checked_add(staked_asset_eden.available).unwrap();
+    total_balance = total_balance.checked_add(staked_asset_eden.rewards).unwrap();
+    total_balance = total_balance.checked_add(staked_asset_eden.staked).unwrap();
     staked_assets.push(staked_asset_eden);
 
     let edenb_details = get_eden_boost_earn_program_details(deps, Some(address.to_owned()), ElysDenom::EdenBoost.as_str().to_string()).unwrap();
@@ -331,6 +342,11 @@ pub fn get_staked_assets(
             None => Decimal::zero(),
         }
     };
+    total_balance = total_balance.checked_add(staked_asset_edenb.rewards).unwrap();
     staked_assets.push(staked_asset_edenb);
-    return staked_assets;
+
+    StakedAssetResponse{
+        staked_assets: staked_assets,
+        total_balance: total_balance,
+    }
 }
