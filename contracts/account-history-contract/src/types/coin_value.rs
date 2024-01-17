@@ -42,15 +42,11 @@ impl CoinValue {
             });
         }
         
-        let mut coin_to_estimate = Coin{
-            denom: coin.denom.to_owned(),
-            amount: coin.amount.to_owned(),
+        // if the amount is too small, we should use big denom amount instead in order to avoid crashing from amm module
+        let coin_to_estimate = Coin{
+            denom: coin.denom.clone(),
+            amount: coin.amount.max(Uint128::from(big_denom_unit)),
         };
-
-        // if the amount is too small, we should big denom amount instead in order to avoid crash in amm
-        if coin_to_estimate.amount < Uint128::from(big_denom_unit) {
-            coin_to_estimate.amount = Uint128::from(big_denom_unit);
-        }
         
         let AmmSwapEstimationByDenomResponse {
             spot_price: price,
