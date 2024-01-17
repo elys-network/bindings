@@ -1,6 +1,6 @@
 use super::*;
 use crate::{
-    action::query::{get_total_value_per_asset, user_value, get_staked_assets},
+    action::query::{get_staked_assets, get_total_value_per_asset, params, user_value},
     states::HISTORY,
     types::AccountSnapshot,
 };
@@ -35,9 +35,8 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         }),
         GetLiquidAssets { user_address } => {
             to_json_binary(&get_total_value_per_asset(deps, user_address)?)
-        },
-        GetStakedAssets { user_address } => {
-            to_json_binary(&get_staked_assets(deps, user_address)?)
         }
+        GetStakedAssets { user_address } => to_json_binary(&get_staked_assets(deps, user_address)?),
+        Params {} => to_json_binary(&params(deps)?),
     }
 }

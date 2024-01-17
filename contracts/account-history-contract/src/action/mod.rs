@@ -12,10 +12,11 @@ pub mod sudo {
 pub mod query {
     mod get_total_value_per_asset;
     use crate::error::ContractError;
-
+    mod params;
     mod user_value;
 
     pub use get_total_value_per_asset::get_total_value_per_asset;
+    pub use params::params;
     pub use user_value::user_value;
     mod get_eden_boost_earn_program_details;
     pub use get_eden_boost_earn_program_details::get_eden_boost_earn_program_details;
