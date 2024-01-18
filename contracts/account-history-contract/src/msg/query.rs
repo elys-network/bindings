@@ -26,4 +26,6 @@ pub enum QueryMsg {
     Params {},
     #[returns(GetPortfolioResp)]
     GetPodPortfolio { user_address: String },
+    #[returns(GetTotalBalanceResp)]
+    GetPodTotalBalance { user_address: String },
 }

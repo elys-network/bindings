@@ -1,6 +1,7 @@
 mod account_snapshot;
 mod coin_value;
 mod portfolio;
+mod total_balance;
 
 pub use account_snapshot::{AccountSnapshot, StakedAsset, StakedAssetResponse};
 pub use coin_value::CoinValue;
@@ -33,3 +34,4 @@ pub use denom::ElysDenom;
 use elys_bindings::types::BalanceAvailable;
 
 pub use portfolio::Portfolio;
+pub use total_balance::TotalBalance;

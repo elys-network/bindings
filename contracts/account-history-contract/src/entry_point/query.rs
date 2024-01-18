@@ -1,7 +1,8 @@
 use super::*;
 use crate::{
     action::query::{
-        get_pod_portfolio, get_staked_assets, get_total_value_per_asset, params, user_value,
+        get_pod_portfolio, get_pod_total_balance, get_staked_assets, get_total_value_per_asset,
+        params, user_value,
     },
     states::HISTORY,
     types::AccountSnapshot,
@@ -41,5 +42,8 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         GetStakedAssets { user_address } => to_json_binary(&get_staked_assets(deps, user_address)?),
         Params {} => to_json_binary(&params(deps)?),
         GetPodPortfolio { user_address } => to_json_binary(&get_pod_portfolio(deps, user_address)?),
+        GetPodTotalBalance { user_address } => {
+            to_json_binary(&get_pod_total_balance(deps, user_address)?)
+        }
     }
 }
