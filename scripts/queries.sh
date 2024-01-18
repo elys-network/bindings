@@ -21,7 +21,9 @@ fi
 query_contract() {
     local contract_address=$1
     local query=$2
-    elysd q --output json --node "$NODE" wasm contract-state smart "$contract_address" "$query" | jq
+    command="elysd q --output json --node \"$NODE\" wasm contract-state smart \"$contract_address\" '$query' | jq"
+    echo "$ $command"
+    eval $command
 }
 
 # Check if the first argument is provided
