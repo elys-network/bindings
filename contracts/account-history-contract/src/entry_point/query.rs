@@ -40,6 +40,6 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         }
         GetStakedAssets { user_address } => to_json_binary(&get_staked_assets(deps, user_address)?),
         Params {} => to_json_binary(&params(deps)?),
-        GetPodPortfolio { address } => to_json_binary(&get_pod_portfolio(deps, address)?),
+        GetPodPortfolio { user_address } => to_json_binary(&get_pod_portfolio(deps, user_address)?),
     }
 }
