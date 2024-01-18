@@ -10,7 +10,9 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
 
     match msg {
         // Pod dashboard
-        GetPodRewards { address } => Ok(to_json_binary(&pod::get_pod_rewards(deps, address)?)?),
+        GetPodRewards { user_address } => {
+            Ok(to_json_binary(&pod::get_pod_rewards(deps, user_address)?)?)
+        }
         GetPodLiquidityPositions {} => {
             Ok(to_json_binary(&pod::get_pod_liquidity_positions(deps)?)?)
         }
@@ -19,14 +21,14 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
         )?),
 
         // Earn Program
-        GetEdenBoostEarnProgramDetails { address, asset } => Ok(to_json_binary(
-            &earn::get_eden_boost_earn_program_details(deps, address, asset)?,
+        GetEdenBoostEarnProgramDetails { user_address } => Ok(to_json_binary(
+            &earn::get_eden_boost_earn_program_details(deps, user_address)?,
         )?),
-        GetEdenEarnProgramDetails { address, asset } => Ok(to_json_binary(
-            &earn::get_eden_earn_program_details(deps, address, asset)?,
+        GetEdenEarnProgramDetails { user_address } => Ok(to_json_binary(
+            &earn::get_eden_earn_program_details(deps, user_address)?,
         )?),
-        GetElysEarnProgramDetails { address, asset } => Ok(to_json_binary(
-            &earn::get_elys_earn_program_details(deps, address, asset)?,
+        GetElysEarnProgramDetails { user_address } => Ok(to_json_binary(
+            &earn::get_elys_earn_program_details(deps, user_address)?,
         )?),
         GetAllValidators { delegator_addr } => Ok(to_json_binary(&earn::get_all_validators(
             deps,
@@ -35,8 +37,8 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
         GetDelegatorValidators { delegator_addr } => Ok(to_json_binary(
             &earn::get_delegator_validators(deps, delegator_addr)?,
         )?),
-        GetUsdcEarnProgramDetails { address, asset } => Ok(to_json_binary(
-            &earn::get_usdc_earn_program_details(deps, address, asset)?,
+        GetUsdcEarnProgramDetails { user_address } => Ok(to_json_binary(
+            &earn::get_usdc_earn_program_details(deps, user_address)?,
         )?),
         GetDelegations { delegator_addr } => Ok(to_json_binary(&earn::get_delegations(
             deps,
