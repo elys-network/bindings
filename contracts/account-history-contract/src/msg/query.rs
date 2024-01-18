@@ -25,5 +25,5 @@ pub enum QueryMsg {
     #[returns(ParamsResp)]
     Params {},
     #[returns(GetPortfolioResp)]
-    GetPodPortfolio { address: String },
+    GetPodPortfolio { user_address: String },
 }
