@@ -1,12 +1,11 @@
 pub mod entry_point;
 pub mod msg;
 pub mod types;
+use elys_bindings::ElysQuery;
 pub use error::ContractError;
 
-mod error;
 mod action;
-mod bindings;
-use bindings::query::ElysQuery;
+mod error;
 mod states;
 
 #[cfg(test)]

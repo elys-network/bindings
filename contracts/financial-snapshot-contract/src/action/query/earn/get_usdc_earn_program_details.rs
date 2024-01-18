@@ -1,12 +1,10 @@
 use super::*;
+use crate::msg::query_resp::earn::GetUsdcEarnProgramResp;
 use crate::types::{earn_program::usdc_earn::UsdcEarnProgram, ElysDenom};
 use crate::types::{AprUsdc, BalanceReward};
-use crate::{
-    bindings::{querier::ElysQuerier, query::ElysQuery},
-    msg::query_resp::earn::GetUsdcEarnProgramResp,
-};
 use cosmwasm_std::{coin, Decimal, Uint128};
 use elys_bindings::{query_resp::Lockup, types::EarnType};
+use elys_bindings::{ElysQuerier, ElysQuery};
 
 pub fn get_usdc_earn_program_details(
     deps: Deps<ElysQuery>,

@@ -11,7 +11,6 @@ pub mod earn_detail {
 }
 pub use earn_detail::earn_detail::{
     AprElys, AprUsdc, BalanceBorrowed, BalanceReward, QueryAprResponse, StakingValidator,
-    ValidatorDetail, VestingDetail,
 };
 
 pub mod earn_program {

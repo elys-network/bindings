@@ -1,5 +1,8 @@
-use crate::types::{VestingDetail, BalanceReward, AprElys};
-use elys_bindings::{query_resp::StakedAvailable, types::BalanceAvailable};
+use crate::types::{AprElys, BalanceReward};
+use elys_bindings::{
+    query_resp::StakedAvailable,
+    types::{BalanceAvailable, VestingDetail},
+};
 
 use cosmwasm_schema::cw_serde;
 

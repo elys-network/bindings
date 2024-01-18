@@ -1,13 +1,11 @@
 use super::*;
+use crate::msg::query_resp::earn::GetEdenBoostEarnProgramResp;
 use crate::types::{
     earn_program::eden_boost_earn::EdenBoostEarnProgram, AprUsdc, BalanceReward, ElysDenom,
 };
-use crate::{
-    bindings::{querier::ElysQuerier, query::ElysQuery},
-    msg::query_resp::earn::GetEdenBoostEarnProgramResp,
-};
 use cosmwasm_std::{coin, Decimal, Uint128};
 use elys_bindings::types::EarnType;
+use elys_bindings::{ElysQuerier, ElysQuery};
 
 pub fn get_eden_boost_earn_program_details(
     deps: Deps<ElysQuery>,

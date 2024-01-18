@@ -1,5 +1,6 @@
 use super::*;
-use crate::{bindings::query::ElysQuery, states::*, types::*};
+use crate::{states::*, types::*};
+use elys_bindings::ElysQuery;
 use msg::InstantiateMsg;
 
 pub fn instantiate(
