@@ -10,17 +10,7 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
 
     match msg {
         // Pod dashboard
-        GetPodPortfolio { address } => Ok(to_json_binary(&pod::get_pod_portfolio(deps, address)?)?),
-        GetPodTotalBalance { address } => {
-            Ok(to_json_binary(&pod::get_pod_total_balance(deps, address)?)?)
-        }
         GetPodRewards { address } => Ok(to_json_binary(&pod::get_pod_rewards(deps, address)?)?),
-        GetPodLiquidAssets { address } => {
-            Ok(to_json_binary(&pod::get_pod_liquid_assets(deps, address)?)?)
-        }
-        GetPodLiquidAsset { asset, address } => Ok(to_json_binary(&pod::get_pod_liquid_asset(
-            deps, asset, address,
-        )?)?),
         GetPodLiquidityPositions {} => {
             Ok(to_json_binary(&pod::get_pod_liquidity_positions(deps)?)?)
         }

@@ -12,19 +12,8 @@ use cosmwasm_schema::{cw_serde, QueryResponses};
 #[derive(QueryResponses)]
 pub enum QueryMsg {
     // Pod dashboard
-    #[returns(GetTotalBalanceResp)]
-    GetPodTotalBalance { address: String },
-    #[returns(GetPortfolioResp)]
-    GetPodPortfolio { address: String },
     #[returns(GetRewardsResp)]
     GetPodRewards { address: String },
-    #[returns(GetLiquidAssetsResp)]
-    GetPodLiquidAssets { address: Option<String> },
-    #[returns(GetLiquidAssetResp)]
-    GetPodLiquidAsset {
-        asset: String,
-        address: Option<String>,
-    },
     #[returns(GetLiquidityPositionsResp)]
     GetPodLiquidityPositions {},
     #[returns(GetLiquidityPositionResp)]
