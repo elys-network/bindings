@@ -13,7 +13,7 @@ use cosmwasm_schema::{cw_serde, QueryResponses};
 pub enum QueryMsg {
     // Pod dashboard
     #[returns(GetRewardsResp)]
-    GetPodRewards { address: String },
+    GetPodRewards { user_address: String },
     #[returns(GetLiquidityPositionsResp)]
     GetPodLiquidityPositions {},
     #[returns(GetLiquidityPositionResp)]
@@ -21,25 +21,13 @@ pub enum QueryMsg {
 
     // Earn dashboard
     #[returns(GetEdenEarnProgramResp)]
-    GetEdenEarnProgramDetails {
-        address: Option<String>,
-        asset: String,
-    },
+    GetEdenEarnProgramDetails { user_address: Option<String> },
     #[returns(GetEdenBoostEarnProgramResp)]
-    GetEdenBoostEarnProgramDetails {
-        address: Option<String>,
-        asset: String,
-    },
+    GetEdenBoostEarnProgramDetails { user_address: Option<String> },
     #[returns(GetElysEarnProgramResp)]
-    GetElysEarnProgramDetails {
-        address: Option<String>,
-        asset: String,
-    },
+    GetElysEarnProgramDetails { user_address: Option<String> },
     #[returns(GetUsdcEarnProgramResp)]
-    GetUsdcEarnProgramDetails {
-        address: Option<String>,
-        asset: String,
-    },
+    GetUsdcEarnProgramDetails { user_address: Option<String> },
     #[returns(QueryDelegatorValidatorsResponse)]
     GetAllValidators { delegator_addr: Option<String> },
     #[returns(QueryDelegatorValidatorsResponse)]

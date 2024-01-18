@@ -88,3 +88,35 @@ query_contract "$ah_contract_address" '{
         "user_address": "'"$user_address"'"
     }
 }'
+
+# Get eden boost earn program details
+printf "\n# Eden boost earn program details\n"
+query_contract "$fs_contract_address" '{
+    "get_eden_boost_earn_program_details": {
+        "address": "'"$user_address"'"
+    }
+}'
+
+# Get eden earn program details
+printf "\n# Eden earn program details\n"
+query_contract "$fs_contract_address" '{
+    "get_eden_earn_program_details": {
+        "address": "'"$user_address"'"
+    }
+}'
+
+# Get elys earn program details
+printf "\n# Elys earn program details\n"
+query_contract "$fs_contract_address" '{
+    "get_elys_earn_program_details": {
+        "address": "'"$user_address"'"
+    }
+}'
+
+# Get usdc earn program details
+printf "\n# Usdc earn program details\n"
+query_contract "$fs_contract_address" '{
+    "get_usdc_earn_program_details": {
+        "address": "'"$user_address"'"
+    }
+}'
