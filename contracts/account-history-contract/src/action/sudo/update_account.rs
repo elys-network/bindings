@@ -433,12 +433,6 @@ pub fn get_staked_assets(
             None => Decimal::zero(),
         },
     };
-    total_balance = total_balance
-        .checked_add(staked_asset_elys.available)
-        .unwrap();
-    total_balance = total_balance
-        .checked_add(staked_asset_elys.rewards)
-        .unwrap();
     total_balance = total_balance.checked_add(staked_asset_elys.staked).unwrap();
     staked_assets.push(staked_asset_elys);
 
@@ -475,12 +469,6 @@ pub fn get_staked_assets(
             None => Decimal::zero(),
         },
     };
-    total_balance = total_balance
-        .checked_add(staked_asset_eden.available)
-        .unwrap();
-    total_balance = total_balance
-        .checked_add(staked_asset_eden.rewards)
-        .unwrap();
     total_balance = total_balance.checked_add(staked_asset_eden.staked).unwrap();
     staked_assets.push(staked_asset_eden);
 
