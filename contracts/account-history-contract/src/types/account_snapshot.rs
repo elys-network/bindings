@@ -17,7 +17,7 @@ pub struct StakedAsset {
     pub apr: Decimal,
     pub available: Decimal,
     pub staked: Decimal,
-    pub rewards : Decimal,
+    pub rewards: Decimal,
 }
 
 #[cw_serde]

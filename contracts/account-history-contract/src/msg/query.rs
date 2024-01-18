@@ -24,4 +24,6 @@ pub enum QueryMsg {
     GetStakedAssets { user_address: String },
     #[returns(ParamsResp)]
     Params {},
+    #[returns(GetPortfolioResp)]
+    GetPodPortfolio { address: String },
 }

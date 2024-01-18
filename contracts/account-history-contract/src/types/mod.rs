@@ -1,13 +1,17 @@
 mod account_snapshot;
 mod coin_value;
+mod portfolio;
 
-pub use account_snapshot::{StakedAsset, AccountSnapshot, StakedAssetResponse};
+pub use account_snapshot::{AccountSnapshot, StakedAsset, StakedAssetResponse};
 pub use coin_value::CoinValue;
 
 pub mod earn_detail {
     pub mod earn_detail;
 }
-pub use earn_detail::earn_detail::{AprUsdc, AprElys, BalanceBorrowed, BalanceReward, VestingDetail, StakingValidator, ValidatorDetail, QueryAprResponse};
+pub use earn_detail::earn_detail::{
+    AprElys, AprUsdc, BalanceBorrowed, BalanceReward, QueryAprResponse, StakingValidator,
+    ValidatorDetail, VestingDetail,
+};
 
 pub mod earn_program {
     pub mod eden_boost_earn;
@@ -27,3 +31,5 @@ pub mod denom;
 pub use denom::ElysDenom;
 
 use elys_bindings::types::BalanceAvailable;
+
+pub use portfolio::Portfolio;

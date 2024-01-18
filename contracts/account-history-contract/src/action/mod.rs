@@ -12,6 +12,7 @@ pub mod sudo {
 pub mod query {
     mod get_total_value_per_asset;
     use crate::error::ContractError;
+    mod get_pod_portfolio;
     mod params;
     mod user_value;
 
@@ -27,5 +28,6 @@ pub mod query {
     mod get_usdc_earn_program_details;
     pub use get_usdc_earn_program_details::get_usdc_earn_program_details;
     mod get_staked_assets;
+    pub use get_pod_portfolio::get_pod_portfolio;
     pub use get_staked_assets::get_staked_assets;
 }
