@@ -17,13 +17,13 @@ pub fn get_total_value_per_asset(
         None => {
             let value_denom = VALUE_DENOM.load(deps.storage)?;
             return Ok(GetLiquidAssetsResp {
-                list_asset_value: vec![],
+                liquid_assets: vec![],
                 total_liquid_asset_balance: DecCoin::new(Decimal256::zero(), value_denom),
             });
         }
     };
 
-    let mut list_asset_value: Vec<TotalValueOfAssetResp> = vec![];
+    let mut liquid_assets: Vec<TotalValueOfAssetResp> = vec![];
 
     for total in snapshot.total_value_per_asset {
         let (available_amount, available_value) =
@@ -31,7 +31,7 @@ pub fn get_total_value_per_asset(
         let (in_order_amount, in_order_value) =
             get_info(&snapshot.in_orders_asset_balance, &total.denom);
 
-        list_asset_value.push(TotalValueOfAssetResp {
+        liquid_assets.push(TotalValueOfAssetResp {
             denom: total.denom,
             price: total.price,
             available_amount,
@@ -44,7 +44,7 @@ pub fn get_total_value_per_asset(
     }
 
     Ok(GetLiquidAssetsResp {
-        list_asset_value,
+        liquid_assets,
         total_liquid_asset_balance: snapshot.total_liquid_asset_balance,
     })
 }
