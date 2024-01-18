@@ -16,7 +16,7 @@ pub fn get_pod_total_balance(
         Some(expr) => expr,
         None => {
             return Ok(GetTotalBalanceResp {
-                data: TotalBalance {
+                balances: TotalBalance {
                     total_balance: DecCoin::new(Decimal256::zero(), &value_denom),
                     portfolio_usd: DecCoin::new(Decimal256::zero(), &value_denom),
                     reward_usd: DecCoin::new(Decimal256::zero(), &value_denom),
@@ -32,7 +32,7 @@ pub fn get_pod_total_balance(
         &value_denom,
     );
     let resp = GetTotalBalanceResp {
-        data: TotalBalance {
+        balances: TotalBalance {
             total_balance: portfolio_usd.clone(),
             portfolio_usd: portfolio_usd.clone(),
             reward_usd: DecCoin::new(Decimal256::zero(), &value_denom),
