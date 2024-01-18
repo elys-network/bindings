@@ -19,10 +19,7 @@ pub use liquidity_position::liquidity_position::LiquidityPosition;
 pub mod earn_detail {
     pub mod earn_detail;
 }
-pub use earn_detail::earn_detail::{
-    AprElys, AprUsdc, BalanceReward, QueryAprResponse, StakingValidator, ValidatorDetail,
-    VestingDetail,
-};
+pub use earn_detail::earn_detail::{AprElys, AprUsdc, BalanceReward, QueryAprResponse};
 
 pub mod earn_program {
     pub mod eden_boost_earn;
@@ -48,5 +45,3 @@ pub use page_response::PageResponse;
 
 pub mod denom;
 pub use denom::ElysDenom;
-
-use elys_bindings::types::BalanceAvailable;

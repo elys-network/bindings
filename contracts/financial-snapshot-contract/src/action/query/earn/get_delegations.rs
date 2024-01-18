@@ -1,7 +1,11 @@
-use super::*;
-use crate::{bindings::{querier::ElysQuerier, query::ElysQuery}, bindings::query_resp::QueryDelegatorDelegationsResponse};
+use elys_bindings::{query_resp::QueryDelegatorDelegationsResponse, ElysQuerier, ElysQuery};
 
-pub fn get_delegations(deps: Deps<ElysQuery>, delegator_addr: String) -> Result<QueryDelegatorDelegationsResponse, ContractError> {
+use super::*;
+
+pub fn get_delegations(
+    deps: Deps<ElysQuery>,
+    delegator_addr: String,
+) -> Result<QueryDelegatorDelegationsResponse, ContractError> {
     let querier = ElysQuerier::new(&deps.querier);
     let resp = querier.get_delegations(delegator_addr)?;
 

@@ -1,7 +1,8 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{DepsMut, Env, MessageInfo, Response, StdResult};
+use elys_bindings::ElysQuery;
 
-use crate::{bindings::query::ElysQuery, states::*};
+use crate::states::*;
 
 #[cw_serde]
 pub struct InstantiateMockMsg {

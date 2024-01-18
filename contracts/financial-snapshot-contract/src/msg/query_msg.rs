@@ -2,11 +2,10 @@
 use super::query_resp::earn::*;
 #[allow(unused_imports)]
 use super::query_resp::pod::*;
-#[allow(unused_imports)]
-use crate::bindings::query_resp::*;
-#[allow(unused_imports)]
-use crate::types::PageRequest;
 use cosmwasm_schema::{cw_serde, QueryResponses};
+#[allow(unused_imports)]
+use elys_bindings::query_resp::*;
+use elys_bindings::types::PageRequest;
 
 #[cw_serde]
 #[derive(QueryResponses)]

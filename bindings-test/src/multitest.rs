@@ -20,10 +20,11 @@ use elys_bindings::{
         MsgResponse,
     },
     query_resp::{
-        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse, Entry,
-        MarginGetPositionsForAddressResponse, MarginMtpResponse, MarginOpenEstimationResponse,
-        MarginQueryPositionsResponse, OracleAssetInfoResponse, QueryGetEntryResponse, 
-        QueryAprResponse, QueryGetPriceResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse, BalanceBorrowed,
+        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse,
+        BalanceBorrowed, Entry, MarginGetPositionsForAddressResponse, MarginMtpResponse,
+        MarginOpenEstimationResponse, MarginQueryPositionsResponse, OracleAssetInfoResponse,
+        QueryAprResponse, QueryGetEntryResponse, QueryGetPriceResponse,
+        QueryStakedPositionResponse, QueryUnstakedPositionResponse,
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
@@ -103,6 +104,20 @@ impl Module for ElysModule {
         request: Self::QueryT,
     ) -> AnyResult<cosmwasm_std::Binary> {
         match request {
+            ElysQuery::AmmEarnMiningPoolAll { .. } => todo!("AmmEarnMiningPoolAll"),
+            ElysQuery::CommitmentAllValidators { .. } => todo!("CommitmentAllValidators"),
+            ElysQuery::CommitmentDelegations { .. } => todo!("CommitmentDelegations"),
+            ElysQuery::CommitmentDelegatorValidators { .. } => {
+                todo!("CommitmentDelegatorValidators")
+            }
+            ElysQuery::CommitmentRewardsBalanceOfDenom { .. } => {
+                todo!("CommitmentRewardsBalanceOfDenom")
+            }
+            ElysQuery::CommitmentShowCommitments { .. } => todo!("CommitmentShowCommitments"),
+            ElysQuery::CommitmentUnbondingDelegations { .. } => {
+                todo!("CommitmentUnbondingDelegations")
+            }
+            ElysQuery::CommitmentVestingInfo { .. } => todo!("CommitmentVestingInfo"),
             ElysQuery::OraclePriceAll { .. } => Ok(to_json_binary(&self.get_all_price(storage)?)?),
             ElysQuery::OracleAssetInfo { denom } => {
                 let infos = ASSET_INFO.load(storage)?;
@@ -348,30 +363,30 @@ impl Module for ElysModule {
                 };
                 Ok(to_json_binary(&resp)?)
             }
-            ElysQuery::AmmPriceByDenom {
-                token_in,
-                ..
-            } => {
+            ElysQuery::AmmPriceByDenom { token_in, .. } => {
                 let prices = &self.get_all_price(storage)?;
-                let price_in = prices.iter().find(|price| price.asset == token_in.denom).unwrap();
+                let price_in = prices
+                    .iter()
+                    .find(|price| price.asset == token_in.denom)
+                    .unwrap();
                 let price_out = prices
                     .iter()
                     .find(|price| price.asset == "uusdc".to_string())
                     .unwrap();
                 let spot_price = price_in.price / price_out.price;
-             
+
                 let resp = spot_price;
                 Ok(to_json_binary(&resp)?)
             }
             ElysQuery::CommitmentStakedPositions { .. } => {
                 let resp = QueryStakedPositionResponse {
-                    staked_position:None,
+                    staked_position: None,
                 };
                 Ok(to_json_binary(&resp)?)
             }
             ElysQuery::CommitmentUnStakedPositions { .. } => {
                 let resp = QueryUnstakedPositionResponse {
-                    unstaked_position:None,
+                    unstaked_position: None,
                 };
                 Ok(to_json_binary(&resp)?)
             }

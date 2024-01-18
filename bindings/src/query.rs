@@ -71,7 +71,7 @@ pub enum ElysQuery {
         program: i32,
     },
     #[returns(BalanceAvailable)]
-    CommitmentStakedBalanceOfDenom { address: String, denom: String },  
+    CommitmentStakedBalanceOfDenom { address: String, denom: String },
     #[returns(Decimal)]
     AmmPriceByDenom { token_in: Coin, discount: Decimal },
     #[returns(QueryStakedPositionResponse)]
@@ -80,6 +80,26 @@ pub enum ElysQuery {
     CommitmentUnStakedPositions { delegator_address: String },
     #[returns(BalanceBorrowed)]
     StableStakeBalanceOfBorrow { address: String },
+    #[returns(QueryDelegatorDelegationsResponse)]
+    CommitmentDelegations { delegator_address: String },
+    #[returns(QueryDelegatorUnbondingDelegationsResponse)]
+    CommitmentUnbondingDelegations { delegator_address: String },
+    #[returns(QueryDelegatorValidatorsResponse)]
+    CommitmentAllValidators { delegator_address: String },
+    #[returns(QueryDelegatorValidatorsResponse)]
+    CommitmentDelegatorValidators { delegator_address: String },
+    #[returns(BalanceAvailable)]
+    CommitmentRewardsBalanceOfDenom { address: String, denom: String },
+    #[returns(QueryShowCommitmentsResponse)]
+    CommitmentShowCommitments { creator: String },
+    #[returns(QueryVestingInfoResponse)]
+    CommitmentVestingInfo { address: String },
+    #[returns(QueryEarnPoolResponse)]
+    AmmEarnMiningPoolAll {
+        pool_ids: Option<Vec<u64>>,
+        filter_type: i32,
+        pagination: Option<PageRequest>,
+    },
 }
 
 impl CustomQuery for ElysQuery {}
@@ -190,5 +210,51 @@ impl ElysQuery {
     }
     pub fn get_borrowed_balance(address: String) -> Self {
         ElysQuery::StableStakeBalanceOfBorrow { address }
+    }
+    pub fn get_delegations(delegator_addr: String) -> Self {
+        ElysQuery::CommitmentDelegations {
+            delegator_address: delegator_addr,
+        }
+    }
+    pub fn get_unbonding_delegations(delegator_addr: String) -> Self {
+        ElysQuery::CommitmentUnbondingDelegations {
+            delegator_address: delegator_addr,
+        }
+    }
+    pub fn get_all_validators() -> Self {
+        ElysQuery::CommitmentAllValidators {
+            delegator_address: "".to_string(),
+        }
+    }
+    pub fn get_delegator_validators(delegator_addr: String) -> Self {
+        ElysQuery::CommitmentDelegatorValidators {
+            delegator_address: delegator_addr,
+        }
+    }
+    pub fn get_commitments(address: String) -> Self {
+        ElysQuery::CommitmentShowCommitments { creator: address }
+    }
+    pub fn get_rewards_balance(address: String, denom: String) -> Self {
+        ElysQuery::CommitmentRewardsBalanceOfDenom { address, denom }
+    }
+    pub fn get_vesting_info(address: String) -> Self {
+        ElysQuery::CommitmentVestingInfo { address }
+    }
+    pub fn get_incentive_apr(program: i32, denom: String) -> Self {
+        ElysQuery::IncentiveApr {
+            withdraw_type: program,
+            denom,
+        }
+    }
+    pub fn get_all_pools(
+        pool_ids: Option<Vec<u64>>,
+        filter_type: i32,
+        pagination: Option<PageRequest>,
+    ) -> Self {
+        ElysQuery::AmmEarnMiningPoolAll {
+            pool_ids,
+            filter_type,
+            pagination,
+        }
     }
 }

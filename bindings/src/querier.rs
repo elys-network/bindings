@@ -232,9 +232,9 @@ impl<'a> ElysQuerier<'a> {
 
         Ok(resp)
     }
-    
-    pub fn get_incentive_apr(&self, program: i32, denom: String, ) -> StdResult<QueryAprResponse> {
-        let incentive_apr_query = ElysQuery::IncentiveApr{
+
+    pub fn get_incentive_apr(&self, program: i32, denom: String) -> StdResult<QueryAprResponse> {
+        let incentive_apr_query = ElysQuery::IncentiveApr {
             withdraw_type: program.to_owned(),
             denom: denom.to_owned(),
         };
@@ -258,7 +258,7 @@ impl<'a> ElysQuerier<'a> {
         let resp: BalanceAvailable = self.querier.query(&request)?;
         Ok(resp)
     }
-    
+
     pub fn get_oracle_price(
         &self,
         asset: String,
@@ -284,7 +284,7 @@ impl<'a> ElysQuerier<'a> {
         let resp: StakedAvailable = self.querier.query(&request)?;
         Ok(resp)
     }
-    
+
     pub fn get_amm_price_by_denom(&self, token_in: Coin, discount: Decimal) -> StdResult<Decimal> {
         let amm_price_query = ElysQuery::AmmPriceByDenom {
             token_in: token_in.to_owned(),
@@ -325,4 +325,96 @@ impl<'a> ElysQuerier<'a> {
         Ok(resp)
     }
 
+    pub fn get_delegations(
+        &self,
+        delegator_addr: String,
+    ) -> StdResult<QueryDelegatorDelegationsResponse> {
+        let delegations_query = ElysQuery::CommitmentDelegations {
+            delegator_address: delegator_addr.to_owned(),
+        };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(delegations_query);
+        let resp: QueryDelegatorDelegationsResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
+
+    pub fn get_unbonding_delegations(
+        &self,
+        delegator_addr: String,
+    ) -> StdResult<QueryDelegatorUnbondingDelegationsResponse> {
+        let unbonding_delegations_query = ElysQuery::CommitmentUnbondingDelegations {
+            delegator_address: delegator_addr.to_owned(),
+        };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(unbonding_delegations_query);
+        let resp: QueryDelegatorUnbondingDelegationsResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
+
+    pub fn get_all_validators(
+        &self,
+        delegator: String,
+    ) -> StdResult<QueryDelegatorValidatorsResponse> {
+        let validators_query = ElysQuery::CommitmentAllValidators {
+            delegator_address: delegator.to_owned(),
+        };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(validators_query);
+        let resp: QueryDelegatorValidatorsResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
+
+    pub fn get_delegator_validators(
+        &self,
+        delegator: String,
+    ) -> StdResult<QueryDelegatorValidatorsResponse> {
+        let validators_query = ElysQuery::CommitmentDelegatorValidators {
+            delegator_address: delegator.to_owned(),
+        };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(validators_query);
+        let resp: QueryDelegatorValidatorsResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
+
+    pub fn get_commitments(&self, address: String) -> StdResult<QueryShowCommitmentsResponse> {
+        let commitments_query = ElysQuery::CommitmentShowCommitments {
+            creator: address.to_owned(),
+        };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(commitments_query);
+        let resp: QueryShowCommitmentsResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
+
+    pub fn get_rewards_balance(
+        &self,
+        address: String,
+        denom: String,
+    ) -> StdResult<BalanceAvailable> {
+        let rewards_balance_query = ElysQuery::CommitmentRewardsBalanceOfDenom {
+            address: address.to_owned(),
+            denom: denom.to_owned(),
+        };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(rewards_balance_query);
+        let resp: BalanceAvailable = self.querier.query(&request)?;
+        Ok(resp)
+    }
+
+    pub fn get_vesting_info(&self, address: String) -> StdResult<QueryVestingInfoResponse> {
+        let vesting_info_query = ElysQuery::CommitmentVestingInfo {
+            address: address.to_owned(),
+        };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(vesting_info_query);
+        let resp: QueryVestingInfoResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
+
+    pub fn get_all_pools(
+        &self,
+        pool_ids: Option<Vec<u64>>,
+        filter_type: i32,
+        pagination: Option<PageRequest>,
+    ) -> StdResult<QueryEarnPoolResponse> {
+        let pools_query = ElysQuery::get_all_pools(pool_ids, filter_type, pagination);
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(pools_query);
+
+        let resp: QueryEarnPoolResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
 }

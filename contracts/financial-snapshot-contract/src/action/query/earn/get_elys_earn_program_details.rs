@@ -1,11 +1,9 @@
 use super::*;
+use crate::msg::query_resp::earn::GetElysEarnProgramResp;
 use crate::types::{earn_program::elys_earn::ElysEarnProgram, AprElys, BalanceReward, ElysDenom};
-use crate::{
-    bindings::{querier::ElysQuerier, query::ElysQuery},
-    msg::query_resp::earn::GetElysEarnProgramResp,
-};
 use cosmwasm_std::{coin, Decimal, Uint128};
 use elys_bindings::types::{EarnType, StakedPosition, UnstakedPosition};
+use elys_bindings::{ElysQuerier, ElysQuery};
 
 pub fn get_elys_earn_program_details(
     deps: Deps<ElysQuery>,
