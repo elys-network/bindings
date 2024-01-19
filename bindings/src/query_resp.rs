@@ -77,6 +77,10 @@ pub struct MarginOpenEstimationRawResponse {
     pub liquidation_price: String,
     pub estimated_pnl: Int128,
     pub available_liquidity: Coin,
+    pub weight_balance_ratio: String,
+    pub borrow_interest_rate: String,
+    pub funding_rate: String,
+    pub price_impact: String,
 }
 
 #[cw_serde]

@@ -45,9 +45,25 @@ printf "# AH contract address: %s\n" "$ah_contract_address"
 printf "# FS contract address: %s\n" "$fs_contract_address"
 printf "# TS contract address: %s\n" "$ts_contract_address"
 
+# Denoms
+usdc_denom="ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+atom_denom="ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4"
+
+# Print denoms
+printf "\n# USDC denom: %s\n" "$usdc_denom"
+printf "# ATOM denom: %s\n" "$atom_denom"
+
 # User address
 user_address="$1"
 printf "\n# User address: %s\n" "$user_address"
+
+# Get params
+printf "\n# AH Params\n"
+query_contract "$ah_contract_address" '{
+    "params": {}
+}'
+
+exit 0
 
 # Get total balance
 printf "\n# Total balance\n"
@@ -102,5 +118,192 @@ printf "\n# User value\n"
 query_contract "$ah_contract_address" '{
     "user_value": {
         "user_address": "'"$user_address"'"
+    }
+}'
+
+# Swap estimation by denom
+printf "\n# Swap estimation by denom\n"
+query_contract "$ts_contract_address" '{
+    "swap_estimation_by_denom": {
+        "user_address": "'"$user_address"'",
+        "amount": {
+            "amount": "1000000",
+            "denom": "uelys"
+        },
+        "denom_in": "'"$usdc_denom"'",
+        "denom_out": "uelys"
+    }
+}'
+
+# Get all prices
+printf "\n# All prices\n"
+query_contract "$ts_contract_address" '{
+    "get_all_prices": {
+        "limit": 2
+    }
+}'
+
+# Asset info
+printf "\n# Asset info\n"
+query_contract "$ts_contract_address" '{
+    "asset_info": {
+        "denom": "uelys"
+    }
+}'
+
+# Get spot order
+printf "\n# Spot order\n"
+query_contract "$ts_contract_address" '{
+    "get_spot_order": {
+        "order_id": 1
+    }
+}'
+
+# Get spot orders for stop loss
+printf "\n# Get stop loss spot orders\n"
+query_contract "$ts_contract_address" '{
+    "get_spot_orders": {
+        "pagination": null,
+        "order_owner": "'"$user_address"'",
+        "order_type": "stop_loss",
+        "order_status": null
+    }
+}'
+
+# Get spot orders for limit sell
+printf "\n# Get limit sell spot orders\n"
+query_contract "$ts_contract_address" '{
+    "get_spot_orders": {
+        "pagination": null,
+        "order_owner": "'"$user_address"'",
+        "order_type": "limit_sell",
+        "order_status": null
+    }
+}'
+
+# Get spot orders for limit buy
+printf "\n# Get limit buy spot orders\n"
+query_contract "$ts_contract_address" '{
+    "get_spot_orders": {
+        "pagination": null,
+        "order_owner": "'"$user_address"'",
+        "order_type": "limit_buy",
+        "order_status": null
+    }
+}'
+
+# Get spot orders for market buy
+printf "\n# Get market buy spot orders\n"
+query_contract "$ts_contract_address" '{
+    "get_spot_orders": {
+        "pagination": null,
+        "order_owner": "'"$user_address"'",
+        "order_type": "market_buy",
+        "order_status": null
+    }
+}'
+
+# Get margin position
+printf "\n# Get margin position\n"
+query_contract "$ts_contract_address" '{
+    "get_margin_position": {
+        "address": "'"$user_address"'",
+        "id": 1
+    }
+}'
+
+# Get margin order
+printf "\n# Margin order\n"
+query_contract "$ts_contract_address" '{
+    "get_margin_order": {
+        "id": 1
+    }
+}'
+
+# Get margin orders for stop loss
+printf "\n# Get stop loss margin orders\n"
+query_contract "$ts_contract_address" '{
+    "get_margin_orders": {
+        "pagination": null,
+        "order_owner": "'"$user_address"'",
+        "order_type": "stop_loss",
+        "order_status": null
+    }
+}'
+
+# Get margin orders for limit open
+printf "\n# Get limit open margin orders\n"
+query_contract "$ts_contract_address" '{
+    "get_margin_orders": {
+        "pagination": null,
+        "order_owner": "'"$user_address"'",
+        "order_type": "limit_open",
+        "order_status": null
+    }
+}'
+
+# Get margin orders for limit close
+printf "\n# Get limit close margin orders\n"
+query_contract "$ts_contract_address" '{
+    "get_margin_orders": {
+        "pagination": null,
+        "order_owner": "'"$user_address"'",
+        "order_type": "limit_close",
+        "order_status": null
+    }
+}'
+
+# Get margin orders for market open
+printf "\n# Get market open margin orders\n"
+query_contract "$ts_contract_address" '{
+    "get_margin_orders": {
+        "pagination": null,
+        "order_owner": "'"$user_address"'",
+        "order_type": "market_open",
+        "order_status": null
+    }
+}'
+
+# Get margin orders for market close
+printf "\n# Get market close margin orders\n"
+query_contract "$ts_contract_address" '{
+    "get_margin_orders": {
+        "pagination": null,
+        "order_owner": "'"$user_address"'",
+        "order_type": "market_close",
+        "order_status": null
+    }
+}'
+
+# Get margin orders for stop loss
+printf "\n# Get stop loss margin orders\n"
+query_contract "$ts_contract_address" '{
+    "get_margin_orders": {
+        "pagination": null,
+        "order_owner": "'"$user_address"'",
+        "order_type": "stop_loss",
+        "order_status": null
+    }
+}'
+
+# Margin open estimation
+printf "\n# Margin open estimation\n"
+query_contract "$ts_contract_address" '{
+    "margin_open_estimation": {
+        "position": "long",
+        "leverage": "5",
+        "trading_asset": "'"$atom_denom"'",
+        "collateral": {"denom": "'"$usdc_denom"'", "amount": "100000000"},
+        "take_profit_price": "30",
+        "user_address": null
+    }
+}'
+
+# margin get position for address
+printf "\n# Margin get position for address\n"
+query_contract "$ts_contract_address" '{
+    "margin_get_positions_for_address": {
+        "address": "'"$user_address"'",
+        "pagination": null
     }
 }'
