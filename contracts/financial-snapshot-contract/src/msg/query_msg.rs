@@ -11,8 +11,6 @@ use elys_bindings::types::PageRequest;
 #[derive(QueryResponses)]
 pub enum QueryMsg {
     // Pod dashboard
-    #[returns(GetRewardsResp)]
-    GetPodRewards { user_address: String },
     #[returns(GetLiquidityPositionsResp)]
     GetPodLiquidityPositions {},
     #[returns(GetLiquidityPositionResp)]

@@ -1,7 +1,7 @@
 use super::*;
 use crate::{
     action::query::{
-        get_pod_portfolio, get_pod_total_balance, get_staked_assets, get_total_value_per_asset,
+        get_liquid_assets, get_portfolio, get_rewards, get_staked_assets, get_total_balance,
         params, user_value,
     },
     states::HISTORY,
@@ -36,14 +36,11 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
                 None => return Err(StdError::not_found("account snapshot")),
             }
         }),
-        GetLiquidAssets { user_address } => {
-            to_json_binary(&get_total_value_per_asset(deps, user_address)?)
-        }
+        GetLiquidAssets { user_address } => to_json_binary(&get_liquid_assets(deps, user_address)?),
         GetStakedAssets { user_address } => to_json_binary(&get_staked_assets(deps, user_address)?),
         Params {} => to_json_binary(&params(deps)?),
-        GetPodPortfolio { user_address } => to_json_binary(&get_pod_portfolio(deps, user_address)?),
-        GetPodTotalBalance { user_address } => {
-            to_json_binary(&get_pod_total_balance(deps, user_address)?)
-        }
+        GetPortfolio { user_address } => to_json_binary(&get_portfolio(deps, user_address)?),
+        GetTotalBalance { user_address } => to_json_binary(&get_total_balance(deps, user_address)?),
+        GetRewards { user_address } => to_json_binary(&get_rewards(deps, user_address)?),
     }
 }

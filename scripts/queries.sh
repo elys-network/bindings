@@ -52,7 +52,7 @@ printf "\n# User address: %s\n" "$user_address"
 # Get total balance
 printf "\n# Total balance\n"
 query_contract "$ah_contract_address" '{
-    "get_pod_total_balance": {
+    "get_total_balance": {
         "user_address": "'"$user_address"'"
     }
 }'
@@ -60,15 +60,15 @@ query_contract "$ah_contract_address" '{
 # Get portfolio balance
 printf "\n# Portfolio balance\n"
 query_contract "$ah_contract_address" '{
-    "get_pod_portfolio": {
+    "get_portfolio": {
         "user_address": "'"$user_address"'"
     }
 }'
 
-# Get pod rewards
-printf "\n# Pod rewards\n"
-query_contract "$fs_contract_address" '{
-    "get_pod_rewards": {
+# Get rewards
+printf "\n# Rewards\n"
+query_contract "$ah_contract_address" '{
+    "get_rewards": {
         "user_address": "'"$user_address"'"
     }
 }'
@@ -85,6 +85,14 @@ query_contract "$ah_contract_address" '{
 printf "\n# Staked assets\n"
 query_contract "$ah_contract_address" '{
     "get_staked_assets": {
+        "user_address": "'"$user_address"'"
+    }
+}'
+
+# Get user value
+printf "\n# User value\n"
+query_contract "$ah_contract_address" '{
+    "user_value": {
         "user_address": "'"$user_address"'"
     }
 }'

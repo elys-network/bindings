@@ -8,13 +8,16 @@ pub use sudo::SudoMsg;
 
 pub mod query_resp {
     mod get_portfolio_resp;
+    mod get_rewards_resp;
     mod get_total_balance_resp;
     mod params_resp;
+    mod staked_asset_response;
     mod total_value_of_asset;
     mod total_value_per_asset_resp;
     mod user_value_response;
 
     pub use get_portfolio_resp::GetPortfolioResp;
+    pub use get_rewards_resp::GetRewardsResp;
     pub use get_total_balance_resp::GetTotalBalanceResp;
     pub use params_resp::ParamsResp;
     pub use total_value_of_asset::TotalValueOfAssetResp;
@@ -22,6 +25,7 @@ pub mod query_resp {
     pub use user_value_response::UserValueResponse;
 
     mod staked_assets_response;
+    pub use staked_asset_response::StakedAssetResponse;
     pub use staked_assets_response::StakedAssetsResponse;
 
     pub mod earn {

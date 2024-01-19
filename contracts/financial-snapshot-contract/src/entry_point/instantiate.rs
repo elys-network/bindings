@@ -1,5 +1,5 @@
 use super::*;
-use crate::{states::*, types::*};
+use crate::states::*;
 use elys_bindings::ElysQuery;
 use msg::InstantiateMsg;
 
@@ -9,7 +9,6 @@ pub fn instantiate(
     _info: MessageInfo,
     _msg: InstantiateMsg,
 ) -> StdResult<Response> {
-    REWARDS.save(deps.storage, "", &Reward::init())?;
     LIQUIDITY_POSITIONS.save(deps.storage, &vec![])?;
 
     Ok(Response::new())

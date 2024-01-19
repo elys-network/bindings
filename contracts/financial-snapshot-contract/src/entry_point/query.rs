@@ -9,9 +9,6 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
 
     match msg {
         // Pod dashboard
-        GetPodRewards { user_address } => {
-            Ok(to_json_binary(&pod::get_pod_rewards(deps, user_address)?)?)
-        }
         GetPodLiquidityPositions {} => {
             Ok(to_json_binary(&pod::get_pod_liquidity_positions(deps)?)?)
         }
