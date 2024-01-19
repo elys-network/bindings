@@ -14,6 +14,7 @@ pub struct StakedAssetResponse {
 #[cw_serde]
 pub struct StakedAsset {
     pub program: EarnType,
+    pub bonding_period: u64,
     pub apr: Decimal,
     pub available: Decimal,
     pub staked: Decimal,

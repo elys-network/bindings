@@ -383,6 +383,7 @@ pub fn get_staked_assets(
     // usdc program
     let staked_asset_usdc = StakedAsset {
         program: EarnType::UsdcProgram,
+        bonding_period: usdc_details.data.bonding_period,
         apr: Decimal::from_atomics(usdc_details.data.apr.ueden, 0).unwrap(),
         available: match usdc_details.data.available {
             Some(r) => r.usd_amount,
@@ -415,6 +416,7 @@ pub fn get_staked_assets(
     .unwrap();
     let staked_asset_elys = StakedAsset {
         program: EarnType::ElysProgram,
+        bonding_period: elys_details.data.bonding_period,
         apr: Decimal::from_atomics(elys_details.data.apr.ueden, 0).unwrap(),
         available: match elys_details.data.available {
             Some(r) => r.usd_amount,
@@ -451,6 +453,7 @@ pub fn get_staked_assets(
     .unwrap();
     let staked_asset_eden = StakedAsset {
         program: EarnType::EdenProgram,
+        bonding_period: eden_details.data.bonding_period,
         apr: Decimal::from_atomics(eden_details.data.apr.ueden, 0).unwrap(),
         available: match eden_details.data.available {
             Some(r) => r.usd_amount,
@@ -486,6 +489,7 @@ pub fn get_staked_assets(
     .unwrap();
     let staked_asset_edenb = StakedAsset {
         program: EarnType::EdenBProgram,
+        bonding_period: edenb_details.data.bonding_period,
         apr: Decimal::from_atomics(edenb_details.data.apr.ueden, 0).unwrap(),
         available: match edenb_details.data.available {
             Some(r) => Decimal::from_atomics(r, 0).unwrap(),
