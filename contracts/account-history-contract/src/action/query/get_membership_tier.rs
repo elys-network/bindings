@@ -1,20 +1,20 @@
 use crate::{
-    msg::query_resp::UserValueResponse,
+    msg::query_resp::MembershipTierResponse,
     states::{EXPIRATION, HISTORY},
     types::AccountSnapshot,
 };
-use cosmwasm_std::{BlockInfo, Deps, StdError, StdResult};
+use cosmwasm_std::{BlockInfo, Deps, StdResult};
 use cw_utils::Expiration;
 use elys_bindings::ElysQuery;
 
-pub fn user_value(
+pub fn get_membership_tier(
     deps: Deps<ElysQuery>,
     block_info: BlockInfo,
     user_address: String,
-) -> StdResult<UserValueResponse> {
+) -> StdResult<MembershipTierResponse> {
     let user_history = match HISTORY.may_load(deps.storage, &user_address)? {
         Some(history) => history,
-        None => return Err(StdError::not_found(format!("user :{user_address}"))),
+        None => return Ok(MembershipTierResponse::zero()),
     };
 
     let expiration = EXPIRATION.load(deps.storage)?;
@@ -36,9 +36,9 @@ pub fn user_value(
         .iter()
         .min_by_key(|account| account.total_balance.total_balance.amount)
     {
-        Some(lowest_value) => Ok(UserValueResponse {
-            value: lowest_value.to_owned(),
-        }),
-        None => Err(StdError::not_found(format!("user :{user_address}"))),
+        Some(snapshot) => Ok(MembershipTierResponse::calc(
+            snapshot.total_balance.total_balance.amount,
+        )),
+        None => return Ok(MembershipTierResponse::zero()),
     }
 }

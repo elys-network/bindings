@@ -57,6 +57,14 @@ query_contract "$ah_contract_address" '{
     }
 }'
 
+# Get membership tier
+printf "\n# Membership tier\n"
+query_contract "$ah_contract_address" '{
+    "get_membership_tier": {
+        "user_address": "'"$user_address"'"
+    }
+}'
+
 # Get portfolio balance
 printf "\n# Portfolio balance\n"
 query_contract "$ah_contract_address" '{

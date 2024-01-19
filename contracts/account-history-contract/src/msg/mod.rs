@@ -10,6 +10,7 @@ pub mod query_resp {
     mod get_portfolio_resp;
     mod get_rewards_resp;
     mod get_total_balance_resp;
+    mod membership_tier_response;
     mod params_resp;
     mod staked_asset_response;
     mod total_value_of_asset;
@@ -19,6 +20,7 @@ pub mod query_resp {
     pub use get_portfolio_resp::GetPortfolioResp;
     pub use get_rewards_resp::GetRewardsResp;
     pub use get_total_balance_resp::GetTotalBalanceResp;
+    pub use membership_tier_response::MembershipTierResponse;
     pub use params_resp::ParamsResp;
     pub use total_value_of_asset::TotalValueOfAssetResp;
     pub use total_value_per_asset_resp::GetLiquidAssetsResp;

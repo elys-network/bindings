@@ -30,4 +30,6 @@ pub enum QueryMsg {
     GetTotalBalance { user_address: String },
     #[returns(GetRewardsResp)]
     GetRewards { user_address: String },
+    #[returns(MembershipTierResponse)]
+    GetMembershipTier { user_address: String },
 }
