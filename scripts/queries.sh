@@ -57,13 +57,11 @@ printf "# ATOM denom: %s\n" "$atom_denom"
 user_address="$1"
 printf "\n# User address: %s\n" "$user_address"
 
-# Get params
+# Get AH params
 printf "\n# AH Params\n"
 query_contract "$ah_contract_address" '{
     "params": {}
 }'
-
-exit 0
 
 # Get total balance
 printf "\n# Total balance\n"
