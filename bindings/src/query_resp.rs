@@ -99,6 +99,10 @@ pub struct MarginOpenEstimationResponse {
     pub liquidation_price: Decimal,
     pub estimated_pnl: Int128,
     pub available_liquidity: Coin,
+    pub weight_balance_ratio: Decimal,
+    pub borrow_interest_rate: Decimal,
+    pub funding_rate: Decimal,
+    pub price_impact: Decimal,
 }
 
 #[cw_serde]
