@@ -19,14 +19,6 @@ pub enum QueryMsg {
     GetPodLiquidityPosition { pool_id: u64 },
 
     // Earn dashboard
-    #[returns(GetEdenEarnProgramResp)]
-    GetEdenEarnProgramDetails { user_address: Option<String> },
-    #[returns(GetEdenBoostEarnProgramResp)]
-    GetEdenBoostEarnProgramDetails { user_address: Option<String> },
-    #[returns(GetElysEarnProgramResp)]
-    GetElysEarnProgramDetails { user_address: Option<String> },
-    #[returns(GetUsdcEarnProgramResp)]
-    GetUsdcEarnProgramDetails { user_address: Option<String> },
     #[returns(QueryDelegatorValidatorsResponse)]
     GetAllValidators { delegator_addr: Option<String> },
     #[returns(QueryDelegatorValidatorsResponse)]
