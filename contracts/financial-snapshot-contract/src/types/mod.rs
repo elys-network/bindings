@@ -1,12 +1,3 @@
-mod reward {
-    pub mod reward;
-    mod impls {
-        mod init;
-        mod new_dummy;
-    }
-}
-pub use reward::reward::Reward;
-
 mod liquidity_position {
     pub mod liquidity_position;
     mod impls {

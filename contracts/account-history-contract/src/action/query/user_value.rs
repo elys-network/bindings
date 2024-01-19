@@ -34,7 +34,7 @@ pub fn user_value(
 
     match clean_history
         .iter()
-        .min_by_key(|account| account.total_liquid_asset_balance.amount)
+        .min_by_key(|account| account.liquid_asset.total_liquid_asset_balance.amount)
     {
         Some(lowest_value) => Ok(UserValueResponse {
             value: lowest_value.to_owned(),

@@ -21,10 +21,10 @@ use elys_bindings::{
     },
     query_resp::{
         AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse,
-        BalanceBorrowed, Entry, MarginGetPositionsForAddressResponse, MarginMtpResponse,
-        MarginOpenEstimationResponse, MarginQueryPositionsResponse, OracleAssetInfoResponse,
-        QueryAprResponse, QueryGetEntryResponse, QueryGetPriceResponse,
-        QueryStakedPositionResponse, QueryUnstakedPositionResponse,
+        BalanceBorrowed, Commitments, Entry, MarginGetPositionsForAddressResponse,
+        MarginMtpResponse, MarginOpenEstimationResponse, MarginQueryPositionsResponse,
+        OracleAssetInfoResponse, QueryAprResponse, QueryGetEntryResponse, QueryGetPriceResponse,
+        QueryShowCommitmentsResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
@@ -113,7 +113,22 @@ impl Module for ElysModule {
             ElysQuery::CommitmentRewardsBalanceOfDenom { .. } => {
                 todo!("CommitmentRewardsBalanceOfDenom")
             }
-            ElysQuery::CommitmentShowCommitments { .. } => todo!("CommitmentShowCommitments"),
+            ElysQuery::CommitmentShowCommitments { .. } => {
+                let resp = QueryShowCommitmentsResponse {
+                    commitments: Commitments {
+                        creator: "elys123".to_string(),
+                        committed_tokens: Some(vec![]),
+                        rewards_unclaimed: Some(vec![]),
+                        claimed: Some(vec![]),
+                        vesting_tokens: Some(vec![]),
+                        rewards_by_elys_unclaimed: Some(vec![]),
+                        rewards_by_eden_unclaimed: Some(vec![]),
+                        rewards_by_edenb_unclaimed: Some(vec![]),
+                        rewards_by_usdc_unclaimed: Some(vec![]),
+                    },
+                };
+                Ok(to_json_binary(&resp)?)
+            }
             ElysQuery::CommitmentUnbondingDelegations { .. } => {
                 todo!("CommitmentUnbondingDelegations")
             }

@@ -8,7 +8,7 @@ use crate::{
     types::CoinValue,
 };
 
-pub fn get_total_value_per_asset(
+pub fn get_liquid_assets(
     deps: Deps<ElysQuery>,
     user_address: String,
 ) -> StdResult<GetLiquidAssetsResp> {
@@ -25,11 +25,11 @@ pub fn get_total_value_per_asset(
 
     let mut liquid_assets: Vec<TotalValueOfAssetResp> = vec![];
 
-    for total in snapshot.total_value_per_asset {
+    for total in snapshot.liquid_asset.total_value_per_asset {
         let (available_amount, available_value) =
-            get_info(&snapshot.in_orders_asset_balance, &total.denom);
+            get_info(&snapshot.liquid_asset.in_orders_asset_balance, &total.denom);
         let (in_order_amount, in_order_value) =
-            get_info(&snapshot.in_orders_asset_balance, &total.denom);
+            get_info(&snapshot.liquid_asset.in_orders_asset_balance, &total.denom);
 
         liquid_assets.push(TotalValueOfAssetResp {
             denom: total.denom,
@@ -45,7 +45,7 @@ pub fn get_total_value_per_asset(
 
     Ok(GetLiquidAssetsResp {
         liquid_assets,
-        total_liquid_asset_balance: snapshot.total_liquid_asset_balance,
+        total_liquid_asset_balance: snapshot.liquid_asset.total_liquid_asset_balance,
     })
 }
 

@@ -2,15 +2,18 @@ use super::*;
 use std::collections::HashMap;
 
 use cosmwasm_std::{
-    coin, BlockInfo, Coin, DecCoin, Decimal, Decimal256, QuerierWrapper, StdError, Uint128,
+    coin, BlockInfo, Coin, DecCoin, Decimal, Decimal256, Deps, QuerierWrapper, StdError, Uint128,
 };
 use cw_utils::Expiration;
-use elys_bindings::trade_shield::{
-    msg::{
-        query_resp::{GetMarginOrdersResp, GetSpotOrdersResp},
-        QueryMsg,
+use elys_bindings::{
+    query_resp::AmmSwapEstimationByDenomResponse,
+    trade_shield::{
+        msg::{
+            query_resp::{GetMarginOrdersResp, GetSpotOrdersResp},
+            QueryMsg,
+        },
+        types::{MarginOrder, MarginOrderType, SpotOrder, Status},
     },
-    types::{MarginOrder, MarginOrderType, SpotOrder, Status},
 };
 
 use crate::{
@@ -18,7 +21,11 @@ use crate::{
         get_eden_boost_earn_program_details, get_eden_earn_program_details,
         get_elys_earn_program_details, get_usdc_earn_program_details,
     },
-    types::{AccountSnapshot, CoinValue, ElysDenom, StakedAsset, StakedAssetResponse},
+    msg::query_resp::{GetRewardsResp, StakedAssetResponse},
+    types::{
+        AccountSnapshot, CoinValue, ElysDenom, LiquidAsset, Portfolio, Reward, StakedAsset,
+        TotalBalance,
+    },
 };
 use elys_bindings::{query_resp::QueryAprResponse, types::EarnType};
 
@@ -137,6 +144,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             eden_apr_elys.to_owned(),
             edenb_apr_elys.to_owned(),
         );
+        let rewards_response = get_rewards(deps.as_ref(), address.clone())?;
 
         let new_part = create_new_part(
             &env.block,
@@ -145,6 +153,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             account_balances,
             order_balances,
             staked_response,
+            rewards_response,
             &value_denom,
         )?;
         if let Some(part) = new_part {
@@ -167,6 +176,7 @@ fn create_new_part(
     account_balances: Vec<Coin>,
     orders_balances: Vec<Coin>,
     staked_assets_resp: StakedAssetResponse,
+    rewards_response: GetRewardsResp,
     value_denom: &String,
 ) -> StdResult<Option<AccountSnapshot>> {
     let date = match expiration {
@@ -259,16 +269,51 @@ fn create_new_part(
         value_denom,
     );
 
+    let reward = rewards_response.rewards;
+    let portfolio_usd = DecCoin::new(
+        total_liquid_asset_balance
+            .amount
+            .checked_add(Decimal256::from(staked_assets_resp.total_balance))?,
+        value_denom,
+    );
+    let reward_usd: DecCoin = DecCoin::new(Decimal256::from(reward.clone().total_usd), value_denom);
+    let total_balance = DecCoin::new(
+        total_liquid_asset_balance
+            .amount
+            .checked_add(reward_usd.amount)?,
+        value_denom,
+    );
+
     // Adds the records all the time as we should return data to the FE even if it is 0 balanced.
     Ok(Some(AccountSnapshot {
         date,
-        total_liquid_asset_balance,
-        total_available_balance,
-        total_in_orders_balance,
-        available_asset_balance,
-        in_orders_asset_balance,
-        total_value_per_asset,
-        total_staked_asset_balance: staked_assets_resp.total_balance,
+        total_balance: TotalBalance {
+            total_balance,
+            portfolio_usd: portfolio_usd.clone(),
+            reward_usd,
+        },
+        portfolio: Portfolio {
+            balance_usd: portfolio_usd,
+            liquid_assets_usd: total_liquid_asset_balance.clone(),
+            staked_committed_usd: DecCoin::new(
+                Decimal256::from(staked_assets_resp.total_balance),
+                value_denom,
+            ),
+            liquidity_positions_usd: DecCoin::new(Decimal256::zero(), value_denom),
+            leverage_lp_usd: DecCoin::new(Decimal256::zero(), value_denom),
+            margin_usd: DecCoin::new(Decimal256::zero(), value_denom),
+            usdc_earn_usd: DecCoin::new(Decimal256::zero(), value_denom),
+            borrows_usd: DecCoin::new(Decimal256::zero(), value_denom),
+        },
+        reward,
+        liquid_asset: LiquidAsset {
+            total_liquid_asset_balance,
+            total_available_balance,
+            total_in_orders_balance,
+            available_asset_balance,
+            in_orders_asset_balance,
+            total_value_per_asset,
+        },
         staked_assets: staked_assets_resp.staked_assets,
     }))
 }
@@ -513,4 +558,98 @@ pub fn get_staked_assets(
         staked_assets: staked_assets,
         total_balance: total_balance,
     }
+}
+
+pub fn get_rewards(deps: Deps<ElysQuery>, address: String) -> StdResult<GetRewardsResp> {
+    let querier = ElysQuerier::new(&deps.querier);
+    let commitments = querier.get_commitments(address)?;
+
+    let denom_usdc_entry = querier.get_asset_profile(ElysDenom::Usdc.as_str().to_string())?;
+    let denom_uusdc = denom_usdc_entry.entry.denom;
+    let usdc_display_denom = denom_usdc_entry.entry.display_name;
+
+    let denom_uelys = ElysDenom::Elys.as_str().to_string();
+    let denom_ueden = ElysDenom::Eden.as_str().to_string();
+    let denom_uedenb = ElysDenom::EdenBoost.as_str().to_string();
+
+    let usdc_oracle_price = querier.get_oracle_price(
+        usdc_display_denom.clone(),
+        ElysDenom::AnySource.as_str().to_string(),
+        0,
+    )?;
+    let usdc_price = usdc_oracle_price
+        .price
+        .price
+        .checked_div(Decimal::from_atomics(Uint128::new(1000000), 0).unwrap())
+        .unwrap();
+
+    let mut rewards = Reward {
+        usdc_usd: Decimal::zero(),
+        eden_usd: Decimal::zero(),
+        eden_boost: Uint128::zero(),
+        other_usd: Decimal::zero(),
+        total_usd: Decimal::zero(),
+    };
+
+    match commitments.commitments.rewards_unclaimed {
+        Some(rewards_unclaimed) => {
+            for reward in rewards_unclaimed {
+                // uusdc
+                if reward.denom == denom_uusdc {
+                    let usdc_rewards = Decimal::from_atomics(reward.amount, 0).unwrap();
+                    rewards.usdc_usd = usdc_rewards.checked_mul(usdc_price).unwrap();
+                    rewards.total_usd = rewards.total_usd.checked_add(rewards.usdc_usd).unwrap();
+
+                    continue;
+                }
+
+                // ueden
+                if reward.denom == denom_ueden {
+                    // if it is eden, we should elys denom instead of ueden as it is not available in LP pool and has the same value with elys.
+                    let reward_in_elys = coin(reward.amount.u128(), denom_uelys.to_owned());
+                    let AmmSwapEstimationByDenomResponse { amount, .. } = querier
+                        .amm_swap_estimation_by_denom(
+                            &reward_in_elys,
+                            denom_uelys.to_owned(),
+                            denom_uusdc.to_owned(),
+                            &Decimal::zero(),
+                        )?;
+                    let rewards_in_usdc = Decimal::from_atomics(amount.amount, 0).unwrap();
+                    rewards.eden_usd = rewards_in_usdc.checked_mul(usdc_price).unwrap();
+                    rewards.total_usd = rewards.total_usd.checked_add(rewards.eden_usd).unwrap();
+
+                    continue;
+                }
+
+                // uedenb - we don't value eden boost in usd.
+                if reward.denom == denom_uedenb {
+                    rewards.eden_boost = reward.amount;
+                    continue;
+                }
+
+                // We accumulate other denoms in a single usd.
+                let AmmSwapEstimationByDenomResponse { amount, .. } = querier
+                    .amm_swap_estimation_by_denom(
+                        &reward,
+                        reward.denom.to_owned(),
+                        &denom_uusdc.to_owned(),
+                        &Decimal::zero(),
+                    )?;
+                let rewards_in_usdc = Decimal::from_atomics(amount.amount, 0).unwrap();
+                let rewards_in_usd = rewards_in_usdc.checked_mul(usdc_price).unwrap();
+
+                rewards.other_usd = rewards.other_usd.checked_add(rewards_in_usd).unwrap();
+                rewards.total_usd = rewards.total_usd.checked_add(rewards_in_usd).unwrap();
+            }
+        }
+        None => {
+            let value_denom = VALUE_DENOM.load(deps.storage)?;
+            return Ok(GetRewardsResp {
+                rewards: AccountSnapshot::zero(&value_denom).reward,
+            });
+        }
+    }
+
+    let resp = GetRewardsResp { rewards: rewards };
+    Ok(resp)
 }

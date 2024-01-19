@@ -10,11 +10,9 @@ pub mod query_resp {
     pub mod pod {
         mod get_liquidity_position_resp;
         mod get_liquidity_positions_resp;
-        mod get_rewards_resp;
 
         pub use get_liquidity_position_resp::GetLiquidityPositionResp;
         pub use get_liquidity_positions_resp::GetLiquidityPositionsResp;
-        pub use get_rewards_resp::GetRewardsResp;
     }
     pub mod earn {
         mod get_eden_boost_earn_details_resp;

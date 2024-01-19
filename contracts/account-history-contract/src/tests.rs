@@ -106,7 +106,7 @@ fn history() {
     let res: UserValueResponse = app.wrap().query_wasm_smart(&addr, &query_msg).unwrap();
 
     assert_eq!(
-        res.value.total_liquid_asset_balance,
+        res.value.liquid_asset.total_liquid_asset_balance,
         DecCoin::new(
             Decimal256::from_atomics(Uint128::new(45), 1).unwrap(),
             "uusdc"
@@ -125,7 +125,7 @@ fn history() {
     let res: UserValueResponse = app.wrap().query_wasm_smart(&addr, &query_msg).unwrap();
 
     assert_eq!(
-        res.value.total_liquid_asset_balance,
+        res.value.liquid_asset.total_liquid_asset_balance,
         DecCoin::new(
             Decimal256::from_atomics(Uint128::new(75), 1).unwrap(),
             "uusdc"

@@ -1,9 +1,12 @@
 mod account_snapshot;
 mod coin_value;
+mod liquid_asset;
 mod portfolio;
+mod reward;
+mod staked_asset;
 mod total_balance;
 
-pub use account_snapshot::{AccountSnapshot, StakedAsset, StakedAssetResponse};
+pub use account_snapshot::AccountSnapshot;
 pub use coin_value::CoinValue;
 
 pub mod earn_detail {
@@ -34,3 +37,7 @@ use elys_bindings::types::BalanceAvailable;
 
 pub use portfolio::Portfolio;
 pub use total_balance::TotalBalance;
+
+pub use liquid_asset::LiquidAsset;
+pub use reward::Reward;
+pub use staked_asset::StakedAsset;
