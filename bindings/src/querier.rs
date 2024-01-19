@@ -143,6 +143,14 @@ impl<'a> ElysQuerier<'a> {
                 .map_or(Decimal::zero(), |liquidation_price| liquidation_price),
             estimated_pnl: raw_resp.estimated_pnl,
             available_liquidity: raw_resp.available_liquidity,
+            weight_balance_ratio: Decimal::from_str(&raw_resp.weight_balance_ratio)
+                .map_or(Decimal::zero(), |weight_balance_ratio| weight_balance_ratio),
+            borrow_interest_rate: Decimal::from_str(&raw_resp.borrow_interest_rate)
+                .map_or(Decimal::zero(), |borrow_interest_rate| borrow_interest_rate),
+            funding_rate: Decimal::from_str(&raw_resp.funding_rate)
+                .map_or(Decimal::zero(), |funding_rate| funding_rate),
+            price_impact: Decimal::from_str(&raw_resp.price_impact)
+                .map_or(Decimal::zero(), |price_impact| price_impact),
         };
 
         Ok(resp)

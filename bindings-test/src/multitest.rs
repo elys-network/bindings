@@ -288,6 +288,10 @@ impl Module for ElysModule {
                     take_profit_price,
                     liquidation_price: Decimal::zero(),
                     estimated_pnl: Int128::zero(),
+                    weight_balance_ratio: Decimal::zero(),
+                    borrow_interest_rate: Decimal::zero(),
+                    funding_rate: Decimal::zero(),
+                    price_impact: Decimal::zero(),
                 })?)
             }
             ElysQuery::AssetProfileEntry { base_denom } => {

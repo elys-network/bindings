@@ -1,5 +1,5 @@
-use super::*;
-use cosmwasm_std::{Coin, Decimal};
+use cosmwasm_std::{Coin, Decimal, Deps, StdResult};
+use elys_bindings::{query_resp::AmmSwapEstimationByDenomResponse, ElysQuerier, ElysQuery};
 
 pub fn swap_estimation_by_denom(
     deps: Deps<ElysQuery>,
@@ -7,7 +7,7 @@ pub fn swap_estimation_by_denom(
     denom_in: String,
     denom_out: String,
     _user_address: Option<String>, // Parameter unused until account history work
-) -> Result<AmmSwapEstimationByDenomResponse, ContractError> {
+) -> StdResult<AmmSwapEstimationByDenomResponse> {
     let querier = ElysQuerier::new(&deps.querier);
 
     let resp: AmmSwapEstimationByDenomResponse =
