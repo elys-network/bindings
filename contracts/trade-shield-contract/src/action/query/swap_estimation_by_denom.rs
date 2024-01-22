@@ -10,6 +10,17 @@ pub fn swap_estimation_by_denom(
 ) -> StdResult<AmmSwapEstimationByDenomResponse> {
     let querier = ElysQuerier::new(&deps.querier);
 
+    if denom_in == denom_out {
+        let mut resp =
+            querier.amm_swap_estimation_by_denom(&amount, denom_in, "uelys", &Decimal::zero())?;
+
+        // override values for this edge case
+        resp.amount = amount;
+        resp.spot_price = Decimal::one();
+
+        return Ok(resp);
+    }
+
     let resp: AmmSwapEstimationByDenomResponse =
         querier.amm_swap_estimation_by_denom(&amount, denom_in, denom_out, &Decimal::zero())?;
 

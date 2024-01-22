@@ -141,10 +141,10 @@ function swap_estimation_by_denom() {
             "user_address": "'"$user_address"'",
             "amount": {
                 "amount": "1000000",
-                "denom": "uelys"
+                "denom": "'"$1"'"
             },
-            "denom_in": "'"$usdc_denom"'",
-            "denom_out": "uelys"
+            "denom_in": "'"$2"'",
+            "denom_out": "'"$3"'"
         }
     }'
 }
@@ -291,8 +291,11 @@ case "$2" in
     "user_value")
         user_value
         ;;
-    "swap_estimation_by_denom")
-        swap_estimation_by_denom
+    "swap_estimation_by_denom_uelys_usdc_uelys")
+        swap_estimation_by_denom uelys $usdc_denom uelys
+        ;;
+    "swap_estimation_by_denom_usdc_usdc_usdc")
+        swap_estimation_by_denom $usdc_denom $usdc_denom $usdc_denom
         ;;
     "all_prices")
         all_prices
@@ -353,7 +356,8 @@ case "$2" in
         liquid_assets
         staked_assets
         user_value
-        swap_estimation_by_denom
+        swap_estimation_by_denom uelys $usdc_denom uelys
+        swap_estimation_by_denom $usdc_denom $usdc_denom $usdc_denom
         all_prices
         asset_info
         spot_order
@@ -368,7 +372,6 @@ case "$2" in
         margin_orders limit_close
         margin_orders market_open
         margin_orders market_close
-        margin_orders stop_loss
         margin_open_estimation
         margin_get_positions_for_address
         ;;
