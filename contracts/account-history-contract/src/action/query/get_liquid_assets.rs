@@ -12,10 +12,19 @@ pub fn get_liquid_assets(
     deps: Deps<ElysQuery>,
     user_address: String,
 ) -> StdResult<GetLiquidAssetsResp> {
-    let snapshot = match HISTORY.load(deps.storage, &user_address)?.last().cloned() {
+    let value_denom = VALUE_DENOM.load(deps.storage)?;
+    let snapshots = match HISTORY.may_load(deps.storage, &user_address)? {
+        Some(snapshots) => snapshots,
+        None => {
+            return Ok(GetLiquidAssetsResp {
+                liquid_assets: vec![],
+                total_liquid_asset_balance: DecCoin::new(Decimal256::zero(), value_denom),
+            });
+        }
+    };
+    let snapshot = match snapshots.last().cloned() {
         Some(snapshot) => snapshot,
         None => {
-            let value_denom = VALUE_DENOM.load(deps.storage)?;
             return Ok(GetLiquidAssetsResp {
                 liquid_assets: vec![],
                 total_liquid_asset_balance: DecCoin::new(Decimal256::zero(), value_denom),

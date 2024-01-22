@@ -135,7 +135,7 @@ function user_value() {
 
 # Swap estimation by denom
 function swap_estimation_by_denom() {
-    printf "\n# Swap estimation by denom\n"
+    printf "\n# Swap estimation by denom with $1, $2, $3\n"
     query_contract "$ts_contract_address" '{
         "swap_estimation_by_denom": {
             "user_address": "'"$user_address"'",

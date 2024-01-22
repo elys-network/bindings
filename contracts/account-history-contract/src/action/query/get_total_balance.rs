@@ -11,7 +11,14 @@ pub fn get_total_balance(
     user_address: String,
 ) -> StdResult<GetTotalBalanceResp> {
     let value_denom = VALUE_DENOM.load(deps.storage)?;
-    let snapshots = HISTORY.load(deps.storage, &user_address)?;
+    let snapshots = match HISTORY.may_load(deps.storage, &user_address)? {
+        Some(snapshots) => snapshots,
+        None => {
+            return Ok(GetTotalBalanceResp {
+                balances: AccountSnapshot::zero(&value_denom).total_balance,
+            })
+        }
+    };
     let snapshot = match snapshots.last().cloned() {
         Some(expr) => expr,
         None => {
