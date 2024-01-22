@@ -55,8 +55,8 @@ impl CoinValue {
         } = querier
             .amm_swap_estimation_by_denom(
                 &coin_to_estimate,
-                &coin.denom,
                 value_denom,
+                &coin.denom,
                 &Decimal::zero(),
             )
             .map_err(|_e| StdError::generic_err("52"))?;
