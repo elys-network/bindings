@@ -26,3 +26,18 @@ pub struct EdenEarnProgram {
     // it should only be included if address is in the request object.
     pub vesting_details: Option<Vec<VestingDetail>>,
 }
+
+// implement default
+impl Default for EdenEarnProgram {
+    fn default() -> Self {
+        Self {
+            bonding_period: 0,
+            apr: AprElys::default(),
+            available: None,
+            staked: None,
+            rewards: None,
+            vesting: None,
+            vesting_details: None,
+        }
+    }
+}

@@ -25,6 +25,7 @@ use elys_bindings::{
         MarginMtpResponse, MarginOpenEstimationResponse, MarginQueryPositionsResponse,
         OracleAssetInfoResponse, QueryAprResponse, QueryGetEntryResponse, QueryGetPriceResponse,
         QueryShowCommitmentsResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
+        QueryVestingInfoResponse,
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
@@ -132,7 +133,16 @@ impl Module for ElysModule {
             ElysQuery::CommitmentUnbondingDelegations { .. } => {
                 todo!("CommitmentUnbondingDelegations")
             }
-            ElysQuery::CommitmentVestingInfo { .. } => todo!("CommitmentVestingInfo"),
+            ElysQuery::CommitmentVestingInfo { .. } => {
+                let resp = QueryVestingInfoResponse {
+                    vesting: BalanceAvailable {
+                        amount: Uint128::new(100),
+                        usd_amount: Decimal::from_atomics(Uint128::new(100), 0).unwrap(),
+                    },
+                    vesting_details: Some(vec![]),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
             ElysQuery::OraclePriceAll { .. } => Ok(to_json_binary(&self.get_all_price(storage)?)?),
             ElysQuery::OracleAssetInfo { denom } => {
                 let infos = ASSET_INFO.load(storage)?;

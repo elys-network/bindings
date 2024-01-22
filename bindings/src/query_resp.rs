@@ -189,6 +189,17 @@ pub struct StakedAvailable {
     pub lockups: Option<Vec<Lockup>>,
 }
 
+// implement default
+impl Default for StakedAvailable {
+    fn default() -> Self {
+        Self {
+            usd_amount: Decimal::zero(),
+            amount: Uint128::zero(),
+            lockups: None,
+        }
+    }
+}
+
 #[cw_serde]
 pub struct QueryAprResponse {
     pub apr: Uint128,

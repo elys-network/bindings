@@ -1,4 +1,5 @@
 use crate::states::HISTORY;
+use crate::types::AccountSnapshot;
 use crate::{action::VALUE_DENOM, msg::query_resp::StakedAssetsResponse};
 use cosmwasm_std::{DecCoin, Decimal256, Deps, StdResult};
 use elys_bindings::ElysQuery;
@@ -13,8 +14,8 @@ pub fn get_staked_assets(
             None => {
                 let value_denom = VALUE_DENOM.load(deps.storage)?;
                 return Ok(StakedAssetsResponse {
-                    total_staked_balance: DecCoin::new(Decimal256::zero(), value_denom),
-                    staked_assets: vec![],
+                    total_staked_balance: DecCoin::new(Decimal256::zero(), value_denom.clone()),
+                    staked_assets: AccountSnapshot::zero(&value_denom).staked_assets,
                 });
             }
         };

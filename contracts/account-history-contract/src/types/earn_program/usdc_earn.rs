@@ -1,5 +1,8 @@
-use crate::types::{BalanceReward, AprUsdc};
-use elys_bindings::{query_resp::{StakedAvailable, BalanceBorrowed}, types::BalanceAvailable};
+use crate::types::{AprUsdc, BalanceReward};
+use elys_bindings::{
+    query_resp::{BalanceBorrowed, StakedAvailable},
+    types::BalanceAvailable,
+};
 
 use cosmwasm_schema::cw_serde;
 
@@ -21,4 +24,18 @@ pub struct UsdcEarnProgram {
     pub rewards: Option<Vec<BalanceReward>>,
     // The amount that has been borrowed from the user staked positions.
     pub borrowed: Option<BalanceBorrowed>,
+}
+
+// implement default
+impl Default for UsdcEarnProgram {
+    fn default() -> Self {
+        Self {
+            bonding_period: 0,
+            apr: AprUsdc::default(),
+            available: None,
+            staked: None,
+            rewards: None,
+            borrowed: None,
+        }
+    }
 }
