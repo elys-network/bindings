@@ -1,4 +1,4 @@
-use crate::types::{BalanceReward, AprUsdc};
+use crate::types::{AprUsdc, BalanceReward};
 
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::Uint128;
@@ -19,4 +19,17 @@ pub struct EdenBoostEarnProgram {
     // It should be in the response only if the address is in the request object.
     // rewards are either USDC or EDEN.
     pub rewards: Option<Vec<BalanceReward>>,
+}
+
+// implement default
+impl Default for EdenBoostEarnProgram {
+    fn default() -> Self {
+        Self {
+            bonding_period: 0,
+            apr: AprUsdc::default(),
+            available: None,
+            staked: None,
+            rewards: None,
+        }
+    }
 }

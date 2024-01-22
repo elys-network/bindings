@@ -1,5 +1,8 @@
-use crate::types::{BalanceReward, AprElys};
-use elys_bindings::{query_resp::StakedAvailable, types::{BalanceAvailable, StakedPosition, UnstakedPosition}};
+use crate::types::{AprElys, BalanceReward};
+use elys_bindings::{
+    query_resp::StakedAvailable,
+    types::{BalanceAvailable, StakedPosition, UnstakedPosition},
+};
 
 use cosmwasm_schema::cw_serde;
 
@@ -24,5 +27,20 @@ pub struct ElysEarnProgram {
     pub staked_positions: Option<Vec<StakedPosition>>,
     // The positions the user has decided to unstake.
     // It should be in the response only if the address is in the request object.
-    pub unstaked_positions:Option<Vec<UnstakedPosition>>,
+    pub unstaked_positions: Option<Vec<UnstakedPosition>>,
+}
+
+// implement default
+impl Default for ElysEarnProgram {
+    fn default() -> Self {
+        Self {
+            bonding_period: 0,
+            apr: AprElys::default(),
+            available: None,
+            staked: None,
+            rewards: None,
+            staked_positions: None,
+            unstaked_positions: None,
+        }
+    }
 }

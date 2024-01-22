@@ -12,7 +12,6 @@ pub mod query_resp {
     mod get_total_balance_resp;
     mod membership_tier_response;
     mod params_resp;
-    mod staked_asset_response;
     mod total_value_of_asset;
     mod total_value_per_asset_resp;
     mod user_value_response;
@@ -27,7 +26,6 @@ pub mod query_resp {
     pub use user_value_response::UserValueResponse;
 
     mod staked_assets_response;
-    pub use staked_asset_response::StakedAssetResponse;
     pub use staked_assets_response::StakedAssetsResponse;
 
     pub mod earn {

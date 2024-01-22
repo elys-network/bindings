@@ -21,9 +21,10 @@ use crate::{
         get_eden_boost_earn_program_details, get_eden_earn_program_details,
         get_elys_earn_program_details, get_usdc_earn_program_details,
     },
-    msg::query_resp::{GetRewardsResp, StakedAssetResponse},
+    msg::query_resp::{GetRewardsResp, StakedAssetsResponse},
     types::{
-        AccountSnapshot, CoinValue, ElysDenom, LiquidAsset, Portfolio, Reward, StakedAsset,
+        earn_program::{EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram},
+        AccountSnapshot, CoinValue, ElysDenom, LiquidAsset, Portfolio, Reward, StakedAssets,
         TotalBalance,
     },
 };
@@ -175,7 +176,7 @@ fn create_new_part(
     expiration: &Expiration,
     account_balances: Vec<Coin>,
     orders_balances: Vec<Coin>,
-    staked_assets_resp: StakedAssetResponse,
+    staked_assets_resp: StakedAssetsResponse,
     rewards_response: GetRewardsResp,
     value_denom: &String,
 ) -> StdResult<Option<AccountSnapshot>> {
@@ -273,7 +274,9 @@ fn create_new_part(
     let portfolio_usd = DecCoin::new(
         total_liquid_asset_balance
             .amount
-            .checked_add(Decimal256::from(staked_assets_resp.total_balance))?,
+            .checked_add(Decimal256::from(
+                staked_assets_resp.total_staked_balance.amount,
+            ))?,
         value_denom,
     );
     let reward_usd: DecCoin = DecCoin::new(Decimal256::from(reward.clone().total_usd), value_denom);
@@ -296,7 +299,7 @@ fn create_new_part(
             balance_usd: portfolio_usd,
             liquid_assets_usd: total_liquid_asset_balance.clone(),
             staked_committed_usd: DecCoin::new(
-                Decimal256::from(staked_assets_resp.total_balance),
+                Decimal256::from(staked_assets_resp.total_staked_balance.amount),
                 value_denom,
             ),
             liquidity_positions_usd: DecCoin::new(Decimal256::zero(), value_denom),
@@ -410,8 +413,9 @@ pub fn get_staked_assets(
     usdc_apr_elys: QueryAprResponse,
     eden_apr_elys: QueryAprResponse,
     edenb_apr_elys: QueryAprResponse,
-) -> StakedAssetResponse {
-    let mut staked_assets: Vec<StakedAsset> = Vec::new();
+) -> StakedAssetsResponse {
+    // create staked_assets variable that is a StakedAssets struct
+    let mut staked_assets = StakedAssets::default();
     let mut total_balance = Decimal::zero();
 
     let usdc_details = get_usdc_earn_program_details(
@@ -426,25 +430,16 @@ pub fn get_staked_assets(
     )
     .unwrap();
     // usdc program
-    let staked_asset_usdc = StakedAsset {
-        program: EarnType::UsdcProgram,
-        bonding_period: usdc_details.data.bonding_period,
-        apr: Decimal::from_atomics(usdc_details.data.apr.ueden, 0).unwrap(),
-        available: match usdc_details.data.available {
-            Some(r) => r.usd_amount,
-            None => Decimal::zero(),
-        },
-        rewards: match usdc_details.data.rewards {
-            Some(r) => r.iter().map(|f| f.usd_amount.unwrap()).sum(),
-            None => Decimal::zero(),
-        },
-        staked: match usdc_details.data.staked {
-            Some(r) => r.usd_amount,
-            None => Decimal::zero(),
-        },
-    };
-    total_balance = total_balance.checked_add(staked_asset_usdc.staked).unwrap();
-    staked_assets.push(staked_asset_usdc);
+    let staked_asset_usdc = usdc_details.data.clone();
+    total_balance = total_balance
+        .checked_add(match staked_asset_usdc.clone() {
+            UsdcEarnProgram {
+                staked: Some(r), ..
+            } => r.usd_amount,
+            _ => Decimal::zero(),
+        })
+        .unwrap();
+    staked_assets.usdc_earn_program = staked_asset_usdc;
 
     // elys program
     let elys_details = get_elys_earn_program_details(
@@ -459,29 +454,16 @@ pub fn get_staked_assets(
         edenb_apr_elys,
     )
     .unwrap();
-    let staked_asset_elys = StakedAsset {
-        program: EarnType::ElysProgram,
-        bonding_period: elys_details.data.bonding_period,
-        apr: Decimal::from_atomics(elys_details.data.apr.ueden, 0).unwrap(),
-        available: match elys_details.data.available {
-            Some(r) => r.usd_amount,
-            None => Decimal::zero(),
-        },
-        rewards: match elys_details.data.rewards {
-            Some(r) => r
-                .iter()
-                .filter(|f| f.usd_amount != None)
-                .map(|f| f.usd_amount.unwrap())
-                .sum(),
-            None => Decimal::zero(),
-        },
-        staked: match elys_details.data.staked {
-            Some(r) => r.usd_amount,
-            None => Decimal::zero(),
-        },
-    };
-    total_balance = total_balance.checked_add(staked_asset_elys.staked).unwrap();
-    staked_assets.push(staked_asset_elys);
+    let staked_asset_elys = elys_details.data;
+    total_balance = total_balance
+        .checked_add(match staked_asset_elys.clone() {
+            ElysEarnProgram {
+                staked: Some(r), ..
+            } => r.usd_amount,
+            _ => Decimal::zero(),
+        })
+        .unwrap();
+    staked_assets.elys_earn_program = staked_asset_elys;
 
     // eden program
     let eden_details = get_eden_earn_program_details(
@@ -496,29 +478,16 @@ pub fn get_staked_assets(
         edenb_apr_eden,
     )
     .unwrap();
-    let staked_asset_eden = StakedAsset {
-        program: EarnType::EdenProgram,
-        bonding_period: eden_details.data.bonding_period,
-        apr: Decimal::from_atomics(eden_details.data.apr.ueden, 0).unwrap(),
-        available: match eden_details.data.available {
-            Some(r) => r.usd_amount,
-            None => Decimal::zero(),
-        },
-        rewards: match eden_details.data.rewards {
-            Some(r) => r
-                .iter()
-                .filter(|f| f.usd_amount != None)
-                .map(|f| f.usd_amount.unwrap())
-                .sum(),
-            None => Decimal::zero(),
-        },
-        staked: match eden_details.data.staked {
-            Some(r) => r.usd_amount,
-            None => Decimal::zero(),
-        },
-    };
-    total_balance = total_balance.checked_add(staked_asset_eden.staked).unwrap();
-    staked_assets.push(staked_asset_eden);
+    let staked_asset_eden = eden_details.data;
+    total_balance = total_balance
+        .checked_add(match staked_asset_eden.clone() {
+            EdenEarnProgram {
+                staked: Some(r), ..
+            } => r.usd_amount,
+            _ => Decimal::zero(),
+        })
+        .unwrap();
+    staked_assets.eden_earn_program = staked_asset_eden;
 
     let edenb_details = get_eden_boost_earn_program_details(
         deps,
@@ -532,31 +501,22 @@ pub fn get_staked_assets(
         eden_apr_edenb,
     )
     .unwrap();
-    let staked_asset_edenb = StakedAsset {
-        program: EarnType::EdenBProgram,
-        bonding_period: edenb_details.data.bonding_period,
-        apr: Decimal::from_atomics(edenb_details.data.apr.ueden, 0).unwrap(),
-        available: match edenb_details.data.available {
-            Some(r) => Decimal::from_atomics(r, 0).unwrap(),
-            None => Decimal::zero(),
-        },
-        rewards: match edenb_details.data.rewards {
-            Some(r) => r.iter().map(|f| f.usd_amount.unwrap()).sum(),
-            None => Decimal::zero(),
-        },
-        staked: match edenb_details.data.staked {
-            Some(r) => Decimal::from_atomics(r, 0).unwrap(),
-            None => Decimal::zero(),
-        },
-    };
+    let staked_asset_edenb = edenb_details.data;
     total_balance = total_balance
-        .checked_add(staked_asset_edenb.rewards)
+        .checked_add(match staked_asset_edenb.clone() {
+            EdenBoostEarnProgram {
+                rewards: Some(r), ..
+            } => r.iter().fold(Decimal::zero(), |acc, item| {
+                acc.checked_add(item.usd_amount.unwrap()).unwrap()
+            }),
+            _ => Decimal::zero(),
+        })
         .unwrap();
-    staked_assets.push(staked_asset_edenb);
+    staked_assets.eden_boost_earn_program = staked_asset_edenb;
 
-    StakedAssetResponse {
+    StakedAssetsResponse {
         staked_assets: staked_assets,
-        total_balance: total_balance,
+        total_staked_balance: DecCoin::new(Decimal256::from(total_balance), usdc_denom),
     }
 }
 
