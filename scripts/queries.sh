@@ -179,6 +179,19 @@ function spot_order() {
     }'
 }
 
+# Get all spot orders
+function all_spot_orders() {
+    printf "\n# Get all spot orders\n"
+    query_contract "$ts_contract_address" '{
+        "get_spot_orders": {
+            "pagination": null,
+            "order_owner": "'"$user_address"'",
+            "order_type": null,
+            "order_status": null
+        }
+    }'
+}
+
 # Get spot orders
 function spot_orders() {
     printf "\n# Get spot orders with $1\n"
@@ -187,19 +200,6 @@ function spot_orders() {
             "pagination": null,
             "order_owner": "'"$user_address"'",
             "order_type": "'$1'",
-            "order_status": null
-        }
-    }'
-}
-
-# Get spot orders for market buy
-function spot_orders_market_buy() {
-    printf "\n# Get market buy spot orders\n"
-    query_contract "$ts_contract_address" '{
-        "get_spot_orders": {
-            "pagination": null,
-            "order_owner": "'"$user_address"'",
-            "order_type": "market_buy",
             "order_status": null
         }
     }'
@@ -306,6 +306,9 @@ case "$2" in
     "spot_order")
         spot_order
         ;;
+    "all_spot_orders")
+        all_spot_orders
+        ;;
     "spot_orders_stop_loss")
         spot_orders stop_loss
         ;;
@@ -361,6 +364,7 @@ case "$2" in
         all_prices
         asset_info
         spot_order
+        all_spot_orders
         spot_orders stop_loss
         spot_orders limit_sell
         spot_orders limit_buy
