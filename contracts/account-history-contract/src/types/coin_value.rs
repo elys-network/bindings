@@ -73,6 +73,9 @@ impl CoinValue {
             )
             .map_err(|_e| StdError::generic_err("52"))?;
 
+        // invert the price
+        let price = Decimal::one() / price;
+
         let decimal_point_value = asset_info.decimal;
         let amount = Decimal::from_atomics(coin.amount, decimal_point_coin as u32)
             .map_err(|err| StdError::generic_err(err.to_string()))?;
