@@ -23,9 +23,9 @@ use elys_bindings::{
         AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse,
         BalanceBorrowed, Commitments, Entry, MarginGetPositionsForAddressResponse,
         MarginMtpResponse, MarginOpenEstimationResponse, MarginQueryPositionsResponse,
-        OracleAssetInfoResponse, QueryAprResponse, QueryGetEntryResponse, QueryGetPriceResponse,
-        QueryShowCommitmentsResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
-        QueryVestingInfoResponse,
+        OracleAssetInfoResponse, QueryAprResponse, QueryGetEntryAllResponse, QueryGetEntryResponse,
+        QueryGetPriceResponse, QueryShowCommitmentsResponse, QueryStakedPositionResponse,
+        QueryUnstakedPositionResponse, QueryVestingInfoResponse,
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
@@ -302,6 +302,40 @@ impl Module for ElysModule {
                     borrow_interest_rate: Decimal::zero(),
                     funding_rate: Decimal::zero(),
                     price_impact: Decimal::zero(),
+                })?)
+            }
+            ElysQuery::AssetProfileEntryAll { .. } => {
+                let asset_info = ASSET_INFO.load(storage)?;
+                let entries: Vec<Entry> = asset_info
+                    .iter()
+                    .map(|info| Entry {
+                        base_denom: info.denom.clone(),
+                        decimals: info.decimal,
+                        denom: info.denom.clone(),
+                        path: "".to_string(),
+                        ibc_channel_id: "".to_string(),
+                        ibc_counterparty_channel_id: "".to_string(),
+                        display_name: "".to_string(),
+                        display_symbol: "".to_string(),
+                        external_symbol: "".to_string(),
+                        unit_denom: "".to_string(),
+                        authority: "".to_string(),
+                        commit_enabled: true,
+                        withdraw_enabled: true,
+                        network: "".to_string(),
+                        address: "".to_string(),
+                        transfer_limit: "".to_string(),
+                        permissions: vec![],
+                        ibc_counterparty_denom: "".to_string(),
+                        ibc_counterparty_chain_id: "".to_string(),
+                    })
+                    .collect();
+                Ok(to_json_binary(&QueryGetEntryAllResponse {
+                    entry: Some(entries.clone()),
+                    pagination: PageResponse {
+                        next_key: None,
+                        total: Some(entries.len() as u64),
+                    },
                 })?)
             }
             ElysQuery::AssetProfileEntry { base_denom } => {

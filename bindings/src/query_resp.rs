@@ -177,6 +177,12 @@ pub struct QueryGetEntryResponse {
 }
 
 #[cw_serde]
+pub struct QueryGetEntryAllResponse {
+    pub pagination: PageResponse,
+    pub entry: Option<Vec<Entry>>,
+}
+
+#[cw_serde]
 pub struct Lockup {
     pub amount: Int128,
     pub unlock_timestamp: u64,
