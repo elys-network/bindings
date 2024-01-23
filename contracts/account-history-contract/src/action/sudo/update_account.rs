@@ -238,7 +238,7 @@ fn create_new_part(
             .entry(&available.denom)
             .and_modify(|e| {
                 e.amount += available.amount.clone();
-                e.value = available.value.clone();
+                e.value += available.value.clone();
             })
             .or_insert_with(|| available.clone());
     }
@@ -248,7 +248,7 @@ fn create_new_part(
             .entry(&in_order.denom)
             .and_modify(|e| {
                 e.amount += in_order.amount.clone();
-                e.value = in_order.value.clone();
+                e.value += in_order.value.clone();
             })
             .or_insert_with(|| in_order.clone());
     }
