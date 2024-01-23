@@ -36,7 +36,7 @@ pub fn get_liquid_assets(
 
     for total in snapshot.liquid_asset.total_value_per_asset {
         let (available_amount, available_value) =
-            get_info(&snapshot.liquid_asset.in_orders_asset_balance, &total.denom);
+            get_info(&snapshot.liquid_asset.available_asset_balance, &total.denom);
         let (in_order_amount, in_order_value) =
             get_info(&snapshot.liquid_asset.in_orders_asset_balance, &total.denom);
 
