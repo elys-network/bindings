@@ -56,6 +56,8 @@ pub enum ElysQuery {
     AuthAddresses { pagination: Option<PageRequest> },
     #[returns(QueryGetEntryResponse)]
     AssetProfileEntry { base_denom: String },
+    #[returns(QueryGetEntryAllResponse)]
+    AssetProfileEntryAll { pagination: Option<PageRequest> },
     #[returns(QueryAprResponse)]
     IncentiveApr { withdraw_type: i32, denom: String },
     #[returns(QueryGetPriceResponse)]
@@ -171,6 +173,9 @@ impl ElysQuery {
     }
     pub fn get_asset_profile(base_denom: String) -> Self {
         Self::AssetProfileEntry { base_denom }
+    }
+    pub fn get_all_asset_profile(pagination: Option<PageRequest>) -> Self {
+        Self::AssetProfileEntryAll { pagination }
     }
     pub fn margin_get_position_for_address(address: String, pagination: PageRequest) -> Self {
         Self::MarginGetPositionsForAddress {

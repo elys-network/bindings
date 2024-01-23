@@ -2,6 +2,7 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal, StdError, StdResult, Uint128};
 use elys_bindings::{
     query_resp::{AmmSwapEstimationByDenomResponse, OracleAssetInfoResponse},
+    types::OracleAssetInfo,
     ElysQuerier,
 };
 
@@ -27,7 +28,18 @@ impl CoinValue {
         querier: &ElysQuerier<'_>,
         value_denom: &String,
     ) -> StdResult<Self> {
-        let OracleAssetInfoResponse { asset_info } = querier.asset_info(coin.denom.clone())?;
+        let OracleAssetInfoResponse { asset_info } = match querier.asset_info(coin.denom.clone()) {
+            Ok(res) => res,
+            Err(_) => OracleAssetInfoResponse {
+                asset_info: OracleAssetInfo {
+                    denom: coin.denom.clone(),
+                    display: coin.denom.clone(),
+                    band_ticker: coin.denom.clone(),
+                    elys_ticker: coin.denom.clone(),
+                    decimal: 6,
+                },
+            },
+        };
         let decimal_point_coin = asset_info.decimal;
         let big_denom_unit = u64::checked_pow(10, decimal_point_coin as u32).unwrap();
 

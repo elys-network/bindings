@@ -193,7 +193,7 @@ fn create_new_part(
                 Ok(res) => res,
                 Err(_) => CoinValue {
                     denom: coin.denom.to_owned(),
-                    amount: Decimal::zero(),
+                    amount: Decimal::from_atomics(coin.amount, 6 as u32).unwrap(),
                     price: Decimal::zero(),
                     value: Decimal::zero(),
                 },
@@ -208,7 +208,7 @@ fn create_new_part(
                 Ok(res) => res,
                 Err(_) => CoinValue {
                     denom: coin.denom.to_owned(),
-                    amount: Decimal::zero(),
+                    amount: Decimal::from_atomics(coin.amount, 6 as u32).unwrap(),
                     price: Decimal::zero(),
                     value: Decimal::zero(),
                 },
