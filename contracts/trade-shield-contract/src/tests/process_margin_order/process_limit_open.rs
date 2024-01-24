@@ -14,7 +14,7 @@ fn successful_process_limit_buy_order() {
         Price::new("usdc", Decimal::from_atomics(Uint128::new(1), 0).unwrap()),
     ];
     let prices_at_t1 = vec![
-        Price::new("ubtc", Decimal::from_atomics(Uint128::new(40), 0).unwrap()),
+        Price::new("ubtc", Decimal::from_atomics(Uint128::new(30), 0).unwrap()),
         Price::new("usdc", Decimal::from_atomics(Uint128::new(1), 0).unwrap()),
     ];
 
