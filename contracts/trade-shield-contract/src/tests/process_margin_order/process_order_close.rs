@@ -12,7 +12,7 @@ fn successful_process_limit_buy_order() {
         Price::new("usdc", Decimal::from_atomics(Uint128::new(1), 0).unwrap()),
     ];
     let prices_at_t1 = vec![
-        Price::new("ubtc", Decimal::from_atomics(Uint128::new(40), 0).unwrap()),
+        Price::new("ubtc", Decimal::from_atomics(Uint128::new(30), 0).unwrap()),
         Price::new("usdc", Decimal::from_atomics(Uint128::new(1), 0).unwrap()),
     ];
 
@@ -62,13 +62,6 @@ fn successful_process_limit_buy_order() {
         )
         .unwrap();
 
-    // Set the initial ubtc and USDC prices.
-    app.init_modules(|router, _, store| router.custom.set_prices(store, &prices_at_t0))
-        .unwrap();
-
-    // Execute the order processing.
-    app.wasm_sudo(addr.clone(), &sudo_msg).unwrap();
-
     app.init_modules(|router, _, storage| {
         router.custom.set_mtp(
             storage,
@@ -104,6 +97,13 @@ fn successful_process_limit_buy_order() {
         )
     })
     .unwrap();
+
+    // Set the initial ubtc and USDC prices.
+    app.init_modules(|router, _, store| router.custom.set_prices(store, &prices_at_t0))
+        .unwrap();
+
+    // Execute the order processing.
+    app.wasm_sudo(addr.clone(), &sudo_msg).unwrap();
 
     let last_module =
         app.init_modules(|router, _, store| router.custom.get_last_module(store).unwrap());

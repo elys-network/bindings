@@ -69,6 +69,7 @@ pub fn process_orders(
         ) {
             Ok(amm_swap_estimation) => amm_swap_estimation,
             Err(_) => {
+                println!("amm_swap_estimation_by_denom error");
                 order.status = Status::Canceled;
                 PENDING_MARGIN_ORDER.remove(deps.storage, order.order_id);
                 MARGIN_ORDER.save(deps.storage, order.order_id, &order)?;
@@ -86,13 +87,15 @@ pub fn process_orders(
                 Ok(mtp) => match mtp.mtp {
                     Some(_) => {}
                     None => {
+                        println!("mtp.mtp is None");
                         order.status = Status::Canceled;
                         PENDING_MARGIN_ORDER.remove(deps.storage, order.order_id);
                         MARGIN_ORDER.save(deps.storage, order.order_id, &order)?;
                         continue;
                     }
                 },
-                Err(_) => {
+                Err(e) => {
+                    println!("mtp error {e:?}");
                     order.status = Status::Canceled;
                     PENDING_MARGIN_ORDER.remove(deps.storage, order.order_id);
                     MARGIN_ORDER.save(deps.storage, order.order_id, &order)?;
@@ -202,6 +205,9 @@ fn check_margin_order(
     };
 
     let market_price = amm_swap_estimation.spot_price;
+
+    println!("market_price:{market_price:?}");
+    println!("order_spot_price:{order_spot_price:?}");
 
     match (&order.order_type, &order.position) {
         (MarginOrderType::LimitOpen, MarginPosition::Long) => market_price <= order_spot_price,
