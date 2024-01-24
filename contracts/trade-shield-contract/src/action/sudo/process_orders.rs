@@ -24,14 +24,28 @@ pub fn process_orders(
 
     let querier = ElysQuerier::new(&deps.querier);
     let mut submsgs: Vec<SubMsg<ElysMsg>> = vec![];
+    let mut bank_msgs: Vec<BankMsg> = vec![];
 
     for spot_order in spot_orders.iter() {
-        let amm_swap_estimation = querier.amm_swap_estimation_by_denom(
+        let amm_swap_estimation = match querier.amm_swap_estimation_by_denom(
             &spot_order.order_amount,
             &spot_order.order_amount.denom,
             &spot_order.order_target_denom,
             &Decimal::zero(),
-        )?;
+        ) {
+            Ok(amm_swap_estimation) => amm_swap_estimation,
+            Err(_) => {
+                let mut order = spot_order.to_owned();
+                order.status = Status::Canceled;
+                bank_msgs.push(BankMsg::Send {
+                    to_address: order.owner_address.to_string(),
+                    amount: vec![order.order_amount.clone()],
+                });
+                PENDING_SPOT_ORDER.remove(deps.storage, order.order_id);
+                SPOT_ORDER.save(deps.storage, order.order_id, &order)?;
+                continue;
+            }
+        };
 
         if check_spot_order(&spot_order, &amm_swap_estimation) {
             process_spot_order(
@@ -46,12 +60,46 @@ pub fn process_orders(
     }
 
     for margin_order in margin_orders.iter() {
-        let amm_swap_estimation = querier.amm_swap_estimation_by_denom(
+        let mut order = margin_order.to_owned();
+        let amm_swap_estimation = match querier.amm_swap_estimation_by_denom(
             &margin_order.collateral,
             &margin_order.collateral.denom,
             &margin_order.trading_asset,
             &Decimal::zero(),
-        )?;
+        ) {
+            Ok(amm_swap_estimation) => amm_swap_estimation,
+            Err(_) => {
+                order.status = Status::Canceled;
+                PENDING_MARGIN_ORDER.remove(deps.storage, order.order_id);
+                MARGIN_ORDER.save(deps.storage, order.order_id, &order)?;
+                if order.order_type == MarginOrderType::LimitOpen {
+                    bank_msgs.push(BankMsg::Send {
+                        to_address: order.owner.to_string(),
+                        amount: vec![order.collateral.clone()],
+                    });
+                }
+                continue;
+            }
+        };
+        if order.order_type != MarginOrderType::LimitOpen {
+            match querier.mtp(order.owner.clone(), order.position_id.clone().unwrap()) {
+                Ok(mtp) => match mtp.mtp {
+                    Some(_) => {}
+                    None => {
+                        order.status = Status::Canceled;
+                        PENDING_MARGIN_ORDER.remove(deps.storage, order.order_id);
+                        MARGIN_ORDER.save(deps.storage, order.order_id, &order)?;
+                        continue;
+                    }
+                },
+                Err(_) => {
+                    order.status = Status::Canceled;
+                    PENDING_MARGIN_ORDER.remove(deps.storage, order.order_id);
+                    MARGIN_ORDER.save(deps.storage, order.order_id, &order)?;
+                    continue;
+                }
+            };
+        }
 
         if check_margin_order(&margin_order, amm_swap_estimation) {
             process_margin_order(
@@ -148,33 +196,20 @@ fn check_margin_order(
 
     let trigger_price = order.trigger_price.clone().unwrap();
 
-    let order_spot_price = match order.collateral.denom == trigger_price.base_denom {
+    let order_price = match order.collateral.denom == trigger_price.base_denom {
         true => trigger_price.rate,
         false => Decimal::one().div(trigger_price.rate),
     };
 
-    let token_swap_estimation = amm_swap_estimation.amount.amount;
-    let order_estimation = order_spot_price * order.collateral.amount;
+    let market_price = amm_swap_estimation.spot_price;
 
     match (&order.order_type, &order.position) {
-        (MarginOrderType::LimitOpen, MarginPosition::Long) => {
-            token_swap_estimation <= order_estimation
-        }
-        (MarginOrderType::LimitOpen, MarginPosition::Short) => {
-            token_swap_estimation >= order_estimation
-        }
-        (MarginOrderType::LimitClose, MarginPosition::Long) => {
-            token_swap_estimation >= order_estimation
-        }
-        (MarginOrderType::LimitClose, MarginPosition::Short) => {
-            token_swap_estimation <= order_estimation
-        }
-        (MarginOrderType::StopLoss, MarginPosition::Long) => {
-            token_swap_estimation <= order_estimation
-        }
-        (MarginOrderType::StopLoss, MarginPosition::Short) => {
-            token_swap_estimation >= order_estimation
-        }
+        (MarginOrderType::LimitOpen, MarginPosition::Long) => market_price <= order_price,
+        (MarginOrderType::LimitOpen, MarginPosition::Short) => market_price >= order_price,
+        (MarginOrderType::LimitClose, MarginPosition::Long) => market_price >= order_price,
+        (MarginOrderType::LimitClose, MarginPosition::Short) => market_price <= order_price,
+        (MarginOrderType::StopLoss, MarginPosition::Long) => market_price <= order_price,
+        (MarginOrderType::StopLoss, MarginPosition::Short) => market_price >= order_price,
         _ => false,
     }
 }
@@ -187,7 +222,7 @@ fn check_spot_order(
         return false;
     }
 
-    let order_spot_price = match order.order_amount.denom == order.order_price.base_denom {
+    let order_price = match order.order_amount.denom == order.order_price.base_denom {
         true => order.order_price.rate,
         false => Decimal::one().div(order.order_price.rate),
     };
@@ -195,11 +230,9 @@ fn check_spot_order(
     let market_price = amm_swap_estimation.spot_price;
 
     match order.order_type {
-        SpotOrderType::LimitBuy => market_price <= order_spot_price,
-
-        SpotOrderType::LimitSell => market_price >= order_spot_price,
-
-        SpotOrderType::StopLoss => market_price <= order_spot_price,
+        SpotOrderType::LimitBuy => market_price <= order_price,
+        SpotOrderType::LimitSell => market_price >= order_price,
+        SpotOrderType::StopLoss => market_price <= order_price,
         _ => false,
     }
 }
