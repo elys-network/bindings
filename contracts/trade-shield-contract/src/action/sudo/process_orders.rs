@@ -92,7 +92,7 @@ pub fn process_orders(
                         continue;
                     }
                 },
-                Err(e) => {
+                Err(_) => {
                     order.status = Status::Canceled;
                     PENDING_MARGIN_ORDER.remove(deps.storage, order.order_id);
                     MARGIN_ORDER.save(deps.storage, order.order_id, &order)?;
@@ -196,7 +196,7 @@ fn check_margin_order(
 
     let trigger_price = order.trigger_price.clone().unwrap();
 
-    let order_spot_price = match order.collateral.denom == trigger_price.base_denom {
+    let order_price = match order.collateral.denom == trigger_price.base_denom {
         true => trigger_price.rate,
         false => Decimal::one().div(trigger_price.rate),
     };
@@ -204,12 +204,12 @@ fn check_margin_order(
     let market_price = amm_swap_estimation.spot_price;
 
     match (&order.order_type, &order.position) {
-        (MarginOrderType::LimitOpen, MarginPosition::Long) => market_price <= order_spot_price,
-        (MarginOrderType::LimitOpen, MarginPosition::Short) => market_price >= order_spot_price,
-        (MarginOrderType::LimitClose, MarginPosition::Long) => market_price >= order_spot_price,
-        (MarginOrderType::LimitClose, MarginPosition::Short) => market_price <= order_spot_price,
-        (MarginOrderType::StopLoss, MarginPosition::Long) => market_price <= order_spot_price,
-        (MarginOrderType::StopLoss, MarginPosition::Short) => market_price >= order_spot_price,
+        (MarginOrderType::LimitOpen, MarginPosition::Long) => market_price <= order_price,
+        (MarginOrderType::LimitOpen, MarginPosition::Short) => market_price >= order_price,
+        (MarginOrderType::LimitClose, MarginPosition::Long) => market_price >= order_price,
+        (MarginOrderType::LimitClose, MarginPosition::Short) => market_price <= order_price,
+        (MarginOrderType::StopLoss, MarginPosition::Long) => market_price <= order_price,
+        (MarginOrderType::StopLoss, MarginPosition::Short) => market_price >= order_price,
         _ => false,
     }
 }
@@ -222,7 +222,7 @@ fn check_spot_order(
         return false;
     }
 
-    let order_spot_price = match order.order_amount.denom == order.order_price.base_denom {
+    let order_price = match order.order_amount.denom == order.order_price.base_denom {
         true => order.order_price.rate,
         false => Decimal::one().div(order.order_price.rate),
     };
@@ -230,11 +230,9 @@ fn check_spot_order(
     let market_price = amm_swap_estimation.spot_price;
 
     match order.order_type {
-        SpotOrderType::LimitBuy => market_price <= order_spot_price,
-
-        SpotOrderType::LimitSell => market_price >= order_spot_price,
-
-        SpotOrderType::StopLoss => market_price <= order_spot_price,
+        SpotOrderType::LimitBuy => market_price <= order_price,
+        SpotOrderType::LimitSell => market_price >= order_price,
+        SpotOrderType::StopLoss => market_price <= order_price,
         _ => false,
     }
 }
