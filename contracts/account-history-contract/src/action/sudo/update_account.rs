@@ -186,19 +186,14 @@ fn create_new_part(
         Expiration::Never {} => panic!("never expire"),
     };
 
-    let mut a = false;
-
     let available_asset_balance: Vec<CoinValue> = account_balances
         .iter()
         .map(
             |coin| match CoinValue::from_coin(coin, querier, value_denom) {
-                Ok(res) => {
-                    a = true;
-                    res
-                }
+                Ok(res) => res,
                 Err(_) => CoinValue {
                     denom: coin.denom.to_owned(),
-                    amount: Decimal::zero(),
+                    amount: Decimal::from_atomics(coin.amount, 6 as u32).unwrap(),
                     price: Decimal::zero(),
                     value: Decimal::zero(),
                 },
@@ -213,7 +208,7 @@ fn create_new_part(
                 Ok(res) => res,
                 Err(_) => CoinValue {
                     denom: coin.denom.to_owned(),
-                    amount: Decimal::zero(),
+                    amount: Decimal::from_atomics(coin.amount, 6 as u32).unwrap(),
                     price: Decimal::zero(),
                     value: Decimal::zero(),
                 },
@@ -243,7 +238,7 @@ fn create_new_part(
             .entry(&available.denom)
             .and_modify(|e| {
                 e.amount += available.amount.clone();
-                e.value = available.value.clone();
+                e.value += available.value.clone();
             })
             .or_insert_with(|| available.clone());
     }
@@ -253,7 +248,7 @@ fn create_new_part(
             .entry(&in_order.denom)
             .and_modify(|e| {
                 e.amount += in_order.amount.clone();
-                e.value = in_order.value.clone();
+                e.value += in_order.value.clone();
             })
             .or_insert_with(|| in_order.clone());
     }

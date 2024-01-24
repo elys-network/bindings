@@ -291,11 +291,14 @@ case "$2" in
     "user_value")
         user_value
         ;;
-    "swap_estimation_by_denom_uelys_usdc_uelys")
+    "swap_estimation_by_denom_elys_usdc_elys")
         swap_estimation_by_denom uelys $usdc_denom uelys
         ;;
     "swap_estimation_by_denom_usdc_usdc_usdc")
         swap_estimation_by_denom $usdc_denom $usdc_denom $usdc_denom
+        ;;
+    "swap_estimation_by_denom_usdc_usdc_atom")
+        swap_estimation_by_denom $usdc_denom $usdc_denom $atom_denom
         ;;
     "all_prices")
         all_prices
@@ -361,6 +364,7 @@ case "$2" in
         user_value
         swap_estimation_by_denom uelys $usdc_denom uelys
         swap_estimation_by_denom $usdc_denom $usdc_denom $usdc_denom
+        swap_estimation_by_denom $usdc_denom $usdc_denom $atom_denom
         all_prices
         asset_info
         spot_order

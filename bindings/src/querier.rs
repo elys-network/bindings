@@ -156,11 +156,20 @@ impl<'a> ElysQuerier<'a> {
         Ok(resp)
     }
 
+    pub fn get_all_asset_profile(
+        &self,
+        pagination: Option<PageRequest>,
+    ) -> StdResult<QueryGetEntryAllResponse> {
+        let all_asset_profile = ElysQuery::get_all_asset_profile(pagination);
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(all_asset_profile);
+        let resp = self.querier.query(&request)?;
+        Ok(resp)
+    }
+
     pub fn get_asset_profile(&self, base_denom: String) -> StdResult<QueryGetEntryResponse> {
         let asset_profile = ElysQuery::get_asset_profile(base_denom.to_owned());
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(asset_profile);
-        let QueryGetEntryResponseRaw { entry: raw_entry }: QueryGetEntryResponseRaw =
-            self.querier.query(&request)?;
+        let QueryGetEntryResponseRaw { entry: raw_entry } = self.querier.query(&request)?;
 
         let resp = QueryGetEntryResponse {
             entry: Entry {
