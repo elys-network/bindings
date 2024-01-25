@@ -1,6 +1,6 @@
+use crate::{query_resp::AmmSwapEstimationByDenomResponse, types::Mtp, ElysQuerier};
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{coin, Decimal, Order, SignedDecimal, StdError, StdResult, Storage};
-use crate::{query_resp::AmmSwapEstimationByDenomResponse, types::Mtp, ElysQuerier};
 
 use crate::trade_shield::{states::PENDING_MARGIN_ORDER, types::MarginOrder};
 
@@ -8,10 +8,10 @@ use super::{MarginOrderType, OrderPrice};
 
 #[cw_serde]
 pub struct MarginPositionPlus {
-    mtp: Mtp,
-    unrealized_pnl: SignedDecimal,
-    liquidation_price: SignedDecimal,
-    stop_loss_price: Option<OrderPrice>,
+    pub mtp: Mtp,
+    pub unrealized_pnl: SignedDecimal,
+    pub liquidation_price: SignedDecimal,
+    pub stop_loss_price: Option<OrderPrice>,
 }
 
 impl MarginPositionPlus {

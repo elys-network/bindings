@@ -9,7 +9,9 @@ use elys_bindings::{
     query_resp::AmmSwapEstimationByDenomResponse,
     trade_shield::{
         msg::{
-            query_resp::{GetMarginOrdersResp, GetSpotOrdersResp},
+            query_resp::{
+                GetMarginOrdersResp, GetMarginPositionsForAddressResp, GetSpotOrdersResp,
+            },
             QueryMsg,
         },
         types::{MarginOrder, MarginOrderType, SpotOrder, Status},
@@ -24,8 +26,8 @@ use crate::{
     msg::query_resp::{GetRewardsResp, StakedAssetsResponse},
     types::{
         earn_program::{EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram},
-        AccountSnapshot, CoinValue, ElysDenom, LiquidAsset, Portfolio, Reward, StakedAssets,
-        TotalBalance,
+        AccountSnapshot, CoinValue, ElysDenom, LiquidAsset, PerpetualAsset, PerpetualAssets,
+        Portfolio, Reward, StakedAssets, TotalBalance,
     },
 };
 use elys_bindings::{query_resp::QueryAprResponse, types::EarnType};
@@ -146,6 +148,12 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             edenb_apr_elys.to_owned(),
         );
         let rewards_response = get_rewards(deps.as_ref(), address.clone())?;
+        let perpetual_response = get_perpetuals(
+            deps.as_ref(),
+            trade_shield_address.clone(),
+            &value_denom,
+            address.clone(),
+        )?;
 
         let new_part = create_new_part(
             &env.block,
@@ -155,6 +163,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             order_balances,
             staked_response,
             rewards_response,
+            perpetual_response,
             &value_denom,
         )?;
         if let Some(part) = new_part {
@@ -178,6 +187,7 @@ fn create_new_part(
     orders_balances: Vec<Coin>,
     staked_assets_resp: StakedAssetsResponse,
     rewards_response: GetRewardsResp,
+    perpetual_response: PerpetualAssets,
     value_denom: &String,
 ) -> StdResult<Option<AccountSnapshot>> {
     let date = match expiration {
@@ -313,6 +323,7 @@ fn create_new_part(
             total_value_per_asset,
         },
         staked_assets: staked_assets_resp.staked_assets,
+        perpetual_assets: perpetual_response,
     }))
 }
 
@@ -607,4 +618,40 @@ pub fn get_rewards(deps: Deps<ElysQuery>, address: String) -> StdResult<GetRewar
 
     let resp = GetRewardsResp { rewards: rewards };
     Ok(resp)
+}
+
+fn get_perpetuals(
+    deps: Deps<ElysQuery>,
+    trade_shield_address: String,
+    value_denom: &String,
+    address: String,
+) -> StdResult<PerpetualAssets> {
+    let GetMarginPositionsForAddressResp { mtps, .. } = deps.querier.query_wasm_smart(
+        trade_shield_address,
+        &QueryMsg::MarginGetPositionsForAddress {
+            address,
+            pagination: None,
+        },
+    )?;
+    let mut perpetual_vec: Vec<PerpetualAsset> = vec![];
+    let querier = ElysQuerier::new(&deps.querier);
+
+    for mtp in mtps {
+        match PerpetualAsset::new(mtp, value_denom.to_owned(), &querier) {
+            Ok(perpetual_asset) => perpetual_vec.push(perpetual_asset),
+            Err(_) => continue,
+        }
+    }
+
+    let total_perpetual_pools_balance_amount = perpetual_vec
+        .iter()
+        .map(|perpetual| perpetual.size.amount)
+        .fold(Decimal256::zero(), |acc, item| acc + item);
+    let total_perpetual_pools_balance =
+        DecCoin::new(total_perpetual_pools_balance_amount, value_denom.to_owned());
+
+    Ok(PerpetualAssets {
+        total_perpetual_pools_balance,
+        perpetual_asset: perpetual_vec,
+    })
 }

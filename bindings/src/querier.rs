@@ -234,7 +234,7 @@ impl<'a> ElysQuerier<'a> {
     pub fn margin_get_position_for_address(
         &self,
         address: impl Into<String>,
-        pagination: PageRequest,
+        pagination: Option<PageRequest>,
     ) -> StdResult<MarginGetPositionsForAddressResponse> {
         let request = QueryRequest::Custom(ElysQuery::margin_get_position_for_address(
             address.into(),
