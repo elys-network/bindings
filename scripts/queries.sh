@@ -123,6 +123,16 @@ function staked_assets() {
     }'
 }
 
+# Get perpetual assets
+function perpetual_assets() {
+    printf "\n# Perpertual assets\n"
+    query_contract "$ah_contract_address" '{
+        "get_perpetual_assets": {
+            "user_address": "'"$user_address"'"
+        }
+    }'
+}
+
 # Get user value
 function user_value() {
     printf "\n# User value\n"
@@ -292,6 +302,9 @@ case "$2" in
     "staked_assets")
         staked_assets
         ;;
+    "perpetual_assets")
+        perpetual_assets
+        ;;
     "user_value")
         user_value
         ;;
@@ -374,6 +387,7 @@ case "$2" in
         rewards
         liquid_assets
         staked_assets
+        perpetual_assets
         user_value
         swap_estimation_by_denom 1000000 uelys $usdc_denom uelys
         swap_estimation_by_denom 1000000 $usdc_denom $usdc_denom $usdc_denom

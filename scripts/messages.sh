@@ -131,6 +131,39 @@ function create_spot_order_as_market_buy() {
         "1000000$usdc_denom"
 }
 
+# Create margin order as market open
+function create_margin_order_as_market_open() {
+    printf "\n# Create margin order as market open\n"
+    execute_message \
+        "$ts_contract_address" \
+        '{
+            "create_margin_order": {
+                "position": "long",
+                "leverage": "5",
+                "trading_asset": "'"$atom_denom"'",
+                "take_profit_price": "100",
+                "order_type": "market_open"
+            }
+        }' \
+        wasm-create_margin_order \
+        "100000000$usdc_denom"
+}
+
+# Margin open estimation
+function margin_open_estimation() {
+    printf "\n# Margin open estimation\n"
+    query_contract "$ts_contract_address" '{
+        "margin_open_estimation": {
+            "position": "long",
+            "leverage": "5",
+            "trading_asset": "'"$atom_denom"'",
+            "collateral": {"denom": "'"$usdc_denom"'", "amount": "100000000"},
+            "take_profit_price": "100",
+            "user_address": "'"$user_address"'"
+        }
+    }'
+}
+
 # Cancel spot order
 function cancel_spot_order() {
     order_id=$1
@@ -150,10 +183,7 @@ function all_spot_orders() {
     printf "\n# Get all spot orders\n"
     query_contract "$ts_contract_address" '{
         "get_spot_orders": {
-            "pagination": null,
-            "order_owner": "'"$user_address"'",
-            "order_type": null,
-            "order_status": null
+            "order_owner": "'"$user_address"'"
         }
     }'
 }
@@ -165,6 +195,16 @@ function spot_order() {
     query_contract "$ts_contract_address" '{
         "get_spot_order": {
             "order_id": '"$order_id"'
+        }
+    }'
+}
+
+# Get all margin orders
+function all_margin_orders() {
+    printf "\n# Get all margin orders\n"
+    query_contract "$ts_contract_address" '{
+        "get_margin_orders": {
+            "order_owner": "'"$user_address"'"
         }
     }'
 }
@@ -192,11 +232,21 @@ case "$1" in
     "cancel_spot_order")
         cancel_spot_order $2
         ;;
+    "create_margin_order_as_market_open")
+        create_margin_order_as_market_open
+        ;;
+    "margin_open_estimation")
+        margin_open_estimation
+        ;;
+    "all_margin_orders")
+        all_margin_orders
+        ;;
 
     *)
         # Default case: run all functions
         create_spot_order
         all_spot_orders
         cancel_spot_order
+        all_margin_orders
         ;;
 esac
