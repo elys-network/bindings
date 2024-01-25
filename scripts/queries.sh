@@ -310,6 +310,9 @@ case "$2" in
     "swap_estimation_by_denom_usdc_usdc_atom_with_large_amount")
         swap_estimation_by_denom 112234000000 $usdc_denom $usdc_denom $atom_denom
         ;;
+    "swap_estimation_by_denom_atom_atom_usdc_with_small_amount")
+        swap_estimation_by_denom 213565 $atom_denom $atom_denom $usdc_denom
+        ;;
     "all_prices")
         all_prices
         ;;
@@ -372,9 +375,12 @@ case "$2" in
         liquid_assets
         staked_assets
         user_value
-        swap_estimation_by_denom uelys $usdc_denom uelys
-        swap_estimation_by_denom $usdc_denom $usdc_denom $usdc_denom
-        swap_estimation_by_denom $usdc_denom $usdc_denom $atom_denom
+        swap_estimation_by_denom 1000000 uelys $usdc_denom uelys
+        swap_estimation_by_denom 1000000 $usdc_denom $usdc_denom $usdc_denom
+        swap_estimation_by_denom 1000000 $usdc_denom $usdc_denom $atom_denom
+        swap_estimation_by_denom 1000000 $atom_denom $atom_denom $usdc_denom
+        swap_estimation_by_denom 112234000000 $usdc_denom $usdc_denom $atom_denom
+        swap_estimation_by_denom 213565 $atom_denom $atom_denom $usdc_denom
         all_prices
         asset_info
         spot_order
