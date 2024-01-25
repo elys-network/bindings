@@ -308,7 +308,7 @@ fn create_new_part(
             ),
             liquidity_positions_usd: DecCoin::new(Decimal256::zero(), value_denom),
             leverage_lp_usd: DecCoin::new(Decimal256::zero(), value_denom),
-            margin_usd: DecCoin::new(Decimal256::zero(), value_denom),
+            margin_usd: perpetual_response.total_perpetual_pools_balance.clone(),
             usdc_earn_usd: DecCoin::new(Decimal256::zero(), value_denom),
             borrows_usd: DecCoin::new(Decimal256::zero(), value_denom),
         },
