@@ -1,5 +1,5 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, Decimal, StdError, StdResult, Uint128};
+use cosmwasm_std::{Coin, Decimal, StdError, StdResult};
 use elys_bindings::{
     query_resp::{AmmSwapEstimationByDenomResponse, OracleAssetInfoResponse},
     types::OracleAssetInfo,
