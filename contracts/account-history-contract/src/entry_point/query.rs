@@ -1,8 +1,8 @@
 use super::*;
 use crate::{
     action::query::{
-        get_liquid_assets, get_membership_tier, get_portfolio, get_rewards, get_staked_assets,
-        get_total_balance, params, user_value,
+        get_liquid_assets, get_membership_tier, get_perpetuals_assets, get_portfolio, get_rewards,
+        get_staked_assets, get_total_balance, params, user_value,
     },
     states::HISTORY,
     types::AccountSnapshot,
@@ -44,6 +44,9 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         GetRewards { user_address } => to_json_binary(&get_rewards(deps, user_address)?),
         GetMembershipTier { user_address } => {
             to_json_binary(&get_membership_tier(deps, env.block, user_address)?)
+        }
+        GetPerpetualAssets { user_address } => {
+            to_json_binary(&get_perpetuals_assets(deps, user_address)?)
         }
     }
 }

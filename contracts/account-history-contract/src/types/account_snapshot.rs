@@ -1,7 +1,7 @@
 use cosmwasm_schema::cw_serde;
 use cw_utils::Expiration;
 
-use super::{LiquidAsset, Portfolio, Reward, StakedAssets, TotalBalance};
+use super::{LiquidAsset, PerpetualAssets, Portfolio, Reward, StakedAssets, TotalBalance};
 
 #[cw_serde]
 pub struct AccountSnapshot {
@@ -11,6 +11,7 @@ pub struct AccountSnapshot {
     pub reward: Reward,
     pub liquid_asset: LiquidAsset,
     pub staked_assets: StakedAssets,
+    pub perpetual_assets: PerpetualAssets,
 }
 
 impl AccountSnapshot {
@@ -22,6 +23,7 @@ impl AccountSnapshot {
             reward: Reward::default(),
             liquid_asset: LiquidAsset::zero(value_denom),
             staked_assets: StakedAssets::default(),
+            perpetual_assets: PerpetualAssets::default(),
         }
     }
 }
@@ -36,6 +38,7 @@ impl Default for AccountSnapshot {
             reward: Reward::default(),
             liquid_asset: LiquidAsset::default(),
             staked_assets: StakedAssets::default(),
+            perpetual_assets: PerpetualAssets::default(),
         }
     }
 }

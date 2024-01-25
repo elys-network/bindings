@@ -1,11 +1,11 @@
 #[allow(unused_imports)]
 use super::query_resp::*;
-use crate::trade_shield::types::{MarginOrderType, SpotOrderType, Status};
-use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::{Coin, SignedDecimal, SignedDecimal256};
 #[allow(unused_imports)]
 use crate::query_resp::*;
+use crate::trade_shield::types::{MarginOrderType, SpotOrderType, Status};
 use crate::types::{MarginPosition, PageRequest};
+use cosmwasm_schema::{cw_serde, QueryResponses};
+use cosmwasm_std::{Coin, SignedDecimal, SignedDecimal256};
 
 #[cw_serde]
 #[derive(QueryResponses)]
@@ -55,6 +55,6 @@ pub enum QueryMsg {
     #[returns(MarginGetPositionsForAddressResponse)]
     MarginGetPositionsForAddress {
         address: String,
-        pagination: PageRequest,
+        pagination: Option<PageRequest>,
     },
 }

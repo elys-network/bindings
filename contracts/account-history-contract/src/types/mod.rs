@@ -1,6 +1,7 @@
 mod account_snapshot;
 mod coin_value;
 mod liquid_asset;
+mod perpetual_assets;
 mod portfolio;
 mod reward;
 mod staked_assets;
@@ -39,5 +40,6 @@ pub use portfolio::Portfolio;
 pub use total_balance::TotalBalance;
 
 pub use liquid_asset::LiquidAsset;
+pub use perpetual_assets::*;
 pub use reward::Reward;
 pub use staked_assets::StakedAssets;
