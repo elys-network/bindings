@@ -135,16 +135,20 @@ function user_value() {
 
 # Swap estimation by denom
 function swap_estimation_by_denom() {
-    printf "\n# Swap estimation by denom with $1, $2, $3\n"
+    amount=$1
+    denom=$2
+    denom_in=$3
+    denom_out=$4
+    printf "\n# Swap estimation by denom with amount="$amount""$amount_denom", denom_in="$denom_in", denom_out="$denom_out"\n"
     query_contract "$ts_contract_address" '{
         "swap_estimation_by_denom": {
             "user_address": "'"$user_address"'",
             "amount": {
-                "amount": "1000000",
-                "denom": "'"$1"'"
+                "amount": "'"$amount"'",
+                "denom": "'"$denom"'"
             },
-            "denom_in": "'"$2"'",
-            "denom_out": "'"$3"'"
+            "denom_in": "'"$denom_in"'",
+            "denom_out": "'"$denom_out"'"
         }
     }'
 }
@@ -292,13 +296,22 @@ case "$2" in
         user_value
         ;;
     "swap_estimation_by_denom_elys_usdc_elys")
-        swap_estimation_by_denom uelys $usdc_denom uelys
+        swap_estimation_by_denom 1000000 uelys $usdc_denom uelys
         ;;
     "swap_estimation_by_denom_usdc_usdc_usdc")
-        swap_estimation_by_denom $usdc_denom $usdc_denom $usdc_denom
+        swap_estimation_by_denom 1000000 $usdc_denom $usdc_denom $usdc_denom
         ;;
     "swap_estimation_by_denom_usdc_usdc_atom")
-        swap_estimation_by_denom $usdc_denom $usdc_denom $atom_denom
+        swap_estimation_by_denom 1000000 $usdc_denom $usdc_denom $atom_denom
+        ;;
+    "swap_estimation_by_denom_atom_atom_usdc")
+        swap_estimation_by_denom 1000000 $atom_denom $atom_denom $usdc_denom
+        ;;
+    "swap_estimation_by_denom_usdc_usdc_atom_with_large_amount")
+        swap_estimation_by_denom 112234000000 $usdc_denom $usdc_denom $atom_denom
+        ;;
+    "swap_estimation_by_denom_atom_atom_usdc_with_small_amount")
+        swap_estimation_by_denom 213565 $atom_denom $atom_denom $usdc_denom
         ;;
     "all_prices")
         all_prices
@@ -362,9 +375,12 @@ case "$2" in
         liquid_assets
         staked_assets
         user_value
-        swap_estimation_by_denom uelys $usdc_denom uelys
-        swap_estimation_by_denom $usdc_denom $usdc_denom $usdc_denom
-        swap_estimation_by_denom $usdc_denom $usdc_denom $atom_denom
+        swap_estimation_by_denom 1000000 uelys $usdc_denom uelys
+        swap_estimation_by_denom 1000000 $usdc_denom $usdc_denom $usdc_denom
+        swap_estimation_by_denom 1000000 $usdc_denom $usdc_denom $atom_denom
+        swap_estimation_by_denom 1000000 $atom_denom $atom_denom $usdc_denom
+        swap_estimation_by_denom 112234000000 $usdc_denom $usdc_denom $atom_denom
+        swap_estimation_by_denom 213565 $atom_denom $atom_denom $usdc_denom
         all_prices
         asset_info
         spot_order

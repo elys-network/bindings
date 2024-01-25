@@ -1,5 +1,5 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, Decimal, StdError, StdResult, Uint128};
+use cosmwasm_std::{Coin, Decimal, StdError, StdResult};
 use elys_bindings::{
     query_resp::{AmmSwapEstimationByDenomResponse, OracleAssetInfoResponse},
     types::OracleAssetInfo,
@@ -41,7 +41,6 @@ impl CoinValue {
             },
         };
         let decimal_point_coin = asset_info.decimal;
-        let big_denom_unit = u64::checked_pow(10, decimal_point_coin as u32).unwrap();
 
         if &coin.denom == value_denom {
             let amount = Decimal::from_atomics(coin.amount, decimal_point_coin as u32)
@@ -54,23 +53,12 @@ impl CoinValue {
             });
         }
 
-        // if the amount is too small, we should use big denom amount instead in order to avoid crashing from amm module
-        let coin_to_estimate = Coin {
-            denom: coin.denom.clone(),
-            amount: coin.amount.max(Uint128::from(big_denom_unit)),
-        };
-
         let AmmSwapEstimationByDenomResponse {
             spot_price: price,
             amount: whole_value,
             ..
         } = querier
-            .amm_swap_estimation_by_denom(
-                &coin_to_estimate,
-                &coin.denom,
-                value_denom,
-                &Decimal::zero(),
-            )
+            .amm_swap_estimation_by_denom(&coin, &coin.denom, value_denom, &Decimal::zero())
             .map_err(|_e| StdError::generic_err("52"))?;
 
         // invert the price

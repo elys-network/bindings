@@ -93,7 +93,9 @@ printf "\n# User address: %s\n" "$user_address"
 
 # Create spot order
 function create_spot_order() {
-    printf "\n# Create spot order\n"
+    order_type=$1
+    order_price=$2
+    printf "\n# Create spot order as $1\n"
     execute_message \
         "$ts_contract_address" \
         '{
@@ -101,9 +103,26 @@ function create_spot_order() {
                 "order_price": {
                     "base_denom": "'"$usdc_denom"'",
                     "quote_denom": "'"$atom_denom"'",
-                    "rate": "0.1"
+                    "rate": "'"$order_price"'"
                 },
-                "order_type": "limit_buy",
+                "order_type": "'"$order_type"'",
+                "order_target_denom": "'"$atom_denom"'",
+                "order_source_denom": "'"$usdc_denom"'"
+            }
+        }' \
+        wasm-create_spot_order \
+        "1000000$usdc_denom"
+}
+
+# Create spot order as market buy
+function create_spot_order_as_market_buy() {
+    printf "\n# Create spot order as market buy\n"
+    execute_message \
+        "$ts_contract_address" \
+        '{
+            "create_spot_order": {
+                "order_price": null,
+                "order_type": "market_buy",
                 "order_target_denom": "'"$atom_denom"'",
                 "order_source_denom": "'"$usdc_denom"'"
             }
@@ -114,12 +133,13 @@ function create_spot_order() {
 
 # Cancel spot order
 function cancel_spot_order() {
-    printf "\n# Cancel spot order with id $1\n"
+    order_id=$1
+    printf "\n# Cancel spot order with id $order_id\n"
     execute_message \
         "$ts_contract_address" \
         '{
             "cancel_spot_order": {
-                "order_id": '$1'
+                "order_id": '"$order_id"'
             }
         }' \
         wasm-cancel_spot_order
@@ -138,16 +158,39 @@ function all_spot_orders() {
     }'
 }
 
+# Get spot order
+function spot_order() {
+    order_id=$1
+    printf "\n# Spot order for id $order_id\n"
+    query_contract "$ts_contract_address" '{
+        "get_spot_order": {
+            "order_id": '"$order_id"'
+        }
+    }'
+}
+
 # function(s) to run based on the provided argument
 case "$1" in
-    "create_spot_order")
-        create_spot_order
+    "create_spot_order_as_market_buy")
+        create_spot_order_as_market_buy
+        ;;
+    "create_spot_order_as_limit_buy")
+        create_spot_order "limit_buy" 0.1
+        ;;
+    "create_spot_order_as_limit_sell")
+        create_spot_order "limit_sell" 100
+        ;;
+    "create_spot_order_as_stop_loss")
+        create_spot_order "stop_loss" 0.1
         ;;
     "all_spot_orders")
         all_spot_orders
         ;;
+    "spot_order")
+        spot_order $2
+        ;;
     "cancel_spot_order")
-        cancel_spot_order "$2"
+        cancel_spot_order $2
         ;;
 
     *)
