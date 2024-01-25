@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use super::query_resp::*;
 #[allow(unused_imports)]
-use crate::types::AccountSnapshot;
+use crate::types::{AccountSnapshot, PerpetualAssets};
 use cosmwasm_schema::{cw_serde, QueryResponses};
 #[allow(unused_imports)]
 use elys_bindings::query_resp::AuthAddressesResponse;
@@ -32,4 +32,6 @@ pub enum QueryMsg {
     GetRewards { user_address: String },
     #[returns(MembershipTierResponse)]
     GetMembershipTier { user_address: String },
+    #[returns(PerpetualAssets)]
+    GetPerpetualAssets { user_address: String },
 }

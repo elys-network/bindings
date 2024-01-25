@@ -13,6 +13,7 @@ pub mod query {
     mod get_liquid_assets;
     use crate::error::ContractError;
     mod get_membership_tier;
+    mod get_perpetual_asset;
     mod get_portfolio;
     mod get_rewards;
     mod get_total_balance;
@@ -32,6 +33,7 @@ pub mod query {
     pub use get_usdc_earn_program_details::get_usdc_earn_program_details;
     mod get_staked_assets;
     pub use get_membership_tier::get_membership_tier;
+    pub use get_perpetual_asset::get_perpetuals_assets;
     pub use get_portfolio::get_portfolio;
     pub use get_rewards::get_rewards;
     pub use get_staked_assets::get_staked_assets;

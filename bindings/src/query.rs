@@ -49,7 +49,7 @@ pub enum ElysQuery {
     #[returns(MarginGetPositionsForAddressResponse)]
     MarginGetPositionsForAddress {
         address: String,
-        pagination: PageRequest,
+        pagination: Option<PageRequest>,
     },
     // Define AuthQuery
     #[returns(AuthAddressesResponse)]
@@ -177,7 +177,10 @@ impl ElysQuery {
     pub fn get_all_asset_profile(pagination: Option<PageRequest>) -> Self {
         Self::AssetProfileEntryAll { pagination }
     }
-    pub fn margin_get_position_for_address(address: String, pagination: PageRequest) -> Self {
+    pub fn margin_get_position_for_address(
+        address: String,
+        pagination: Option<PageRequest>,
+    ) -> Self {
         Self::MarginGetPositionsForAddress {
             address,
             pagination,
