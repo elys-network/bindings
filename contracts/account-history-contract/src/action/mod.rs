@@ -33,7 +33,7 @@ pub mod query {
     pub use get_usdc_earn_program_details::get_usdc_earn_program_details;
     mod get_staked_assets;
     pub use get_membership_tier::get_membership_tier;
-    pub use get_perpetual_asset::get_perpetuals_asset;
+    pub use get_perpetual_asset::get_perpetuals_assets;
     pub use get_portfolio::get_portfolio;
     pub use get_rewards::get_rewards;
     pub use get_staked_assets::get_staked_assets;

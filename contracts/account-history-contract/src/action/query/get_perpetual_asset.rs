@@ -3,7 +3,7 @@ use elys_bindings::ElysQuery;
 
 use crate::{states::HISTORY, types::PerpetualAssets};
 
-pub fn get_perpetuals_asset(deps: Deps<ElysQuery>, address: String) -> StdResult<PerpetualAssets> {
+pub fn get_perpetuals_assets(deps: Deps<ElysQuery>, address: String) -> StdResult<PerpetualAssets> {
     let snapshots = HISTORY.may_load(deps.storage, &address)?;
 
     let perpetual_assets = match snapshots {

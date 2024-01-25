@@ -33,5 +33,5 @@ pub enum QueryMsg {
     #[returns(MembershipTierResponse)]
     GetMembershipTier { user_address: String },
     #[returns(PerpetualAssets)]
-    GetPerpetualsAsset { user_address: String },
+    GetPerpetualAssets { user_address: String },
 }
