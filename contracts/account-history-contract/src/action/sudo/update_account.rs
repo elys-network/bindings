@@ -281,14 +281,13 @@ fn create_new_part(
             .amount
             .checked_add(Decimal256::from(
                 staked_assets_resp.total_staked_balance.amount,
-            ))?,
+            ))?
+            .checked_add(perpetual_response.total_perpetual_pools_balance.amount)?,
         value_denom,
     );
     let reward_usd: DecCoin = DecCoin::new(Decimal256::from(reward.clone().total_usd), value_denom);
     let total_balance = DecCoin::new(
-        total_liquid_asset_balance
-            .amount
-            .checked_add(reward_usd.amount)?,
+        portfolio_usd.amount.checked_add(reward_usd.amount)?,
         value_denom,
     );
 
