@@ -49,20 +49,26 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
 
     // Read common variables before looping
     // To enhance querying speed.
-    let usdc_denom_entry = querier.get_asset_profile(ElysDenom::Usdc.as_str().to_string())?;
+    let usdc_denom_entry = querier
+        .get_asset_profile(ElysDenom::Usdc.as_str().to_string())
+        .map_err(|_| StdError::generic_err("line 54"))?;
     let usdc_denom = usdc_denom_entry.entry.denom;
     let usdc_display_denom = usdc_denom_entry.entry.display_name;
     let usdc_decimal = u64::checked_pow(10, usdc_denom_entry.entry.decimals as u32).unwrap();
 
-    let eden_denom_entry = querier.get_asset_profile(ElysDenom::Eden.as_str().to_string())?;
+    let eden_denom_entry = querier
+        .get_asset_profile(ElysDenom::Eden.as_str().to_string())
+        .map_err(|_| StdError::generic_err("line 61"))?;
     let eden_decimal = u64::checked_pow(10, eden_denom_entry.entry.decimals as u32).unwrap();
 
     let discount = Decimal::zero();
-    let usdc_oracle_price = querier.get_oracle_price(
-        usdc_display_denom.clone(),
-        ElysDenom::AnySource.as_str().to_string(),
-        0,
-    )?;
+    let usdc_oracle_price = querier
+        .get_oracle_price(
+            usdc_display_denom.clone(),
+            ElysDenom::AnySource.as_str().to_string(),
+            0,
+        )
+        .map_err(|_| StdError::generic_err("line 71"))?;
     let uusdc_usd_price = usdc_oracle_price
         .price
         .price
@@ -77,49 +83,69 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     )?;
 
     // APR section
-    let usdc_apr_usdc = querier.get_incentive_apr(
-        EarnType::UsdcProgram as i32,
-        ElysDenom::Usdc.as_str().to_string(),
-    )?;
-    let eden_apr_usdc = querier.get_incentive_apr(
-        EarnType::UsdcProgram as i32,
-        ElysDenom::Eden.as_str().to_string(),
-    )?;
+    let usdc_apr_usdc = querier
+        .get_incentive_apr(
+            EarnType::UsdcProgram as i32,
+            ElysDenom::Usdc.as_str().to_string(),
+        )
+        .map_err(|_| StdError::generic_err("line 89"))?;
+    let eden_apr_usdc = querier
+        .get_incentive_apr(
+            EarnType::UsdcProgram as i32,
+            ElysDenom::Eden.as_str().to_string(),
+        )
+        .map_err(|_| StdError::generic_err("line 89"))?;
 
-    let usdc_apr_edenb = querier.get_incentive_apr(
-        EarnType::EdenBProgram as i32,
-        ElysDenom::Usdc.as_str().to_string(),
-    )?;
-    let eden_apr_edenb = querier.get_incentive_apr(
-        EarnType::EdenBProgram as i32,
-        ElysDenom::Eden.as_str().to_string(),
-    )?;
+    let usdc_apr_edenb = querier
+        .get_incentive_apr(
+            EarnType::EdenBProgram as i32,
+            ElysDenom::Usdc.as_str().to_string(),
+        )
+        .map_err(|_| StdError::generic_err("line 89"))?;
+    let eden_apr_edenb = querier
+        .get_incentive_apr(
+            EarnType::EdenBProgram as i32,
+            ElysDenom::Eden.as_str().to_string(),
+        )
+        .map_err(|_| StdError::generic_err("line 89"))?;
 
-    let usdc_apr_eden = querier.get_incentive_apr(
-        EarnType::EdenProgram as i32,
-        ElysDenom::Usdc.as_str().to_string(),
-    )?;
-    let eden_apr_eden = querier.get_incentive_apr(
-        EarnType::EdenProgram as i32,
-        ElysDenom::Eden.as_str().to_string(),
-    )?;
-    let edenb_apr_eden = querier.get_incentive_apr(
-        EarnType::EdenProgram as i32,
-        ElysDenom::EdenBoost.as_str().to_string(),
-    )?;
+    let usdc_apr_eden = querier
+        .get_incentive_apr(
+            EarnType::EdenProgram as i32,
+            ElysDenom::Usdc.as_str().to_string(),
+        )
+        .map_err(|_| StdError::generic_err("line 89"))?;
+    let eden_apr_eden = querier
+        .get_incentive_apr(
+            EarnType::EdenProgram as i32,
+            ElysDenom::Eden.as_str().to_string(),
+        )
+        .map_err(|_| StdError::generic_err("line 89"))?;
+    let edenb_apr_eden = querier
+        .get_incentive_apr(
+            EarnType::EdenProgram as i32,
+            ElysDenom::EdenBoost.as_str().to_string(),
+        )
+        .map_err(|_| StdError::generic_err("line 89"))?;
 
-    let usdc_apr_elys = querier.get_incentive_apr(
-        EarnType::ElysProgram as i32,
-        ElysDenom::Usdc.as_str().to_string(),
-    )?;
-    let eden_apr_elys = querier.get_incentive_apr(
-        EarnType::ElysProgram as i32,
-        ElysDenom::Eden.as_str().to_string(),
-    )?;
-    let edenb_apr_elys = querier.get_incentive_apr(
-        EarnType::ElysProgram as i32,
-        ElysDenom::EdenBoost.as_str().to_string(),
-    )?;
+    let usdc_apr_elys = querier
+        .get_incentive_apr(
+            EarnType::ElysProgram as i32,
+            ElysDenom::Usdc.as_str().to_string(),
+        )
+        .map_err(|_| StdError::generic_err("line 89"))?;
+    let eden_apr_elys = querier
+        .get_incentive_apr(
+            EarnType::ElysProgram as i32,
+            ElysDenom::Eden.as_str().to_string(),
+        )
+        .map_err(|_| StdError::generic_err("line 89"))?;
+    let edenb_apr_elys = querier
+        .get_incentive_apr(
+            EarnType::ElysProgram as i32,
+            ElysDenom::EdenBoost.as_str().to_string(),
+        )
+        .map_err(|_| StdError::generic_err("line 89"))?;
 
     for address in resp.addresses {
         let mut history = if let Some(history) = HISTORY.may_load(deps.storage, &address)? {
@@ -636,13 +662,16 @@ fn get_perpetuals(
     value_denom: &String,
     address: String,
 ) -> StdResult<PerpetualAssets> {
-    let GetMarginPositionsForAddressResp { mtps, .. } = deps.querier.query_wasm_smart(
-        trade_shield_address,
-        &QueryMsg::MarginGetPositionsForAddress {
-            address,
-            pagination: None,
-        },
-    )?;
+    let GetMarginPositionsForAddressResp { mtps, .. } = deps
+        .querier
+        .query_wasm_smart(
+            trade_shield_address,
+            &QueryMsg::MarginGetPositionsForAddress {
+                address,
+                pagination: None,
+            },
+        )
+        .map_err(|_| StdError::generic_err("line 645"))?;
     let mut perpetual_vec: Vec<PerpetualAsset> = vec![];
     let querier = ElysQuerier::new(&deps.querier);
 
