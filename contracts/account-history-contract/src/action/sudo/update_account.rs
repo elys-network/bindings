@@ -148,12 +148,18 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             edenb_apr_elys.to_owned(),
         );
         let rewards_response = get_rewards(deps.as_ref(), address.clone())?;
-        let perpetual_response = get_perpetuals(
+        let perpetual_response = match get_perpetuals(
             deps.as_ref(),
             trade_shield_address.clone(),
             &value_denom,
             address.clone(),
-        )?;
+        ) {
+            Ok(perpetual_response) => perpetual_response,
+            Err(_) => PerpetualAssets {
+                total_perpetual_asset_balance: DecCoin::new(Decimal256::zero(), &value_denom),
+                perpetual_asset: vec![],
+            },
+        };
 
         let new_part = create_new_part(
             &env.block,
@@ -280,9 +286,14 @@ fn create_new_part(
         total_liquid_asset_balance
             .amount
             .checked_add(Decimal256::from(
-                staked_assets_resp.total_staked_balance.amount,
+                staked_assets_resp.total_staked_balance.amount.clone(),
             ))?
-            .checked_add(perpetual_response.total_perpetual_asset_balance.amount)?,
+            .checked_add(
+                perpetual_response
+                    .total_perpetual_asset_balance
+                    .amount
+                    .clone(),
+            )?,
         value_denom,
     );
     let reward_usd: DecCoin = DecCoin::new(Decimal256::from(reward.clone().total_usd), value_denom);
