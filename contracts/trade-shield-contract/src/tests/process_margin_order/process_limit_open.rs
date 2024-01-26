@@ -32,7 +32,7 @@ fn successful_process_limit_buy_order() {
         &coin(120, "usdc"),
         "ubtc",
         &SignedDecimal::from_str("1.1").unwrap(),
-        &SignedDecimal256::from_str("1.1").unwrap(),
+        &Some(SignedDecimal256::from_str("1.1").unwrap()),
         &Some(OrderPrice {
             base_denom: "ubtc".to_string(),
             quote_denom: "usdc".to_string(),

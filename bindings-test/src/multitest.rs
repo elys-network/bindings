@@ -295,7 +295,10 @@ impl Module for ElysModule {
                     position_size: coin(1, "btc"),
                     swap_fee: Decimal::zero(),
                     open_price: Decimal::zero(),
-                    take_profit_price,
+                    take_profit_price: match take_profit_price {
+                        Some(expr) => expr,
+                        None => SignedDecimal256::one(),
+                    },
                     liquidation_price: Decimal::zero(),
                     estimated_pnl: Int128::zero(),
                     weight_balance_ratio: Decimal::zero(),
@@ -567,7 +570,10 @@ impl Module for ElysModule {
                     amm_pool_id: 0,
                     consolidate_leverage: SignedDecimal::zero(),
                     sum_collateral: Int128::zero(),
-                    take_profit_price: SignedDecimal256::try_from(take_profit_price)?,
+                    take_profit_price: match take_profit_price {
+                        Some(take_profit_price) => SignedDecimal256::try_from(take_profit_price)?,
+                        None => SignedDecimal256::one(),
+                    },
                     borrow_interest_paid_collateral: Int128::zero(),
                     borrow_interest_paid_custody: Int128::zero(),
                     borrow_interest_unpaid_collateral: Int128::zero(),
@@ -582,7 +588,10 @@ impl Module for ElysModule {
                     leverage: SignedDecimal::try_from(leverage)?,
                     liabilities_asset: "".to_string(),
                     open_price: SignedDecimal::zero(),
-                    take_profit_borrow_rate: SignedDecimal::try_from(take_profit_price)?,
+                    take_profit_borrow_rate: match take_profit_price {
+                        Some(take_profit_price) => SignedDecimal::try_from(take_profit_price)?,
+                        None => SignedDecimal::one(),
+                    },
                     take_profit_custody: Int128::zero(),
                     trading_asset: "".to_string(),
                 };

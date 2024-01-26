@@ -282,7 +282,7 @@ fn create_new_part(
             .checked_add(Decimal256::from(
                 staked_assets_resp.total_staked_balance.amount,
             ))?
-            .checked_add(perpetual_response.total_perpetual_pools_balance.amount)?,
+            .checked_add(perpetual_response.total_perpetual_asset_balance.amount)?,
         value_denom,
     );
     let reward_usd: DecCoin = DecCoin::new(Decimal256::from(reward.clone().total_usd), value_denom);
@@ -308,7 +308,7 @@ fn create_new_part(
             ),
             liquidity_positions_usd: DecCoin::new(Decimal256::zero(), value_denom),
             leverage_lp_usd: DecCoin::new(Decimal256::zero(), value_denom),
-            margin_usd: perpetual_response.total_perpetual_pools_balance.clone(),
+            perpetual_assets_usd: perpetual_response.total_perpetual_asset_balance.clone(),
             usdc_earn_usd: DecCoin::new(Decimal256::zero(), value_denom),
             borrows_usd: DecCoin::new(Decimal256::zero(), value_denom),
         },
@@ -642,15 +642,15 @@ fn get_perpetuals(
         }
     }
 
-    let total_perpetual_pools_balance_amount = perpetual_vec
+    let total_perpetual_asset_balance_amount = perpetual_vec
         .iter()
         .map(|perpetual| perpetual.size.amount)
         .fold(Decimal256::zero(), |acc, item| acc + item);
-    let total_perpetual_pools_balance =
-        DecCoin::new(total_perpetual_pools_balance_amount, value_denom.to_owned());
+    let total_perpetual_asset_balance =
+        DecCoin::new(total_perpetual_asset_balance_amount, value_denom.to_owned());
 
     Ok(PerpetualAssets {
-        total_perpetual_pools_balance,
+        total_perpetual_asset_balance,
         perpetual_asset: perpetual_vec,
     })
 }

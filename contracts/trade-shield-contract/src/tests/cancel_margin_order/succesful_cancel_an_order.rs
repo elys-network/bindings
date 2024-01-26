@@ -18,7 +18,7 @@ fn succesful_cancel_an_order() {
             &coin(255, "usdc"),
             "btc",
             &SignedDecimal::from_str("1.2").unwrap(),
-            &SignedDecimal256::from_str("1.2").unwrap(),
+            &Some(SignedDecimal256::from_str("1.2").unwrap()),
             &Some(OrderPrice {
                 base_denom: "btc".to_string(),
                 quote_denom: "usdc".to_string(),

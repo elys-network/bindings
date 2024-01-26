@@ -6,7 +6,7 @@ use elys_bindings::ElysQuerier;
 
 #[cw_serde]
 pub struct PerpetualAssets {
-    pub total_perpetual_pools_balance: DecCoin,
+    pub total_perpetual_asset_balance: DecCoin,
     pub perpetual_asset: Vec<PerpetualAsset>,
 }
 
@@ -103,7 +103,7 @@ impl PerpetualAsset {
 impl PerpetualAssets {
     pub fn default() -> Self {
         Self {
-            total_perpetual_pools_balance: DecCoin {
+            total_perpetual_asset_balance: DecCoin {
                 denom: "uusd".to_owned(),
                 amount: Decimal256::zero(),
             },

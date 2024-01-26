@@ -23,7 +23,6 @@ pub fn create_margin_order(
         &position,
         &leverage,
         &trading_asset,
-        &take_profit_price,
         &order_type,
         &trigger_price,
         &position_id,
@@ -37,7 +36,7 @@ pub fn create_margin_order(
             position.unwrap(),
             trading_asset.unwrap(),
             leverage.unwrap(),
-            take_profit_price.unwrap(),
+            take_profit_price,
             trigger_price,
         )
     } else {
@@ -49,7 +48,6 @@ fn check_order_type(
     position: &Option<MarginPosition>,
     leverage: &Option<SignedDecimal>,
     trading_asset: &Option<String>,
-    take_profit_price: &Option<SignedDecimal256>,
     order_type: &MarginOrderType,
     trigger_price: &Option<OrderPrice>,
     position_id: &Option<u64>,
@@ -76,9 +74,6 @@ fn check_order_type(
         if trading_asset.is_none() {
             not_found.push("borrow asset");
         }
-        if take_profit_price.is_none() {
-            not_found.push("take profit price");
-        }
     }
 
     if not_found.is_empty() {
@@ -99,7 +94,7 @@ fn create_margin_open_order(
     position: MarginPosition,
     trading_asset: String,
     leverage: SignedDecimal,
-    take_profit_price: SignedDecimal256,
+    take_profit_price: Option<SignedDecimal256>,
     trigger_price: Option<OrderPrice>,
 ) -> Result<Response<ElysMsg>, ContractError> {
     let collateral = cw_utils::one_coin(&info)?;
@@ -247,7 +242,7 @@ fn create_margin_close_order(
         &mtp.leverage,
         position_id,
         &trigger_price,
-        &mtp.take_profit_price,
+        &Some(mtp.take_profit_price),
         &orders,
     )?;
 

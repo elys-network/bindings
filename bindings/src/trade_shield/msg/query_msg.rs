@@ -49,7 +49,7 @@ pub enum QueryMsg {
         leverage: SignedDecimal,
         trading_asset: String,
         collateral: Coin,
-        take_profit_price: SignedDecimal256,
+        take_profit_price: Option<SignedDecimal256>,
         user_address: Option<String>,
     },
     #[returns(MarginGetPositionsForAddressResponse)]
