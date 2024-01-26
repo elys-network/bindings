@@ -14,12 +14,12 @@ pub struct PerpetualAssets {
 pub struct PerpetualAsset {
     pub denom: String,
     pub position: MarginPosition,
-    pub pnl: DecCoin,
+    pub pnl: SignedDecimal,
     pub collateral: DecCoin,
     pub leverage: SignedDecimal,
     pub size: DecCoin,
-    pub order_price: DecCoin,
-    pub liquidation: DecCoin,
+    pub order_price: SignedDecimal,
+    pub liquidation: SignedDecimal,
     pub health: SignedDecimal,
     pub profit_price: DecCoin,
     pub stop_loss: Option<DecCoin>,
@@ -37,11 +37,7 @@ impl PerpetualAsset {
         Ok(PerpetualAsset {
             denom: mtp.mtp.collateral_asset.clone(),
             position: MarginPosition::try_from_i32(mtp.mtp.position).unwrap(),
-            pnl: DecCoin {
-                denom: usdc_denom.to_owned(),
-                amount: Decimal256::try_from(mtp.unrealized_pnl)
-                    .map_err(|e| StdError::generic_err(e.to_string()))?,
-            },
+            pnl: mtp.unrealized_pnl,
             collateral: DecCoin {
                 denom: mtp.mtp.collateral_asset.clone(),
                 amount: Decimal256::from(
@@ -63,16 +59,8 @@ impl PerpetualAsset {
                     .map_err(|e| StdError::generic_err(e.to_string()))?,
                 ),
             },
-            order_price: DecCoin {
-                amount: Decimal256::try_from(mtp.mtp.open_price)
-                    .map_err(|e| StdError::generic_err(e.to_string()))?,
-                denom: usdc_denom.to_owned(),
-            },
-            liquidation: DecCoin {
-                amount: Decimal256::try_from(mtp.liquidation_price)
-                    .map_err(|e| StdError::generic_err(e.to_string()))?,
-                denom: usdc_denom.to_owned(),
-            },
+            order_price: mtp.mtp.open_price,
+            liquidation: mtp.liquidation_price,
             health: mtp.mtp.mtp_health,
             profit_price: DecCoin {
                 denom: mtp.mtp.collateral_asset.clone(),

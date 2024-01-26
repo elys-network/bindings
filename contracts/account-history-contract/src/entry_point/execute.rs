@@ -9,5 +9,5 @@ pub fn execute(
     _info: MessageInfo,
     _msg: Empty,
 ) -> StdResult<Response<ElysMsg>> {
-    Ok(Response::new())
+    Ok(Response::default())
 }
