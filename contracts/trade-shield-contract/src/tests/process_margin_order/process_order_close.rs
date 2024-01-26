@@ -36,7 +36,7 @@ fn successful_process_limit_buy_order() {
             quote_denom: "usdc".to_string(),
             rate: Decimal::from_atomics(Uint128::new(38), 0).unwrap(), // Rate at which ubtc will be bought (38 USDC per ubtc).
         }),
-        &SignedDecimal256::from_str("1.1").unwrap(),
+        &Some(SignedDecimal256::from_str("1.1").unwrap()),
         &vec![],
     )
     .unwrap();

@@ -103,7 +103,7 @@ impl<'a> ElysQuerier<'a> {
         leverage: SignedDecimal,
         trading_asset: impl Into<String>,
         collateral: Coin,
-        take_profit_price: SignedDecimal256,
+        take_profit_price: Option<SignedDecimal256>,
         discount: Decimal,
     ) -> StdResult<MarginOpenEstimationResponse> {
         let query = ElysQuery::margin_open_estimation(

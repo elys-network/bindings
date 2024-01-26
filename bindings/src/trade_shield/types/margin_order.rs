@@ -1,6 +1,6 @@
+use crate::types::MarginPosition;
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, OverflowError, SignedDecimal, SignedDecimal256, StdError, StdResult};
-use crate::types::MarginPosition;
 
 use super::{MarginOrderType, OrderPrice, Status};
 
@@ -14,7 +14,7 @@ pub struct MarginOrder {
     pub collateral: Coin,
     pub trading_asset: String,
     pub leverage: SignedDecimal,
-    pub take_profit_price: SignedDecimal256,
+    pub take_profit_price: Option<SignedDecimal256>,
     pub position_id: Option<u64>,
     pub status: Status,
 }
@@ -27,7 +27,7 @@ impl MarginOrder {
         collateral: &Coin,
         trading_asset: impl Into<String>,
         leverage: &SignedDecimal,
-        take_profit_price: &SignedDecimal256,
+        take_profit_price: &Option<SignedDecimal256>,
         trigger_price: &Option<OrderPrice>,
         order_vec: &Vec<MarginOrder>,
     ) -> StdResult<Self> {
@@ -60,7 +60,7 @@ impl MarginOrder {
         leverage: &SignedDecimal,
         position_id: u64,
         trigger_price: &Option<OrderPrice>,
-        take_profit_price: &SignedDecimal256,
+        take_profit_price: &Option<SignedDecimal256>,
         order_vec: &Vec<MarginOrder>,
     ) -> StdResult<Self> {
         let order_id: u64 = get_new_id(&order_vec)?;

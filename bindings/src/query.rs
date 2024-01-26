@@ -43,7 +43,7 @@ pub enum ElysQuery {
         leverage: SignedDecimal,
         trading_asset: String,
         collateral: Coin,
-        take_profit_price: SignedDecimal256,
+        take_profit_price: Option<SignedDecimal256>,
         discount: Decimal,
     },
     #[returns(MarginGetPositionsForAddressResponse)]
@@ -159,7 +159,7 @@ impl ElysQuery {
         leverage: SignedDecimal,
         trading_asset: String,
         collateral: Coin,
-        take_profit_price: SignedDecimal256,
+        take_profit_price: Option<SignedDecimal256>,
         discount: Decimal,
     ) -> Self {
         Self::MarginOpenEstimation {

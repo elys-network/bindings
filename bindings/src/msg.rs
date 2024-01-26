@@ -13,7 +13,7 @@ pub enum ElysMsg {
         collateral: Coin,
         trading_asset: String,
         leverage: SignedDecimal,
-        take_profit_price: SignedDecimal256,
+        take_profit_price: Option<SignedDecimal256>,
     },
     MarginClose {
         creator: String,
@@ -121,7 +121,7 @@ impl ElysMsg {
         trading_asset: impl Into<String>,
         position: MarginPosition,
         leverage: SignedDecimal,
-        take_profit_price: SignedDecimal256,
+        take_profit_price: Option<SignedDecimal256>,
     ) -> Self {
         Self::MarginOpen {
             creator: creator.into(),

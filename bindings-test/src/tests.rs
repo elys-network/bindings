@@ -380,7 +380,7 @@ fn open_margin_position() {
         "uusdc",
         MarginPosition::Short,
         SignedDecimal::from_atomics(Int64::new(25), 1).unwrap(),
-        SignedDecimal256::from_atomics(Uint128::new(11), 1).unwrap(),
+        Some(SignedDecimal256::from_atomics(Uint128::new(11), 1).unwrap()),
     );
 
     assert_eq!(
@@ -423,7 +423,7 @@ fn margin_margin_close_position() {
         "uusdc",
         MarginPosition::Short,
         SignedDecimal::from_atomics(Int64::new(25), 1).unwrap(),
-        SignedDecimal256::from_atomics(Uint128::new(11), 1).unwrap(),
+        Some(SignedDecimal256::from_atomics(Uint128::new(11), 1).unwrap()),
     );
 
     assert_eq!(

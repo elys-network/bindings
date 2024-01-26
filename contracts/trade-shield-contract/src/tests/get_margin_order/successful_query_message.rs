@@ -15,7 +15,7 @@ fn successful_query_message() {
         &coin(255, "usdc"),
         "btc",
         &SignedDecimal::one(),
-        &SignedDecimal256::one(),
+        &Some(SignedDecimal256::one()),
         &Some(OrderPrice {
             base_denom: "btc".to_string(),
             quote_denom: "usdc".to_string(),
