@@ -40,9 +40,12 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     let mut pagination = PAGINATION.load(deps.storage)?;
     let expiration = EXPIRATION.load(deps.storage)?;
 
-    let resp = querier
-        .accounts(Some(pagination.clone()))
-        .map_err(|err| custom_err(25, "Auth", err))?;
+    let resp = querier.accounts(Some(pagination.clone())).map_err(|e| {
+        StdError::generic_err(format!(
+            "failed to get accounts with pagination {:?}: {}",
+            pagination, e
+        ))
+    })?;
 
     pagination.update(resp.pagination.next_key);
     PAGINATION.save(deps.storage, &pagination)?;
@@ -399,7 +402,7 @@ pub fn get_all_order(
                 order_status: Some(Status::Pending),
             },
         )
-        .map_err(|err| custom_err(136, "GetSpotOrders", err))?;
+        .map_err(|e| StdError::generic_err(format!("GetSpotOrders failed {}", e)))?;
     let margin_order: GetMarginOrdersResp = querier
         .query_wasm_smart(
             trade_shield_address,
@@ -410,7 +413,7 @@ pub fn get_all_order(
                 order_status: Some(Status::Pending),
             },
         )
-        .map_err(|err| custom_err(148, "GetMarginOrders", err))?;
+        .map_err(|e| StdError::generic_err(format!("GetMarginOrders failed {}", e)))?;
     let mut map: HashMap<String, Uint128> = HashMap::new();
 
     for SpotOrder { order_amount, .. } in spot_order.orders {
