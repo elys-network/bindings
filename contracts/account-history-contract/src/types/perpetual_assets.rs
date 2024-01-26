@@ -45,7 +45,12 @@ impl PerpetualAsset {
                         Uint128::new(mtp.mtp.collateral.i128() as u128),
                         collateral_info.asset_info.decimal as u32,
                     )
-                    .map_err(|e| StdError::generic_err(e.to_string()))?,
+                    .map_err(|e| {
+                        StdError::generic_err(format!(
+                            "failed to convert collateral to Decimal256: {}",
+                            e
+                        ))
+                    })?,
                 ),
             },
             leverage: mtp.mtp.leverage,
@@ -56,7 +61,12 @@ impl PerpetualAsset {
                         Uint128::new(mtp.mtp.custody.i128() as u128),
                         collateral_info.asset_info.decimal as u32,
                     )
-                    .map_err(|e| StdError::generic_err(e.to_string()))?,
+                    .map_err(|e| {
+                        StdError::generic_err(format!(
+                            "failed to convert custody to Decimal256: {}",
+                            e
+                        ))
+                    })?,
                 ),
             },
             order_price: mtp.mtp.open_price,
@@ -64,13 +74,12 @@ impl PerpetualAsset {
             health: mtp.mtp.mtp_health,
             profit_price: DecCoin {
                 denom: mtp.mtp.collateral_asset.clone(),
-                amount: Decimal256::from(
-                    Decimal::from_atomics(
-                        Uint128::new(mtp.mtp.custody.i128() as u128),
-                        collateral_info.asset_info.decimal as u32,
-                    )
-                    .map_err(|e| StdError::generic_err(e.to_string()))?,
-                ),
+                amount: Decimal256::try_from(mtp.mtp.take_profit_price).map_err(|e| {
+                    StdError::generic_err(format!(
+                        "failed to convert take_profit_price to Decimal256: {}",
+                        e
+                    ))
+                })?,
             },
             stop_loss: match mtp.stop_loss_price {
                 Some(stop_loss) => Some(DecCoin {
@@ -83,7 +92,12 @@ impl PerpetualAsset {
                 Uint128::new(mtp.mtp.borrow_interest_paid_collateral.i128() as u128),
                 collateral_info.asset_info.decimal as u32,
             )
-            .map_err(|e| StdError::generic_err(e.to_string()))?,
+            .map_err(|e| {
+                StdError::generic_err(format!(
+                    "failed to convert borrow_interest_paid_collateral to Decimal256: {}",
+                    e
+                ))
+            })?,
         })
     }
 }

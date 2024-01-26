@@ -43,8 +43,10 @@ impl CoinValue {
         let decimal_point_coin = asset_info.decimal;
 
         if &coin.denom == value_denom {
-            let amount = Decimal::from_atomics(coin.amount, decimal_point_coin as u32)
-                .map_err(|err| StdError::generic_err(err.to_string()))?;
+            let amount =
+                Decimal::from_atomics(coin.amount, decimal_point_coin as u32).map_err(|e| {
+                    StdError::generic_err(format!("failed to convert amount to Decimal: {}", e))
+                })?;
             return Ok(Self {
                 denom: coin.denom.clone(),
                 value: amount.clone(),
@@ -59,17 +61,23 @@ impl CoinValue {
             ..
         } = querier
             .amm_swap_estimation_by_denom(&coin, &coin.denom, value_denom, &Decimal::zero())
-            .map_err(|_e| StdError::generic_err("52"))?;
+            .map_err(|e| {
+                StdError::generic_err(format!("failed to get amm_swap_estimation_by_denom: {}", e))
+            })?;
 
         // invert the price
         let price = Decimal::one() / price;
 
         let decimal_point_value = asset_info.decimal;
-        let amount = Decimal::from_atomics(coin.amount, decimal_point_coin as u32)
-            .map_err(|err| StdError::generic_err(err.to_string()))?;
+        let amount =
+            Decimal::from_atomics(coin.amount, decimal_point_coin as u32).map_err(|e| {
+                StdError::generic_err(format!("failed to convert amount to Decimal: {}", e))
+            })?;
 
-        let value = Decimal::from_atomics(whole_value.amount, decimal_point_value as u32)
-            .map_err(|err| StdError::generic_err(err.to_string()))?;
+        let value =
+            Decimal::from_atomics(whole_value.amount, decimal_point_value as u32).map_err(|e| {
+                StdError::generic_err(format!("failed to convert whole_value to Decimal: {}", e))
+            })?;
 
         Ok(Self {
             denom: coin.denom.clone(),
