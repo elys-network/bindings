@@ -48,5 +48,9 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         GetPerpetualAssets { user_address } => {
             to_json_binary(&get_perpetuals_assets(deps, user_address)?)
         }
+        CommitmentStakedPositions { delegator_address } => {
+            let querier = ElysQuerier::new(&deps.querier);
+            to_json_binary(&querier.get_staked_positions(delegator_address)?)
+        }
     }
 }
