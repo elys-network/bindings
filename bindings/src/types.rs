@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::from_json;
 use cosmwasm_std::to_json_binary;
@@ -358,9 +360,5 @@ pub struct PoolAsset {
 }
 
 pub fn default_take_profit_price() -> SignedDecimal256 {
-    SignedDecimal256::new(
-        Int256::from_i128(100000000000000000)
-            * Int256::from_i128(100000000000000000000000)
-            * Int256::from_i128(1_000_000_000_000_000_000),
-    )
+    SignedDecimal256::new(Int256::from_str("10000000000000000000000000000000000000000").unwrap())
 }
