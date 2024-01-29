@@ -554,7 +554,7 @@ pub fn get_staked_assets(
     staked_assets.eden_boost_earn_program = staked_asset_edenb;
 
     StakedAssetsResponse {
-        staked_assets: staked_assets,
+        staked_assets,
         total_staked_balance: DecCoin::new(Decimal256::from(total_balance), usdc_denom),
     }
 }
