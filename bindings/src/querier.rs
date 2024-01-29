@@ -318,6 +318,22 @@ impl<'a> ElysQuerier<'a> {
         };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(staked_position_query);
         let resp: QueryStakedPositionResponse = self.querier.query(&request)?;
+        if resp.staked_position.is_none() {
+            return Ok(resp);
+        }
+
+        let mut stacks = resp.staked_position.unwrap();
+
+        for stack in stacks.iter_mut() {
+            if stack.staked.amount.is_zero() {
+                stack.staked.usd_amount = Decimal::zero();
+            }
+        }
+
+        let resp = QueryStakedPositionResponse {
+            staked_position: Some(stacks),
+        };
+
         Ok(resp)
     }
 
