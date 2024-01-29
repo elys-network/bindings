@@ -5,6 +5,7 @@ use cosmwasm_std::Binary;
 use cosmwasm_std::Coin;
 use cosmwasm_std::Decimal;
 use cosmwasm_std::Int128;
+use cosmwasm_std::Int256;
 use cosmwasm_std::SignedDecimal;
 use cosmwasm_std::SignedDecimal256;
 use cosmwasm_std::StdError;
@@ -354,4 +355,12 @@ pub struct ValidatorDetail {
 pub struct PoolAsset {
     pub token: Coin,
     pub weight: Uint128,
+}
+
+pub fn default_take_profit_price() -> SignedDecimal256 {
+    SignedDecimal256::new(
+        Int256::from_i128(100000000000000000)
+            * Int256::from_i128(100000000000000000000000)
+            * Int256::from_i128(1_000_000_000_000_000_000),
+    )
 }

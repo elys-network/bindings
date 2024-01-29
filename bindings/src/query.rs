@@ -1,3 +1,4 @@
+use crate::trade_shield::types::default_take_profit_price;
 #[allow(unused_imports)]
 use crate::types::{BalanceAvailable, PageRequest, SwapAmountInRoute};
 
@@ -43,7 +44,7 @@ pub enum ElysQuery {
         leverage: SignedDecimal,
         trading_asset: String,
         collateral: Coin,
-        take_profit_price: Option<SignedDecimal256>,
+        take_profit_price: SignedDecimal256,
         discount: Decimal,
     },
     #[returns(MarginGetPositionsForAddressResponse)]
@@ -162,6 +163,10 @@ impl ElysQuery {
         take_profit_price: Option<SignedDecimal256>,
         discount: Decimal,
     ) -> Self {
+        let take_profit_price = match take_profit_price {
+            Some(price) => price,
+            None => default_take_profit_price(),
+        };
         Self::MarginOpenEstimation {
             position,
             leverage,
