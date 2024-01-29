@@ -435,12 +435,6 @@ pub fn get_all_order(
     Ok(consolidated_coins)
 }
 
-pub fn custom_err(line: u64, module: &str, err: StdError) -> StdError {
-    StdError::generic_err(format!(
-        "at line :{line}\n when calling:{module}\n getting this error {err:?}"
-    ))
-}
-
 pub fn get_staked_assets(
     deps: &DepsMut<ElysQuery>,
     address: &String,

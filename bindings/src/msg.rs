@@ -3,7 +3,10 @@ use cosmwasm_std::{
     Coin, CosmosMsg, CustomMsg, Decimal, Int128, SignedDecimal, SignedDecimal256, Uint128,
 };
 
-use crate::types::{EarnType, MarginPosition, SwapAmountInRoute};
+use crate::{
+    trade_shield::types::default_take_profit_price,
+    types::{EarnType, MarginPosition, SwapAmountInRoute},
+};
 
 #[cw_serde]
 pub enum ElysMsg {
@@ -13,7 +16,7 @@ pub enum ElysMsg {
         collateral: Coin,
         trading_asset: String,
         leverage: SignedDecimal,
-        take_profit_price: Option<SignedDecimal256>,
+        take_profit_price: SignedDecimal256,
     },
     MarginClose {
         creator: String,
@@ -123,6 +126,10 @@ impl ElysMsg {
         leverage: SignedDecimal,
         take_profit_price: Option<SignedDecimal256>,
     ) -> Self {
+        let take_profit_price = match take_profit_price {
+            Some(price) => price,
+            None => default_take_profit_price(),
+        };
         Self::MarginOpen {
             creator: creator.into(),
             collateral,
