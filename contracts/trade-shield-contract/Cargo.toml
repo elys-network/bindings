@@ -17,8 +17,8 @@ cw-utils = "0.13"
 elys-bindings = { path = "../../bindings" }
 
 [dev-dependencies]
-
 cw-multi-test = "0.13.4"
 serde_json = "1.0.107"
 elys-bindings = { path = "../../bindings", features = ["testing"] }
 elys-bindings-test = { path = "../../bindings-test" }
+anyhow = "1"
