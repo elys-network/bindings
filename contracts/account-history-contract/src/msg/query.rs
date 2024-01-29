@@ -4,7 +4,7 @@ use super::query_resp::*;
 use crate::types::{AccountSnapshot, PerpetualAssets};
 use cosmwasm_schema::{cw_serde, QueryResponses};
 #[allow(unused_imports)]
-use elys_bindings::query_resp::AuthAddressesResponse;
+use elys_bindings::query_resp::{AuthAddressesResponse, QueryStakedPositionResponse};
 use elys_bindings::types::PageRequest;
 
 #[cw_serde]
@@ -34,4 +34,6 @@ pub enum QueryMsg {
     GetMembershipTier { user_address: String },
     #[returns(PerpetualAssets)]
     GetPerpetualAssets { user_address: String },
+    #[returns(QueryStakedPositionResponse)]
+    CommitmentStakedPositions { delegator_address: String },
 }
