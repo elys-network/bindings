@@ -66,6 +66,7 @@ mod process_spot_order {
 mod create_margin_order {
     use super::*;
     mod coin_number;
+    mod fail_create_margin_market_order;
     mod successful_create_margin_market_order;
     mod successful_create_margin_order;
     mod successful_create_nargin_market_close;

@@ -51,6 +51,11 @@ execute_message() {
     command="elysd tx wasm exec $options \"$contract_address\" '$message'"
     echo "$ $command"
     txhash=$(eval $command | extract_txhash)
+    # check if txhash is empty
+    if [ -z "$txhash" ]; then
+        echo "Failed to execute the message. Please check the error message above."
+        exit 1
+    fi
     sleep 5
     elysd q tx $txhash --node "$NODE" --output json | jq | awk '/"type": "'$response_key'"/{print "{"; flag=1;next}/]/{if(flag){print $0 "\n}"; exit}flag=0}flag' | jq
 }
@@ -131,7 +136,7 @@ function create_spot_order_as_market_buy() {
         "1000000$usdc_denom"
 }
 
-# Create margin order as market open
+# Create margin order as market open
 function create_margin_order_as_market_open() {
     printf "\n# Create margin order as market open\n"
     execute_message \
@@ -149,6 +154,29 @@ function create_margin_order_as_market_open() {
         "100000000$usdc_denom"
 }
 
+# Create margin order
+function create_margin_order() {
+    order_type=$1
+    printf "\n# Create margin order as order_type=$order_type\n"
+    execute_message \
+        "$ts_contract_address" \
+        '{
+            "create_margin_order": {
+                "position": "long",
+                "leverage": "5",
+                "trading_asset": "'"$atom_denom"'",
+                "order_type": "'"$order_type"'",
+                "trigger_price": {
+                    "base_denom": "'"$usdc_denom"'",
+                    "quote_denom": "'"$atom_denom"'",
+                    "rate": "100"
+                }
+            }
+        }' \
+        wasm-create_margin_order \
+        "100000000$usdc_denom"
+}
+
 # Margin open estimation
 function margin_open_estimation() {
     printf "\n# Margin open estimation\n"
@@ -158,7 +186,6 @@ function margin_open_estimation() {
             "leverage": "5",
             "trading_asset": "'"$atom_denom"'",
             "collateral": {"denom": "'"$usdc_denom"'", "amount": "100000000"},
-            "take_profit_price": "100",
             "user_address": "'"$user_address"'"
         }
     }'
@@ -176,6 +203,20 @@ function cancel_spot_order() {
             }
         }' \
         wasm-cancel_spot_order
+}
+
+# Cancel margin order
+function cancel_margin_order() {
+    order_id=$1
+    printf "\n# Cancel margin order with id $order_id\n"
+    execute_message \
+        "$ts_contract_address" \
+        '{
+            "cancel_margin_order": {
+                "order_id": '"$order_id"'
+            }
+        }' \
+        wasm-cancel_margin_order
 }
 
 # Get all spot orders
@@ -235,11 +276,17 @@ case "$1" in
     "create_margin_order_as_market_open")
         create_margin_order_as_market_open
         ;;
+    "create_margin_order_as_limit_open")
+        create_margin_order "limit_open"
+        ;;
     "margin_open_estimation")
         margin_open_estimation
         ;;
     "all_margin_orders")
         all_margin_orders
+        ;;
+    "cancel_margin_order")
+        cancel_margin_order $2
         ;;
 
     *)
