@@ -3,8 +3,8 @@ pub mod msg;
 pub mod types;
 
 mod action;
-mod states;
 mod error;
+mod states;
 
 #[cfg(test)]
 mod tests;

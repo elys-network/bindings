@@ -6,6 +6,7 @@ version = 3
 name = "account-history-contract"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "cosmwasm-schema",
  "cosmwasm-std",
  "cw-multi-test",

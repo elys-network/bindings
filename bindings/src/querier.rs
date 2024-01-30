@@ -7,6 +7,7 @@ use cosmwasm_std::{
 use crate::{
     query::*,
     query_resp::*,
+    trade_shield::types::StakedPosition,
     types::{BalanceAvailable, MarginPosition, PageRequest, Price, SwapAmountInRoute},
 };
 
@@ -322,13 +323,13 @@ impl<'a> ElysQuerier<'a> {
             return Ok(resp);
         }
 
-        let mut stacks = resp.staked_position.unwrap();
-
-        for stack in stacks.iter_mut() {
-            if stack.staked.amount.is_zero() {
-                stack.staked.usd_amount = Decimal::zero();
-            }
-        }
+        let stacks: Vec<StakedPosition> = resp
+            .staked_position
+            .unwrap()
+            .iter()
+            .filter(|stack| !(stack.staked.amount.is_zero()))
+            .cloned()
+            .collect();
 
         let resp = QueryStakedPositionResponse {
             staked_position: Some(stacks),
