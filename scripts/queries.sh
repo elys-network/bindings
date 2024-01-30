@@ -42,13 +42,15 @@ printf "# TS contract address: %s\n" "$ts_contract_address"
 # Denoms
 elys_denom="uelys"
 eden_denom="ueden"
+edenb_denom="uedenb"
 usdc_denom="ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
 atom_denom="ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4"
 
 # Print denoms
-print "# ELYS denom: %s\n" "$elys_denom"
+printf "\n# ELYS denom: %s\n" "$elys_denom"
 printf "# EDEN denom: %s\n" "$eden_denom"
-printf "\n# USDC denom: %s\n" "$usdc_denom"
+printf "# EDENB denom: %s\n" "$edenb_denom"
+printf "# USDC denom: %s\n" "$usdc_denom"
 printf "# ATOM denom: %s\n" "$atom_denom"
 
 # User address
@@ -305,12 +307,14 @@ function get_commitment_unstaked_positions() {
 
 # get CommitmentRewardsSubBucketBalanceOfDenom
 function get_commitment_rewards_sub_bucket_balance_of_denom() {
-    printf "\n# Get commitment rewards sub bucket balance of denom\n"
+    denom=$1
+    program=$2
+    printf "\n# Get commitment rewards sub bucket balance of denom denom=$1 program=$2\n"
     query_contract "$ah_contract_address" '{
         "commitment_rewards_sub_bucket_balance_of_denom": {
             "address": "'"$user_address"'",
-            "denom": "'"$eden_denom"'",
-            "program": 1
+            "denom": "'"$denom"'",
+            "program": '"$program"'
         }
     }'
 }
@@ -451,7 +455,7 @@ case "$2" in
         get_commitment_unstaked_positions
         ;;
     "get_commitment_rewards_sub_bucket_balance_of_denom")
-        get_commitment_rewards_sub_bucket_balance_of_denom
+        get_commitment_rewards_sub_bucket_balance_of_denom $3 $4
         ;;
     "get_commitment_staked_balance_of_denom")
         get_commitment_staked_balance_of_denom
@@ -499,7 +503,7 @@ case "$2" in
         margin_get_positions_for_address
         get_commitment_staked_positions
         get_commitment_unstaked_positions
-        get_commitment_rewards_sub_bucket_balance_of_denom
+        get_commitment_rewards_sub_bucket_balance_of_denom ueden 2
         get_commitment_staked_balance_of_denom
         get_stable_stake_balance_of_borrow
         get_commitment_vesting_info

@@ -55,4 +55,6 @@ pub enum QueryMsg {
     StableStakeBalanceOfBorrow { address: String },
     #[returns(QueryVestingInfoResponse)]
     CommitmentVestingInfo { address: String },
+    #[returns(BalanceAvailable)]
+    Balance { address: String, denom: String },
 }

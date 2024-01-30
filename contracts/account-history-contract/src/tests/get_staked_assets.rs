@@ -18,7 +18,7 @@ use cosmwasm_std::{
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::query_resp::{
     BalanceBorrowed, Entry, Lockup, QueryGetEntryResponse, QueryGetPriceResponse,
-    QueryStakedPositionResponse, StakedAvailable,
+    QueryStakedPositionResponse, QueryUnstakedPositionResponse, StakedAvailable,
 };
 use elys_bindings::types::{
     BalanceAvailable, PageRequest, Price, StakedPosition, StakingValidator, UnstakedPosition,
@@ -219,7 +219,186 @@ impl Module for ElysModuleWrapper {
                         amount: Uint128::new(349209420),
                         usd_amount: Decimal::from_str("349209420").unwrap(),
                     },
+                    ("ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", 2) => {
+                        BalanceAvailable {
+                            amount: Uint128::zero(),
+                            usd_amount: Decimal::zero(),
+                        }
+                    }
+                    ("ueden", 2) => BalanceAvailable {
+                        amount: Uint128::new(9868),
+                        usd_amount: Decimal::from_str("9868").unwrap(),
+                    },
+                    ("uedenb", 2) => BalanceAvailable {
+                        amount: Uint128::new(654083056),
+                        usd_amount: Decimal::from_str("654083056").unwrap(),
+                    },
+                    ("ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", 3) => {
+                        BalanceAvailable {
+                            amount: Uint128::new(1161),
+                            usd_amount: Decimal::from_str("1161").unwrap(),
+                        }
+                    }
+                    ("ueden", 3) => BalanceAvailable {
+                        amount: Uint128::new(2984882),
+                        usd_amount: Decimal::from_str("2984882").unwrap(),
+                    },
+                    ("uedenb", 3) => BalanceAvailable {
+                        amount: Uint128::new(10155052),
+                        usd_amount: Decimal::from_str("10155052").unwrap(),
+                    },
+                    ("ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", 4) => {
+                        BalanceAvailable {
+                            amount: Uint128::zero(),
+                            usd_amount: Decimal::zero(),
+                        }
+                    }
+                    ("ueden", 4) => BalanceAvailable {
+                        amount: Uint128::zero(),
+                        usd_amount: Decimal::zero(),
+                    },
+                    ("uedenb", 4) => BalanceAvailable {
+                        amount: Uint128::zero(),
+                        usd_amount: Decimal::zero(),
+                    },
                     _ => return Err(Error::new(StdError::not_found(denom))),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::CommitmentStakedPositions { delegator_address } => {
+                let resp = match delegator_address.as_str() {
+                    "user" => QueryStakedPositionResponse {
+                        staked_position: Some(vec![StakedPosition {
+                            id: "2".to_string(),
+                            validator: StakingValidator {
+                                address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw"
+                                    .to_string(),
+                                name: "nirvana".to_string(),
+                                voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
+                                commission: Decimal::from_str("0.1").unwrap(),
+                                profile_picture_src: Some("https://elys.network".to_string()),
+                            },
+                            staked: BalanceAvailable {
+                                amount: Uint128::new(10000000),
+                                usd_amount: Decimal::from_str("10000000").unwrap(),
+                            },
+                        }]),
+                    },
+                    _ => return Err(Error::new(StdError::not_found(delegator_address))),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::CommitmentUnStakedPositions { delegator_address } => {
+                let resp = match delegator_address.as_str() {
+                    "user" => QueryUnstakedPositionResponse {
+                        unstaked_position: Some(vec![UnstakedPosition {
+                            id: "1".to_string(),
+                            validator: StakingValidator {
+                                address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw"
+                                    .to_string(),
+                                name: "nirvana".to_string(),
+                                voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
+                                commission: Decimal::from_str("0.1").unwrap(),
+                                profile_picture_src: Some("https://elys.network".to_string()),
+                            },
+                            remaining_time: 1707328694000,
+                            unstaked: BalanceAvailable {
+                                amount: Uint128::new(100038144098),
+                                usd_amount: Decimal::from_str("100038144098").unwrap(),
+                            },
+                        }]),
+                    },
+                    _ => return Err(Error::new(StdError::not_found(delegator_address))),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::AmmBalance { address, denom } => {
+                let resp = match (address.as_str(), denom.as_str()) {
+                    (
+                        "user",
+                        "ibc/0E1517E2771CA7C03F2ED3F9BAECCAEADF0BFD79B89679E834933BC0F179AD98",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(21798000),
+                        usd_amount: Decimal::from_str("21798000").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(5333229342748),
+                        usd_amount: Decimal::from_str("5333229342748").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(2704998),
+                        usd_amount: Decimal::from_str("2704998").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/2FBCFC209420E6CECED6EE0BC599E74349759352CE953E27A6871BB3D84BC058",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(594000000000200000),
+                        usd_amount: Decimal::from_str("594000000000200000").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/326A89923D85047E6418A671FBACCAFA2686B01A16ED4A0AD92954FCE1485910",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(1085352),
+                        usd_amount: Decimal::from_str("1085352").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/43881AB3B3D05FD9D3606D7F57CBE6EEEA89D18AC66AF9E2915ED43940E71CFD",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(168400000000000000),
+                        usd_amount: Decimal::from_str("168400000000000000").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/4DAE26570FD24ABA40E2BE4137E39D946C78B00B248D3F78B0919567C4371156",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(49765000),
+                        usd_amount: Decimal::from_str("49765000").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/977D5388D2FBE72D9A33FE2423BF8F4DADF3B591207CC98A295B9ACF81E4DE40",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(9100000),
+                        usd_amount: Decimal::from_str("9100000").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/E059CD828E5009D4CF03C4494BEA73749250287FC98DD46E19F9016B918BF49D",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(141000000000000000),
+                        usd_amount: Decimal::from_str("141000000000000000").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(37403942),
+                        usd_amount: Decimal::from_str("37403942").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/FB22E35236996F6B0B1C9D407E8A379A7B1F4083F1960907A1622F022AE450E1",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(79979999999749000),
+                        usd_amount: Decimal::from_str("79979999999749000").unwrap(),
+                    },
+                    ("user", "uelys") => BalanceAvailable {
+                        amount: Uint128::new(45666543),
+                        usd_amount: Decimal::from_str("45666543").unwrap(),
+                    },
+                    _ => BalanceAvailable {
+                        amount: Uint128::zero(),
+                        usd_amount: Decimal::zero(),
+                    },
                 };
                 Ok(to_json_binary(&resp)?)
             }

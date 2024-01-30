@@ -78,5 +78,9 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
             let querier = ElysQuerier::new(&deps.querier);
             to_json_binary(&querier.get_vesting_info(address)?)
         }
+        Balance { address, denom } => {
+            let querier = ElysQuerier::new(&deps.querier);
+            to_json_binary(&querier.get_balance(address, denom)?)
+        }
     }
 }
