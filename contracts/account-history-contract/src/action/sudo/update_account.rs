@@ -54,14 +54,14 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     // To enhance querying speed.
     let usdc_denom_entry = querier
         .get_asset_profile(ElysDenom::Usdc.as_str().to_string())
-        .map_err(|_| StdError::generic_err("line 54"))?;
+        .map_err(|_| StdError::generic_err("an error occurred while getting usdc denom"))?;
     let usdc_denom = usdc_denom_entry.entry.denom;
     let usdc_display_denom = usdc_denom_entry.entry.display_name;
     let usdc_decimal = u64::checked_pow(10, usdc_denom_entry.entry.decimals as u32).unwrap();
 
     let eden_denom_entry = querier
         .get_asset_profile(ElysDenom::Eden.as_str().to_string())
-        .map_err(|_| StdError::generic_err("line 61"))?;
+        .map_err(|_| StdError::generic_err("an error occurred while getting eden denom"))?;
     let eden_decimal = u64::checked_pow(10, eden_denom_entry.entry.decimals as u32).unwrap();
 
     let discount = Decimal::zero();
@@ -71,7 +71,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             ElysDenom::AnySource.as_str().to_string(),
             0,
         )
-        .map_err(|_| StdError::generic_err("line 71"))?;
+        .map_err(|_| StdError::generic_err("an error occurred while getting usdc price"))?;
     let uusdc_usd_price = usdc_oracle_price
         .price
         .price
@@ -91,64 +91,64 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             EarnType::UsdcProgram as i32,
             ElysDenom::Usdc.as_str().to_string(),
         )
-        .map_err(|_| StdError::generic_err("line 89"))?;
+        .map_err(|_| StdError::generic_err("an error occurred while getting usdc apr in usdc"))?;
     let eden_apr_usdc = querier
         .get_incentive_apr(
             EarnType::UsdcProgram as i32,
             ElysDenom::Eden.as_str().to_string(),
         )
-        .map_err(|_| StdError::generic_err("line 89"))?;
+        .map_err(|_| StdError::generic_err("an error occurred while getting eden apr in usdc"))?;
 
     let usdc_apr_edenb = querier
         .get_incentive_apr(
             EarnType::EdenBProgram as i32,
             ElysDenom::Usdc.as_str().to_string(),
         )
-        .map_err(|_| StdError::generic_err("line 89"))?;
+        .map_err(|_| StdError::generic_err("an error occurred while getting usdc apr in edenb"))?;
     let eden_apr_edenb = querier
         .get_incentive_apr(
             EarnType::EdenBProgram as i32,
             ElysDenom::Eden.as_str().to_string(),
         )
-        .map_err(|_| StdError::generic_err("line 89"))?;
+        .map_err(|_| StdError::generic_err("an error occurred while getting eden apr in edenb"))?;
 
     let usdc_apr_eden = querier
         .get_incentive_apr(
             EarnType::EdenProgram as i32,
             ElysDenom::Usdc.as_str().to_string(),
         )
-        .map_err(|_| StdError::generic_err("line 89"))?;
+        .map_err(|_| StdError::generic_err("an error occurred while getting usdc apr in eden"))?;
     let eden_apr_eden = querier
         .get_incentive_apr(
             EarnType::EdenProgram as i32,
             ElysDenom::Eden.as_str().to_string(),
         )
-        .map_err(|_| StdError::generic_err("line 89"))?;
+        .map_err(|_| StdError::generic_err("an error occurred while getting eden apr in eden"))?;
     let edenb_apr_eden = querier
         .get_incentive_apr(
             EarnType::EdenProgram as i32,
             ElysDenom::EdenBoost.as_str().to_string(),
         )
-        .map_err(|_| StdError::generic_err("line 89"))?;
+        .map_err(|_| StdError::generic_err("an error occurred while getting edenb apr in eden"))?;
 
     let usdc_apr_elys = querier
         .get_incentive_apr(
             EarnType::ElysProgram as i32,
             ElysDenom::Usdc.as_str().to_string(),
         )
-        .map_err(|_| StdError::generic_err("line 89"))?;
+        .map_err(|_| StdError::generic_err("an error occurred while getting usdc apr in elys"))?;
     let eden_apr_elys = querier
         .get_incentive_apr(
             EarnType::ElysProgram as i32,
             ElysDenom::Eden.as_str().to_string(),
         )
-        .map_err(|_| StdError::generic_err("line 89"))?;
+        .map_err(|_| StdError::generic_err("an error occurred while getting eden apr in elys"))?;
     let edenb_apr_elys = querier
         .get_incentive_apr(
             EarnType::ElysProgram as i32,
             ElysDenom::EdenBoost.as_str().to_string(),
         )
-        .map_err(|_| StdError::generic_err("line 89"))?;
+        .map_err(|_| StdError::generic_err("an error occurred while getting edenb apr in elys"))?;
 
     for address in resp.addresses {
         let mut history = if let Some(history) = HISTORY.may_load(deps.storage, &address)? {
@@ -668,7 +668,7 @@ fn get_perpetuals(
                 pagination: None,
             },
         )
-        .map_err(|_| StdError::generic_err("line 645"))?;
+        .map_err(|_| StdError::generic_err("an error occurred while getting perpetuals"))?;
     let mut perpetual_vec: Vec<PerpetualAsset> = vec![];
     let querier = ElysQuerier::new(&deps.querier);
 

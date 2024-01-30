@@ -4,8 +4,11 @@ use super::query_resp::*;
 use crate::types::{AccountSnapshot, PerpetualAssets};
 use cosmwasm_schema::{cw_serde, QueryResponses};
 #[allow(unused_imports)]
-use elys_bindings::query_resp::{AuthAddressesResponse, QueryStakedPositionResponse};
-use elys_bindings::types::PageRequest;
+use elys_bindings::query_resp::{
+    AuthAddressesResponse, BalanceBorrowed, QueryStakedPositionResponse,
+    QueryUnstakedPositionResponse, QueryVestingInfoResponse, StakedAvailable,
+};
+use elys_bindings::types::{BalanceAvailable, PageRequest};
 
 #[cw_serde]
 #[derive(QueryResponses)]
@@ -34,6 +37,22 @@ pub enum QueryMsg {
     GetMembershipTier { user_address: String },
     #[returns(PerpetualAssets)]
     GetPerpetualAssets { user_address: String },
+
+    // debug only
     #[returns(QueryStakedPositionResponse)]
     CommitmentStakedPositions { delegator_address: String },
+    #[returns(QueryUnstakedPositionResponse)]
+    CommitmentUnStakedPositions { delegator_address: String },
+    #[returns(BalanceAvailable)]
+    CommitmentRewardsSubBucketBalanceOfDenom {
+        address: String,
+        denom: String,
+        program: i32,
+    },
+    #[returns(StakedAvailable)]
+    CommitmentStakedBalanceOfDenom { address: String, denom: String },
+    #[returns(BalanceBorrowed)]
+    StableStakeBalanceOfBorrow { address: String },
+    #[returns(QueryVestingInfoResponse)]
+    CommitmentVestingInfo { address: String },
 }

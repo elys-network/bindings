@@ -18,8 +18,9 @@ elys-bindings = { path = "../../bindings" }
 
 
 [dev-dependencies]
-trade_shield_contract = {path = "../trade-shield-contract"}
+trade_shield_contract = { path = "../trade-shield-contract" }
 cw-multi-test = "0.13.4"
 serde_json = "1.0.107"
 elys-bindings = { path = "../../bindings", features = ["testing"] }
 elys-bindings-test = { path = "../../bindings-test" }
+anyhow = "1"
