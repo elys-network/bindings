@@ -17,11 +17,10 @@ use cosmwasm_std::{
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::query_resp::{
-    BalanceBorrowed, Entry, Lockup, QueryGetEntryResponse, StakedAvailable,
+    BalanceBorrowed, Entry, Lockup, QueryGetEntryResponse, QueryGetPriceResponse, StakedAvailable,
 };
 use elys_bindings::types::{
-    BalanceAvailable, OracleAssetInfo, PageRequest, Price, StakedPosition, StakingValidator,
-    UnstakedPosition,
+    BalanceAvailable, PageRequest, Price, StakedPosition, StakingValidator, UnstakedPosition,
 };
 use elys_bindings::{ElysMsg, ElysQuery};
 use elys_bindings_test::{
@@ -56,6 +55,46 @@ fn mock_instantiate(
 
 struct ElysModuleWrapper(ElysModule);
 
+// $ elysd q --output json --node "https://rpc.testnet.elys.network:443" wasm contract-state smart "elys1s37xz7tzrru2cpl96juu9lfqrsd4jh73j9slyv440q5vttx2uyesetjpne" '{
+//     "commitment_staked_positions": {
+//         "delegator_address": "elys1u8c28343vvhwgwhf29w6hlcz73hvq7lwxmrl46"
+//     }
+// }' | jq
+// {
+// "data": {
+// "staked_position": [
+//   {
+//     "id": "1",
+//     "validator": {
+//       "address": "elysvaloper1q228fz8ctu59udlpf5xmdhyahwdmvlwd2x9m6m",
+//       "name": "F5 Nodes",
+//       "voting_power": "0.3472745336338554",
+//       "commission": "0.05",
+//       "profile_picture_src": "https://f5nodes.com"
+//     },
+//     "staked": {
+//       "amount": "0",
+//       "usd_amount": "0"
+//     }
+//   },
+//   {
+//     "id": "2",
+//     "validator": {
+//       "address": "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw",
+//       "name": "nirvana",
+//       "voting_power": "25.6521469796402094",
+//       "commission": "0.1",
+//       "profile_picture_src": "https://elys.network"
+//     },
+//     "staked": {
+//       "amount": "10000000",
+//       "usd_amount": "10000000"
+//     }
+//   }
+// ]
+// }
+// }
+
 impl Module for ElysModuleWrapper {
     type QueryT = ElysQuery;
     type ExecT = ElysMsg;
@@ -75,7 +114,7 @@ impl Module for ElysModuleWrapper {
                     "uusdc" => QueryGetEntryResponse {
                         entry: Entry {
                             address: "".to_string(),
-                            authority: "".to_string(),
+                            authority: "elys10d07y265gmmuvt4z0w9aw880jnsr700j6z2zm3".to_string(),
                             base_denom: "uusdc".to_string(),
                             commit_enabled: true,
                             decimals: 6,
@@ -95,11 +134,78 @@ impl Module for ElysModuleWrapper {
                             withdraw_enabled: true,
                         },
                     },
+                    "ueden" => QueryGetEntryResponse {
+                        entry: Entry {
+                            address: "".to_string(),
+                            authority: "elys10d07y265gmmuvt4z0w9aw880jnsr700j6z2zm3".to_string(),
+                            base_denom: "ueden".to_string(),
+                            commit_enabled: true,
+                            decimals: 6,
+                            denom: "ueden".to_string(),
+                            display_name: "EDEN".to_string(),
+                            display_symbol: "".to_string(),
+                            external_symbol: "".to_string(),
+                            ibc_channel_id: "".to_string(),
+                            ibc_counterparty_chain_id: "".to_string(),
+                            ibc_counterparty_channel_id: "".to_string(),
+                            ibc_counterparty_denom: "".to_string(),
+                            network: "".to_string(),
+                            path: "".to_string(),
+                            permissions: vec![],
+                            transfer_limit: "".to_string(),
+                            unit_denom: "".to_string(),
+                            withdraw_enabled: true,
+                        },
+                    },
+                    "uelys" => QueryGetEntryResponse {
+                        entry: Entry {
+                            address: "".to_string(),
+                            authority: "elys10d07y265gmmuvt4z0w9aw880jnsr700j6z2zm3".to_string(),
+                            base_denom: "uelys".to_string(),
+                            commit_enabled: true,
+                            decimals: 6,
+                            denom: "uelys".to_string(),
+                            display_name: "ELYS".to_string(),
+                            display_symbol: "".to_string(),
+                            external_symbol: "".to_string(),
+                            ibc_channel_id: "".to_string(),
+                            ibc_counterparty_chain_id: "".to_string(),
+                            ibc_counterparty_channel_id: "".to_string(),
+                            ibc_counterparty_denom: "".to_string(),
+                            network: "".to_string(),
+                            path: "".to_string(),
+                            permissions: vec![],
+                            transfer_limit: "".to_string(),
+                            unit_denom: "".to_string(),
+                            withdraw_enabled: true,
+                        },
+                    },
                     _ => return Err(Error::new(StdError::not_found(base_denom))),
                 };
                 Ok(to_json_binary(&resp)?)
             }
-
+            ElysQuery::AmmPriceByDenom { token_in, .. } => {
+                let spot_price = match token_in {
+                    _ => Decimal::one(),
+                };
+                Ok(to_json_binary(&spot_price)?)
+            }
+            ElysQuery::OraclePrice { asset, .. } => {
+                let resp = match asset.as_str() {
+                    "USDC" => QueryGetPriceResponse {
+                        price: Price {
+                            asset: "USDC".to_string(),
+                            price: Decimal::one(),
+                            source: "uelys".to_string(),
+                            provider: "elys1wzm8dvpxpxxf26y4xn85w5adakcenprg4cq2uf".to_string(),
+                            // set timestamp to now
+                            timestamp: block.time.seconds(),
+                        },
+                    },
+                    _ => return Err(Error::new(StdError::not_found(asset))),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
             _ => self.0.query(api, storage, querier, block, request),
         }
     }
@@ -159,35 +265,6 @@ fn get_staked_assets() {
         ),
     )];
 
-    let prices: Vec<Price> = vec![
-        Price::new("uelys", Decimal::from_str("1.5").unwrap()),
-        Price::new("uusdc", Decimal::from_str("1.0").unwrap()),
-    ];
-
-    let infos = vec![
-        OracleAssetInfo::new(
-            "uusdc".to_string(),
-            "UUSDC".to_string(),
-            "".to_string(),
-            "".to_string(),
-            6,
-        ),
-        OracleAssetInfo::new(
-            "uelys".to_string(),
-            "UELYS".to_string(),
-            "".to_string(),
-            "".to_string(),
-            6,
-        ),
-        OracleAssetInfo::new(
-            "ueden".to_string(),
-            "UEDEN".to_string(),
-            "".to_string(),
-            "".to_string(),
-            6,
-        ),
-    ];
-
     let mut addresses: Vec<String> = vec![];
     let mut app = BasicAppBuilder::<ElysMsg, ElysQuery>::new_custom()
         .with_custom(ElysModuleWrapper(ElysModule {}))
@@ -205,12 +282,6 @@ fn get_staked_assets() {
             PRICES.save(storage, &vec![]).unwrap();
             LAST_MODULE_USED.save(storage, &None).unwrap();
         });
-
-    app.init_modules(|router, _, store| {
-        router.custom.0.set_prices(store, &prices).unwrap();
-        router.custom.0.set_asset_infos(store, &infos)
-    })
-    .unwrap();
 
     // trade shield deployment
     let trade_shield_code =

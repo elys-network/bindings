@@ -279,6 +279,59 @@ function margin_get_positions_for_address() {
     }'
 }
 
+# get commitment staked positions
+function get_commitment_staked_positions() {
+    printf "\n# Get commitment staked positions\n"
+    query_contract "$ah_contract_address" '{
+        "commitment_staked_positions": {
+            "delegator_address": "'"$user_address"'"
+        }
+    }'
+}
+
+# get CommitmentRewardsSubBucketBalanceOfDenom
+function get_commitment_rewards_sub_bucket_balance_of_denom() {
+    printf "\n# Get commitment rewards sub bucket balance of denom\n"
+    query_contract "$ah_contract_address" '{
+        "commitment_rewards_sub_bucket_balance_of_denom": {
+            "address": "'"$user_address"'",
+            "denom": "'"$usdc_denom"'",
+            "program": "usdc"
+        }
+    }'
+}
+
+# get CommitmentStakedBalanceOfDenom
+function get_commitment_staked_balance_of_denom() {
+    printf "\n# Get commitment staked balance of denom\n"
+    query_contract "$ah_contract_address" '{
+        "commitment_staked_balance_of_denom": {
+            "address": "'"$user_address"'",
+            "denom": "'"$usdc_denom"'"
+        }
+    }'
+}
+
+# get StableStakeBalanceOfBorrow
+function get_stable_stake_balance_of_borrow() {
+    printf "\n# Get stable stake balance of borrow\n"
+    query_contract "$ah_contract_address" '{
+        "stable_stake_balance_of_borrow": {
+            "address": "'"$user_address"'"
+        }
+    }'
+}
+
+# get CommitmentVestingInfo
+function get_commitment_vesting_info() {
+    printf "\n# Get commitment vesting info\n"
+    query_contract "$ah_contract_address" '{
+        "commitment_vesting_info": {
+            "address": "'"$user_address"'"
+        }
+    }'
+}
+
 # function(s) to run based on the provided argument
 case "$2" in
     "ah_params")
@@ -377,6 +430,21 @@ case "$2" in
     "margin_get_positions_for_address")
         margin_get_positions_for_address
         ;;
+    "get_commitment_staked_positions")
+        get_commitment_staked_positions
+        ;;
+    "get_commitment_rewards_sub_bucket_balance_of_denom")
+        get_commitment_rewards_sub_bucket_balance_of_denom
+        ;;
+    "get_commitment_staked_balance_of_denom")
+        get_commitment_staked_balance_of_denom
+        ;;
+    "get_stable_stake_balance_of_borrow")
+        get_stable_stake_balance_of_borrow
+        ;;
+    "get_commitment_vesting_info")
+        get_commitment_vesting_info
+        ;;
 
     *)
         # Default case: run all functions
@@ -412,5 +480,10 @@ case "$2" in
         margin_orders market_close
         margin_open_estimation
         margin_get_positions_for_address
+        get_commitment_staked_positions
+        get_commitment_rewards_sub_bucket_balance_of_denom
+        get_commitment_staked_balance_of_denom
+        get_stable_stake_balance_of_borrow
+        get_commitment_vesting_info
         ;;
 esac
