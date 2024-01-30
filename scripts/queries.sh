@@ -309,8 +309,32 @@ function get_commitment_rewards_sub_bucket_balance_of_denom() {
     query_contract "$ah_contract_address" '{
         "commitment_rewards_sub_bucket_balance_of_denom": {
             "address": "'"$user_address"'",
+            "denom": "'"$usdc_denom"'",
+            "program": 5
+        }
+    }'
+
+    query_contract "$ah_contract_address" '{
+        "commitment_rewards_sub_bucket_balance_of_denom": {
+            "address": "'"$user_address"'",
             "denom": "'"$eden_denom"'",
-            "program": 1
+            "program": 5
+        }
+    }'
+
+query_contract "$ah_contract_address" '{
+        "commitment_rewards_sub_bucket_balance_of_denom": {
+            "address": "'"$user_address"'",
+            "denom": "'"$atom_denom"'",
+            "program": 5
+        }
+    }'
+
+query_contract "$ah_contract_address" '{
+        "commitment_rewards_sub_bucket_balance_of_denom": {
+            "address": "'"$user_address"'",
+            "denom": "'"$elys_denom"'",
+            "program": 5
         }
     }'
 }

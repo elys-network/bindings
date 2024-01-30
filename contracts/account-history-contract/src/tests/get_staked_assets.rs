@@ -209,6 +209,7 @@ impl Module for ElysModuleWrapper {
             }
             ElysQuery::CommitmentRewardsSubBucketBalanceOfDenom { denom, program, .. } => {
                 let resp: BalanceAvailable = match (denom.as_str(), program) {
+                    //program 1
                     ("ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", 1) => {
                         BalanceAvailable {
                             amount: Uint128::zero(),
@@ -216,9 +217,98 @@ impl Module for ElysModuleWrapper {
                         }
                     }
                     ("ueden", 1) => BalanceAvailable {
-                        amount: Uint128::new(308656068),
-                        usd_amount: Decimal::from_str("308656068").unwrap(),
+                        amount: Uint128::new(328128114),
+                        usd_amount: Decimal::from_str("328128114").unwrap(),
                     },
+                    ("ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4", 1) => {
+                        BalanceAvailable {
+                            amount: Uint128::zero(),
+                            usd_amount: Decimal::zero(),
+                        }
+                    },
+                    ("uelys", 1) => {
+                        return Err(StdError::generic_err("Error: rpc error: code = Unknown desc = Error parsing into type elys_bindings::types::BalanceAvailable: EOF while parsing a JSON value.: query wasm contract failed: unknown request").into())
+                    },
+                    // program 2
+                    ("ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", 2) => {
+                        BalanceAvailable {
+                            amount: Uint128::zero(),
+                            usd_amount: Decimal::zero(),
+                        }
+                    }
+                    ("ueden", 2) => BalanceAvailable {
+                        amount: Uint128::new(8316),
+                        usd_amount: Decimal::from_str("8316").unwrap(),
+                    },
+                    ("ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4", 2) => {
+                        BalanceAvailable {
+                            amount: Uint128::zero(),
+                            usd_amount: Decimal::zero(),
+                        }
+                    },
+                    ("uelys", 2) => {
+                        return Err(StdError::generic_err("Error: rpc error: code = Unknown desc = Error parsing into type elys_bindings::types::BalanceAvailable: EOF while parsing a JSON value.: query wasm contract failed: unknown request").into())
+                    }
+                    // program 3
+                    ("ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", 3) => {
+                        BalanceAvailable {
+                            amount: Uint128::new(823),
+                            usd_amount: Decimal::from_str("823").unwrap()
+                        }
+                    }
+                    ("ueden", 3) => BalanceAvailable {
+                        amount: Uint128::new(2510924),
+                        usd_amount: Decimal::from_str("2510924").unwrap(),
+                    },
+                    ("ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4", 3) => {
+                        BalanceAvailable {
+                            amount: Uint128::zero(),
+                            usd_amount: Decimal::zero(),
+                        }
+                    },
+                    ("uelys", 3) => {
+                        return Err(StdError::generic_err("Error: rpc error: code = Unknown desc = Error parsing into type elys_bindings::types::BalanceAvailable: EOF while parsing a JSON value.: query wasm contract failed: unknown request").into())
+                    }
+                    // program 4
+                    ("ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", 4) => {
+                        BalanceAvailable {
+                            amount: Uint128::zero(),
+                            usd_amount: Decimal::zero(),
+                        }
+                    }
+                    ("ueden", 4) => BalanceAvailable {
+                        amount: Uint128::zero(),
+                        usd_amount: Decimal::zero(),
+                    },
+                    ("ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4", 4) => {
+                        BalanceAvailable {
+                            amount: Uint128::zero(),
+                            usd_amount: Decimal::zero(),
+                        }
+                    },
+                    ("uelys", 4) => {
+                        return Err(StdError::generic_err("Error: rpc error: code = Unknown desc = Error parsing into type elys_bindings::types::BalanceAvailable: EOF while parsing a JSON value.: query wasm contract failed: unknown request").into())
+                    }
+                    //program 5
+                    ("ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", 5) => {
+                        BalanceAvailable {
+                            amount: Uint128::new(949),
+                            usd_amount: Decimal::from_str("949").unwrap(),
+                        }
+                    }
+                    ("ueden", 5) => BalanceAvailable {
+                        amount: Uint128::new(346807726),
+                        usd_amount: Decimal::from_str("346807726").unwrap(),
+                    },
+                    ("ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4", 5) => {
+                        BalanceAvailable {
+                            amount: Uint128::zero(),
+                            usd_amount: Decimal::zero(),
+                        }
+                    },
+                    ("uelys", 5) => {
+                        return Err(StdError::generic_err("Error: rpc error: code = Unknown desc = Error parsing into type elys_bindings::types::BalanceAvailable: EOF while parsing a JSON value.: query wasm contract failed: unknown request").into())
+                    }
                     _ => return Err(Error::new(StdError::not_found(denom))),
                 };
                 Ok(to_json_binary(&resp)?)
