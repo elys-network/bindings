@@ -268,9 +268,9 @@ impl<'a> ElysQuerier<'a> {
         program: i32,
     ) -> StdResult<BalanceAvailable> {
         let sub_bucket_reward_query = ElysQuery::CommitmentRewardsSubBucketBalanceOfDenom {
-            address: address.to_owned(),
-            denom: denom.to_owned(),
-            program: program.to_owned(),
+            address,
+            denom,
+            program,
         };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(sub_bucket_reward_query);
         let resp: BalanceAvailable = self.querier.query(&request)?;
@@ -284,9 +284,9 @@ impl<'a> ElysQuerier<'a> {
         timestamp: u64,
     ) -> StdResult<QueryGetPriceResponse> {
         let oracle_price_query = ElysQuery::OraclePrice {
-            asset: asset.to_owned(),
-            source: source.to_owned(),
-            timestamp: timestamp.to_owned(),
+            asset,
+            source,
+            timestamp,
         };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(oracle_price_query);
         let resp: QueryGetPriceResponse = self.querier.query(&request)?;

@@ -17,7 +17,8 @@ use cosmwasm_std::{
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::query_resp::{
-    BalanceBorrowed, Entry, Lockup, QueryGetEntryResponse, QueryGetPriceResponse, StakedAvailable,
+    BalanceBorrowed, Entry, Lockup, QueryGetEntryResponse, QueryGetPriceResponse,
+    QueryStakedPositionResponse, StakedAvailable,
 };
 use elys_bindings::types::{
     BalanceAvailable, PageRequest, Price, StakedPosition, StakingValidator, UnstakedPosition,
@@ -203,6 +204,22 @@ impl Module for ElysModuleWrapper {
                         },
                     },
                     _ => return Err(Error::new(StdError::not_found(asset))),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::CommitmentRewardsSubBucketBalanceOfDenom { denom, program, .. } => {
+                let resp: BalanceAvailable = match (denom.as_str(), program) {
+                    ("ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", 1) => {
+                        BalanceAvailable {
+                            amount: Uint128::zero(),
+                            usd_amount: Decimal::zero(),
+                        }
+                    }
+                    ("ueden", 1) => BalanceAvailable {
+                        amount: Uint128::new(308656068),
+                        usd_amount: Decimal::from_str("308656068").unwrap(),
+                    },
+                    _ => return Err(Error::new(StdError::not_found(denom))),
                 };
                 Ok(to_json_binary(&resp)?)
             }
