@@ -10,13 +10,15 @@ use crate::{
     entry_point::{execute, query, sudo},
     msg::*,
 };
-use anyhow::{bail, Result as AnyResult};
+use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
-    coins, Addr, DecCoin, Decimal, Decimal256, DepsMut, Empty, Env, Int128, MessageInfo, Response,
-    StdResult, Timestamp, Uint128,
+    coins, to_json_binary, Addr, DecCoin, Decimal, Decimal256, DepsMut, Empty, Env, Int128,
+    MessageInfo, Response, StdError, StdResult, Timestamp, Uint128,
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
-use elys_bindings::query_resp::{BalanceBorrowed, Lockup, StakedAvailable};
+use elys_bindings::query_resp::{
+    BalanceBorrowed, Entry, Lockup, QueryGetEntryResponse, StakedAvailable,
+};
 use elys_bindings::types::{
     BalanceAvailable, OracleAssetInfo, PageRequest, Price, StakedPosition, StakingValidator,
     UnstakedPosition,
@@ -55,9 +57,52 @@ fn mock_instantiate(
 struct ElysModuleWrapper(ElysModule);
 
 impl Module for ElysModuleWrapper {
-    type ExecT = ElysMsg;
     type QueryT = ElysQuery;
+    type ExecT = ElysMsg;
     type SudoT = Empty;
+
+    fn query(
+        &self,
+        api: &dyn cosmwasm_std::Api,
+        storage: &dyn cosmwasm_std::Storage,
+        querier: &dyn cosmwasm_std::Querier,
+        block: &cosmwasm_std::BlockInfo,
+        request: Self::QueryT,
+    ) -> AnyResult<cosmwasm_std::Binary> {
+        match request {
+            ElysQuery::AssetProfileEntry { base_denom } => {
+                let resp = match base_denom.as_str() {
+                    "uusdc" => QueryGetEntryResponse {
+                        entry: Entry {
+                            address: "".to_string(),
+                            authority: "".to_string(),
+                            base_denom: "uusdc".to_string(),
+                            commit_enabled: true,
+                            decimals: 6,
+                            denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
+                            display_name: "USDC".to_string(),
+                            display_symbol: "uUSDC".to_string(),
+                            external_symbol: "uUSDC".to_string(),
+                            ibc_channel_id: "channel-12".to_string(),
+                            ibc_counterparty_chain_id: "".to_string(),
+                            ibc_counterparty_channel_id: "channel-19".to_string(),
+                            ibc_counterparty_denom: "".to_string(),
+                            network: "".to_string(),
+                            path: "transfer/channel-12".to_string(),
+                            permissions: vec![],
+                            transfer_limit: "".to_string(),
+                            unit_denom: "uusdc".to_string(),
+                            withdraw_enabled: true,
+                        },
+                    },
+                    _ => return Err(Error::new(StdError::not_found(base_denom))),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+
+            _ => self.0.query(api, storage, querier, block, request),
+        }
+    }
 
     fn execute<ExecC, QueryC>(
         &self,
@@ -101,19 +146,6 @@ impl Module for ElysModuleWrapper {
     {
         bail!("sudo is not implemented for ElysModule")
     }
-
-    fn query(
-        &self,
-        api: &dyn cosmwasm_std::Api,
-        storage: &dyn cosmwasm_std::Storage,
-        querier: &dyn cosmwasm_std::Querier,
-        block: &cosmwasm_std::BlockInfo,
-        request: Self::QueryT,
-    ) -> AnyResult<cosmwasm_std::Binary> {
-        match request {
-            _ => self.0.query(api, storage, querier, block, request),
-        }
-    }
 }
 
 #[test]
@@ -138,21 +170,21 @@ fn get_staked_assets() {
             "UUSDC".to_string(),
             "".to_string(),
             "".to_string(),
-            2,
+            6,
         ),
         OracleAssetInfo::new(
             "uelys".to_string(),
             "UELYS".to_string(),
             "".to_string(),
             "".to_string(),
-            2,
+            6,
         ),
         OracleAssetInfo::new(
             "ueden".to_string(),
             "UEDEN".to_string(),
             "".to_string(),
             "".to_string(),
-            2,
+            6,
         ),
     ];
 
