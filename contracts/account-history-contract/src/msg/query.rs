@@ -3,6 +3,7 @@ use super::query_resp::*;
 #[allow(unused_imports)]
 use crate::types::{AccountSnapshot, PerpetualAssets};
 use cosmwasm_schema::{cw_serde, QueryResponses};
+use cosmwasm_std::{Coin, Decimal};
 #[allow(unused_imports)]
 use elys_bindings::query_resp::{
     AuthAddressesResponse, BalanceBorrowed, QueryStakedPositionResponse,
@@ -52,9 +53,11 @@ pub enum QueryMsg {
     #[returns(StakedAvailable)]
     CommitmentStakedBalanceOfDenom { address: String, denom: String },
     #[returns(BalanceBorrowed)]
-    StableStakeBalanceOfBorrow { address: String },
+    StableStakeBalanceOfBorrow {},
     #[returns(QueryVestingInfoResponse)]
     CommitmentVestingInfo { address: String },
     #[returns(BalanceAvailable)]
     Balance { address: String, denom: String },
+    #[returns(Decimal)]
+    AmmPriceByDenom { token_in: Coin, discount: Decimal },
 }

@@ -82,7 +82,7 @@ pub enum ElysQuery {
     #[returns(QueryUnstakedPositionResponse)]
     CommitmentUnStakedPositions { delegator_address: String },
     #[returns(BalanceBorrowed)]
-    StableStakeBalanceOfBorrow { address: String },
+    StableStakeBalanceOfBorrow {},
     #[returns(QueryDelegatorDelegationsResponse)]
     CommitmentDelegations { delegator_address: String },
     #[returns(QueryDelegatorUnbondingDelegationsResponse)]
@@ -221,8 +221,8 @@ impl ElysQuery {
             delegator_address: delegator_addr,
         }
     }
-    pub fn get_borrowed_balance(address: String) -> Self {
-        ElysQuery::StableStakeBalanceOfBorrow { address }
+    pub fn get_borrowed_balance() -> Self {
+        ElysQuery::StableStakeBalanceOfBorrow {}
     }
     pub fn get_delegations(delegator_addr: String) -> Self {
         ElysQuery::CommitmentDelegations {

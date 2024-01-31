@@ -321,11 +321,12 @@ function get_commitment_rewards_sub_bucket_balance_of_denom() {
 
 # get CommitmentStakedBalanceOfDenom
 function get_commitment_staked_balance_of_denom() {
+    denom=$1
     printf "\n# Get commitment staked balance of denom\n"
     query_contract "$ah_contract_address" '{
         "commitment_staked_balance_of_denom": {
             "address": "'"$user_address"'",
-            "denom": "'"$usdc_denom"'"
+            "denom": "'"$denom"'"
         }
     }'
 }
@@ -334,9 +335,7 @@ function get_commitment_staked_balance_of_denom() {
 function get_stable_stake_balance_of_borrow() {
     printf "\n# Get stable stake balance of borrow\n"
     query_contract "$ah_contract_address" '{
-        "stable_stake_balance_of_borrow": {
-            "address": "'"$user_address"'"
-        }
+        "stable_stake_balance_of_borrow": {}
     }'
 }
 
@@ -346,6 +345,21 @@ function get_commitment_vesting_info() {
     query_contract "$ah_contract_address" '{
         "commitment_vesting_info": {
             "address": "'"$user_address"'"
+        }
+    }'
+}
+
+# get AmmPriceByDenom
+function get_amm_price_by_denom() {
+    denom=$1
+    printf "\n# Get amm price by denom\n"
+    query_contract "$ah_contract_address" '{
+        "amm_price_by_denom": {
+            "token_in": {
+                "amount": "1000000",
+                "denom": "'"$denom"'"
+            },
+            "discount": "0"
         }
     }'
 }
@@ -458,13 +472,16 @@ case "$2" in
         get_commitment_rewards_sub_bucket_balance_of_denom $3 $4
         ;;
     "get_commitment_staked_balance_of_denom")
-        get_commitment_staked_balance_of_denom
+        get_commitment_staked_balance_of_denom $3
         ;;
     "get_stable_stake_balance_of_borrow")
         get_stable_stake_balance_of_borrow
         ;;
     "get_commitment_vesting_info")
         get_commitment_vesting_info
+        ;;
+    "get_amm_price_by_denom")
+        get_amm_price_by_denom $3
         ;;
 
     *)
@@ -504,8 +521,11 @@ case "$2" in
         get_commitment_staked_positions
         get_commitment_unstaked_positions
         get_commitment_rewards_sub_bucket_balance_of_denom ueden 2
-        get_commitment_staked_balance_of_denom
+        get_commitment_staked_balance_of_denom $usdc_denom
         get_stable_stake_balance_of_borrow
         get_commitment_vesting_info
+        get_amm_price_by_denom $usdc_denom
+        get_amm_price_by_denom $elys_denom
+        get_amm_price_by_denom $eden_denom
         ;;
 esac

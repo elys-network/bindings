@@ -350,10 +350,8 @@ impl<'a> ElysQuerier<'a> {
         Ok(resp)
     }
 
-    pub fn get_borrowed_balance(&self, address: String) -> StdResult<BalanceBorrowed> {
-        let borrowed_balance_query = ElysQuery::StableStakeBalanceOfBorrow {
-            address: address.to_owned(),
-        };
+    pub fn get_borrowed_balance(&self) -> StdResult<BalanceBorrowed> {
+        let borrowed_balance_query = ElysQuery::StableStakeBalanceOfBorrow {};
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(borrowed_balance_query);
         let resp: BalanceBorrowed = self.querier.query(&request)?;
         Ok(resp)
