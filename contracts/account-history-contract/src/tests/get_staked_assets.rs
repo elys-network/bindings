@@ -18,7 +18,8 @@ use cosmwasm_std::{
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::query_resp::{
     BalanceBorrowed, Entry, Lockup, QueryAprResponse, QueryGetEntryResponse, QueryGetPriceResponse,
-    QueryStakedPositionResponse, QueryUnstakedPositionResponse, StakedAvailable,
+    QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryVestingInfoResponse,
+    StakedAvailable,
 };
 use elys_bindings::types::{
     BalanceAvailable, PageRequest, Price, StakedPosition, StakingValidator, UnstakedPosition,
@@ -147,7 +148,7 @@ impl Module for ElysModuleWrapper {
             }
             ElysQuery::AmmPriceByDenom { token_in, .. } => {
                 let spot_price = match token_in.denom.as_str() {
-                    "uusdc" => Decimal::one(),
+                    "uelys" => Decimal::from_str("0.297883685357378504").unwrap(),
                     _ => return Err(Error::new(StdError::not_found(token_in.denom.as_str()))),
                 };
                 Ok(to_json_binary(&spot_price)?)
@@ -262,7 +263,7 @@ impl Module for ElysModuleWrapper {
                                 commission: Decimal::from_str("0.1").unwrap(),
                                 profile_picture_src: Some("https://elys.network".to_string()),
                             },
-                            remaining_time: 1707328694000,
+                            remaining_time: 1707328694,
                             unstaked: BalanceAvailable {
                                 amount: Uint128::new(100038144098),
                                 usd_amount: Decimal::from_str("100038144098").unwrap(),
@@ -441,6 +442,16 @@ impl Module for ElysModuleWrapper {
                 };
                 Ok(to_json_binary(&resp)?)
             }
+            ElysQuery::CommitmentVestingInfo { .. } => {
+                let resp = QueryVestingInfoResponse {
+                    vesting: BalanceAvailable {
+                        amount: Uint128::zero(),
+                        usd_amount: Decimal::zero(),
+                    },
+                    vesting_details: Some(vec![]),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
             _ => self.0.query(api, storage, querier, block, request),
         }
     }
@@ -576,7 +587,7 @@ fn get_staked_assets() {
 
     let expected: StakedAssetsResponse = StakedAssetsResponse {
         total_staked_balance: DecCoin::new(
-            Decimal256::from_str("774.00319452761366262").unwrap(),
+            Decimal256::from_str("773.785954784235398524").unwrap(),
             "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
         ),
         staked_assets: StakedAssets {
@@ -613,27 +624,27 @@ fn get_staked_assets() {
                     usd_amount: Decimal::zero(),
                 }),
                 staked: Some(StakedAvailable {
-                    usd_amount: Decimal::from_str("771.023521368147227293").unwrap(),
+                    usd_amount: Decimal::from_str("770.807117930661613484").unwrap(),
                     amount: Uint128::new(2587611057),
                     lockups: Some(vec![Lockup {
                         amount: Int128::new(5200770174),
-                        unlock_timestamp: 1706538974,
+                        unlock_timestamp: 1571797419,
                     }]),
                 }),
                 rewards: Some(vec![
                     BalanceReward {
                         asset: "uusdc".to_string(),
-                        amount: Uint128::new(432),
-                        usd_amount: Some(Decimal::from_str("0.0004320864").unwrap()),
+                        amount: Uint128::new(1161),
+                        usd_amount: Some(Decimal::from_str("0.001161").unwrap()),
                     },
                     BalanceReward {
                         asset: "ueden".to_string(),
-                        amount: Uint128::new(1854860),
-                        usd_amount: Some(Decimal::from_str("0.552687655656791223").unwrap()),
+                        amount: Uint128::new(2984882),
+                        usd_amount: Some(Decimal::from_str("0.889147650516902663").unwrap()),
                     },
                     BalanceReward {
                         asset: "uedenb".to_string(),
-                        amount: Uint128::new(6310541),
+                        amount: Uint128::new(10155052),
                         usd_amount: None,
                     },
                 ]),
@@ -651,11 +662,11 @@ fn get_staked_assets() {
                     uedenb: Uint128::new(100),
                 },
                 available: Some(BalanceAvailable {
-                    amount: Uint128::new(49774186),
-                    usd_amount: Decimal::from_str("14.831080605849001273").unwrap(),
+                    amount: Uint128::new(45666543),
+                    usd_amount: Decimal::from_str("13.60331812637119582").unwrap(),
                 }),
                 staked: Some(StakedAvailable {
-                    usd_amount: Decimal::from_str("2.979673159466435327").unwrap(),
+                    usd_amount: Decimal::from_str("2.97883685357378504").unwrap(),
                     amount: Uint128::new(10000000),
                     lockups: Some(vec![]),
                 }),
@@ -667,48 +678,29 @@ fn get_staked_assets() {
                     },
                     BalanceReward {
                         asset: "ueden".to_string(),
-                        amount: Uint128::new(6152),
-                        usd_amount: Some(Decimal::from_str("0.001833094927703751").unwrap()),
+                        amount: Uint128::new(9868),
+                        usd_amount: Some(Decimal::from_str("0.002939516207106611").unwrap()),
                     },
                     BalanceReward {
                         asset: "uedenb".to_string(),
-                        amount: Uint128::new(654069181),
+                        amount: Uint128::new(654083056),
                         usd_amount: None,
                     },
                 ]),
-                staked_positions: Some(vec![
-                    // FIXME: We want to remove the item below as amount is zero
-                    // StakedPosition {
-                    //     id: "1".to_string(),
-                    //     validator: StakingValidator {
-                    //         address: "elysvaloper1q228fz8ctu59udlpf5xmdhyahwdmvlwd2x9m6m"
-                    //             .to_string(),
-                    //         name: "F5 Nodes".to_string(),
-                    //         voting_power: Decimal::from_str("0.3472745336338554").unwrap(),
-                    //         commission: Decimal::from_str("0.05").unwrap(),
-                    //         profile_picture_src: Some("https://f5nodes.com".to_string()),
-                    //     },
-                    //     staked: BalanceAvailable {
-                    //         amount: Uint128::zero(),
-                    //         usd_amount: Decimal::zero(),
-                    //     },
-                    // },
-                    StakedPosition {
-                        id: "2".to_string(),
-                        validator: StakingValidator {
-                            address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw"
-                                .to_string(),
-                            name: "nirvana".to_string(),
-                            voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
-                            commission: Decimal::from_str("0.1").unwrap(),
-                            profile_picture_src: Some("https://elys.network".to_string()),
-                        },
-                        staked: BalanceAvailable {
-                            amount: Uint128::new(10000000),
-                            usd_amount: Decimal::from_str("2.979673159466435327").unwrap(),
-                        },
+                staked_positions: Some(vec![StakedPosition {
+                    id: "2".to_string(),
+                    validator: StakingValidator {
+                        address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw".to_string(),
+                        name: "nirvana".to_string(),
+                        voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
+                        commission: Decimal::from_str("0.1").unwrap(),
+                        profile_picture_src: Some("https://elys.network".to_string()),
                     },
-                ]),
+                    staked: BalanceAvailable {
+                        amount: Uint128::new(10000000),
+                        usd_amount: Decimal::from_str("2.97883685357378504").unwrap(),
+                    },
+                }]),
                 unstaked_positions: Some(vec![UnstakedPosition {
                     id: "1".to_string(),
                     validator: StakingValidator {
@@ -721,7 +713,7 @@ fn get_staked_assets() {
                     remaining_time: 1707328694000,
                     unstaked: BalanceAvailable {
                         amount: Uint128::new(100038144098),
-                        usd_amount: Decimal::from_str("29808.097289164619005282").unwrap(),
+                        usd_amount: Decimal::from_str("29799.731040224723410679").unwrap(),
                     },
                 }]),
             },
@@ -749,11 +741,11 @@ fn get_staked_assets() {
                     BalanceReward {
                         asset: "ueden".to_string(),
                         amount: Uint128::new(349209420),
-                        usd_amount: Some(Decimal::from_str("73.796109272199488447").unwrap()),
+                        usd_amount: Some(Decimal::from_str("104.023788991112640102").unwrap()),
                     },
                 ]),
                 borrowed: Some(BalanceBorrowed {
-                    usd_amount: Decimal::from_str("204040.8000010002").unwrap(),
+                    usd_amount: Decimal::from_str("204000.000001").unwrap(),
                     percentage: Decimal::one(),
                 }),
             },
@@ -761,6 +753,10 @@ fn get_staked_assets() {
     };
 
     // test if the response is the same as the expected
+
+    // staked assets
+
+    // USDC program
     assert_eq!(
         resp.staked_assets.usdc_earn_program.bonding_period,
         expected.staked_assets.usdc_earn_program.bonding_period
@@ -786,15 +782,110 @@ fn get_staked_assets() {
         expected.staked_assets.usdc_earn_program.borrowed
     );
     assert_eq!(
-        resp.staked_assets.eden_earn_program,
-        expected.staked_assets.eden_earn_program
+        resp.staked_assets.usdc_earn_program,
+        expected.staked_assets.usdc_earn_program
+    );
+
+    // ELYS program
+    assert_eq!(
+        resp.staked_assets.elys_earn_program.bonding_period,
+        expected.staked_assets.elys_earn_program.bonding_period
+    );
+    assert_eq!(
+        resp.staked_assets.elys_earn_program.apr,
+        expected.staked_assets.elys_earn_program.apr
+    );
+    assert_eq!(
+        resp.staked_assets.elys_earn_program.available,
+        expected.staked_assets.elys_earn_program.available
+    );
+    assert_eq!(
+        resp.staked_assets.elys_earn_program.staked,
+        expected.staked_assets.elys_earn_program.staked
+    );
+    assert_eq!(
+        resp.staked_assets.elys_earn_program.rewards,
+        expected.staked_assets.elys_earn_program.rewards
+    );
+    assert_eq!(
+        resp.staked_assets.elys_earn_program.staked_positions,
+        expected.staked_assets.elys_earn_program.staked_positions
+    );
+    assert_eq!(
+        resp.staked_assets.elys_earn_program.unstaked_positions,
+        expected.staked_assets.elys_earn_program.unstaked_positions
     );
     assert_eq!(
         resp.staked_assets.elys_earn_program,
         expected.staked_assets.elys_earn_program
     );
+
+    // EDEN program
+    assert_eq!(
+        resp.staked_assets.eden_earn_program.bonding_period,
+        expected.staked_assets.eden_earn_program.bonding_period
+    );
+    assert_eq!(
+        resp.staked_assets.eden_earn_program.apr,
+        expected.staked_assets.eden_earn_program.apr
+    );
+    assert_eq!(
+        resp.staked_assets.eden_earn_program.available,
+        expected.staked_assets.eden_earn_program.available
+    );
+    assert_eq!(
+        resp.staked_assets.eden_earn_program.staked,
+        expected.staked_assets.eden_earn_program.staked
+    );
+    assert_eq!(
+        resp.staked_assets.eden_earn_program.rewards,
+        expected.staked_assets.eden_earn_program.rewards
+    );
+    assert_eq!(
+        resp.staked_assets.eden_earn_program.vesting,
+        expected.staked_assets.eden_earn_program.vesting
+    );
+    assert_eq!(
+        resp.staked_assets.eden_earn_program.vesting_details,
+        expected.staked_assets.eden_earn_program.vesting_details
+    );
+    assert_eq!(
+        resp.staked_assets.eden_earn_program,
+        expected.staked_assets.eden_earn_program
+    );
+
+    // EDEN BOOST program
+    assert_eq!(
+        resp.staked_assets.eden_boost_earn_program.bonding_period,
+        expected
+            .staked_assets
+            .eden_boost_earn_program
+            .bonding_period
+    );
+    assert_eq!(
+        resp.staked_assets.eden_boost_earn_program.apr,
+        expected.staked_assets.eden_boost_earn_program.apr
+    );
+    assert_eq!(
+        resp.staked_assets.eden_boost_earn_program.available,
+        expected.staked_assets.eden_boost_earn_program.available
+    );
+    assert_eq!(
+        resp.staked_assets.eden_boost_earn_program.staked,
+        expected.staked_assets.eden_boost_earn_program.staked
+    );
+    assert_eq!(
+        resp.staked_assets.eden_boost_earn_program.rewards,
+        expected.staked_assets.eden_boost_earn_program.rewards
+    );
     assert_eq!(
         resp.staked_assets.eden_boost_earn_program,
         expected.staked_assets.eden_boost_earn_program
     );
+
+    assert_eq!(resp.staked_assets, expected.staked_assets);
+
+    assert_eq!(resp.total_staked_balance, expected.total_staked_balance);
+
+    assert_eq!(resp, expected);
 }
