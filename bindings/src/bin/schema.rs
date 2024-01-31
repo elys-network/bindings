@@ -17,6 +17,6 @@ fn main() {
     export_schema(&schema_for!(AmmSwapEstimationResponse), &out_dir);
     export_schema(&schema_for!(OracleAssetInfoResponse), &out_dir);
     export_schema(&schema_for!(AmmSwapExactAmountInResp), &out_dir);
-    export_schema(&schema_for!(MarginOpenResponse), &out_dir);
-    export_schema(&schema_for!(MarginCloseResponse), &out_dir);
+    export_schema(&schema_for!(PerpetualOpenResponse), &out_dir);
+    export_schema(&schema_for!(PerpetualCloseResponse), &out_dir);
 }

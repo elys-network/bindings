@@ -135,7 +135,7 @@ async function cancelSpotOrders(order_ids, order_type, owner_address) {
   console.log("create_spot_orders_res:", create_spot_orders_res);
 }
 
-async function getMarginOrders(
+async function getPerpetualOrders(
   pagination,
   order_type,
   order_owner,
@@ -152,7 +152,7 @@ async function getMarginOrders(
   const result = await sender_client.queryContractSmart(
     trade_shield_contract_addr,
     {
-      get_margin_orders: {
+      get_perpetual_orders: {
         pagination: pagination,
         order_type: order_type,
         order_owner: order_owner,
@@ -219,7 +219,7 @@ async function SwapEstimationByDenom(
   console.log(`Result: `, result);
 }
 
-async function createMarginOrder(
+async function createPerpetualOrder(
   position_type,
   collateral,
   leverage_value,
@@ -240,7 +240,7 @@ async function createMarginOrder(
   );
   const executeFee = calculateFee(300_000, gasPrice);
   const msg = {
-    create_margin_order: {
+    create_perpetual_order: {
       position_type: position_type,
       leverage_value: leverage_value,
       trading_asset: trading_asset,
@@ -258,7 +258,7 @@ async function createMarginOrder(
     amount_send = coins(collateral.amount, collateral.denom);
   }
 
-  const create_margin_order_res = await sender_client.execute(
+  const create_perpetual_order_res = await sender_client.execute(
     sender.address,
     trade_shield_contract_addr,
     msg,
@@ -266,10 +266,10 @@ async function createMarginOrder(
     "",
     amount_send
   );
-  console.log("create_margin_order_res:", create_margin_order_res);
+  console.log("create_perpetual_order_res:", create_perpetual_order_res);
 }
 
-async function cancelMarginOrder(order_id) {
+async function cancelPerpetualOrder(order_id) {
   const gasPrice = GasPrice.fromString(GASPRICE);
   const sender_wallet = await DirectSecp256k1HdWallet.fromMnemonic(
     sender.mnemonic,
@@ -281,22 +281,22 @@ async function cancelMarginOrder(order_id) {
   );
   const executeFee = calculateFee(300_000, gasPrice);
   const msg = {
-    cancel_margin_order: {
+    cancel_perpetual_order: {
       order_id: order_id,
     },
   };
 
-  const create_margin_order_res = await sender_client.execute(
+  const create_perpetual_order_res = await sender_client.execute(
     sender.address,
     trade_shield_contract_addr,
     msg,
     executeFee,
     ""
   );
-  console.log("create_margin_order_res:", create_margin_order_res);
+  console.log("create_perpetual_order_res:", create_perpetual_order_res);
 }
 
-async function getMarginOrder(order_id) {
+async function getPerpetualOrder(order_id) {
   const sender_wallet = await DirectSecp256k1HdWallet.fromMnemonic(
     sender.mnemonic,
     { prefix: "elys" }
@@ -308,13 +308,13 @@ async function getMarginOrder(order_id) {
   const result = await sender_client.queryContractSmart(
     trade_shield_contract_addr,
     {
-      get_margin_order: { order_id: order_id },
+      get_perpetual_order: { order_id: order_id },
     }
   );
   console.log(`Result: `, result);
 }
 
-async function getMarginPosition(id, address) {
+async function getPerpetualPosition(id, address) {
   const sender_wallet = await DirectSecp256k1HdWallet.fromMnemonic(
     sender.mnemonic,
     { prefix: "elys" }
@@ -326,13 +326,13 @@ async function getMarginPosition(id, address) {
   const result = await sender_client.queryContractSmart(
     trade_shield_contract_addr,
     {
-      get_margin_position: { id: id, address: address },
+      get_perpetual_position: { id: id, address: address },
     }
   );
   console.log(`Result: `, result);
 }
 
-async function getMarginPositions(pagination) {
+async function getPerpetualPositions(pagination) {
   const sender_wallet = await DirectSecp256k1HdWallet.fromMnemonic(
     sender.mnemonic,
     { prefix: "elys" }
@@ -344,13 +344,13 @@ async function getMarginPositions(pagination) {
   const result = await sender_client.queryContractSmart(
     trade_shield_contract_addr,
     {
-      get_margin_positions: { pagination: pagination },
+      get_perpetual_positions: { pagination: pagination },
     }
   );
   console.log(`Result: `, result);
 }
 
-async function marginOpenEstimation(
+async function perpetualOpenEstimation(
   position,
   leverage,
   trading_asset,
@@ -369,7 +369,7 @@ async function marginOpenEstimation(
   const result = await sender_client.queryContractSmart(
     trade_shield_contract_addr,
     {
-      margin_open_estimation: {
+      perpetual_open_estimation: {
         position: position,
         leverage: leverage,
         trading_asset: trading_asset,
@@ -382,7 +382,7 @@ async function marginOpenEstimation(
   console.log(`Result: `, result);
 }
 
-async function marginGetPositionsForAddress(address, pagination) {
+async function perpetualGetPositionsForAddress(address, pagination) {
   const sender_wallet = await DirectSecp256k1HdWallet.fromMnemonic(
     sender.mnemonic,
     { prefix: "elys" }
@@ -394,7 +394,7 @@ async function marginGetPositionsForAddress(address, pagination) {
   const result = await sender_client.queryContractSmart(
     trade_shield_contract_addr,
     {
-      margin_get_position_for_address: {
+      perpetual_get_position_for_address: {
         address: address,
         pagination: pagination,
       },

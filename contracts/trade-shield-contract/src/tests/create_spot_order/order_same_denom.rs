@@ -10,7 +10,7 @@ fn order_same_denom() {
 
     let instantiate_msg = InstantiateMockMsg {
         spot_orders: vec![],
-        margin_orders: vec![],
+        perpetual_orders: vec![],
     };
 
     let create_order_msg = ExecuteMsg::CreateSpotOrder {

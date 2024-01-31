@@ -1,7 +1,9 @@
-use crate::trade_shield::types::{MarginOrderType, MarginPosition, OrderPrice, SpotOrderType};
+use crate::trade_shield::types::{
+    OrderPrice, PerpetualOrderType, PerpetualPosition, SpotOrderType,
+};
+use crate::types::EarnType;
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Int128, SignedDecimal, SignedDecimal256, Uint128};
-use crate::types::EarnType;
 
 #[cw_serde]
 pub enum ExecuteMsg {
@@ -20,25 +22,25 @@ pub enum ExecuteMsg {
         owner_address: String,
         order_type: Option<SpotOrderType>,
     },
-    CreateMarginOrder {
-        position: Option<MarginPosition>, // Can be null if it's not a LimitOpen or MarketOpen type
-        leverage: Option<SignedDecimal>,  // Can be null if it's not a LimitOpen or MarketOpen type
-        trading_asset: Option<String>,    // Can be null if it's not a LimitOpen or MarketOpen type
+    CreatePerpetualOrder {
+        position: Option<PerpetualPosition>, // Can be null if it's not a LimitOpen or MarketOpen type
+        leverage: Option<SignedDecimal>, // Can be null if it's not a LimitOpen or MarketOpen type
+        trading_asset: Option<String>,   // Can be null if it's not a LimitOpen or MarketOpen type
         take_profit_price: Option<SignedDecimal256>, // Can be null if it's not a LimitOpen or MarketOpen type
-        order_type: MarginOrderType,
+        order_type: PerpetualOrderType,
         trigger_price: Option<OrderPrice>, // Can be null if it's a MarketOpen or MarketClose type
         position_id: Option<u64>, // Can be null if it's not a LimitClose, MarketClose or StopLoss type
     },
-    CancelMarginOrder {
+    CancelPerpetualOrder {
         order_id: u64,
     },
 
-    CancelMarginOrders {
+    CancelPerpetualOrders {
         order_ids: Option<Vec<u64>>,
         owner_address: String,
-        order_type: Option<MarginOrderType>,
+        order_type: Option<PerpetualOrderType>,
     },
-    CloseMarginPosition {
+    ClosePerpetualPosition {
         id: u64,
         amount: Int128,
     },

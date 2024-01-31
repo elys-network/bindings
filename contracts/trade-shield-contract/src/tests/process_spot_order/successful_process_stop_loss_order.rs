@@ -56,7 +56,7 @@ fn successful_process_stop_loss_order() {
     // Create a mock message to instantiate the contract with the dummy order.
     let instantiate_msg = InstantiateMockMsg {
         spot_orders: vec![dummy_order],
-        margin_orders: vec![],
+        perpetual_orders: vec![],
     };
 
     // Create an sudo message to process orders.

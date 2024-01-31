@@ -205,19 +205,19 @@ pub struct SwapAmountOutRoute {
 }
 
 #[cw_serde]
-pub enum MarginPosition {
+pub enum PerpetualPosition {
     Unspecified = 0,
     Long = 1,
     Short = 2,
 }
 
-impl MarginPosition {
+impl PerpetualPosition {
     pub fn try_from_i32(value: i32) -> Result<Self, StdError> {
         match value {
             0 => Ok(Self::Unspecified),
             1 => Ok(Self::Long),
             2 => Ok(Self::Short),
-            _ => Err(StdError::generic_err("MarginPosition out of range")),
+            _ => Err(StdError::generic_err("PerpetualPosition out of range")),
         }
     }
 }

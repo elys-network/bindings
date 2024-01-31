@@ -27,13 +27,13 @@ pub struct OracleAssetInfoResponse {
 }
 
 #[cw_serde]
-pub struct MarginQueryPositionsResponse {
+pub struct PerpetualQueryPositionsResponse {
     pub mtps: Option<Vec<Mtp>>,
     pub pagination: PageResponse,
 }
 
 #[cw_serde]
-pub struct MarginMtpResponse {
+pub struct PerpetualMtpResponse {
     pub mtp: Option<Mtp>,
 }
 
@@ -62,7 +62,7 @@ pub struct AmmSwapEstimationByDenomResponse {
 }
 
 #[cw_serde]
-pub struct MarginOpenEstimationRawResponse {
+pub struct PerpetualOpenEstimationRawResponse {
     pub position: i32,
     pub leverage: String,
     pub trading_asset: String,
@@ -84,7 +84,7 @@ pub struct MarginOpenEstimationRawResponse {
 }
 
 #[cw_serde]
-pub struct MarginOpenEstimationResponse {
+pub struct PerpetualOpenEstimationResponse {
     pub position: i32,
     pub leverage: SignedDecimal,
     pub trading_asset: String,
@@ -106,13 +106,13 @@ pub struct MarginOpenEstimationResponse {
 }
 
 #[cw_serde]
-pub struct MarginGetPositionsForAddressResponseRaw {
+pub struct PerpetualGetPositionsForAddressResponseRaw {
     pub mtps: Option<Vec<Mtp>>,
     pub pagination: PageResponse,
 }
 
 #[cw_serde]
-pub struct MarginGetPositionsForAddressResponse {
+pub struct PerpetualGetPositionsForAddressResponse {
     pub mtps: Vec<Mtp>,
     pub pagination: PageResponse,
 }

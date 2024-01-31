@@ -9,7 +9,7 @@ fn successful_query_message() {
     // Create a mock message to instantiate the contract with an initial dummy order.
     let instantiate_msg = InstantiateMockMsg {
         spot_orders: vec![SpotOrder::new_dummy()],
-        margin_orders: vec![],
+        perpetual_orders: vec![],
     };
 
     // Extract the order ID from the dummy order.

@@ -10,11 +10,11 @@ use elys_bindings::{
     trade_shield::{
         msg::{
             query_resp::{
-                GetMarginOrdersResp, GetMarginPositionsForAddressResp, GetSpotOrdersResp,
+                GetPerpetualOrdersResp, GetPerpetualPositionsForAddressResp, GetSpotOrdersResp,
             },
             QueryMsg,
         },
-        types::{MarginOrder, MarginOrderType, SpotOrder, Status},
+        types::{PerpetualOrder, PerpetualOrderType, SpotOrder, Status},
     },
 };
 
@@ -403,17 +403,17 @@ pub fn get_all_order(
             },
         )
         .map_err(|e| StdError::generic_err(format!("GetSpotOrders failed {}", e)))?;
-    let margin_order: GetMarginOrdersResp = querier
+    let perpetual_order: GetPerpetualOrdersResp = querier
         .query_wasm_smart(
             trade_shield_address,
-            &QueryMsg::GetMarginOrders {
+            &QueryMsg::GetPerpetualOrders {
                 pagination: None,
                 order_owner: Some(owner.clone()),
-                order_type: Some(MarginOrderType::LimitOpen),
+                order_type: Some(PerpetualOrderType::LimitOpen),
                 order_status: Some(Status::Pending),
             },
         )
-        .map_err(|e| StdError::generic_err(format!("GetMarginOrders failed {}", e)))?;
+        .map_err(|e| StdError::generic_err(format!("GetPerpetualOrders failed {}", e)))?;
     let mut map: HashMap<String, Uint128> = HashMap::new();
 
     for SpotOrder { order_amount, .. } in spot_order.orders {
@@ -422,7 +422,7 @@ pub fn get_all_order(
             .or_insert(order_amount.amount);
     }
 
-    for MarginOrder { collateral, .. } in margin_order.orders {
+    for PerpetualOrder { collateral, .. } in perpetual_order.orders {
         map.entry(collateral.denom)
             .and_modify(|e| *e += collateral.amount)
             .or_insert(collateral.amount);
@@ -659,11 +659,11 @@ fn get_perpetuals(
     value_denom: &String,
     address: String,
 ) -> StdResult<PerpetualAssets> {
-    let GetMarginPositionsForAddressResp { mtps, .. } = deps
+    let GetPerpetualPositionsForAddressResp { mtps, .. } = deps
         .querier
         .query_wasm_smart(
             trade_shield_address,
-            &QueryMsg::MarginGetPositionsForAddress {
+            &QueryMsg::PerpetualGetPositionsForAddress {
                 address,
                 pagination: None,
             },

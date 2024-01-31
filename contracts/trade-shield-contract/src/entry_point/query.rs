@@ -10,12 +10,12 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
         GetSpotOrder { order_id } => Ok(to_json_binary(&query::get_spot_order(deps, order_id)?)?),
         GetAllPrices { limit } => Ok(to_json_binary(&query::get_all_prices(deps, limit)?)?),
         AssetInfo { denom } => Ok(to_json_binary(&query::asset_info(deps, denom)?)?),
-        GetMarginPosition { address, id } => Ok(to_json_binary(&query::get_margin_position(
-            deps, address, id,
-        )?)?),
-        GetMarginPositions { pagination } => Ok(to_json_binary(&query::get_margin_positions(
-            deps, pagination,
-        )?)?),
+        GetPerpetualPosition { address, id } => Ok(to_json_binary(
+            &query::get_perpetual_position(deps, address, id)?,
+        )?),
+        GetPerpetualPositions { pagination } => Ok(to_json_binary(
+            &query::get_perpetual_positions(deps, pagination)?,
+        )?),
         GetSpotOrders {
             pagination,
             order_owner,
@@ -28,12 +28,12 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
             order_type,
             order_status,
         )?)?),
-        GetMarginOrders {
+        GetPerpetualOrders {
             pagination,
             order_owner,
             order_type,
             order_status,
-        } => Ok(to_json_binary(&query::get_margin_orders(
+        } => Ok(to_json_binary(&query::get_perpetual_orders(
             deps,
             pagination,
             order_owner,
@@ -52,15 +52,15 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
             denom_out,
             user_address,
         )?)?),
-        GetMarginOrder { id } => Ok(to_json_binary(&query::get_margin_order(deps, id)?)?),
-        MarginOpenEstimation {
+        GetPerpetualOrder { id } => Ok(to_json_binary(&query::get_perpetual_order(deps, id)?)?),
+        PerpetualOpenEstimation {
             position,
             leverage,
             trading_asset,
             collateral,
             take_profit_price,
             user_address,
-        } => Ok(to_json_binary(&query::margin_open_estimation(
+        } => Ok(to_json_binary(&query::perpetual_open_estimation(
             deps,
             position,
             leverage,
@@ -69,10 +69,10 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
             take_profit_price,
             user_address,
         )?)?),
-        MarginGetPositionsForAddress {
+        PerpetualGetPositionsForAddress {
             address,
             pagination,
-        } => Ok(to_json_binary(&query::margin_get_position_for_address(
+        } => Ok(to_json_binary(&query::perpetual_get_position_for_address(
             deps, address, pagination,
         )?)?),
     }

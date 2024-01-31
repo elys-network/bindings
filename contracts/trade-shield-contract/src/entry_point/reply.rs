@@ -16,16 +16,20 @@ pub fn reply(
 
     match info.reply_type {
         ReplyType::SpotOrder => reply_to_spot_order(deps, info.data, module_resp),
-        ReplyType::MarginBrokerMarketOpen => {
-            reply_to_create_margin_market_open(deps, info.data, module_resp)
+        ReplyType::PerpetualBrokerMarketOpen => {
+            reply_to_create_perpetual_market_open(deps, info.data, module_resp)
         }
 
-        ReplyType::MarginBrokerMarketClose => {
-            reply_to_create_margin_market_close(deps, info.data, module_resp)
+        ReplyType::PerpetualBrokerMarketClose => {
+            reply_to_create_perpetual_market_close(deps, info.data, module_resp)
         }
 
-        ReplyType::MarginBrokerClose => reply_to_close_margin_order(deps, info.data, module_resp),
+        ReplyType::PerpetualBrokerClose => {
+            reply_to_close_perpetual_order(deps, info.data, module_resp)
+        }
         ReplyType::SpotOrderMarketBuy => reply_to_spot_order_market(deps, info.data, module_resp),
-        ReplyType::MarginBrokerOpen => reply_to_open_margin_position(deps, info.data, module_resp),
+        ReplyType::PerpetualBrokerOpen => {
+            reply_to_open_perpetual_position(deps, info.data, module_resp)
+        }
     }
 }

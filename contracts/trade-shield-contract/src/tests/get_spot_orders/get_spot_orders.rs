@@ -11,7 +11,7 @@ fn get_spot_orders() {
 
     let instantiate_msg = InstantiateMockMsg {
         spot_orders: spot_orders.clone(),
-        margin_orders: vec![],
+        perpetual_orders: vec![],
     };
 
     let code = ContractWrapper::new(execute, instantiate, query);

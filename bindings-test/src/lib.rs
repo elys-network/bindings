@@ -7,5 +7,5 @@ mod tests;
 
 pub use multitest::{
     ElysApp, ElysAppWrapped, ElysModule, ACCOUNT, ASSET_INFO, BLOCK_TIME, LAST_MODULE_USED,
-    MARGIN_OPENED_POSITION, PRICES,
+    PERPETUAL_OPENED_POSITION, PRICES,
 };

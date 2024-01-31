@@ -37,7 +37,7 @@ fn successful_process_5_of_10_orders() {
 
     let instantiate_msg = InstantiateMockMsg {
         spot_orders,
-        margin_orders: vec![],
+        perpetual_orders: vec![],
     };
 
     let sudo_msg = SudoMsg::ClockEndBlock {};

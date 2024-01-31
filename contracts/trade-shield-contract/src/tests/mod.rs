@@ -63,38 +63,38 @@ mod process_spot_order {
     mod successful_process_stop_loss_order;
 }
 
-mod create_margin_order {
+mod create_perpetual_order {
     use super::*;
     mod coin_number;
-    mod reproduce_testnet_issue_create_margin_market_open_order;
-    mod successful_create_margin_market_order;
-    mod successful_create_margin_order;
-    mod successful_create_nargin_market_close;
+    mod reproduce_testnet_issue_create_perpetual_market_open_order;
+    mod successful_create_perpetual_market_close;
+    mod successful_create_perpetual_market_order;
+    mod successful_create_perpetual_order;
 }
 
-mod cancel_margin_order {
+mod cancel_perpetual_order {
     use super::*;
     mod not_found;
     mod succesful_cancel_an_order;
     mod unauthorize;
 }
 
-mod process_margin_order {
+mod process_perpetual_order {
     use super::*;
     mod process_limit_open;
     mod process_order_close;
 }
 
-mod get_margin_order {
+mod get_perpetual_order {
     use super::*;
 
     mod not_found;
     mod successful_query_message;
 }
 
-mod close_margin_position {
+mod close_perpetual_position {
     use super::*;
-    mod closing_a_margin_position;
+    mod closing_a_perpetual_position;
 }
 
 pub use mock::instantiate::*;

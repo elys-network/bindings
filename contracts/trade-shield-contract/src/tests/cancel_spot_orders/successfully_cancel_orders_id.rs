@@ -85,7 +85,7 @@ fn successfully_cancel_orders_ids() {
     // Create a mock message to instantiate the contract with an empty list of orders.
     let instantiate_msg = InstantiateMockMsg {
         spot_orders,
-        margin_orders: vec![],
+        perpetual_orders: vec![],
     };
 
     let code = ContractWrapper::new(execute, instantiate, query);

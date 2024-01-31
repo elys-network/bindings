@@ -5,10 +5,10 @@ use cosmwasm_std::{
 use cw_multi_test::Executor;
 use elys_bindings::{
     query_resp::{
-        AmmSwapEstimationResponse, AuthAddressesResponse, MarginMtpResponse,
-        MarginQueryPositionsResponse, OracleAssetInfoResponse,
+        AmmSwapEstimationResponse, AuthAddressesResponse, OracleAssetInfoResponse,
+        PerpetualMtpResponse, PerpetualQueryPositionsResponse,
     },
-    types::{MarginPosition, Mtp, OracleAssetInfo, PageRequest, Price, SwapAmountInRoute},
+    types::{Mtp, OracleAssetInfo, PageRequest, PerpetualPosition, Price, SwapAmountInRoute},
     ElysMsg, ElysQuery,
 };
 
@@ -163,7 +163,7 @@ fn query_positions() {
 
     let req = ElysQuery::positions(PageRequest::new(5)).into();
 
-    let mtps_found: MarginQueryPositionsResponse = app.wrap().query(&req).unwrap();
+    let mtps_found: PerpetualQueryPositionsResponse = app.wrap().query(&req).unwrap();
 
     assert_eq!(mtps_found.mtps.unwrap(), mtps);
 }
@@ -206,7 +206,7 @@ fn query_single_mtp() {
 
     let req = ElysQuery::mtp("user", 0).into();
 
-    let mtp_found: MarginMtpResponse = app.wrap().query(&req).unwrap();
+    let mtp_found: PerpetualMtpResponse = app.wrap().query(&req).unwrap();
 
     assert_eq!(mtps[0], mtp_found.mtp.unwrap());
 }
@@ -221,9 +221,9 @@ fn query_mtp_not_found() {
 
     let req = ElysQuery::mtp("user", 0).into();
 
-    let err = app.wrap().query::<MarginMtpResponse>(&req).unwrap_err();
+    let err = app.wrap().query::<PerpetualMtpResponse>(&req).unwrap_err();
 
-    let not_found_err = StdError::not_found("margin trading position");
+    let not_found_err = StdError::not_found("perpetual trading position");
 
     let err_ref = StdError::generic_err(format!(
         "Querier contract error: {}",
@@ -370,15 +370,15 @@ fn swap_error() {
 }
 
 #[test]
-fn open_margin_position() {
+fn open_perpetual_position() {
     let wallets: Vec<(&str, Vec<Coin>)> = vec![("user", coins(5, "btc"))];
     let mut app = ElysApp::new_with_wallets(wallets);
 
-    let open_msg = ElysMsg::margin_open_position(
+    let open_msg = ElysMsg::perpetual_open_position(
         "user",
         coin(5, "btc"),
         "uusdc",
-        MarginPosition::Short,
+        PerpetualPosition::Short,
         SignedDecimal::from_atomics(Int64::new(25), 1).unwrap(),
         Some(SignedDecimal256::from_atomics(Uint128::new(11), 1).unwrap()),
     );
@@ -409,19 +409,19 @@ fn open_margin_position() {
         .unwrap()
         .unwrap();
 
-    assert_eq!(last_module_used, "MarginOpen");
+    assert_eq!(last_module_used, "PerpetualOpen");
 }
 
 #[test]
-fn margin_margin_close_position() {
+fn perpetual_perpetual_close_position() {
     let wallets: Vec<(&str, Vec<Coin>)> = vec![("user", coins(5, "btc"))];
     let mut app = ElysApp::new_with_wallets(wallets);
 
-    let open_msg = ElysMsg::margin_open_position(
+    let open_msg = ElysMsg::perpetual_open_position(
         "user",
         coin(5, "btc"),
         "uusdc",
-        MarginPosition::Short,
+        PerpetualPosition::Short,
         SignedDecimal::from_atomics(Int64::new(25), 1).unwrap(),
         Some(SignedDecimal256::from_atomics(Uint128::new(11), 1).unwrap()),
     );
@@ -452,9 +452,9 @@ fn margin_margin_close_position() {
         .unwrap()
         .unwrap();
 
-    assert_eq!(last_module_used, "MarginOpen");
+    assert_eq!(last_module_used, "PerpetualOpen");
 
-    let close_msg = ElysMsg::margin_close_position("user", 0, 1);
+    let close_msg = ElysMsg::perpetual_close_position("user", 0, 1);
 
     app.execute(Addr::unchecked("user"), close_msg.into())
         .unwrap();
@@ -464,7 +464,7 @@ fn margin_margin_close_position() {
         .unwrap()
         .unwrap();
 
-    assert_eq!(last_module_used, "MarginClose");
+    assert_eq!(last_module_used, "PerpetualClose");
 }
 #[test]
 fn auth_account() {

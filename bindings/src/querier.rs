@@ -8,7 +8,7 @@ use crate::{
     query::*,
     query_resp::*,
     trade_shield::types::StakedPosition,
-    types::{BalanceAvailable, MarginPosition, PageRequest, Price, SwapAmountInRoute},
+    types::{BalanceAvailable, PageRequest, PerpetualPosition, Price, SwapAmountInRoute},
 };
 
 pub struct ElysQuerier<'a> {
@@ -70,14 +70,14 @@ impl<'a> ElysQuerier<'a> {
         let resp: OracleAssetInfoResponse = self.querier.query(&request)?;
         Ok(resp)
     }
-    pub fn mtp(&self, address: String, id: u64) -> StdResult<MarginMtpResponse> {
+    pub fn mtp(&self, address: String, id: u64) -> StdResult<PerpetualMtpResponse> {
         let request = QueryRequest::Custom(ElysQuery::mtp(address, id));
-        let resp: MarginMtpResponse = self.querier.query(&request)?;
+        let resp: PerpetualMtpResponse = self.querier.query(&request)?;
         Ok(resp)
     }
-    pub fn positions(&self, pagination: PageRequest) -> StdResult<MarginQueryPositionsResponse> {
+    pub fn positions(&self, pagination: PageRequest) -> StdResult<PerpetualQueryPositionsResponse> {
         let request = QueryRequest::Custom(ElysQuery::positions(pagination));
-        let resp: MarginQueryPositionsResponse = self.querier.query(&request)?;
+        let resp: PerpetualQueryPositionsResponse = self.querier.query(&request)?;
         Ok(resp)
     }
     pub fn accounts(&self, pagination: Option<PageRequest>) -> StdResult<AuthAddressesResponse> {
@@ -98,16 +98,16 @@ impl<'a> ElysQuerier<'a> {
         Ok(resp)
     }
 
-    pub fn margin_open_estimation(
+    pub fn perpetual_open_estimation(
         &self,
-        position: MarginPosition,
+        position: PerpetualPosition,
         leverage: SignedDecimal,
         trading_asset: impl Into<String>,
         collateral: Coin,
         take_profit_price: Option<SignedDecimal256>,
         discount: Decimal,
-    ) -> StdResult<MarginOpenEstimationResponse> {
-        let query = ElysQuery::margin_open_estimation(
+    ) -> StdResult<PerpetualOpenEstimationResponse> {
+        let query = ElysQuery::perpetual_open_estimation(
             position as i32,
             leverage,
             trading_asset.into(),
@@ -117,9 +117,9 @@ impl<'a> ElysQuerier<'a> {
         );
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
 
-        let raw_resp: MarginOpenEstimationRawResponse = self.querier.query(&request)?;
+        let raw_resp: PerpetualOpenEstimationRawResponse = self.querier.query(&request)?;
 
-        let resp: MarginOpenEstimationResponse = MarginOpenEstimationResponse {
+        let resp: PerpetualOpenEstimationResponse = PerpetualOpenEstimationResponse {
             position: raw_resp.position,
             leverage: SignedDecimal::from_str(&raw_resp.leverage)
                 .map_or(SignedDecimal::zero(), |leverage| leverage),
@@ -232,18 +232,18 @@ impl<'a> ElysQuerier<'a> {
         Ok(resp)
     }
 
-    pub fn margin_get_position_for_address(
+    pub fn perpetual_get_position_for_address(
         &self,
         address: impl Into<String>,
         pagination: Option<PageRequest>,
-    ) -> StdResult<MarginGetPositionsForAddressResponse> {
-        let request = QueryRequest::Custom(ElysQuery::margin_get_position_for_address(
+    ) -> StdResult<PerpetualGetPositionsForAddressResponse> {
+        let request = QueryRequest::Custom(ElysQuery::perpetual_get_position_for_address(
             address.into(),
             pagination,
         ));
-        let raw_resp: MarginGetPositionsForAddressResponseRaw = self.querier.query(&request)?;
+        let raw_resp: PerpetualGetPositionsForAddressResponseRaw = self.querier.query(&request)?;
 
-        let resp = MarginGetPositionsForAddressResponse {
+        let resp = PerpetualGetPositionsForAddressResponse {
             mtps: raw_resp.mtps.map_or(vec![], |mtps| mtps),
             pagination: raw_resp.pagination,
         };

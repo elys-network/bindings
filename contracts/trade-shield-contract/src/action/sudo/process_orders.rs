@@ -16,7 +16,7 @@ pub fn process_orders(
         .filter_map(|res| res.ok().map(|r| r.1))
         .collect();
 
-    let margin_orders: Vec<MarginOrder> = PENDING_MARGIN_ORDER
+    let perpetual_orders: Vec<PerpetualOrder> = PENDING_PERPETUAL_ORDER
         .prefix_range(deps.storage, None, None, Order::Ascending)
         .filter_map(|res| res.ok().map(|r| r.1))
         .collect();
@@ -59,20 +59,20 @@ pub fn process_orders(
         }
     }
 
-    for margin_order in margin_orders.iter() {
-        let mut order = margin_order.to_owned();
+    for perpetual_order in perpetual_orders.iter() {
+        let mut order = perpetual_order.to_owned();
         let amm_swap_estimation = match querier.amm_swap_estimation_by_denom(
-            &margin_order.collateral,
-            &margin_order.collateral.denom,
-            &margin_order.trading_asset,
+            &perpetual_order.collateral,
+            &perpetual_order.collateral.denom,
+            &perpetual_order.trading_asset,
             &Decimal::zero(),
         ) {
             Ok(amm_swap_estimation) => amm_swap_estimation,
             Err(_) => {
                 order.status = Status::Canceled;
-                PENDING_MARGIN_ORDER.remove(deps.storage, order.order_id);
-                MARGIN_ORDER.save(deps.storage, order.order_id, &order)?;
-                if order.order_type == MarginOrderType::LimitOpen {
+                PENDING_PERPETUAL_ORDER.remove(deps.storage, order.order_id);
+                PERPETUAL_ORDER.save(deps.storage, order.order_id, &order)?;
+                if order.order_type == PerpetualOrderType::LimitOpen {
                     bank_msgs.push(BankMsg::Send {
                         to_address: order.owner.to_string(),
                         amount: vec![order.collateral.clone()],
@@ -81,29 +81,29 @@ pub fn process_orders(
                 continue;
             }
         };
-        if order.order_type != MarginOrderType::LimitOpen {
+        if order.order_type != PerpetualOrderType::LimitOpen {
             match querier.mtp(order.owner.clone(), order.position_id.clone().unwrap()) {
                 Ok(mtp) => match mtp.mtp {
                     Some(_) => {}
                     None => {
                         order.status = Status::Canceled;
-                        PENDING_MARGIN_ORDER.remove(deps.storage, order.order_id);
-                        MARGIN_ORDER.save(deps.storage, order.order_id, &order)?;
+                        PENDING_PERPETUAL_ORDER.remove(deps.storage, order.order_id);
+                        PERPETUAL_ORDER.save(deps.storage, order.order_id, &order)?;
                         continue;
                     }
                 },
                 Err(_) => {
                     order.status = Status::Canceled;
-                    PENDING_MARGIN_ORDER.remove(deps.storage, order.order_id);
-                    MARGIN_ORDER.save(deps.storage, order.order_id, &order)?;
+                    PENDING_PERPETUAL_ORDER.remove(deps.storage, order.order_id);
+                    PERPETUAL_ORDER.save(deps.storage, order.order_id, &order)?;
                     continue;
                 }
             };
         }
 
-        if check_margin_order(&margin_order, amm_swap_estimation) {
-            process_margin_order(
-                margin_order,
+        if check_perpetual_order(&perpetual_order, amm_swap_estimation) {
+            process_perpetual_order(
+                perpetual_order,
                 &mut submsgs,
                 &mut reply_info_id,
                 deps.storage,
@@ -119,16 +119,16 @@ pub fn process_orders(
     Ok(resp)
 }
 
-fn process_margin_order(
-    order: &MarginOrder,
+fn process_perpetual_order(
+    order: &PerpetualOrder,
     submsgs: &mut Vec<SubMsg<ElysMsg>>,
     reply_info_id: &mut u64,
     storage: &mut dyn Storage,
     querier: &ElysQuerier<'_>,
 ) -> StdResult<()> {
-    let (msg, reply_type) = if order.order_type == MarginOrderType::LimitOpen {
+    let (msg, reply_type) = if order.order_type == PerpetualOrderType::LimitOpen {
         (
-            ElysMsg::margin_open_position(
+            ElysMsg::perpetual_open_position(
                 &order.owner,
                 order.collateral.clone(),
                 &order.trading_asset,
@@ -136,7 +136,7 @@ fn process_margin_order(
                 order.leverage.clone(),
                 order.take_profit_price.clone(),
             ),
-            ReplyType::MarginBrokerOpen,
+            ReplyType::PerpetualBrokerOpen,
         )
     } else {
         let mtp = match querier
@@ -147,16 +147,16 @@ fn process_margin_order(
             None => {
                 let mut order = order.to_owned();
                 order.status = Status::Canceled;
-                PENDING_MARGIN_ORDER.remove(storage, order.order_id);
-                MARGIN_ORDER.save(storage, order.order_id, &order)?;
+                PENDING_PERPETUAL_ORDER.remove(storage, order.order_id);
+                PERPETUAL_ORDER.save(storage, order.order_id, &order)?;
                 return Ok(());
             }
         };
 
         let amount = mtp.custody.i128();
         (
-            ElysMsg::margin_close_position(&order.owner, order.position_id.unwrap(), amount),
-            ReplyType::MarginBrokerClose,
+            ElysMsg::perpetual_close_position(&order.owner, order.position_id.unwrap(), amount),
+            ReplyType::PerpetualBrokerClose,
         )
     };
 
@@ -184,12 +184,12 @@ fn process_margin_order(
     Ok(())
 }
 
-fn check_margin_order(
-    order: &MarginOrder,
+fn check_perpetual_order(
+    order: &PerpetualOrder,
     amm_swap_estimation: AmmSwapEstimationByDenomResponse,
 ) -> bool {
-    if order.order_type == MarginOrderType::MarketClose
-        || order.order_type == MarginOrderType::MarketOpen
+    if order.order_type == PerpetualOrderType::MarketClose
+        || order.order_type == PerpetualOrderType::MarketOpen
     {
         return false;
     }
@@ -204,12 +204,12 @@ fn check_margin_order(
     let market_price = amm_swap_estimation.spot_price;
 
     match (&order.order_type, &order.position) {
-        (MarginOrderType::LimitOpen, MarginPosition::Long) => market_price <= order_price,
-        (MarginOrderType::LimitOpen, MarginPosition::Short) => market_price >= order_price,
-        (MarginOrderType::LimitClose, MarginPosition::Long) => market_price >= order_price,
-        (MarginOrderType::LimitClose, MarginPosition::Short) => market_price <= order_price,
-        (MarginOrderType::StopLoss, MarginPosition::Long) => market_price <= order_price,
-        (MarginOrderType::StopLoss, MarginPosition::Short) => market_price >= order_price,
+        (PerpetualOrderType::LimitOpen, PerpetualPosition::Long) => market_price <= order_price,
+        (PerpetualOrderType::LimitOpen, PerpetualPosition::Short) => market_price >= order_price,
+        (PerpetualOrderType::LimitClose, PerpetualPosition::Long) => market_price >= order_price,
+        (PerpetualOrderType::LimitClose, PerpetualPosition::Short) => market_price <= order_price,
+        (PerpetualOrderType::StopLoss, PerpetualPosition::Long) => market_price <= order_price,
+        (PerpetualOrderType::StopLoss, PerpetualPosition::Short) => market_price >= order_price,
         _ => false,
     }
 }
