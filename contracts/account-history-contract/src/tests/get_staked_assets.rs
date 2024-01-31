@@ -17,7 +17,8 @@ use cosmwasm_std::{
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::query_resp::{
-    BalanceBorrowed, Entry, Lockup, QueryGetEntryResponse, QueryGetPriceResponse, StakedAvailable,
+    BalanceBorrowed, Entry, Lockup, QueryAprResponse, QueryGetEntryResponse, QueryGetPriceResponse,
+    QueryStakedPositionResponse, QueryUnstakedPositionResponse, StakedAvailable,
 };
 use elys_bindings::types::{
     BalanceAvailable, PageRequest, Price, StakedPosition, StakingValidator, UnstakedPosition,
@@ -54,46 +55,6 @@ fn mock_instantiate(
 }
 
 struct ElysModuleWrapper(ElysModule);
-
-// $ elysd q --output json --node "https://rpc.testnet.elys.network:443" wasm contract-state smart "elys1s37xz7tzrru2cpl96juu9lfqrsd4jh73j9slyv440q5vttx2uyesetjpne" '{
-//     "commitment_staked_positions": {
-//         "delegator_address": "elys1u8c28343vvhwgwhf29w6hlcz73hvq7lwxmrl46"
-//     }
-// }' | jq
-// {
-// "data": {
-// "staked_position": [
-//   {
-//     "id": "1",
-//     "validator": {
-//       "address": "elysvaloper1q228fz8ctu59udlpf5xmdhyahwdmvlwd2x9m6m",
-//       "name": "F5 Nodes",
-//       "voting_power": "0.3472745336338554",
-//       "commission": "0.05",
-//       "profile_picture_src": "https://f5nodes.com"
-//     },
-//     "staked": {
-//       "amount": "0",
-//       "usd_amount": "0"
-//     }
-//   },
-//   {
-//     "id": "2",
-//     "validator": {
-//       "address": "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw",
-//       "name": "nirvana",
-//       "voting_power": "25.6521469796402094",
-//       "commission": "0.1",
-//       "profile_picture_src": "https://elys.network"
-//     },
-//     "staked": {
-//       "amount": "10000000",
-//       "usd_amount": "10000000"
-//     }
-//   }
-// ]
-// }
-// }
 
 impl Module for ElysModuleWrapper {
     type QueryT = ElysQuery;
@@ -185,8 +146,9 @@ impl Module for ElysModuleWrapper {
                 Ok(to_json_binary(&resp)?)
             }
             ElysQuery::AmmPriceByDenom { token_in, .. } => {
-                let spot_price = match token_in {
-                    _ => Decimal::one(),
+                let spot_price = match token_in.denom.as_str() {
+                    "uusdc" => Decimal::one(),
+                    _ => return Err(Error::new(StdError::not_found(token_in.denom.as_str()))),
                 };
                 Ok(to_json_binary(&spot_price)?)
             }
@@ -203,6 +165,279 @@ impl Module for ElysModuleWrapper {
                         },
                     },
                     _ => return Err(Error::new(StdError::not_found(asset))),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::CommitmentRewardsSubBucketBalanceOfDenom { denom, program, .. } => {
+                let resp: BalanceAvailable = match (denom.as_str(), program) {
+                    ("ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", 1) => {
+                        BalanceAvailable {
+                            amount: Uint128::zero(),
+                            usd_amount: Decimal::zero(),
+                        }
+                    }
+                    ("ueden", 1) => BalanceAvailable {
+                        amount: Uint128::new(349209420),
+                        usd_amount: Decimal::from_str("349209420").unwrap(),
+                    },
+                    ("ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", 2) => {
+                        BalanceAvailable {
+                            amount: Uint128::zero(),
+                            usd_amount: Decimal::zero(),
+                        }
+                    }
+                    ("ueden", 2) => BalanceAvailable {
+                        amount: Uint128::new(9868),
+                        usd_amount: Decimal::from_str("9868").unwrap(),
+                    },
+                    ("uedenb", 2) => BalanceAvailable {
+                        amount: Uint128::new(654083056),
+                        usd_amount: Decimal::from_str("654083056").unwrap(),
+                    },
+                    ("ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", 3) => {
+                        BalanceAvailable {
+                            amount: Uint128::new(1161),
+                            usd_amount: Decimal::from_str("1161").unwrap(),
+                        }
+                    }
+                    ("ueden", 3) => BalanceAvailable {
+                        amount: Uint128::new(2984882),
+                        usd_amount: Decimal::from_str("2984882").unwrap(),
+                    },
+                    ("uedenb", 3) => BalanceAvailable {
+                        amount: Uint128::new(10155052),
+                        usd_amount: Decimal::from_str("10155052").unwrap(),
+                    },
+                    ("ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", 4) => {
+                        BalanceAvailable {
+                            amount: Uint128::zero(),
+                            usd_amount: Decimal::zero(),
+                        }
+                    }
+                    ("ueden", 4) => BalanceAvailable {
+                        amount: Uint128::zero(),
+                        usd_amount: Decimal::zero(),
+                    },
+                    ("uedenb", 4) => BalanceAvailable {
+                        amount: Uint128::zero(),
+                        usd_amount: Decimal::zero(),
+                    },
+                    _ => return Err(Error::new(StdError::not_found(denom))),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::CommitmentStakedPositions { delegator_address } => {
+                let resp = match delegator_address.as_str() {
+                    "user" => QueryStakedPositionResponse {
+                        staked_position: Some(vec![StakedPosition {
+                            id: "2".to_string(),
+                            validator: StakingValidator {
+                                address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw"
+                                    .to_string(),
+                                name: "nirvana".to_string(),
+                                voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
+                                commission: Decimal::from_str("0.1").unwrap(),
+                                profile_picture_src: Some("https://elys.network".to_string()),
+                            },
+                            staked: BalanceAvailable {
+                                amount: Uint128::new(10000000),
+                                usd_amount: Decimal::from_str("10000000").unwrap(),
+                            },
+                        }]),
+                    },
+                    _ => return Err(Error::new(StdError::not_found(delegator_address))),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::CommitmentUnStakedPositions { delegator_address } => {
+                let resp = match delegator_address.as_str() {
+                    "user" => QueryUnstakedPositionResponse {
+                        unstaked_position: Some(vec![UnstakedPosition {
+                            id: "1".to_string(),
+                            validator: StakingValidator {
+                                address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw"
+                                    .to_string(),
+                                name: "nirvana".to_string(),
+                                voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
+                                commission: Decimal::from_str("0.1").unwrap(),
+                                profile_picture_src: Some("https://elys.network".to_string()),
+                            },
+                            remaining_time: 1707328694000,
+                            unstaked: BalanceAvailable {
+                                amount: Uint128::new(100038144098),
+                                usd_amount: Decimal::from_str("100038144098").unwrap(),
+                            },
+                        }]),
+                    },
+                    _ => return Err(Error::new(StdError::not_found(delegator_address))),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::AmmBalance { address, denom } => {
+                let resp = match (address.as_str(), denom.as_str()) {
+                    (
+                        "user",
+                        "ibc/0E1517E2771CA7C03F2ED3F9BAECCAEADF0BFD79B89679E834933BC0F179AD98",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(21798000),
+                        usd_amount: Decimal::from_str("21798000").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(5333229342748),
+                        usd_amount: Decimal::from_str("5333229342748").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(2704998),
+                        usd_amount: Decimal::from_str("2704998").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/2FBCFC209420E6CECED6EE0BC599E74349759352CE953E27A6871BB3D84BC058",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(594000000000200000),
+                        usd_amount: Decimal::from_str("594000000000200000").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/326A89923D85047E6418A671FBACCAFA2686B01A16ED4A0AD92954FCE1485910",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(1085352),
+                        usd_amount: Decimal::from_str("1085352").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/43881AB3B3D05FD9D3606D7F57CBE6EEEA89D18AC66AF9E2915ED43940E71CFD",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(168400000000000000),
+                        usd_amount: Decimal::from_str("168400000000000000").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/4DAE26570FD24ABA40E2BE4137E39D946C78B00B248D3F78B0919567C4371156",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(49765000),
+                        usd_amount: Decimal::from_str("49765000").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/977D5388D2FBE72D9A33FE2423BF8F4DADF3B591207CC98A295B9ACF81E4DE40",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(9100000),
+                        usd_amount: Decimal::from_str("9100000").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/E059CD828E5009D4CF03C4494BEA73749250287FC98DD46E19F9016B918BF49D",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(141000000000000000),
+                        usd_amount: Decimal::from_str("141000000000000000").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(37403942),
+                        usd_amount: Decimal::from_str("37403942").unwrap(),
+                    },
+                    (
+                        "user",
+                        "ibc/FB22E35236996F6B0B1C9D407E8A379A7B1F4083F1960907A1622F022AE450E1",
+                    ) => BalanceAvailable {
+                        amount: Uint128::new(79979999999749000),
+                        usd_amount: Decimal::from_str("79979999999749000").unwrap(),
+                    },
+                    ("user", "uelys") => BalanceAvailable {
+                        amount: Uint128::new(45666543),
+                        usd_amount: Decimal::from_str("45666543").unwrap(),
+                    },
+                    _ => BalanceAvailable {
+                        amount: Uint128::zero(),
+                        usd_amount: Decimal::zero(),
+                    },
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::CommitmentStakedBalanceOfDenom { denom, .. } => {
+                let resp: StakedAvailable = match denom.as_str() {
+                    "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65" => {
+                        StakedAvailable {
+                            usd_amount: Decimal::zero(),
+                            amount: Uint128::zero(),
+                            lockups: None,
+                        }
+                    }
+                    "uelys" => StakedAvailable {
+                        usd_amount: Decimal::from_str("10000000").unwrap(),
+                        amount: Uint128::new(10000000),
+                        lockups: Some(vec![]),
+                    },
+                    "ueden" => StakedAvailable {
+                        usd_amount: Decimal::from_str("2587611057").unwrap(),
+                        amount: Uint128::new(2587611057),
+                        lockups: Some(vec![Lockup {
+                            amount: Int128::new(5200770174),
+                            // use now time
+                            unlock_timestamp: block.time.seconds(),
+                        }]),
+                    },
+                    "uedenb" => StakedAvailable {
+                        usd_amount: Decimal::zero(),
+                        amount: Uint128::zero(),
+                        lockups: None,
+                    },
+                    _ => return Err(Error::new(StdError::not_found(denom))),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::StableStakeBalanceOfBorrow {} => {
+                let resp = BalanceBorrowed {
+                    usd_amount: Decimal::from_str("204000000001").unwrap(),
+                    percentage: Decimal::one(),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::IncentiveApr {
+                withdraw_type,
+                denom,
+            } => {
+                let resp: QueryAprResponse = match (withdraw_type, denom.as_str()) {
+                    (1, "uusdc") => QueryAprResponse {
+                        apr: Uint128::new(100),
+                    },
+                    (1, "ueden") => QueryAprResponse {
+                        apr: Uint128::new(168),
+                    },
+                    (4, "uusdc") => QueryAprResponse {
+                        apr: Uint128::zero(),
+                    },
+                    (4, "ueden") => QueryAprResponse {
+                        apr: Uint128::new(29),
+                    },
+                    (3, "uusdc") => QueryAprResponse {
+                        apr: Uint128::zero(),
+                    },
+                    (3, "ueden") => QueryAprResponse {
+                        apr: Uint128::new(29),
+                    },
+                    (3, "uedenb") => QueryAprResponse {
+                        apr: Uint128::new(100),
+                    },
+                    (2, "uusdc") => QueryAprResponse {
+                        apr: Uint128::zero(),
+                    },
+                    (2, "ueden") => QueryAprResponse {
+                        apr: Uint128::new(29),
+                    },
+                    (2, "uedenb") => QueryAprResponse {
+                        apr: Uint128::new(100),
+                    },
+                    _ => return Err(Error::new(StdError::not_found(denom))),
                 };
                 Ok(to_json_binary(&resp)?)
             }
@@ -497,8 +732,8 @@ fn get_staked_assets() {
                     ueden: Uint128::new(168),
                 },
                 available: Some(BalanceAvailable {
-                    amount: Uint128::new(5333264347748),
-                    usd_amount: Decimal::from_str("5334331.0006175496").unwrap(),
+                    amount: Uint128::new(5333229342748),
+                    usd_amount: Decimal::from_str("5333229.342748").unwrap(),
                 }),
                 staked: Some(StakedAvailable {
                     usd_amount: Decimal::zero(),
@@ -513,7 +748,7 @@ fn get_staked_assets() {
                     },
                     BalanceReward {
                         asset: "ueden".to_string(),
-                        amount: Uint128::new(247665114),
+                        amount: Uint128::new(349209420),
                         usd_amount: Some(Decimal::from_str("73.796109272199488447").unwrap()),
                     },
                 ]),
@@ -526,5 +761,40 @@ fn get_staked_assets() {
     };
 
     // test if the response is the same as the expected
-    assert_eq!(resp, expected);
+    assert_eq!(
+        resp.staked_assets.usdc_earn_program.bonding_period,
+        expected.staked_assets.usdc_earn_program.bonding_period
+    );
+    assert_eq!(
+        resp.staked_assets.usdc_earn_program.apr,
+        expected.staked_assets.usdc_earn_program.apr
+    );
+    assert_eq!(
+        resp.staked_assets.usdc_earn_program.available,
+        expected.staked_assets.usdc_earn_program.available
+    );
+    assert_eq!(
+        resp.staked_assets.usdc_earn_program.staked,
+        expected.staked_assets.usdc_earn_program.staked
+    );
+    assert_eq!(
+        resp.staked_assets.usdc_earn_program.rewards,
+        expected.staked_assets.usdc_earn_program.rewards
+    );
+    assert_eq!(
+        resp.staked_assets.usdc_earn_program.borrowed,
+        expected.staked_assets.usdc_earn_program.borrowed
+    );
+    assert_eq!(
+        resp.staked_assets.eden_earn_program,
+        expected.staked_assets.eden_earn_program
+    );
+    assert_eq!(
+        resp.staked_assets.elys_earn_program,
+        expected.staked_assets.elys_earn_program
+    );
+    assert_eq!(
+        resp.staked_assets.eden_boost_earn_program,
+        expected.staked_assets.eden_boost_earn_program
+    );
 }
