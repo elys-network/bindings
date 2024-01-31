@@ -65,9 +65,6 @@ impl CoinValue {
                 StdError::generic_err(format!("failed to get amm_swap_estimation_by_denom: {}", e))
             })?;
 
-        // invert the price
-        let price = Decimal::one() / price;
-
         let decimal_point_value = asset_info.decimal;
         let amount =
             Decimal::from_atomics(coin.amount, decimal_point_coin as u32).map_err(|e| {
