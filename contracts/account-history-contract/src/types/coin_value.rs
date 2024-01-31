@@ -56,7 +56,7 @@ impl CoinValue {
         }
 
         let AmmSwapEstimationByDenomResponse {
-            spot_price: price,
+            spot_price: mut price,
             amount: whole_value,
             ..
         } = querier
@@ -65,16 +65,24 @@ impl CoinValue {
                 StdError::generic_err(format!("failed to get amm_swap_estimation_by_denom: {}", e))
             })?;
 
+        if coin.denom != "uelys" {
+            price = Decimal::one() / price;
+        }
+
         let decimal_point_value = asset_info.decimal;
         let amount =
             Decimal::from_atomics(coin.amount, decimal_point_coin as u32).map_err(|e| {
                 StdError::generic_err(format!("failed to convert amount to Decimal: {}", e))
             })?;
 
-        let value =
-            Decimal::from_atomics(whole_value.amount, decimal_point_value as u32).map_err(|e| {
+        let mut value = Decimal::from_atomics(whole_value.amount, decimal_point_value as u32)
+            .map_err(|e| {
                 StdError::generic_err(format!("failed to convert whole_value to Decimal: {}", e))
             })?;
+
+        if coin.denom != "uelys" {
+            value = amount * price;
+        }
 
         Ok(Self {
             denom: coin.denom.clone(),
