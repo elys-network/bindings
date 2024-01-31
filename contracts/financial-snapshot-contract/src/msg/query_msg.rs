@@ -9,6 +9,7 @@ use elys_bindings::types::PageRequest;
 
 #[cw_serde]
 #[derive(QueryResponses)]
+#[cfg_attr(feature = "interface", derive(cw_orch::QueryFns))]
 pub enum QueryMsg {
     // Pod dashboard
     #[returns(GetLiquidityPositionsResp)]

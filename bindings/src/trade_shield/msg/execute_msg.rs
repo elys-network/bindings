@@ -6,6 +6,7 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Int128, SignedDecimal, SignedDecimal256, Uint128};
 
 #[cw_serde]
+#[cfg_attr(feature = "interface", derive(cw_orch::ExecuteFns))]
 pub enum ExecuteMsg {
     CreateSpotOrder {
         order_type: SpotOrderType,

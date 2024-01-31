@@ -13,6 +13,7 @@ use elys_bindings::types::{BalanceAvailable, PageRequest};
 
 #[cw_serde]
 #[derive(QueryResponses)]
+#[cfg_attr(feature = "interface", derive(cw_orch::QueryFns))]
 pub enum QueryMsg {
     #[returns(UserValueResponse)]
     UserValue { user_address: String },

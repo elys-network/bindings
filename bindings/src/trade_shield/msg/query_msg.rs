@@ -9,6 +9,7 @@ use cosmwasm_std::{Coin, SignedDecimal, SignedDecimal256};
 
 #[cw_serde]
 #[derive(QueryResponses)]
+#[cfg_attr(feature = "interface", derive(cw_orch::QueryFns))]
 pub enum QueryMsg {
     #[returns(GetSpotOrderResp)]
     GetSpotOrder { order_id: u64 },
