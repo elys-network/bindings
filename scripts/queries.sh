@@ -225,32 +225,32 @@ function spot_orders() {
     }'
 }
 
-# Get margin position
-function margin_position() {
-    printf "\n# Get margin position\n"
+# Get perpetual position
+function perpetual_position() {
+    printf "\n# Get perpetual position\n"
     query_contract "$ts_contract_address" '{
-        "get_margin_position": {
+        "get_perpetual_position": {
             "address": "'"$user_address"'",
             "id": 1
         }
     }'
 }
 
-# Get margin order
-function margin_order() {
-    printf "\n# Margin order\n"
+# Get perpetual order
+function perpetual_order() {
+    printf "\n# Perpetual order\n"
     query_contract "$ts_contract_address" '{
-        "get_margin_order": {
+        "get_perpetual_order": {
             "id": 1
         }
     }'
 }
 
-# Get margin orders
-function margin_orders() {
-    printf "\n# Get margin orders with $1\n"
+# Get perpetual orders
+function perpetual_orders() {
+    printf "\n# Get perpetual orders with $1\n"
     query_contract "$ts_contract_address" '{
-        "get_margin_orders": {
+        "get_perpetual_orders": {
             "pagination": null,
             "order_owner": "'"$user_address"'",
             "order_type": "'$1'",
@@ -259,11 +259,11 @@ function margin_orders() {
     }'
 }
 
-# Margin open estimation
-function margin_open_estimation() {
-    printf "\n# Margin open estimation\n"
+# Perpetual open estimation
+function perpetual_open_estimation() {
+    printf "\n# Perpetual open estimation\n"
     query_contract "$ts_contract_address" '{
-        "margin_open_estimation": {
+        "perpetual_open_estimation": {
             "position": "long",
             "leverage": "5",
             "trading_asset": "'"$atom_denom"'",
@@ -274,11 +274,11 @@ function margin_open_estimation() {
     }'
 }
 
-# margin get position for address
-function margin_get_positions_for_address() {
-    printf "\n# Margin get position for address\n"
+# perpetual get position for address
+function perpetual_get_positions_for_address() {
+    printf "\n# Perpetual get position for address\n"
     query_contract "$ts_contract_address" '{
-        "margin_get_positions_for_address": {
+        "perpetual_get_positions_for_address": {
             "address": "'"$user_address"'",
             "pagination": null
         }
@@ -435,32 +435,32 @@ case "$2" in
     "spot_orders_market_buy")
         spot_orders market_buy
         ;;
-    "margin_position")
-        margin_position
+    "perpetual_position")
+        perpetual_position
         ;;
-    "margin_order")
-        margin_order
+    "perpetual_order")
+        perpetual_order
         ;;
-    "margin_orders_stop_loss")
-        margin_orders stop_loss
+    "perpetual_orders_stop_loss")
+        perpetual_orders stop_loss
         ;;
-    "margin_orders_limit_open")
-        margin_orders limit_open
+    "perpetual_orders_limit_open")
+        perpetual_orders limit_open
         ;;
-    "margin_orders_limit_close")
-        margin_orders limit_close
+    "perpetual_orders_limit_close")
+        perpetual_orders limit_close
         ;;
-    "margin_orders_market_open")
-        margin_orders market_open
+    "perpetual_orders_market_open")
+        perpetual_orders market_open
         ;;
-    "margin_orders_market_close")
-        margin_orders market_close
+    "perpetual_orders_market_close")
+        perpetual_orders market_close
         ;;
-    "margin_open_estimation")
-        margin_open_estimation
+    "perpetual_open_estimation")
+        perpetual_open_estimation
         ;;
-    "margin_get_positions_for_address")
-        margin_get_positions_for_address
+    "perpetual_get_positions_for_address")
+        perpetual_get_positions_for_address
         ;;
     "get_commitment_staked_positions")
         get_commitment_staked_positions
@@ -509,15 +509,15 @@ case "$2" in
         spot_orders limit_sell
         spot_orders limit_buy
         spot_orders market_buy
-        margin_position
-        margin_order
-        margin_orders stop_loss
-        margin_orders limit_open
-        margin_orders limit_close
-        margin_orders market_open
-        margin_orders market_close
-        margin_open_estimation
-        margin_get_positions_for_address
+        perpetual_position
+        perpetual_order
+        perpetual_orders stop_loss
+        perpetual_orders limit_open
+        perpetual_orders limit_close
+        perpetual_orders market_open
+        perpetual_orders market_close
+        perpetual_open_estimation
+        perpetual_get_positions_for_address
         get_commitment_staked_positions
         get_commitment_unstaked_positions
         get_commitment_rewards_sub_bucket_balance_of_denom ueden 2

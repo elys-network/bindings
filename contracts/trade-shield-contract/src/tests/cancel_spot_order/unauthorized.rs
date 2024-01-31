@@ -8,7 +8,7 @@ fn unauthorized() {
     // Create a mock message to instantiate the contract with an order owned by the "user"
     let instantiate_msg = InstantiateMockMsg {
         spot_orders: vec![SpotOrder::new_dummy()],
-        margin_orders: vec![],
+        perpetual_orders: vec![],
     };
 
     // Retrieve the order ID from the instantiated message for later use.

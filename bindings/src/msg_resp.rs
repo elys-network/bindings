@@ -23,12 +23,12 @@ pub struct AmmSwapByDenomResponse {
 }
 
 #[cw_serde]
-pub struct MarginOpenResponse {
+pub struct PerpetualOpenResponse {
     pub id: u64,
 }
 
 #[cw_serde]
-pub struct MarginCloseResponse {
+pub struct PerpetualCloseResponse {
     pub id: u64,
     pub amount: Int128,
 }
@@ -40,11 +40,11 @@ pub struct MsgResponse {
 
 #[cw_serde]
 pub struct MsgJoinPoolResponse {
-	pub share_amount_out: Int128,
-	pub token_in: Vec<Coin>,
+    pub share_amount_out: Int128,
+    pub token_in: Vec<Coin>,
 }
 
 #[cw_serde]
 pub struct MsgExitPoolResponse {
-	pub token_out: Vec<Coin>,
+    pub token_out: Vec<Coin>,
 }

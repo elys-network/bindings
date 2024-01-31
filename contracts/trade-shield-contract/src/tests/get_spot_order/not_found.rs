@@ -9,7 +9,7 @@ fn not_found() {
     // Create a mock message to instantiate the contract with no initial orders.
     let instantiate_msg = InstantiateMockMsg {
         spot_orders: vec![],
-        margin_orders: vec![],
+        perpetual_orders: vec![],
     };
 
     // Define an order ID that does not exist in the contract (e.g., 0).

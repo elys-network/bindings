@@ -33,7 +33,7 @@ pub fn execute(
             order_type,
         } => cancel_spot_orders(info, deps, order_ids, owner_address, order_type),
 
-        CreateMarginOrder {
+        CreatePerpetualOrder {
             position,
             leverage,
             trading_asset,
@@ -41,7 +41,7 @@ pub fn execute(
             order_type,
             trigger_price,
             position_id,
-        } => create_margin_order(
+        } => create_perpetual_order(
             info,
             deps,
             position,
@@ -52,13 +52,13 @@ pub fn execute(
             trigger_price,
             position_id,
         ),
-        CancelMarginOrder { order_id } => cancel_margin_order(info, deps, order_id),
-        CancelMarginOrders {
+        CancelPerpetualOrder { order_id } => cancel_perpetual_order(info, deps, order_id),
+        CancelPerpetualOrders {
             order_ids,
             owner_address,
             order_type,
-        } => cancel_margin_orders(info, deps, order_ids, owner_address, order_type),
-        CloseMarginPosition { id, amount } => close_margin_position(info, id, amount),
+        } => cancel_perpetual_orders(info, deps, order_ids, owner_address, order_type),
+        ClosePerpetualPosition { id, amount } => close_perpetual_position(info, id, amount),
 
         StakeRequest {
             amount,
@@ -91,18 +91,32 @@ pub fn execute(
         ClaimRewardsRequest { withdraw_type } => claim_rewards_request(info, deps, withdraw_type),
         ClaimValidatorCommissionRequest { validator_address } => {
             claim_validator_commission_request(info, deps, validator_address)
-        },
+        }
         AmmJoinPoolRequest {
             pool_id,
             max_amounts_in,
             share_amount_out,
             no_remaining,
-        } => join_amm_pool_request(info, deps, pool_id, max_amounts_in, share_amount_out, no_remaining),
+        } => join_amm_pool_request(
+            info,
+            deps,
+            pool_id,
+            max_amounts_in,
+            share_amount_out,
+            no_remaining,
+        ),
         AmmExitPoolRequest {
             pool_id,
             min_amounts_out,
             share_amount_in,
             token_out_denom,
-        }=> exit_amm_pool_request(info, deps, pool_id, min_amounts_out, share_amount_in, token_out_denom),
+        } => exit_amm_pool_request(
+            info,
+            deps,
+            pool_id,
+            min_amounts_out,
+            share_amount_in,
+            token_out_denom,
+        ),
     }
 }

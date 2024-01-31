@@ -16,16 +16,17 @@ use cw_multi_test::{App, AppResponse, BankKeeper, BankSudo, BasicAppBuilder, Mod
 use cw_storage_plus::Item;
 use elys_bindings::{
     msg_resp::{
-        AmmSwapByDenomResponse, AmmSwapExactAmountInResp, MarginCloseResponse, MarginOpenResponse,
-        MsgResponse,
+        AmmSwapByDenomResponse, AmmSwapExactAmountInResp, MsgResponse, PerpetualCloseResponse,
+        PerpetualOpenResponse,
     },
     query_resp::{
         AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse,
-        BalanceBorrowed, Commitments, Entry, MarginGetPositionsForAddressResponse,
-        MarginMtpResponse, MarginOpenEstimationResponse, MarginQueryPositionsResponse,
-        OracleAssetInfoResponse, QueryAprResponse, QueryGetEntryAllResponse, QueryGetEntryResponse,
-        QueryGetPriceResponse, QueryShowCommitmentsResponse, QueryStakedPositionResponse,
-        QueryUnstakedPositionResponse, QueryVestingInfoResponse,
+        BalanceBorrowed, Commitments, Entry, OracleAssetInfoResponse,
+        PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
+        PerpetualOpenEstimationResponse, PerpetualQueryPositionsResponse, QueryAprResponse,
+        QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse,
+        QueryShowCommitmentsResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
+        QueryVestingInfoResponse,
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
@@ -38,7 +39,7 @@ use std::cmp::max;
 pub const PRICES: Item<Vec<Price>> = Item::new("prices");
 pub const ASSET_INFO: Item<Vec<OracleAssetInfo>> = Item::new("asset_info");
 pub const BLOCK_TIME: u64 = 5;
-pub const MARGIN_OPENED_POSITION: Item<Vec<Mtp>> = Item::new("margin_opened_position");
+pub const PERPETUAL_OPENED_POSITION: Item<Vec<Mtp>> = Item::new("perpetual_opened_position");
 pub const LAST_MODULE_USED: Item<Option<String>> = Item::new("last_module_used");
 pub const ACCOUNT: Item<Vec<String>> = Item::new("account");
 
@@ -83,11 +84,11 @@ impl ElysModule {
         ASSET_INFO.save(store, infos)
     }
     pub fn set_mtp(&self, store: &mut dyn Storage, mtps: &Vec<Mtp>) -> StdResult<()> {
-        MARGIN_OPENED_POSITION.save(store, mtps)
+        PERPETUAL_OPENED_POSITION.save(store, mtps)
     }
 
     pub fn get_balance(&self, store: &mut dyn Storage, mtps: &Vec<Mtp>) -> StdResult<()> {
-        MARGIN_OPENED_POSITION.save(store, mtps)
+        PERPETUAL_OPENED_POSITION.save(store, mtps)
     }
 }
 
@@ -248,22 +249,24 @@ impl Module for ElysModule {
 
                 Ok(to_json_binary(&resp)?)
             }
-            ElysQuery::MarginMtp { address, id } => {
-                let mtps = MARGIN_OPENED_POSITION.load(storage)?;
+            ElysQuery::PerpetualMtp { address, id } => {
+                let mtps = PERPETUAL_OPENED_POSITION.load(storage)?;
                 if let Some(mtp) = mtps
                     .iter()
                     .find(|mtp| mtp.id == id && mtp.address == address)
                     .cloned()
                 {
-                    Ok(to_json_binary(&MarginMtpResponse { mtp: Some(mtp) })?)
+                    Ok(to_json_binary(&PerpetualMtpResponse { mtp: Some(mtp) })?)
                 } else {
-                    return Err(Error::new(StdError::not_found("margin trading position")));
+                    return Err(Error::new(StdError::not_found(
+                        "perpetual trading position",
+                    )));
                 }
             }
-            ElysQuery::MarginQueryPositions { pagination } => {
-                let mtps = MARGIN_OPENED_POSITION.load(storage)?;
+            ElysQuery::PerpetualQueryPositions { pagination } => {
+                let mtps = PERPETUAL_OPENED_POSITION.load(storage)?;
                 let (mtps, page_resp) = pagination.filter(mtps)?;
-                Ok(to_json_binary(&MarginQueryPositionsResponse {
+                Ok(to_json_binary(&PerpetualQueryPositionsResponse {
                     mtps: Some(mtps),
                     pagination: page_resp,
                 })?)
@@ -275,7 +278,7 @@ impl Module for ElysModule {
                 };
                 Ok(to_json_binary(&resp)?)
             }
-            ElysQuery::MarginOpenEstimation {
+            ElysQuery::PerpetualOpenEstimation {
                 position,
                 leverage,
                 trading_asset,
@@ -283,7 +286,7 @@ impl Module for ElysModule {
                 take_profit_price,
                 discount,
             } => {
-                return Ok(to_json_binary(&MarginOpenEstimationResponse {
+                return Ok(to_json_binary(&PerpetualOpenEstimationResponse {
                     position,
                     min_collateral: coin(0, &collateral.denom),
                     available_liquidity: coin(99999999, &trading_asset),
@@ -373,15 +376,15 @@ impl Module for ElysModule {
                 };
                 Ok(to_json_binary(&resp)?)
             }
-            ElysQuery::MarginGetPositionsForAddress { address, .. } => {
-                let all_mtps = MARGIN_OPENED_POSITION.load(storage)?;
+            ElysQuery::PerpetualGetPositionsForAddress { address, .. } => {
+                let all_mtps = PERPETUAL_OPENED_POSITION.load(storage)?;
 
                 let user_mtps: Vec<Mtp> = all_mtps
                     .into_iter()
                     .filter(|mtp| mtp.address == address)
                     .collect();
 
-                Ok(to_json_binary(&MarginGetPositionsForAddressResponse {
+                Ok(to_json_binary(&PerpetualGetPositionsForAddressResponse {
                     mtps: user_mtps,
                     pagination: PageResponse::empty(false),
                 })?)
@@ -540,7 +543,7 @@ impl Module for ElysModule {
                 })
             }
 
-            ElysMsg::MarginOpen {
+            ElysMsg::PerpetualOpen {
                 creator,
                 collateral,
                 position,
@@ -548,8 +551,8 @@ impl Module for ElysModule {
                 take_profit_price,
                 ..
             } => {
-                LAST_MODULE_USED.save(storage, &Some("MarginOpen".to_string()))?;
-                let mut mtp_vec = MARGIN_OPENED_POSITION.load(storage)?;
+                LAST_MODULE_USED.save(storage, &Some("PerpetualOpen".to_string()))?;
+                let mut mtp_vec = PERPETUAL_OPENED_POSITION.load(storage)?;
 
                 let mtp_id: u64 = match mtp_vec.iter().max_by_key(|mtp| mtp.id) {
                     Some(mtp) => mtp.id + 1,
@@ -587,7 +590,7 @@ impl Module for ElysModule {
                     trading_asset: "".to_string(),
                 };
 
-                let msg_resp = MarginOpenResponse { id: mtp.id };
+                let msg_resp = PerpetualOpenResponse { id: mtp.id };
 
                 let resp = AppResponse {
                     events: vec![],
@@ -606,16 +609,16 @@ impl Module for ElysModule {
                 Ok(resp)
             }
 
-            ElysMsg::MarginClose { id, amount, .. } => {
-                LAST_MODULE_USED.save(storage, &Some("MarginClose".to_string()))?;
-                let orders: Vec<Mtp> = MARGIN_OPENED_POSITION.load(storage)?;
+            ElysMsg::PerpetualClose { id, amount, .. } => {
+                LAST_MODULE_USED.save(storage, &Some("PerpetualClose".to_string()))?;
+                let orders: Vec<Mtp> = PERPETUAL_OPENED_POSITION.load(storage)?;
 
                 let new_orders: Vec<Mtp> =
                     orders.into_iter().filter(|order| order.id != id).collect();
 
-                MARGIN_OPENED_POSITION.save(storage, &new_orders)?;
+                PERPETUAL_OPENED_POSITION.save(storage, &new_orders)?;
 
-                let data = Some(to_json_binary(&MarginCloseResponse { id, amount })?);
+                let data = Some(to_json_binary(&PerpetualCloseResponse { id, amount })?);
 
                 Ok(AppResponse {
                     events: vec![],
@@ -849,7 +852,7 @@ impl ElysApp {
                         addresses.push(wallet_owner.to_owned())
                     }
                     ACCOUNT.save(storage, &addresses).unwrap();
-                    MARGIN_OPENED_POSITION.save(storage, &vec![]).unwrap();
+                    PERPETUAL_OPENED_POSITION.save(storage, &vec![]).unwrap();
                     ASSET_INFO.save(storage, &vec![]).unwrap();
                     PRICES.save(storage, &vec![]).unwrap();
                     LAST_MODULE_USED.save(storage, &None).unwrap();
@@ -862,7 +865,7 @@ impl ElysApp {
             BasicAppBuilder::<ElysMsg, ElysQuery>::new_custom()
                 .with_custom(ElysModule {})
                 .build(|_roouter, _, storage| {
-                    MARGIN_OPENED_POSITION.save(storage, &vec![]).unwrap();
+                    PERPETUAL_OPENED_POSITION.save(storage, &vec![]).unwrap();
                     ASSET_INFO.save(storage, &vec![]).unwrap();
                     PRICES.save(storage, &vec![]).unwrap();
                     LAST_MODULE_USED.save(storage, &None).unwrap();

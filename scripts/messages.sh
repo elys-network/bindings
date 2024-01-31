@@ -136,13 +136,13 @@ function create_spot_order_as_market_buy() {
         "1000000$usdc_denom"
 }
 
-# Create margin order as market open
-function create_margin_order_as_market_open() {
-    printf "\n# Create margin order as market open\n"
+# Create perpetual order as market open
+function create_perpetual_order_as_market_open() {
+    printf "\n# Create perpetual order as market open\n"
     execute_message \
         "$ts_contract_address" \
         '{
-            "create_margin_order": {
+            "create_perpetual_order": {
                 "position": "long",
                 "leverage": "5",
                 "trading_asset": "'"$atom_denom"'",
@@ -150,18 +150,18 @@ function create_margin_order_as_market_open() {
                 "order_type": "market_open"
             }
         }' \
-        wasm-create_margin_order \
+        wasm-create_perpetual_order \
         "100000000$usdc_denom"
 }
 
-# Create margin order
-function create_margin_order() {
+# Create perpetual order
+function create_perpetual_order() {
     order_type=$1
-    printf "\n# Create margin order as order_type=$order_type\n"
+    printf "\n# Create perpetual order as order_type=$order_type\n"
     execute_message \
         "$ts_contract_address" \
         '{
-            "create_margin_order": {
+            "create_perpetual_order": {
                 "position": "long",
                 "leverage": "5",
                 "trading_asset": "'"$atom_denom"'",
@@ -173,15 +173,15 @@ function create_margin_order() {
                 }
             }
         }' \
-        wasm-create_margin_order \
+        wasm-create_perpetual_order \
         "100000000$usdc_denom"
 }
 
-# Margin open estimation
-function margin_open_estimation() {
-    printf "\n# Margin open estimation\n"
+# Perpetual open estimation
+function perpetual_open_estimation() {
+    printf "\n# Perpetual open estimation\n"
     query_contract "$ts_contract_address" '{
-        "margin_open_estimation": {
+        "perpetual_open_estimation": {
             "position": "long",
             "leverage": "5",
             "trading_asset": "'"$atom_denom"'",
@@ -205,18 +205,18 @@ function cancel_spot_order() {
         wasm-cancel_spot_order
 }
 
-# Cancel margin order
-function cancel_margin_order() {
+# Cancel perpetual order
+function cancel_perpetual_order() {
     order_id=$1
-    printf "\n# Cancel margin order with id $order_id\n"
+    printf "\n# Cancel perpetual order with id $order_id\n"
     execute_message \
         "$ts_contract_address" \
         '{
-            "cancel_margin_order": {
+            "cancel_perpetual_order": {
                 "order_id": '"$order_id"'
             }
         }' \
-        wasm-cancel_margin_order
+        wasm-cancel_perpetual_order
 }
 
 # Get all spot orders
@@ -240,11 +240,11 @@ function spot_order() {
     }'
 }
 
-# Get all margin orders
-function all_margin_orders() {
-    printf "\n# Get all margin orders\n"
+# Get all perpetual orders
+function all_perpetual_orders() {
+    printf "\n# Get all perpetual orders\n"
     query_contract "$ts_contract_address" '{
-        "get_margin_orders": {
+        "get_perpetual_orders": {
             "order_owner": "'"$user_address"'"
         }
     }'
@@ -273,20 +273,20 @@ case "$1" in
     "cancel_spot_order")
         cancel_spot_order $2
         ;;
-    "create_margin_order_as_market_open")
-        create_margin_order_as_market_open
+    "create_perpetual_order_as_market_open")
+        create_perpetual_order_as_market_open
         ;;
-    "create_margin_order_as_limit_open")
-        create_margin_order "limit_open"
+    "create_perpetual_order_as_limit_open")
+        create_perpetual_order "limit_open"
         ;;
-    "margin_open_estimation")
-        margin_open_estimation
+    "perpetual_open_estimation")
+        perpetual_open_estimation
         ;;
-    "all_margin_orders")
-        all_margin_orders
+    "all_perpetual_orders")
+        all_perpetual_orders
         ;;
-    "cancel_margin_order")
-        cancel_margin_order $2
+    "cancel_perpetual_order")
+        cancel_perpetual_order $2
         ;;
 
     *)
@@ -294,6 +294,6 @@ case "$1" in
         create_spot_order
         all_spot_orders
         cancel_spot_order
-        all_margin_orders
+        all_perpetual_orders
         ;;
 esac

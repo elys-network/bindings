@@ -6,14 +6,14 @@ use elys_bindings::*;
 pub mod query {
     mod asset_info;
     mod get_all_price;
-    mod get_margin_order;
-    mod get_margin_orders;
-    mod get_margin_position;
-    mod get_margin_positions;
+    mod get_perpetual_order;
+    mod get_perpetual_orders;
+    mod get_perpetual_position;
+    mod get_perpetual_positions;
     mod get_spot_order;
     mod get_spot_orders;
-    mod margin_get_position_for_address;
-    mod margin_open_estimation;
+    mod perpetual_get_position_for_address;
+    mod perpetual_open_estimation;
     mod swap_estimation_by_denom;
 
     use super::*;
@@ -24,24 +24,24 @@ pub mod query {
 
     pub use asset_info::asset_info;
     pub use get_all_price::get_all_prices;
-    pub use get_margin_order::get_margin_order;
-    pub use get_margin_orders::get_margin_orders;
-    pub use get_margin_position::get_margin_position;
-    pub use get_margin_positions::get_margin_positions;
+    pub use get_perpetual_order::get_perpetual_order;
+    pub use get_perpetual_orders::get_perpetual_orders;
+    pub use get_perpetual_position::get_perpetual_position;
+    pub use get_perpetual_positions::get_perpetual_positions;
     pub use get_spot_order::get_spot_order;
     pub use get_spot_orders::get_spot_orders;
-    pub use margin_get_position_for_address::margin_get_position_for_address;
-    pub use margin_open_estimation::margin_open_estimation;
+    pub use perpetual_get_position_for_address::perpetual_get_position_for_address;
+    pub use perpetual_open_estimation::perpetual_open_estimation;
     pub use swap_estimation_by_denom::swap_estimation_by_denom;
 }
 
 pub mod execute {
-    mod cancel_margin_order;
-    mod cancel_margin_orders;
+    mod cancel_perpetual_order;
+    mod cancel_perpetual_orders;
     mod cancel_spot_order;
     mod cancel_spot_orders;
-    mod close_margin_position;
-    mod create_margin_order;
+    mod close_perpetual_position;
+    mod create_perpetual_order;
     mod create_spot_order;
 
     mod stake_request;
@@ -58,12 +58,12 @@ pub mod execute {
 
     use super::*;
 
-    pub use cancel_margin_order::cancel_margin_order;
-    pub use cancel_margin_orders::cancel_margin_orders;
+    pub use cancel_perpetual_order::cancel_perpetual_order;
+    pub use cancel_perpetual_orders::cancel_perpetual_orders;
     pub use cancel_spot_order::cancel_spot_order;
     pub use cancel_spot_orders::cancel_spot_orders;
-    pub use close_margin_position::close_margin_position;
-    pub use create_margin_order::create_margin_order;
+    pub use close_perpetual_position::close_perpetual_position;
+    pub use create_perpetual_order::create_perpetual_order;
     pub use create_spot_order::create_spot_order;
 
     pub use claim_rewards_request::claim_rewards_request;
@@ -82,17 +82,17 @@ pub mod reply {
     use super::*;
     use elys_bindings::msg_resp::*;
 
-    mod close_margin_position;
-    mod create_margin_order_market_close;
-    mod create_margin_order_market_open;
-    mod open_margin_position;
+    mod close_perpetual_position;
+    mod create_perpetual_order_market_close;
+    mod create_perpetual_order_market_open;
+    mod open_perpetual_position;
     mod spot_order;
     mod spot_order_market;
 
-    pub use close_margin_position::reply_to_close_margin_order;
-    pub use create_margin_order_market_close::reply_to_create_margin_market_close;
-    pub use create_margin_order_market_open::reply_to_create_margin_market_open;
-    pub use open_margin_position::reply_to_open_margin_position;
+    pub use close_perpetual_position::reply_to_close_perpetual_order;
+    pub use create_perpetual_order_market_close::reply_to_create_perpetual_market_close;
+    pub use create_perpetual_order_market_open::reply_to_create_perpetual_market_open;
+    pub use open_perpetual_position::reply_to_open_perpetual_position;
     pub use spot_order::reply_to_spot_order;
     pub use spot_order_market::reply_to_spot_order_market;
 }

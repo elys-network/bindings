@@ -26,7 +26,7 @@ use elys_bindings::types::{
 };
 use elys_bindings::{ElysMsg, ElysQuery};
 use elys_bindings_test::{
-    ElysModule, ACCOUNT, ASSET_INFO, LAST_MODULE_USED, MARGIN_OPENED_POSITION, PRICES,
+    ElysModule, ACCOUNT, ASSET_INFO, LAST_MODULE_USED, PERPETUAL_OPENED_POSITION, PRICES,
 };
 use trade_shield_contract::entry_point::{
     execute as trade_shield_execute, instantiate as trade_shield_init, query as trade_shield_query,
@@ -523,7 +523,7 @@ fn get_staked_assets() {
                 addresses.push(wallet_owner.to_owned())
             }
             ACCOUNT.save(storage, &addresses).unwrap();
-            MARGIN_OPENED_POSITION.save(storage, &vec![]).unwrap();
+            PERPETUAL_OPENED_POSITION.save(storage, &vec![]).unwrap();
             ASSET_INFO.save(storage, &vec![]).unwrap();
             PRICES.save(storage, &vec![]).unwrap();
             LAST_MODULE_USED.save(storage, &None).unwrap();

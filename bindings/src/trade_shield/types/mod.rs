@@ -9,17 +9,17 @@ mod spot_order {
     }
 }
 mod date;
-mod margin_order;
-mod margin_order_type;
-mod margin_position_plus;
+mod perpetual_order;
+mod perpetual_order_type;
+mod perpetual_position_plus;
 mod reply_info;
 mod status;
 
-pub use date::Date;
 pub use crate::types::*;
-pub use margin_order::MarginOrder;
-pub use margin_order_type::MarginOrderType;
-pub use margin_position_plus::MarginPositionPlus;
+pub use date::Date;
+pub use perpetual_order::PerpetualOrder;
+pub use perpetual_order_type::PerpetualOrderType;
+pub use perpetual_position_plus::PerpetualPositionPlus;
 pub use reply_info::ReplyInfo;
 pub use spot_order::spot_order::SpotOrder;
 pub use spot_order_price::OrderPrice;

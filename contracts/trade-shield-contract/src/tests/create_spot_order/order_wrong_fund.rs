@@ -11,7 +11,7 @@ fn order_wrong_fund() {
 
     let instantiate_msg = InstantiateMockMsg {
         spot_orders: vec![],
-        margin_orders: vec![],
+        perpetual_orders: vec![],
     };
 
     let create_order_msg = ExecuteMsg::CreateSpotOrder {

@@ -33,13 +33,13 @@ pub enum ElysQuery {
     OraclePriceAll { pagination: PageRequest },
     #[returns(OracleAssetInfoResponse)]
     OracleAssetInfo { denom: String },
-    // Define MarginQuery
-    #[returns(MarginQueryPositionsResponse)]
-    MarginQueryPositions { pagination: PageRequest },
-    #[returns(MarginMtpResponse)]
-    MarginMtp { address: String, id: u64 },
-    #[returns(MarginOpenEstimationResponse)]
-    MarginOpenEstimation {
+    // Define PerpetualQuery
+    #[returns(PerpetualQueryPositionsResponse)]
+    PerpetualQueryPositions { pagination: PageRequest },
+    #[returns(PerpetualMtpResponse)]
+    PerpetualMtp { address: String, id: u64 },
+    #[returns(PerpetualOpenEstimationResponse)]
+    PerpetualOpenEstimation {
         position: i32,
         leverage: SignedDecimal,
         trading_asset: String,
@@ -47,8 +47,8 @@ pub enum ElysQuery {
         take_profit_price: SignedDecimal256,
         discount: Decimal,
     },
-    #[returns(MarginGetPositionsForAddressResponse)]
-    MarginGetPositionsForAddress {
+    #[returns(PerpetualGetPositionsForAddressResponse)]
+    PerpetualGetPositionsForAddress {
         address: String,
         pagination: Option<PageRequest>,
     },
@@ -126,13 +126,13 @@ impl ElysQuery {
         Self::OracleAssetInfo { denom }
     }
     pub fn mtp(address: impl Into<String>, id: u64) -> Self {
-        Self::MarginMtp {
+        Self::PerpetualMtp {
             address: address.into(),
             id,
         }
     }
     pub fn positions(pagination: PageRequest) -> Self {
-        Self::MarginQueryPositions { pagination }
+        Self::PerpetualQueryPositions { pagination }
     }
     pub fn accounts(pagination: Option<PageRequest>) -> Self {
         Self::AuthAddresses { pagination }
@@ -155,7 +155,7 @@ impl ElysQuery {
     pub fn get_balance(address: String, denom: String) -> Self {
         Self::AmmBalance { address, denom }
     }
-    pub fn margin_open_estimation(
+    pub fn perpetual_open_estimation(
         position: i32,
         leverage: SignedDecimal,
         trading_asset: String,
@@ -167,7 +167,7 @@ impl ElysQuery {
             Some(price) => price,
             None => default_take_profit_price(),
         };
-        Self::MarginOpenEstimation {
+        Self::PerpetualOpenEstimation {
             position,
             leverage,
             trading_asset,
@@ -182,11 +182,11 @@ impl ElysQuery {
     pub fn get_all_asset_profile(pagination: Option<PageRequest>) -> Self {
         Self::AssetProfileEntryAll { pagination }
     }
-    pub fn margin_get_position_for_address(
+    pub fn perpetual_get_position_for_address(
         address: String,
         pagination: Option<PageRequest>,
     ) -> Self {
-        Self::MarginGetPositionsForAddress {
+        Self::PerpetualGetPositionsForAddress {
             address,
             pagination,
         }

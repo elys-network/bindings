@@ -5,12 +5,12 @@ use cosmwasm_std::{
 
 use crate::{
     trade_shield::types::default_take_profit_price,
-    types::{EarnType, MarginPosition, SwapAmountInRoute},
+    types::{EarnType, PerpetualPosition, SwapAmountInRoute},
 };
 
 #[cw_serde]
 pub enum ElysMsg {
-    MarginOpen {
+    PerpetualOpen {
         creator: String,
         position: i32,
         collateral: Coin,
@@ -18,7 +18,7 @@ pub enum ElysMsg {
         leverage: SignedDecimal,
         take_profit_price: SignedDecimal256,
     },
-    MarginClose {
+    PerpetualClose {
         creator: String,
         id: u64,
         amount: Int128,
@@ -118,11 +118,11 @@ impl ElysMsg {
         }
     }
 
-    pub fn margin_open_position(
+    pub fn perpetual_open_position(
         creator: impl Into<String>,
         collateral: Coin,
         trading_asset: impl Into<String>,
-        position: MarginPosition,
+        position: PerpetualPosition,
         leverage: SignedDecimal,
         take_profit_price: Option<SignedDecimal256>,
     ) -> Self {
@@ -130,7 +130,7 @@ impl ElysMsg {
             Some(price) => price,
             None => default_take_profit_price(),
         };
-        Self::MarginOpen {
+        Self::PerpetualOpen {
             creator: creator.into(),
             collateral,
             position: position as i32,
@@ -140,8 +140,8 @@ impl ElysMsg {
         }
     }
 
-    pub fn margin_close_position(creator: impl Into<String>, id: u64, amount: i128) -> Self {
-        Self::MarginClose {
+    pub fn perpetual_close_position(creator: impl Into<String>, id: u64, amount: i128) -> Self {
+        Self::PerpetualClose {
             creator: creator.into(),
             id,
             amount: Int128::new(amount),

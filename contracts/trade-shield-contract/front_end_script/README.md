@@ -150,16 +150,16 @@ getSpotOrders(
 );
 ```
 
-### 6. createMarginOrder(position, collateral, leverage, trading_asset, take_profit_price, order_type, trigger_price)
+### 6. createPerpetualOrder(position, collateral, leverage, trading_asset, take_profit_price, order_type, trigger_price)
 
-This function allows you to create a margin order by sending a transaction to the CosmWasm contract.
+This function allows you to create a perpetual order by sending a transaction to the CosmWasm contract.
 
 #### Parameters
 
-- `collateral` (Coin {demom: String , amount : String} or null): The amount of collateral for the margin order. Can only be null if it's not a LimitOpen or MarketOpen type.
-- `position` (String or null): The type of position for the margin order (e.g., "long", "short"). Can be null if it's not a LimitOpen or MarketOpen type
-- `leverage` (String or null): The leverage for the margin order.Can be null if it's not a LimitOpen or MarketOpen type
-- `trading_asset` (String or null): The asset to borrow for the margin order. Can be null if it's not a LimitOpen or MarketOpen type
+- `collateral` (Coin {demom: String , amount : String} or null): The amount of collateral for the perpetual order. Can only be null if it's not a LimitOpen or MarketOpen type.
+- `position` (String or null): The type of position for the perpetual order (e.g., "long", "short"). Can be null if it's not a LimitOpen or MarketOpen type
+- `leverage` (String or null): The leverage for the perpetual order.Can be null if it's not a LimitOpen or MarketOpen type
+- `trading_asset` (String or null): The asset to borrow for the perpetual order. Can be null if it's not a LimitOpen or MarketOpen type
 - `take_profit_price` (String or null): The price at which the order will take profit. Can be null if it's not a LimitOpen or MarketOpen type
 - `order_type` (String): The type of the order (e.g., "stop_loss", "limit_sell", "limit_buy").
 - `trigger_price` ({`base_denom`:String, `quote_denom`:String, `rate` :String} or null): Price relates two assets exchange rate that the user should define, can only be null if the order type is "market_type"
@@ -168,7 +168,7 @@ This function allows you to create a margin order by sending a transaction to th
 #### Usage
 
 ```javascript
-createMarginOrder(
+createPerpetualOrder(
   "position_type",
   "collateral",
   "leverage_value",
@@ -183,7 +183,7 @@ createMarginOrder(
 #### Example
 
 ```javascript
-createMarginOrder(
+createPerpetualOrder(
   "short",
   { denom: "uusdc", amount: "2002" },
   "4.3",
@@ -195,9 +195,9 @@ createMarginOrder(
 );
 ```
 
-### 7. cancelMarginOrder(order_id)
+### 7. cancelPerpetualOrder(order_id)
 
-This function allows you to cancel a margin order by sending a transaction to the CosmWasm contract.
+This function allows you to cancel a perpetual order by sending a transaction to the CosmWasm contract.
 
 #### Parameters
 
@@ -206,18 +206,18 @@ This function allows you to cancel a margin order by sending a transaction to th
 #### Usage
 
 ```javascript
-cancelMarginOrder("your_order_id_here");
+cancelPerpetualOrder("your_order_id_here");
 ```
 
 #### Example
 
 ```js
-cancelMarginOrder("1");
+cancelPerpetualOrder("1");
 ```
 
-### 8. getMarginOrder(id)
+### 8. getPerpetualOrder(id)
 
-This function retrieves information about a specific margin order by querying a CosmWasm contract on the blockchain.
+This function retrieves information about a specific perpetual order by querying a CosmWasm contract on the blockchain.
 
 #### Parameters
 
@@ -226,39 +226,39 @@ This function retrieves information about a specific margin order by querying a 
 #### Usage
 
 ```javascript
-getMarginOrder("your_order_id_here");
+getPerpetualOrder("your_order_id_here");
 ```
 
 #### Example
 
 ```js
-getMarginOrder("2");
+getPerpetualOrder("2");
 ```
 
-### 9. getMarginPosition(address,id)
+### 9. getPerpetualPosition(address,id)
 
-This function retrieves information about a specific margin order by querying a CosmWasm contract on the blockchain.
+This function retrieves information about a specific perpetual order by querying a CosmWasm contract on the blockchain.
 
 #### Parameters
 
-- `address` (String): The address associated with the margin order.
+- `address` (String): The address associated with the perpetual order.
 - `order_id` (String): The unique identifier for the order you want to retrieve.
 
 #### Usage
 
 ```javascript
-getMarginPosition("your_address", "your_order_id_here");
+getPerpetualPosition("your_address", "your_order_id_here");
 ```
 
 #### Example
 
 ```js
-getMarginPosition("elys1x5fehwug2vtkyn4vpunwkfn9zxkpxl8jg0lwuu", "255");
+getPerpetualPosition("elys1x5fehwug2vtkyn4vpunwkfn9zxkpxl8jg0lwuu", "255");
 ```
 
-### 10. getMarginPositions(pagination)
+### 10. getPerpetualPositions(pagination)
 
-This function retrieves multiple margin orders by querying a CosmWasm contract on the blockchain.
+This function retrieves multiple perpetual orders by querying a CosmWasm contract on the blockchain.
 
 #### Parameters
 
@@ -267,13 +267,18 @@ This function retrieves multiple margin orders by querying a CosmWasm contract o
 #### Usage
 
 ```javascript
-getMarginPositions("pagination");
+getPerpetualPositions("pagination");
 ```
 
 #### Example
 
 ```js
-getMarginPositions({ count_total: true, limit: 10, reverse: false, key: null });
+getPerpetualPositions({
+  count_total: true,
+  limit: 10,
+  reverse: false,
+  key: null,
+});
 ```
 
 ### 11. SwapEstimationByDenom(amount, denom_in, denom_out, user_address)
@@ -304,7 +309,7 @@ SwapEstimationByDenom({
 });
 ```
 
-### 12. getMarginOrders(pagination, order_type, order_owner, order_status)
+### 12. getPerpetualOrders(pagination, order_type, order_owner, order_status)
 
 This function retrieves information about multiple order by querying a CosmWasm contract on the blockchain.
 
@@ -318,13 +323,13 @@ This function retrieves information about multiple order by querying a CosmWasm 
 #### Usage
 
 ```javascript
-getMarginOrders({"count_total", "limit", "reverse", "key"}, "order_type", "order_owner", status)
+getPerpetualOrders({"count_total", "limit", "reverse", "key"}, "order_type", "order_owner", status)
 ```
 
 #### Example
 
 ```js
-getMarginOrders(
+getPerpetualOrders(
   { count_total: true, limit: 10, reverse: false, key: null },
   "stop_loss",
   "elys12tzylat4udvjj56uuhu3vj2n4vgp7cf9fwna9w",
@@ -332,14 +337,14 @@ getMarginOrders(
 );
 ```
 
-### 13. marginOpenEstimation (position,leverage,trading_asset,collateral,take_profit_price,user_address)
+### 13. perpetualOpenEstimation (position,leverage,trading_asset,collateral,take_profit_price,user_address)
 
-this function query an estimation on opening a MarginPosition.
+this function query an estimation on opening a PerpetualPosition.
 
 #### Parameters
 
-- `position` (String): The type of position for the margin order (e.g., "long", "short")
-- `leverage` (String): The leverage for the margin position
+- `position` (String): The type of position for the perpetual order (e.g., "long", "short")
+- `leverage` (String): The leverage for the perpetual position
 - `trading_asset` (String): The trading asset
 - `collateral` (Coin {`denom`: String, `amount`: String}) The amount that the user would like to send as a collateral
 - `take_profit_price` (String): the take profit price for the open position
@@ -348,7 +353,7 @@ this function query an estimation on opening a MarginPosition.
 #### Usage
 
 ```js
-marginOpenEstimation(
+perpetualOpenEstimation(
   "position",
   "leverage",
   "trading_asset",
@@ -361,7 +366,7 @@ marginOpenEstimation(
 #### Example
 
 ```js
-marginOpenEstimation(
+perpetualOpenEstimation(
   "long",
   "2.5",
   "ubtc",
@@ -727,9 +732,9 @@ get_liquidity_pools(
 );
 ```
 
-### 24. marginGetPositionsForAddress(address, pagination)
+### 24. perpetualGetPositionsForAddress(address, pagination)
 
-Query margin position using address
+Query perpetual position using address
 
 - `address` (String) addres of the user
 - `pagination` (PageRequest)
@@ -737,13 +742,13 @@ Query margin position using address
 #### Usage.
 
 ```js
-marginGetPositionsForAddress("address", "pagination");
+perpetualGetPositionsForAddress("address", "pagination");
 ```
 
 #### Exemple
 
 ```js
-marginGetPositionsForAddress("elys1x5fehwug2vtkyn4vpunwkfn9zxkpxl8jg0lwuu", {
+perpetualGetPositionsForAddress("elys1x5fehwug2vtkyn4vpunwkfn9zxkpxl8jg0lwuu", {
   offset: 0,
   limit: 10,
   count_total: false,

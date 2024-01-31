@@ -27,7 +27,7 @@ fn successful_create_market_buy_order() {
     // Create a mock message to instantiate the contract with no initial orders.
     let instantiate_msg = InstantiateMockMsg {
         spot_orders: vec![],
-        margin_orders: vec![],
+        perpetual_orders: vec![],
     };
 
     // Create a contract wrapper and store its code.

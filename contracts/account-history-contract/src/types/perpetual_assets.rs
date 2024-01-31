@@ -1,7 +1,7 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{DecCoin, Decimal, Decimal256, SignedDecimal, StdError, StdResult, Uint128};
-use elys_bindings::trade_shield::types::MarginPositionPlus;
-use elys_bindings::types::MarginPosition;
+use elys_bindings::trade_shield::types::PerpetualPositionPlus;
+use elys_bindings::types::PerpetualPosition;
 use elys_bindings::ElysQuerier;
 
 #[cw_serde]
@@ -13,7 +13,7 @@ pub struct PerpetualAssets {
 #[cw_serde]
 pub struct PerpetualAsset {
     pub denom: String,
-    pub position: MarginPosition,
+    pub position: PerpetualPosition,
     pub pnl: SignedDecimal,
     pub collateral: DecCoin,
     pub leverage: SignedDecimal,
@@ -28,7 +28,7 @@ pub struct PerpetualAsset {
 
 impl PerpetualAsset {
     pub fn new(
-        mtp: MarginPositionPlus,
+        mtp: PerpetualPositionPlus,
         usdc_denom: String,
         querier: &ElysQuerier<'_>,
     ) -> StdResult<Self> {
@@ -36,7 +36,7 @@ impl PerpetualAsset {
 
         Ok(PerpetualAsset {
             denom: mtp.mtp.collateral_asset.clone(),
-            position: MarginPosition::try_from_i32(mtp.mtp.position).unwrap(),
+            position: PerpetualPosition::try_from_i32(mtp.mtp.position).unwrap(),
             pnl: mtp.unrealized_pnl,
             collateral: DecCoin {
                 denom: mtp.mtp.collateral_asset.clone(),

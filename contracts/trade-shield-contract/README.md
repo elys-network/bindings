@@ -21,9 +21,9 @@ A spot order is fulfilled when the specified price set by the trader aligns with
 - **Limit Buy Fuctionality**: Allow users to set automated orders that execute when the limit price is reaches, securing profits.
 - **Market Buy Fuctionality**: Allow users to set automated orders that will execute at market price
 
-### Margin Order
+### Perpetual Order
 
-A margin order involves trading an asset using funds provided by a third party. It allows users to trade larger positions with a smaller initial capital outlay.
+A perpetual order involves trading an asset using funds provided by a third party. It allows users to trade larger positions with a smaller initial capital outlay.
 
 - **Stop Loss Functionality**: Enable users to set automated orders that trigger when the asset's price reaches a specified lower limit, minimizing potential losses.
 - **Limit Sell Functionality**: Allow users to set automated orders that execute when the asset's price reaches a specified upper limit, securing profits.
