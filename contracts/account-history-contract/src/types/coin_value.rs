@@ -75,14 +75,14 @@ impl CoinValue {
                 StdError::generic_err(format!("failed to convert amount to Decimal: {}", e))
             })?;
 
-        let mut value = Decimal::from_atomics(whole_value.amount, decimal_point_value as u32)
-            .map_err(|e| {
-                StdError::generic_err(format!("failed to convert whole_value to Decimal: {}", e))
-            })?;
-
-        if coin.denom != "uelys" {
-            value = amount * price;
+        let value = if coin.denom == "uelys" {
+            Decimal::from_atomics(whole_value.amount, decimal_point_value as u32)
+        } else {
+            Decimal::from_atomics(coin.amount, decimal_point_value as u32)
         }
+        .map_err(|e| {
+            StdError::generic_err(format!("failed to convert whole_value to Decimal: {}", e))
+        })?;
 
         Ok(Self {
             denom: coin.denom.clone(),
