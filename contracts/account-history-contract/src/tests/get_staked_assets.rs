@@ -148,7 +148,7 @@ impl Module for ElysModuleWrapper {
             }
             ElysQuery::AmmPriceByDenom { token_in, .. } => {
                 let spot_price = match token_in.denom.as_str() {
-                    "uelys" => Decimal::from_str("0.297883685357378504").unwrap(),
+                    "uelys" => Decimal::from_str("3.5308010067676894").unwrap(),
                     _ => return Err(Error::new(StdError::not_found(token_in.denom.as_str()))),
                 };
                 Ok(to_json_binary(&spot_price)?)
@@ -587,7 +587,7 @@ fn get_staked_assets() {
 
     let expected: StakedAssetsResponse = StakedAssetsResponse {
         total_staked_balance: DecCoin::new(
-            Decimal256::from_str("773.785954784235398524").unwrap(),
+            Decimal256::from_str("9171.647735246481815781").unwrap(),
             "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
         ),
         staked_assets: StakedAssets {
@@ -624,7 +624,7 @@ fn get_staked_assets() {
                     usd_amount: Decimal::zero(),
                 }),
                 staked: Some(StakedAvailable {
-                    usd_amount: Decimal::from_str("770.807117930661613484").unwrap(),
+                    usd_amount: Decimal::from_str("9136.339725178804921781").unwrap(),
                     amount: Uint128::new(2587611057),
                     lockups: Some(vec![Lockup {
                         amount: Int128::new(5200770174),
@@ -640,7 +640,7 @@ fn get_staked_assets() {
                     BalanceReward {
                         asset: "ueden".to_string(),
                         amount: Uint128::new(2984882),
-                        usd_amount: Some(Decimal::from_str("0.889147650516902663").unwrap()),
+                        usd_amount: Some(Decimal::from_str("10.539024370682754271").unwrap()),
                     },
                     BalanceReward {
                         asset: "uedenb".to_string(),
@@ -663,10 +663,10 @@ fn get_staked_assets() {
                 },
                 available: Some(BalanceAvailable {
                     amount: Uint128::new(45666543),
-                    usd_amount: Decimal::from_str("13.60331812637119582").unwrap(),
+                    usd_amount: Decimal::from_str("161.239475999999978995").unwrap(),
                 }),
                 staked: Some(StakedAvailable {
-                    usd_amount: Decimal::from_str("2.97883685357378504").unwrap(),
+                    usd_amount: Decimal::from_str("35.308010067676894").unwrap(),
                     amount: Uint128::new(10000000),
                     lockups: Some(vec![]),
                 }),
@@ -679,7 +679,7 @@ fn get_staked_assets() {
                     BalanceReward {
                         asset: "ueden".to_string(),
                         amount: Uint128::new(9868),
-                        usd_amount: Some(Decimal::from_str("0.002939516207106611").unwrap()),
+                        usd_amount: Some(Decimal::from_str("0.034841944334783558").unwrap()),
                     },
                     BalanceReward {
                         asset: "uedenb".to_string(),
@@ -698,7 +698,7 @@ fn get_staked_assets() {
                     },
                     staked: BalanceAvailable {
                         amount: Uint128::new(10000000),
-                        usd_amount: Decimal::from_str("2.97883685357378504").unwrap(),
+                        usd_amount: Decimal::from_str("35.308010067676894").unwrap(),
                     },
                 }]),
                 unstaked_positions: Some(vec![UnstakedPosition {
@@ -713,7 +713,7 @@ fn get_staked_assets() {
                     remaining_time: 1707328694000,
                     unstaked: BalanceAvailable {
                         amount: Uint128::new(100038144098),
-                        usd_amount: Decimal::from_str("29799.731040224723410679").unwrap(),
+                        usd_amount: Decimal::from_str("353214.779896389585407707").unwrap(),
                     },
                 }]),
             },
@@ -741,7 +741,7 @@ fn get_staked_assets() {
                     BalanceReward {
                         asset: "ueden".to_string(),
                         amount: Uint128::new(349209420),
-                        usd_amount: Some(Decimal::from_str("104.023788991112640102").unwrap()),
+                        usd_amount: Some(Decimal::from_str("1232.988971708760890114").unwrap()),
                     },
                 ]),
                 borrowed: Some(BalanceBorrowed {
@@ -886,6 +886,5 @@ fn get_staked_assets() {
     assert_eq!(resp.staked_assets, expected.staked_assets);
 
     assert_eq!(resp.total_staked_balance, expected.total_staked_balance);
-
     assert_eq!(resp, expected);
 }

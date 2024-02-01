@@ -216,12 +216,12 @@ impl Module for ElysModuleWrapper {
                 amount, denom_in, ..
             } => {
                 let spot_price = match denom_in.as_str() {
-                    "uelys" => Decimal::from_str("0.283221851948960688").unwrap(),
+                    "uelys" => Decimal::from_str("3.5308010067676894").unwrap(),
                     "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65" => {
                         Decimal::one()
                     }
                     "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4" => {
-                        Decimal::one() / Decimal::from_str("9.02450744362719844").unwrap()
+                        Decimal::from_str("9.02450744362719844").unwrap()
                     }
                     _ => return Err(Error::new(StdError::not_found(denom_in.as_str()))),
                 };
@@ -290,7 +290,7 @@ impl Module for ElysModuleWrapper {
 }
 
 #[test]
-fn get_staked_assets() {
+fn get_liquid_assets() {
     // Create a wallet for the "user" with an initial balance of 100 usdc
     let wallet = vec![(
         "user",
@@ -421,24 +421,24 @@ fn get_staked_assets() {
         liquid_assets: vec![
             TotalValueOfAssetResp {
                 denom: "uelys".to_string(),
-                price: Decimal::from_str("0.283221851948960688").unwrap(),
+                price: Decimal::from_str("3.5308010067676894").unwrap(),
                 available_amount: Decimal::from_str("45.666543").unwrap(),
-                available_value: Decimal::from_str("12.933762").unwrap(),
+                available_value: Decimal::from_str("161.239475").unwrap(),
                 in_order_amount: Decimal::zero(),
                 in_order_value: Decimal::zero(),
                 total_amount: Decimal::from_str("45.666543").unwrap(),
-                total_value: Decimal::from_str("12.933762").unwrap(),
+                total_value: Decimal::from_str("161.239475").unwrap(),
             },
             TotalValueOfAssetResp {
                 denom: "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4"
                     .to_string(),
                 price: Decimal::from_str("9.02450744362719844").unwrap(),
                 available_amount: Decimal::from_str("37.403942").unwrap(),
-                available_value: Decimal::from_str("337.552153000000000072").unwrap(),
+                available_value: Decimal::from_str("337.552153").unwrap(),
                 in_order_amount: Decimal::zero(),
                 in_order_value: Decimal::zero(),
                 total_amount: Decimal::from_str("37.403942").unwrap(),
-                total_value: Decimal::from_str("337.552153000000000072").unwrap(),
+                total_value: Decimal::from_str("337.552153").unwrap(),
             },
             TotalValueOfAssetResp {
                 denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
