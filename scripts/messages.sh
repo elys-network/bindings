@@ -255,6 +255,12 @@ case "$1" in
     "create_spot_order_as_market_buy")
         create_spot_order_as_market_buy
         ;;
+    "create_spot_order_as_limit_buy_9_18")
+        create_spot_order "limit_buy" 9.18
+        ;;
+    "create_spot_order_as_limit_buy_12")
+        create_spot_order "limit_buy" 12
+        ;;
     "create_spot_order_as_limit_buy")
         create_spot_order "limit_buy" 0.1
         ;;

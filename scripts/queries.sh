@@ -393,6 +393,9 @@ case "$2" in
     "user_value")
         user_value
         ;;
+    "swap_estimation_by_denom_elys_elys_usdc")
+        swap_estimation_by_denom 1000000 uelys uelys $usdc_denom
+        ;;
     "swap_estimation_by_denom_elys_usdc_elys")
         swap_estimation_by_denom 1000000 uelys $usdc_denom uelys
         ;;
@@ -495,6 +498,7 @@ case "$2" in
         staked_assets
         perpetual_assets
         user_value
+        swap_estimation_by_denom 1000000 uelys uelys $usdc_denom
         swap_estimation_by_denom 1000000 uelys $usdc_denom uelys
         swap_estimation_by_denom 1000000 $usdc_denom $usdc_denom $usdc_denom
         swap_estimation_by_denom 1000000 $usdc_denom $usdc_denom $atom_denom

@@ -246,9 +246,9 @@ fn process_spot_order(
     storage: &mut dyn Storage,
 ) -> StdResult<()> {
     let token_out_min_amount: Int128 = match order.order_type {
-        SpotOrderType::LimitBuy => calculate_token_out_min_amount(order),
-        SpotOrderType::LimitSell => calculate_token_out_min_amount(order),
-        SpotOrderType::StopLoss => Int128::zero(),
+        // SpotOrderType::LimitBuy => calculate_token_out_min_amount(order),
+        // SpotOrderType::LimitSell => calculate_token_out_min_amount(order),
+        // SpotOrderType::StopLoss => Int128::zero(),
         _ => Int128::zero(),
     };
 
