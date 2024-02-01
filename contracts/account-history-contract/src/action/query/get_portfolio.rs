@@ -14,7 +14,7 @@ pub fn get_portfolio(deps: Deps<ElysQuery>, user_address: String) -> StdResult<G
         None => {
             return Ok(GetPortfolioResp {
                 portfolio: AccountSnapshot::zero(&value_denom).portfolio,
-                price_difference: SignedDecimal256::zero(),
+                balance_24h_change: SignedDecimal256::zero(),
             })
         }
     };
@@ -23,7 +23,7 @@ pub fn get_portfolio(deps: Deps<ElysQuery>, user_address: String) -> StdResult<G
         None => {
             return Ok(GetPortfolioResp {
                 portfolio: AccountSnapshot::zero(&value_denom).portfolio,
-                price_difference: SignedDecimal256::zero(),
+                balance_24h_change: SignedDecimal256::zero(),
             })
         }
     };
@@ -39,7 +39,7 @@ pub fn get_portfolio(deps: Deps<ElysQuery>, user_address: String) -> StdResult<G
         None => {
             return Ok(GetPortfolioResp {
                 portfolio: snapshot.portfolio,
-                price_difference: SignedDecimal256::zero(),
+                balance_24h_change: SignedDecimal256::zero(),
             })
         }
     };
@@ -50,7 +50,7 @@ pub fn get_portfolio(deps: Deps<ElysQuery>, user_address: String) -> StdResult<G
             Err(_) => {
                 return Ok(GetPortfolioResp {
                     portfolio: snapshot.portfolio,
-                    price_difference: SignedDecimal256::zero(),
+                    balance_24h_change: SignedDecimal256::zero(),
                 })
             }
         };
@@ -61,16 +61,16 @@ pub fn get_portfolio(deps: Deps<ElysQuery>, user_address: String) -> StdResult<G
             Err(_) => {
                 return Ok(GetPortfolioResp {
                     portfolio: snapshot.portfolio,
-                    price_difference: SignedDecimal256::zero(),
+                    balance_24h_change: SignedDecimal256::zero(),
                 })
             }
         };
 
-    let price_difference = actual_portfolio_balance - old_portfolio_balance;
+    let balance_24h_change = actual_portfolio_balance - old_portfolio_balance;
 
     let resp = GetPortfolioResp {
         portfolio: snapshot.portfolio,
-        price_difference,
+        balance_24h_change,
     };
     Ok(resp)
 }

@@ -6,5 +6,5 @@ use cosmwasm_std::SignedDecimal256;
 #[cw_serde]
 pub struct GetPortfolioResp {
     pub portfolio: Portfolio,
-    pub price_difference: SignedDecimal256,
+    pub balance_24h_change: SignedDecimal256,
 }
