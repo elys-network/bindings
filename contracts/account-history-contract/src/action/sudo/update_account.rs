@@ -233,30 +233,20 @@ fn create_new_part(
 
     let available_asset_balance: Vec<CoinValue> = account_balances
         .iter()
-        .map(
+        .filter_map(
             |coin| match CoinValue::from_coin(coin, querier, value_denom) {
-                Ok(res) => res,
-                Err(_) => CoinValue {
-                    denom: coin.denom.to_owned(),
-                    amount: Decimal::from_atomics(coin.amount, 6 as u32).unwrap(),
-                    price: Decimal::zero(),
-                    value: Decimal::zero(),
-                },
+                Ok(res) => Some(res),
+                Err(_) => None,
             },
         )
         .collect();
 
     let in_orders_asset_balance: Vec<CoinValue> = orders_balances
         .iter()
-        .map(
+        .filter_map(
             |coin| match CoinValue::from_coin(coin, querier, value_denom) {
-                Ok(res) => res,
-                Err(_) => CoinValue {
-                    denom: coin.denom.to_owned(),
-                    amount: Decimal::from_atomics(coin.amount, 6 as u32).unwrap(),
-                    price: Decimal::zero(),
-                    value: Decimal::zero(),
-                },
+                Ok(res) => Some(res),
+                Err(_) => None,
             },
         )
         .collect();
