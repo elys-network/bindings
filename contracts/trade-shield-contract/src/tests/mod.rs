@@ -57,6 +57,7 @@ mod get_spot_orders {
 
 mod process_spot_order {
     use super::*;
+    mod process_limit_buy_order_with_testnet_data;
     mod succesful_process_limit_buy_order;
     mod successful_process_5_of_10_orders;
     mod successful_process_limit_sell_order;

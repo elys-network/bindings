@@ -33,39 +33,6 @@ impl Module for ElysModule {
                 take_profit_price,
                 discount,
             } => {
-                // convert json string below to PerpetualOpenEstimationResponse
-                // {
-                //     "position": "LONG",
-                //     "leverage": "5.000000000000000000",
-                //     "trading_asset": "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4",
-                //     "collateral": {
-                //       "denom": "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
-                //       "amount": "100000000"
-                //     },
-                //     "min_collateral": {
-                //       "denom": "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
-                //       "amount": "8333333"
-                //     },
-                //     "valid_collateral": true,
-                //     "position_size": {
-                //       "denom": "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4",
-                //       "amount": "52961344"
-                //     },
-                //     "swap_fee": "0.001000000000000000",
-                //     "discount": "0.000000000000000000",
-                //     "open_price": "9.440848026817446325",
-                //     "take_profit_price": "10000000000000000000000000000000000000000.000000000000000000",
-                //     "liquidation_price": "9.240848026817446325",
-                //     "estimated_pnl": "4999999999999999999999999999999999999995279575986",
-                //     "available_liquidity": {
-                //       "denom": "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4",
-                //       "amount": "7705931608"
-                //     },
-                //     "weight_balance_ratio": "-0.000216854806307959",
-                //     "borrow_interest_rate": "0.000000323793793684",
-                //     "funding_rate": "0.001000000000000000",
-                //     "price_impact": "0.000006495303442450"
-                //   }
                 let resp = PerpetualOpenEstimationResponse {
                     position: position.clone(),
                     leverage: leverage.clone(),
