@@ -37,11 +37,11 @@ impl CoinValue {
                 },
             },
         };
-        let decimal_point_coin = asset_info.decimal;
+        let decimal_point_token = asset_info.decimal;
 
         if &balance.denom == usdc_denom {
-            let amount =
-                Decimal::from_atomics(balance.amount, decimal_point_coin as u32).map_err(|e| {
+            let amount = Decimal::from_atomics(balance.amount, decimal_point_token as u32)
+                .map_err(|e| {
                     StdError::generic_err(format!("failed to convert amount to Decimal: {}", e))
                 })?;
             return Ok(Self {
@@ -58,15 +58,23 @@ impl CoinValue {
                 StdError::generic_err(format!("failed to get_amm_price_by_denom: {}", e))
             })?;
 
-        let decimal_point_value = asset_info.decimal;
-        let amount_token = Decimal::from_atomics(balance.amount, decimal_point_coin as u32)
+        let decimal_point_usdc = asset_info.decimal;
+
+        let amount_token = Decimal::from_atomics(balance.amount, decimal_point_token as u32)
             .map_err(|e| {
                 StdError::generic_err(format!("failed to convert amount to Decimal: {}", e))
             })?;
 
-        let amount_usdc_base = balance.amount * price.clone();
-
-        let amount_usdc = Decimal::from_atomics(amount_usdc_base, decimal_point_value as u32)
+        let amount_usdc = price
+            .clone()
+            .checked_mul(
+                Decimal::from_atomics(balance.amount, decimal_point_usdc as u32).map_err(|e| {
+                    StdError::generic_err(format!(
+                        "failed to convert amount_usdc_base to Decimal: {}",
+                        e
+                    ))
+                })?,
+            )
             .map_err(|e| {
                 StdError::generic_err(format!(
                     "failed to convert amount_usdc_base to Decimal: {}",
