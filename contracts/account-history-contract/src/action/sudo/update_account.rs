@@ -595,7 +595,7 @@ pub fn get_rewards(deps: Deps<ElysQuery>, address: String) -> StdResult<GetRewar
                     let reward_in_elys = coin(reward.amount.u128(), denom_uelys.to_owned());
                     let price = querier
                         .get_amm_price_by_denom(coin(1, reward_in_elys.denom), Decimal::zero())?;
-                    let amount = coin((price * reward_in_elys.amount).u128(), &denom_uusdc);
+                    let amount = coin((price.clone() * reward_in_elys.amount).u128(), &denom_uusdc);
                     let rewards_in_usdc = Decimal::from_atomics(amount.amount, 0).unwrap();
                     rewards.eden_usd = rewards_in_usdc.checked_mul(usdc_price).unwrap();
                     rewards.total_usd = rewards.total_usd.checked_add(rewards.eden_usd).unwrap();
@@ -610,7 +610,7 @@ pub fn get_rewards(deps: Deps<ElysQuery>, address: String) -> StdResult<GetRewar
 
                 // We accumulate other denoms in a single usd.
                 let price = querier.get_amm_price_by_denom(reward.clone(), Decimal::zero())?;
-                let amount = coin((price * reward.amount).u128(), &denom_uusdc);
+                let amount = coin((price.clone() * reward.amount).u128(), &denom_uusdc);
                 let rewards_in_usdc = Decimal::from_atomics(amount.amount, 0).unwrap();
                 let rewards_in_usd = rewards_in_usdc.checked_mul(usdc_price).unwrap();
 

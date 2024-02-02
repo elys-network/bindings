@@ -64,7 +64,7 @@ impl CoinValue {
                 StdError::generic_err(format!("failed to convert amount to Decimal: {}", e))
             })?;
 
-        let amount_usdc_base = balance.amount * price;
+        let amount_usdc_base = balance.amount * price.clone();
 
         let amount_usdc = Decimal::from_atomics(amount_usdc_base, decimal_point_value as u32)
             .map_err(|e| {
