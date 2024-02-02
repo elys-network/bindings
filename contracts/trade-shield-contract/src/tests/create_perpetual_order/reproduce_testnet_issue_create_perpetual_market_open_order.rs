@@ -1,10 +1,11 @@
 use anyhow::{bail, Result as AnyResult};
 
-use cosmwasm_std::{to_json_binary, Addr, BankMsg, Empty, Int128, Int64, SignedDecimal};
+use cosmwasm_std::{to_json_binary, Addr, BankMsg, Empty, Int128, Int64, SignedDecimal, StdError};
 use cw_multi_test::{AppResponse, BasicAppBuilder, Module};
 use elys_bindings::{
-    msg_resp::PerpetualOpenResponse, query_resp::PerpetualOpenEstimationResponse, ElysMsg,
-    ElysQuery,
+    msg_resp::PerpetualOpenResponse,
+    query_resp::{Entry, PerpetualOpenEstimationResponse, QueryGetEntryResponse},
+    ElysMsg, ElysQuery,
 };
 
 use super::*;
@@ -25,6 +26,81 @@ impl Module for ElysModule {
         request: Self::QueryT,
     ) -> AnyResult<cosmwasm_std::Binary> {
         match request {
+            ElysQuery::AssetProfileEntry { base_denom } => {
+                let resp = match base_denom.as_str() {
+                    "uusdc" => QueryGetEntryResponse {
+                        entry: Entry {
+                            address: "".to_string(),
+                            authority: "elys10d07y265gmmuvt4z0w9aw880jnsr700j6z2zm3".to_string(),
+                            base_denom: "uusdc".to_string(),
+                            commit_enabled: true,
+                            decimals: 6,
+                            denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
+                            display_name: "USDC".to_string(),
+                            display_symbol: "uUSDC".to_string(),
+                            external_symbol: "uUSDC".to_string(),
+                            ibc_channel_id: "channel-12".to_string(),
+                            ibc_counterparty_chain_id: "".to_string(),
+                            ibc_counterparty_channel_id: "channel-19".to_string(),
+                            ibc_counterparty_denom: "".to_string(),
+                            network: "".to_string(),
+                            path: "transfer/channel-12".to_string(),
+                            permissions: vec![],
+                            transfer_limit: "".to_string(),
+                            unit_denom: "uusdc".to_string(),
+                            withdraw_enabled: true,
+                        },
+                    },
+                    "ueden" => QueryGetEntryResponse {
+                        entry: Entry {
+                            address: "".to_string(),
+                            authority: "elys10d07y265gmmuvt4z0w9aw880jnsr700j6z2zm3".to_string(),
+                            base_denom: "ueden".to_string(),
+                            commit_enabled: true,
+                            decimals: 6,
+                            denom: "ueden".to_string(),
+                            display_name: "EDEN".to_string(),
+                            display_symbol: "".to_string(),
+                            external_symbol: "".to_string(),
+                            ibc_channel_id: "".to_string(),
+                            ibc_counterparty_chain_id: "".to_string(),
+                            ibc_counterparty_channel_id: "".to_string(),
+                            ibc_counterparty_denom: "".to_string(),
+                            network: "".to_string(),
+                            path: "".to_string(),
+                            permissions: vec![],
+                            transfer_limit: "".to_string(),
+                            unit_denom: "".to_string(),
+                            withdraw_enabled: true,
+                        },
+                    },
+                    "uelys" => QueryGetEntryResponse {
+                        entry: Entry {
+                            address: "".to_string(),
+                            authority: "elys10d07y265gmmuvt4z0w9aw880jnsr700j6z2zm3".to_string(),
+                            base_denom: "uelys".to_string(),
+                            commit_enabled: true,
+                            decimals: 6,
+                            denom: "uelys".to_string(),
+                            display_name: "ELYS".to_string(),
+                            display_symbol: "".to_string(),
+                            external_symbol: "".to_string(),
+                            ibc_channel_id: "".to_string(),
+                            ibc_counterparty_chain_id: "".to_string(),
+                            ibc_counterparty_channel_id: "".to_string(),
+                            ibc_counterparty_denom: "".to_string(),
+                            network: "".to_string(),
+                            path: "".to_string(),
+                            permissions: vec![],
+                            transfer_limit: "".to_string(),
+                            unit_denom: "".to_string(),
+                            withdraw_enabled: true,
+                        },
+                    },
+                    _ => return Err(StdError::not_found(base_denom).into()),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
             ElysQuery::PerpetualOpenEstimation {
                 position,
                 leverage,

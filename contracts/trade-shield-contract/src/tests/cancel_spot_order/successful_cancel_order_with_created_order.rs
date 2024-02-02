@@ -47,8 +47,8 @@ fn successful_cancel_order_with_created_order() {
                 order_type: SpotOrderType::StopLoss,
                 order_price: Some(OrderPrice {
                     rate: Decimal::from_atomics(Uint128::new(18), 0).unwrap(),
-                    base_denom: "btc".to_string(),
-                    quote_denom: "eth".to_string(),
+                    base_denom: "eth".to_string(),
+                    quote_denom: "btc".to_string(),
                 }),
                 order_source_denom: "eth".to_owned(),
                 order_target_denom: "btc".to_string(),

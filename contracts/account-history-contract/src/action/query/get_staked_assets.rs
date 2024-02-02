@@ -1,21 +1,29 @@
+use crate::msg::query_resp::StakedAssetsResponse;
 use crate::states::HISTORY;
 use crate::types::AccountSnapshot;
-use crate::{action::VALUE_DENOM, msg::query_resp::StakedAssetsResponse};
 use cosmwasm_std::{DecCoin, Decimal256, Deps, StdResult};
-use elys_bindings::ElysQuery;
+use elys_bindings::{
+    query_resp::{Entry, QueryGetEntryResponse},
+    ElysQuerier, ElysQuery,
+};
 
 pub fn get_staked_assets(
     deps: Deps<ElysQuery>,
     address: String,
 ) -> StdResult<StakedAssetsResponse> {
-    let value_denom = VALUE_DENOM.load(deps.storage)?;
+    let querier = ElysQuerier::new(&deps.querier);
+    let QueryGetEntryResponse {
+        entry: Entry {
+            denom: usdc_denom, ..
+        },
+    } = querier.get_asset_profile("uusdc".to_string())?;
     let snapshots: Vec<crate::types::AccountSnapshot> =
         match HISTORY.may_load(deps.storage, &address)? {
             Some(snapshots) => snapshots,
             None => {
                 return Ok(StakedAssetsResponse {
-                    total_staked_balance: DecCoin::new(Decimal256::zero(), value_denom.clone()),
-                    staked_assets: AccountSnapshot::zero(&value_denom).staked_assets,
+                    total_staked_balance: DecCoin::new(Decimal256::zero(), usdc_denom.clone()),
+                    staked_assets: AccountSnapshot::zero(&usdc_denom).staked_assets,
                 });
             }
         };
@@ -23,8 +31,8 @@ pub fn get_staked_assets(
         Some(expr) => expr,
         None => {
             return Ok(StakedAssetsResponse {
-                total_staked_balance: DecCoin::new(Decimal256::zero(), value_denom.clone()),
-                staked_assets: AccountSnapshot::zero(&value_denom).staked_assets,
+                total_staked_balance: DecCoin::new(Decimal256::zero(), usdc_denom.clone()),
+                staked_assets: AccountSnapshot::zero(&usdc_denom).staked_assets,
             });
         }
     };

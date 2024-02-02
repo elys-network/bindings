@@ -1,19 +1,23 @@
-use crate::{
-    msg::query_resp::GetPortfolioResp,
-    states::{HISTORY, VALUE_DENOM},
-    types::AccountSnapshot,
-};
+use crate::{msg::query_resp::GetPortfolioResp, states::HISTORY, types::AccountSnapshot};
 use cosmwasm_std::{Deps, SignedDecimal256, StdResult, Timestamp};
 use cw_utils::Expiration;
-use elys_bindings::ElysQuery;
+use elys_bindings::{
+    query_resp::{Entry, QueryGetEntryResponse},
+    ElysQuerier, ElysQuery,
+};
 
 pub fn get_portfolio(deps: Deps<ElysQuery>, user_address: String) -> StdResult<GetPortfolioResp> {
-    let value_denom = VALUE_DENOM.load(deps.storage)?;
+    let querier = ElysQuerier::new(&deps.querier);
+    let QueryGetEntryResponse {
+        entry: Entry {
+            denom: usdc_denom, ..
+        },
+    } = querier.get_asset_profile("uusdc".to_string())?;
     let snapshots = match HISTORY.may_load(deps.storage, &user_address)? {
         Some(snapshots) => snapshots,
         None => {
             return Ok(GetPortfolioResp {
-                portfolio: AccountSnapshot::zero(&value_denom).portfolio,
+                portfolio: AccountSnapshot::zero(&usdc_denom).portfolio,
                 balance_24h_change: SignedDecimal256::zero(),
             })
         }
@@ -22,7 +26,7 @@ pub fn get_portfolio(deps: Deps<ElysQuery>, user_address: String) -> StdResult<G
         Some(expr) => expr,
         None => {
             return Ok(GetPortfolioResp {
-                portfolio: AccountSnapshot::zero(&value_denom).portfolio,
+                portfolio: AccountSnapshot::zero(&usdc_denom).portfolio,
                 balance_24h_change: SignedDecimal256::zero(),
             })
         }

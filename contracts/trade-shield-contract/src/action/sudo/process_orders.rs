@@ -2,8 +2,7 @@ use crate::msg::ReplyType;
 use cosmwasm_std::{
     to_json_binary, Decimal, Int128, OverflowError, StdError, StdResult, Storage, SubMsg,
 };
-use elys_bindings::query_resp::AmmSwapEstimationByDenomResponse;
-use std::ops::Div;
+use elys_bindings::query_resp::{AmmSwapEstimationByDenomResponse, Entry, QueryGetEntryResponse};
 
 use super::*;
 
@@ -20,13 +19,34 @@ pub fn process_orders(
         .prefix_range(deps.storage, None, None, Order::Ascending)
         .filter_map(|res| res.ok().map(|r| r.1))
         .collect();
+
     let mut reply_info_id = MAX_REPLY_ID.load(deps.storage)?;
 
     let querier = ElysQuerier::new(&deps.querier);
     let mut submsgs: Vec<SubMsg<ElysMsg>> = vec![];
     let mut bank_msgs: Vec<BankMsg> = vec![];
 
+    let QueryGetEntryResponse {
+        entry: Entry {
+            denom: usdc_denom, ..
+        },
+    } = querier.get_asset_profile("uusdc".to_string())?;
+
     for spot_order in spot_orders.iter() {
+        if spot_order.order_price.base_denom != spot_order.order_amount.denom
+            || spot_order.order_price.quote_denom != spot_order.order_target_denom
+        {
+            let mut order = spot_order.to_owned();
+            order.status = Status::Canceled;
+            bank_msgs.push(BankMsg::Send {
+                to_address: order.owner_address.to_string(),
+                amount: vec![order.order_amount.clone()],
+            });
+            PENDING_SPOT_ORDER.remove(deps.storage, order.order_id);
+            SPOT_ORDER.save(deps.storage, order.order_id, &order)?;
+            continue;
+        }
+
         let amm_swap_estimation = match querier.amm_swap_estimation_by_denom(
             &spot_order.order_amount,
             &spot_order.order_amount.denom,
@@ -61,6 +81,24 @@ pub fn process_orders(
 
     for perpetual_order in perpetual_orders.iter() {
         let mut order = perpetual_order.to_owned();
+
+        if perpetual_order.trigger_price.as_ref().unwrap().base_denom != usdc_denom
+            || perpetual_order.trigger_price.as_ref().unwrap().quote_denom
+                != perpetual_order.trading_asset
+        {
+            let mut order = perpetual_order.to_owned();
+            order.status = Status::Canceled;
+            if perpetual_order.order_type == PerpetualOrderType::LimitOpen {
+                bank_msgs.push(BankMsg::Send {
+                    to_address: order.owner.clone(),
+                    amount: vec![order.collateral.clone()],
+                })
+            }
+            PENDING_PERPETUAL_ORDER.remove(deps.storage, order.order_id);
+            PERPETUAL_ORDER.save(deps.storage, order.order_id, &order)?;
+            continue;
+        }
+
         let amm_swap_estimation = match querier.amm_swap_estimation_by_denom(
             &perpetual_order.collateral,
             &perpetual_order.collateral.denom,
@@ -194,14 +232,10 @@ fn check_perpetual_order(
         return false;
     }
 
-    let trigger_price = order.trigger_price.clone().unwrap();
-
-    let order_price = match order.collateral.denom == trigger_price.base_denom {
-        true => trigger_price.rate,
-        false => Decimal::one().div(trigger_price.rate),
-    };
-
-    let market_price = amm_swap_estimation.spot_price;
+    let (order_price, market_price) = (
+        order.trigger_price.clone().unwrap().rate,
+        amm_swap_estimation.spot_price,
+    );
 
     match (&order.order_type, &order.position) {
         (PerpetualOrderType::LimitOpen, PerpetualPosition::Long) => market_price <= order_price,
@@ -222,12 +256,7 @@ fn check_spot_order(
         return false;
     }
 
-    let order_price = match order.order_amount.denom == order.order_price.base_denom {
-        true => order.order_price.rate,
-        false => Decimal::one().div(order.order_price.rate),
-    };
-
-    let market_price = amm_swap_estimation.spot_price;
+    let (order_price, market_price) = (order.order_price.rate, amm_swap_estimation.spot_price);
 
     match order.order_type {
         SpotOrderType::LimitBuy => market_price <= order_price,

@@ -1,20 +1,25 @@
-use crate::{
-    action::{HISTORY, VALUE_DENOM},
-    msg::query_resp::GetRewardsResp,
-    types::AccountSnapshot,
-};
+use crate::{action::HISTORY, msg::query_resp::GetRewardsResp, types::AccountSnapshot};
 
 use cosmwasm_std::{Deps, StdResult};
 
-use elys_bindings::ElysQuery;
+use elys_bindings::{
+    query_resp::{Entry, QueryGetEntryResponse},
+    ElysQuerier, ElysQuery,
+};
 
 pub fn get_rewards(deps: Deps<ElysQuery>, user_address: String) -> StdResult<GetRewardsResp> {
-    let value_denom = VALUE_DENOM.load(deps.storage)?;
+    let querier = ElysQuerier::new(&deps.querier);
+    let QueryGetEntryResponse {
+        entry: Entry {
+            denom: usdc_denom, ..
+        },
+    } = querier.get_asset_profile("uusdc".to_string())?;
+
     let snapshots = match HISTORY.may_load(deps.storage, &user_address)? {
         Some(snapshots) => snapshots,
         None => {
             return Ok(GetRewardsResp {
-                rewards: AccountSnapshot::zero(&value_denom).reward,
+                rewards: AccountSnapshot::zero(&usdc_denom).reward,
             })
         }
     };
@@ -22,7 +27,7 @@ pub fn get_rewards(deps: Deps<ElysQuery>, user_address: String) -> StdResult<Get
         Some(expr) => expr,
         None => {
             return Ok(GetRewardsResp {
-                rewards: AccountSnapshot::zero(&value_denom).reward,
+                rewards: AccountSnapshot::zero(&usdc_denom).reward,
             })
         }
     };

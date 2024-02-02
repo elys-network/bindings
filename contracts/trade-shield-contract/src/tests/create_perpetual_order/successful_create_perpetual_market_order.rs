@@ -44,8 +44,9 @@ fn successful_create_perpetual_market_open_order() {
             take_profit_price: Some(SignedDecimal256::from_atomics(Uint128::new(200), 2).unwrap()),
             order_type: PerpetualOrderType::MarketOpen,
             trigger_price: Some(OrderPrice {
-                base_denom: "btc".to_string(),
-                quote_denom: "usdc".to_string(),
+                base_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                quote_denom: "btc".to_string(),
                 rate: Decimal::from_str("1.7").unwrap(),
             }),
             position_id: None,

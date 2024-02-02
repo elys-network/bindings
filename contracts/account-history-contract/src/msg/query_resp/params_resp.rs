@@ -6,6 +6,5 @@ use elys_bindings::types::PageRequest;
 pub struct ParamsResp {
     pub expiration: Expiration,
     pub pagination: PageRequest,
-    pub value_denom: String,
     pub trade_shield_address: String,
 }

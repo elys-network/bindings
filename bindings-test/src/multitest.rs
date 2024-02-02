@@ -342,37 +342,77 @@ impl Module for ElysModule {
                 })?)
             }
             ElysQuery::AssetProfileEntry { base_denom } => {
-                let asset_info = match ASSET_INFO
-                    .load(storage)?
-                    .into_iter()
-                    .find(|info| info.denom == base_denom)
-                {
-                    Some(i) => i,
-                    None => return Err(Error::new(StdError::not_found(base_denom))),
-                };
-
-                let resp = QueryGetEntryResponse {
-                    entry: Entry {
-                        base_denom: base_denom.clone(),
-                        decimals: asset_info.decimal,
-                        denom: base_denom,
-                        path: "".to_string(),
-                        ibc_channel_id: "".to_string(),
-                        ibc_counterparty_channel_id: "".to_string(),
-                        display_name: "".to_string(),
-                        display_symbol: "".to_string(),
-                        external_symbol: "".to_string(),
-                        unit_denom: "".to_string(),
-                        authority: "".to_string(),
-                        commit_enabled: true,
-                        withdraw_enabled: true,
-                        network: "".to_string(),
-                        address: "".to_string(),
-                        transfer_limit: "".to_string(),
-                        permissions: vec![],
-                        ibc_counterparty_denom: "".to_string(),
-                        ibc_counterparty_chain_id: "".to_string(),
+                let resp = match base_denom.as_str() {
+                    "uusdc" => QueryGetEntryResponse {
+                        entry: Entry {
+                            address: "".to_string(),
+                            authority: "elys10d07y265gmmuvt4z0w9aw880jnsr700j6z2zm3".to_string(),
+                            base_denom: "uusdc".to_string(),
+                            commit_enabled: true,
+                            decimals: 6,
+                            denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
+                            display_name: "USDC".to_string(),
+                            display_symbol: "uUSDC".to_string(),
+                            external_symbol: "uUSDC".to_string(),
+                            ibc_channel_id: "channel-12".to_string(),
+                            ibc_counterparty_chain_id: "".to_string(),
+                            ibc_counterparty_channel_id: "channel-19".to_string(),
+                            ibc_counterparty_denom: "".to_string(),
+                            network: "".to_string(),
+                            path: "transfer/channel-12".to_string(),
+                            permissions: vec![],
+                            transfer_limit: "".to_string(),
+                            unit_denom: "uusdc".to_string(),
+                            withdraw_enabled: true,
+                        },
                     },
+                    "ueden" => QueryGetEntryResponse {
+                        entry: Entry {
+                            address: "".to_string(),
+                            authority: "elys10d07y265gmmuvt4z0w9aw880jnsr700j6z2zm3".to_string(),
+                            base_denom: "ueden".to_string(),
+                            commit_enabled: true,
+                            decimals: 6,
+                            denom: "ueden".to_string(),
+                            display_name: "EDEN".to_string(),
+                            display_symbol: "".to_string(),
+                            external_symbol: "".to_string(),
+                            ibc_channel_id: "".to_string(),
+                            ibc_counterparty_chain_id: "".to_string(),
+                            ibc_counterparty_channel_id: "".to_string(),
+                            ibc_counterparty_denom: "".to_string(),
+                            network: "".to_string(),
+                            path: "".to_string(),
+                            permissions: vec![],
+                            transfer_limit: "".to_string(),
+                            unit_denom: "".to_string(),
+                            withdraw_enabled: true,
+                        },
+                    },
+                    "uelys" => QueryGetEntryResponse {
+                        entry: Entry {
+                            address: "".to_string(),
+                            authority: "elys10d07y265gmmuvt4z0w9aw880jnsr700j6z2zm3".to_string(),
+                            base_denom: "uelys".to_string(),
+                            commit_enabled: true,
+                            decimals: 6,
+                            denom: "uelys".to_string(),
+                            display_name: "ELYS".to_string(),
+                            display_symbol: "".to_string(),
+                            external_symbol: "".to_string(),
+                            ibc_channel_id: "".to_string(),
+                            ibc_counterparty_chain_id: "".to_string(),
+                            ibc_counterparty_channel_id: "".to_string(),
+                            ibc_counterparty_denom: "".to_string(),
+                            network: "".to_string(),
+                            path: "".to_string(),
+                            permissions: vec![],
+                            transfer_limit: "".to_string(),
+                            unit_denom: "".to_string(),
+                            withdraw_enabled: true,
+                        },
+                    },
+                    _ => return Err(StdError::not_found(base_denom).into()),
                 };
                 Ok(to_json_binary(&resp)?)
             }
@@ -437,7 +477,7 @@ impl Module for ElysModule {
                     .unwrap();
                 let price_out = prices
                     .iter()
-                    .find(|price| price.asset == "uusdc".to_string())
+                    .find(|price| price.asset == "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string())
                     .unwrap();
                 let spot_price = price_in.price / price_out.price;
 

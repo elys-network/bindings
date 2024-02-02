@@ -19,13 +19,16 @@ fn history() {
 
     let prices: Vec<Price> = vec![
         Price::new("uelys", Decimal::from_str("1.5").unwrap()),
-        Price::new("uusdc", Decimal::from_str("1.0").unwrap()),
+        Price::new(
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+            Decimal::from_str("1.0").unwrap(),
+        ),
     ];
 
     let infos = vec![
         OracleAssetInfo::new(
-            "uusdc".to_string(),
-            "UUSDC".to_string(),
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
             "".to_string(),
             "".to_string(),
             2,
@@ -78,7 +81,8 @@ fn history() {
     let init_msg = InstantiateMsg {
         limit: 2,
         expiration: Expiration::AtHeight(2),
-        value_denom: "uusdc".to_string(),
+        value_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+            .to_string(),
         trade_shield_address: trade_shield_address.to_string(),
     };
 
@@ -109,7 +113,7 @@ fn history() {
         res.value.liquid_asset.total_liquid_asset_balance,
         DecCoin::new(
             Decimal256::from_atomics(Uint128::new(45), 1).unwrap(),
-            "uusdc"
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
         )
     );
 
@@ -128,7 +132,7 @@ fn history() {
         res.value.liquid_asset.total_liquid_asset_balance,
         DecCoin::new(
             Decimal256::from_atomics(Uint128::new(75), 1).unwrap(),
-            "uusdc"
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
         )
     ); // The previous value wasn't removed yet but wasn't read either since it's expired.
 }
