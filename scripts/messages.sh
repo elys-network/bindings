@@ -106,13 +106,13 @@ function create_spot_order() {
         '{
             "create_spot_order": {
                 "order_price": {
-                    "base_denom": "'"$usdc_denom"'",
-                    "quote_denom": "'"$atom_denom"'",
+                    "base_denom": "'"$atom_denom"'",
+                    "quote_denom": "'"$usdc_denom"'",
                     "rate": "'"$order_price"'"
                 },
                 "order_type": "'"$order_type"'",
-                "order_target_denom": "'"$atom_denom"'",
-                "order_source_denom": "'"$usdc_denom"'"
+                "order_source_denom": "'"$usdc_denom"'",
+                "order_target_denom": "'"$atom_denom"'"
             }
         }' \
         wasm-create_spot_order \
@@ -263,6 +263,9 @@ case "$1" in
         ;;
     "create_spot_order_as_stop_loss")
         create_spot_order "stop_loss" 0.1
+        ;;
+    "create_spot_order_as_limit_buy_usdc_atom")
+        create_spot_order "limit_buy" 12
         ;;
     "all_spot_orders")
         all_spot_orders

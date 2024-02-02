@@ -1,3 +1,5 @@
+use cosmwasm_std::StdError;
+
 use super::*;
 
 // Tests the behavior when creating a "limit sell" order with an invalid order price.
@@ -50,7 +52,8 @@ fn order_price_denom() {
         )
         .unwrap_err();
 
-    let error_msg = ContractError::OrderPriceDenom;
+    let error_msg =
+        ContractError::StdError(StdError::generic_err("target denom should be quote denom"));
 
     assert_eq!(error_msg, err.downcast().unwrap());
 

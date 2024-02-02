@@ -3,12 +3,12 @@ use std::str::FromStr;
 use crate::entry_point::{execute, query, sudo};
 use anyhow::{bail, Result as AnyResult};
 use cosmwasm_std::{
-    coin, to_json_binary, Addr, BankMsg, BlockInfo, Decimal, Empty, SignedDecimal, Timestamp,
-    Uint128,
+    coin, to_json_binary, Addr, BankMsg, BlockInfo, Decimal, Empty, SignedDecimal, StdError,
+    Timestamp, Uint128,
 };
 use cw_multi_test::BankSudo;
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
-use elys_bindings::query_resp::AmmSwapEstimationByDenomResponse;
+use elys_bindings::query_resp::{AmmSwapEstimationByDenomResponse, Entry, QueryGetEntryResponse};
 use elys_bindings::trade_shield::msg::query_resp::GetSpotOrderResp;
 use elys_bindings::trade_shield::msg::{QueryMsg, SudoMsg};
 use elys_bindings::trade_shield::types::{OrderPrice, SpotOrder, SpotOrderType, Status};
@@ -37,12 +37,89 @@ impl Module for ElysModuleWrapper {
         request: Self::QueryT,
     ) -> AnyResult<cosmwasm_std::Binary> {
         match request {
+            ElysQuery::AssetProfileEntry { base_denom } => {
+                let resp = match base_denom.as_str() {
+                    "uusdc" => QueryGetEntryResponse {
+                        entry: Entry {
+                            address: "".to_string(),
+                            authority: "elys10d07y265gmmuvt4z0w9aw880jnsr700j6z2zm3".to_string(),
+                            base_denom: "uusdc".to_string(),
+                            commit_enabled: true,
+                            decimals: 6,
+                            denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
+                            display_name: "USDC".to_string(),
+                            display_symbol: "uUSDC".to_string(),
+                            external_symbol: "uUSDC".to_string(),
+                            ibc_channel_id: "channel-12".to_string(),
+                            ibc_counterparty_chain_id: "".to_string(),
+                            ibc_counterparty_channel_id: "channel-19".to_string(),
+                            ibc_counterparty_denom: "".to_string(),
+                            network: "".to_string(),
+                            path: "transfer/channel-12".to_string(),
+                            permissions: vec![],
+                            transfer_limit: "".to_string(),
+                            unit_denom: "uusdc".to_string(),
+                            withdraw_enabled: true,
+                        },
+                    },
+                    "ueden" => QueryGetEntryResponse {
+                        entry: Entry {
+                            address: "".to_string(),
+                            authority: "elys10d07y265gmmuvt4z0w9aw880jnsr700j6z2zm3".to_string(),
+                            base_denom: "ueden".to_string(),
+                            commit_enabled: true,
+                            decimals: 6,
+                            denom: "ueden".to_string(),
+                            display_name: "EDEN".to_string(),
+                            display_symbol: "".to_string(),
+                            external_symbol: "".to_string(),
+                            ibc_channel_id: "".to_string(),
+                            ibc_counterparty_chain_id: "".to_string(),
+                            ibc_counterparty_channel_id: "".to_string(),
+                            ibc_counterparty_denom: "".to_string(),
+                            network: "".to_string(),
+                            path: "".to_string(),
+                            permissions: vec![],
+                            transfer_limit: "".to_string(),
+                            unit_denom: "".to_string(),
+                            withdraw_enabled: true,
+                        },
+                    },
+                    "uelys" => QueryGetEntryResponse {
+                        entry: Entry {
+                            address: "".to_string(),
+                            authority: "elys10d07y265gmmuvt4z0w9aw880jnsr700j6z2zm3".to_string(),
+                            base_denom: "uelys".to_string(),
+                            commit_enabled: true,
+                            decimals: 6,
+                            denom: "uelys".to_string(),
+                            display_name: "ELYS".to_string(),
+                            display_symbol: "".to_string(),
+                            external_symbol: "".to_string(),
+                            ibc_channel_id: "".to_string(),
+                            ibc_counterparty_chain_id: "".to_string(),
+                            ibc_counterparty_channel_id: "".to_string(),
+                            ibc_counterparty_denom: "".to_string(),
+                            network: "".to_string(),
+                            path: "".to_string(),
+                            permissions: vec![],
+                            transfer_limit: "".to_string(),
+                            unit_denom: "".to_string(),
+                            withdraw_enabled: true,
+                        },
+                    },
+                    _ => return Err(StdError::not_found(base_denom).into()),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
             ElysQuery::AmmSwapEstimationByDenom {
                 amount,
                 denom_in,
                 denom_out,
                 ..
             } => {
+                // 1 denom_in = spot_price denom_out
+                // 1 base = rate quote
                 let spot_price = match (denom_in.as_str(), denom_out.as_str()) {
                     (
                         "uelys",

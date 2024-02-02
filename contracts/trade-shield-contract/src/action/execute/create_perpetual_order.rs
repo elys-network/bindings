@@ -6,6 +6,7 @@ use cosmwasm_std::{
     SignedDecimal256, StdError, StdResult, SubMsg,
 };
 use cw_utils;
+use elys_bindings::query_resp::{Entry, QueryGetEntryResponse};
 use PerpetualOrderType::*;
 
 pub fn create_perpetual_order(
@@ -110,9 +111,14 @@ fn create_perpetual_open_order(
         );
     }
 
-    let querrier = ElysQuerier::new(&deps.querier);
+    let querier = ElysQuerier::new(&deps.querier);
+    let QueryGetEntryResponse {
+        entry: Entry {
+            denom: usdc_denom, ..
+        },
+    } = querier.get_asset_profile("uusdc".to_string())?;
 
-    let open_estimation = querrier.perpetual_open_estimation(
+    let open_estimation = querier.perpetual_open_estimation(
         position.clone(),
         leverage.clone(),
         &trading_asset,
@@ -128,6 +134,20 @@ fn create_perpetual_open_order(
     if let Some(price) = &trigger_price {
         if price.rate.is_zero() {
             return Err(StdError::generic_err("trigger_price: The rate cannot be zero").into());
+        }
+
+        if price.base_denom != usdc_denom {
+            return Err(StdError::generic_err(
+                "trigger_price: The base denom should be the usdc denom",
+            )
+            .into());
+        }
+
+        if price.quote_denom != trading_asset {
+            return Err(StdError::generic_err(
+                "trigger_price: The quote denom should be the trading asset denom",
+            )
+            .into());
         }
     }
 
@@ -229,9 +249,29 @@ fn create_perpetual_close_order(
         return Err(StdError::generic_err("this position had an order already assigned").into());
     };
 
+    let QueryGetEntryResponse {
+        entry: Entry {
+            denom: usdc_denom, ..
+        },
+    } = querier.get_asset_profile("uusdc".to_string())?;
+
     if let Some(price) = &trigger_price {
         if price.rate.is_zero() {
             return Err(StdError::generic_err("trigger_price: The rate cannot be zero").into());
+        }
+
+        if price.base_denom != usdc_denom {
+            return Err(StdError::generic_err(
+                "trigger_price: The base denom should be the usdc denom",
+            )
+            .into());
+        }
+
+        if price.quote_denom != mtp.trading_asset {
+            return Err(StdError::generic_err(
+                "trigger_price: The quote denom should be the trading asset denom",
+            )
+            .into());
         }
     }
 

@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::states::{EXPIRATION, PAGINATION, TRADE_SHIELD_ADDRESS, VALUE_DENOM};
+use crate::states::{EXPIRATION, PAGINATION, TRADE_SHIELD_ADDRESS};
 use crate::tests::get_liquid_assets::query_resp::{GetLiquidAssetsResp, LiquidAsset};
 use crate::{
     entry_point::{execute, query, sudo},
@@ -42,7 +42,6 @@ fn mock_instantiate(
             count_total: false,
         },
     )?;
-    VALUE_DENOM.save(deps.storage, &msg.value_denom)?;
     TRADE_SHIELD_ADDRESS.save(deps.storage, &msg.trade_shield_address)?;
     Ok(Response::new())
 }

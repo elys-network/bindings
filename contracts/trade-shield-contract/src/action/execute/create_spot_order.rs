@@ -20,10 +20,6 @@ pub fn create_spot_order(
 
     let querier = ElysQuerier::new(&deps.querier);
 
-    if order_price.is_none() && order_type != SpotOrderType::MarketBuy {
-        return Err(StdError::not_found("order price").into());
-    }
-
     if let Some(price) = &order_price {
         if price.rate.is_zero() {
             return Err(StdError::generic_err("order_price: The rate cannot be zero").into());
@@ -68,15 +64,9 @@ pub fn create_spot_order(
         &env.block,
     );
 
-    let bank_msg: BankMsg = BankMsg::Send {
-        to_address: env.contract.address.to_string(),
-        amount: info.funds.clone(),
-    };
-
     let resp = create_resp(
         env.contract.address.as_str(),
         &new_order,
-        bank_msg,
         deps.storage,
         in_route.unwrap(),
     )?;
@@ -108,14 +98,17 @@ fn check_denom_error(
         return Ok(());
     }
 
+    if order_price.is_none() {
+        return Err(StdError::not_found("order price").into());
+    }
+
     let order_price = order_price.clone().unwrap();
 
-    if !(order_price.base_denom == order_source_denom
-        && order_price.quote_denom == order_target_denom)
-        && !(order_price.quote_denom == order_source_denom
-            && order_price.base_denom == order_target_denom)
-    {
-        return Err(ContractError::OrderPriceDenom);
+    if order_price.base_denom != order_source_denom {
+        return Err(StdError::generic_err("fund denom should be base denom").into());
+    }
+    if order_price.quote_denom != order_target_denom {
+        return Err(StdError::generic_err("target denom should be quote denom").into());
     }
 
     Ok(())
@@ -124,17 +117,12 @@ fn check_denom_error(
 fn create_resp(
     sender: &str,
     new_order: &SpotOrder,
-    bank_msg: BankMsg,
     storage: &mut dyn Storage,
     in_route: Vec<SwapAmountInRoute>,
 ) -> StdResult<Response<ElysMsg>> {
-    let resp = Response::new()
-        .add_event(
-            Event::new("create_spot_order")
-                .add_attribute("order_id", new_order.order_id.to_string()),
-        )
-        .add_message(bank_msg); // information message
-
+    let resp = Response::new().add_event(
+        Event::new("create_spot_order").add_attribute("order_id", new_order.order_id.to_string()),
+    );
     if new_order.order_type != SpotOrderType::MarketBuy {
         return Ok(resp);
     }

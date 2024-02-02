@@ -1,21 +1,26 @@
-use crate::{
-    msg::query_resp::GetTotalBalanceResp,
-    states::{HISTORY, VALUE_DENOM},
-    types::AccountSnapshot,
-};
+use crate::{msg::query_resp::GetTotalBalanceResp, states::HISTORY, types::AccountSnapshot};
 use cosmwasm_std::{Deps, StdResult};
-use elys_bindings::ElysQuery;
+use elys_bindings::{
+    query_resp::{Entry, QueryGetEntryResponse},
+    ElysQuerier, ElysQuery,
+};
 
 pub fn get_total_balance(
     deps: Deps<ElysQuery>,
     user_address: String,
 ) -> StdResult<GetTotalBalanceResp> {
-    let value_denom = VALUE_DENOM.load(deps.storage)?;
+    let querier = ElysQuerier::new(&deps.querier);
+    let QueryGetEntryResponse {
+        entry: Entry {
+            denom: usdc_denom, ..
+        },
+    } = querier.get_asset_profile("uusdc".to_string())?;
+
     let snapshots = match HISTORY.may_load(deps.storage, &user_address)? {
         Some(snapshots) => snapshots,
         None => {
             return Ok(GetTotalBalanceResp {
-                balances: AccountSnapshot::zero(&value_denom).total_balance,
+                balances: AccountSnapshot::zero(&usdc_denom).total_balance,
             })
         }
     };
@@ -23,7 +28,7 @@ pub fn get_total_balance(
         Some(expr) => expr,
         None => {
             return Ok(GetTotalBalanceResp {
-                balances: AccountSnapshot::zero(&value_denom).total_balance,
+                balances: AccountSnapshot::zero(&usdc_denom).total_balance,
             })
         }
     };

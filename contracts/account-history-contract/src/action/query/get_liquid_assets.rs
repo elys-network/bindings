@@ -1,8 +1,10 @@
 use cosmwasm_std::{DecCoin, Decimal, Decimal256, Deps, StdResult};
-use elys_bindings::ElysQuery;
+use elys_bindings::{
+    query_resp::{Entry, QueryGetEntryResponse},
+    ElysQuerier, ElysQuery,
+};
 
 use crate::{
-    action::VALUE_DENOM,
     msg::query_resp::{GetLiquidAssetsResp, LiquidAsset},
     states::HISTORY,
     types::CoinValue,
@@ -12,13 +14,19 @@ pub fn get_liquid_assets(
     deps: Deps<ElysQuery>,
     user_address: String,
 ) -> StdResult<GetLiquidAssetsResp> {
-    let value_denom = VALUE_DENOM.load(deps.storage)?;
+    let querier = ElysQuerier::new(&deps.querier);
+    let QueryGetEntryResponse {
+        entry: Entry {
+            denom: usdc_denom, ..
+        },
+    } = querier.get_asset_profile("uusdc".to_string())?;
+
     let snapshots = match HISTORY.may_load(deps.storage, &user_address)? {
         Some(snapshots) => snapshots,
         None => {
             return Ok(GetLiquidAssetsResp {
                 liquid_assets: vec![],
-                total_liquid_asset_balance: DecCoin::new(Decimal256::zero(), value_denom),
+                total_liquid_asset_balance: DecCoin::new(Decimal256::zero(), usdc_denom),
             });
         }
     };
@@ -27,7 +35,7 @@ pub fn get_liquid_assets(
         None => {
             return Ok(GetLiquidAssetsResp {
                 liquid_assets: vec![],
-                total_liquid_asset_balance: DecCoin::new(Decimal256::zero(), value_denom),
+                total_liquid_asset_balance: DecCoin::new(Decimal256::zero(), usdc_denom),
             });
         }
     };

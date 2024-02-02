@@ -31,7 +31,7 @@ use elys_bindings::{query_resp::QueryAprResponse, types::EarnType};
 
 pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<ElysMsg>> {
     let querier = ElysQuerier::new(&deps.querier);
-    let value_denom = VALUE_DENOM.load(deps.storage)?;
+
     let trade_shield_address = TRADE_SHIELD_ADDRESS.load(deps.storage)?;
 
     let mut pagination = PAGINATION.load(deps.storage)?;
@@ -177,12 +177,12 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
         let perpetual_response = match get_perpetuals(
             deps.as_ref(),
             trade_shield_address.clone(),
-            &value_denom,
+            &usdc_denom,
             address.clone(),
         ) {
             Ok(perpetual_response) => perpetual_response,
             Err(_) => PerpetualAssets {
-                total_perpetual_asset_balance: DecCoin::new(Decimal256::zero(), &value_denom),
+                total_perpetual_asset_balance: DecCoin::new(Decimal256::zero(), &usdc_denom),
                 perpetual_asset: vec![],
             },
         };
@@ -196,7 +196,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             staked_response,
             rewards_response,
             perpetual_response,
-            &value_denom,
+            &usdc_denom,
         )?;
         if let Some(part) = new_part {
             history.push(part);
@@ -220,7 +220,7 @@ fn create_new_part(
     staked_assets_resp: StakedAssetsResponse,
     rewards_response: GetRewardsResp,
     perpetual_response: PerpetualAssets,
-    value_denom: &String,
+    usdc_denom: &String,
 ) -> StdResult<Option<AccountSnapshot>> {
     let date = match expiration {
         Expiration::AtHeight(_) => Expiration::AtHeight(block.height),
@@ -231,7 +231,7 @@ fn create_new_part(
     let available_asset_balance: Vec<CoinValue> = account_balances
         .iter()
         .filter_map(
-            |coin| match CoinValue::from_coin(coin, querier, value_denom) {
+            |coin| match CoinValue::from_coin(coin, querier, usdc_denom) {
                 Ok(res) => Some(res),
                 Err(_) => None,
             },
@@ -241,15 +241,15 @@ fn create_new_part(
     let in_orders_asset_balance: Vec<CoinValue> = orders_balances
         .iter()
         .filter_map(
-            |coin| match CoinValue::from_coin(coin, querier, value_denom) {
+            |coin| match CoinValue::from_coin(coin, querier, usdc_denom) {
                 Ok(res) => Some(res),
                 Err(_) => None,
             },
         )
         .collect();
 
-    let mut total_available_balance = DecCoin::new(Decimal256::zero(), value_denom);
-    let mut total_in_orders_balance = DecCoin::new(Decimal256::zero(), value_denom);
+    let mut total_available_balance = DecCoin::new(Decimal256::zero(), usdc_denom);
+    let mut total_in_orders_balance = DecCoin::new(Decimal256::zero(), usdc_denom);
 
     for balance in &available_asset_balance {
         total_available_balance.amount = total_available_balance
@@ -294,7 +294,7 @@ fn create_new_part(
                 .map(|v| v.amount_usdc)
                 .fold(Decimal::zero(), |acc, item| acc + item),
         ),
-        value_denom,
+        usdc_denom,
     );
 
     let reward = rewards_response.rewards;
@@ -310,12 +310,12 @@ fn create_new_part(
                     .amount
                     .clone(),
             )?,
-        value_denom,
+        usdc_denom,
     );
-    let reward_usd: DecCoin = DecCoin::new(Decimal256::from(reward.clone().total_usd), value_denom);
+    let reward_usd: DecCoin = DecCoin::new(Decimal256::from(reward.clone().total_usd), usdc_denom);
     let total_balance = DecCoin::new(
         portfolio_usd.amount.checked_add(reward_usd.amount)?,
-        value_denom,
+        usdc_denom,
     );
 
     // Adds the records all the time as we should return data to the FE even if it is 0 balanced.
@@ -331,13 +331,13 @@ fn create_new_part(
             liquid_assets_usd: total_liquid_asset_balance.clone(),
             staked_committed_usd: DecCoin::new(
                 Decimal256::from(staked_assets_resp.total_staked_balance.amount),
-                value_denom,
+                usdc_denom,
             ),
-            liquidity_positions_usd: DecCoin::new(Decimal256::zero(), value_denom),
-            leverage_lp_usd: DecCoin::new(Decimal256::zero(), value_denom),
+            liquidity_positions_usd: DecCoin::new(Decimal256::zero(), usdc_denom),
+            leverage_lp_usd: DecCoin::new(Decimal256::zero(), usdc_denom),
             perpetual_assets_usd: perpetual_response.total_perpetual_asset_balance.clone(),
-            usdc_earn_usd: DecCoin::new(Decimal256::zero(), value_denom),
-            borrows_usd: DecCoin::new(Decimal256::zero(), value_denom),
+            usdc_earn_usd: DecCoin::new(Decimal256::zero(), usdc_denom),
+            borrows_usd: DecCoin::new(Decimal256::zero(), usdc_denom),
         },
         reward,
         liquid_asset: LiquidAsset {
@@ -652,9 +652,8 @@ pub fn get_rewards(deps: Deps<ElysQuery>, address: String) -> StdResult<GetRewar
             }
         }
         None => {
-            let value_denom = VALUE_DENOM.load(deps.storage)?;
             return Ok(GetRewardsResp {
-                rewards: AccountSnapshot::zero(&value_denom).reward,
+                rewards: AccountSnapshot::zero(&denom_uusdc).reward,
             });
         }
     }
@@ -666,7 +665,7 @@ pub fn get_rewards(deps: Deps<ElysQuery>, address: String) -> StdResult<GetRewar
 fn get_perpetuals(
     deps: Deps<ElysQuery>,
     trade_shield_address: String,
-    value_denom: &String,
+    usdc_denom: &String,
     address: String,
 ) -> StdResult<PerpetualAssets> {
     let GetPerpetualPositionsForAddressResp { mtps, .. } = deps
@@ -683,7 +682,7 @@ fn get_perpetuals(
     let querier = ElysQuerier::new(&deps.querier);
 
     for mtp in mtps {
-        match PerpetualAsset::new(mtp, value_denom.to_owned(), &querier) {
+        match PerpetualAsset::new(mtp, usdc_denom.to_owned(), &querier) {
             Ok(perpetual_asset) => perpetual_vec.push(perpetual_asset),
             Err(_) => continue,
         }
@@ -694,7 +693,7 @@ fn get_perpetuals(
         .map(|perpetual| perpetual.size.amount)
         .fold(Decimal256::zero(), |acc, item| acc + item);
     let total_perpetual_asset_balance =
-        DecCoin::new(total_perpetual_asset_balance_amount, value_denom.to_owned());
+        DecCoin::new(total_perpetual_asset_balance_amount, usdc_denom.to_owned());
 
     Ok(PerpetualAssets {
         total_perpetual_asset_balance,
