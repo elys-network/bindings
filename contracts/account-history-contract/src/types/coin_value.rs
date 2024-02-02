@@ -1,86 +1,84 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, Decimal, StdError, StdResult};
-use elys_bindings::{
-    query_resp::{AmmSwapEstimationByDenomResponse, OracleAssetInfoResponse},
-    types::OracleAssetInfo,
-    ElysQuerier,
-};
+use cosmwasm_std::{coin, Coin, Decimal, StdError, StdResult};
+use elys_bindings::{query_resp::OracleAssetInfoResponse, types::OracleAssetInfo, ElysQuerier};
 
 #[cw_serde]
 pub struct CoinValue {
     pub denom: String,
-    pub amount: Decimal,
+    pub amount_token: Decimal,
     pub price: Decimal,
-    pub value: Decimal,
+    pub amount_usdc: Decimal,
 }
 
 impl CoinValue {
-    pub fn new(denom: String, amount: Decimal, price: Decimal, value: Decimal) -> Self {
+    pub fn new(denom: String, amount_token: Decimal, price: Decimal, amount_usdc: Decimal) -> Self {
         Self {
             denom,
-            amount,
+            amount_token,
             price,
-            value,
+            amount_usdc,
         }
     }
     pub fn from_coin(
-        coin: &Coin,
+        balance: &Coin,
         querier: &ElysQuerier<'_>,
-        value_denom: &String,
+        usdc_denom: &String,
     ) -> StdResult<Self> {
-        let OracleAssetInfoResponse { asset_info } = match querier.asset_info(coin.denom.clone()) {
+        let OracleAssetInfoResponse { asset_info } = match querier.asset_info(balance.denom.clone())
+        {
             Ok(res) => res,
             Err(_) => OracleAssetInfoResponse {
                 asset_info: OracleAssetInfo {
-                    denom: coin.denom.clone(),
-                    display: coin.denom.clone(),
-                    band_ticker: coin.denom.clone(),
-                    elys_ticker: coin.denom.clone(),
+                    denom: balance.denom.clone(),
+                    display: balance.denom.clone(),
+                    band_ticker: balance.denom.clone(),
+                    elys_ticker: balance.denom.clone(),
                     decimal: 6,
                 },
             },
         };
         let decimal_point_coin = asset_info.decimal;
 
-        if &coin.denom == value_denom {
+        if &balance.denom == usdc_denom {
             let amount =
-                Decimal::from_atomics(coin.amount, decimal_point_coin as u32).map_err(|e| {
+                Decimal::from_atomics(balance.amount, decimal_point_coin as u32).map_err(|e| {
                     StdError::generic_err(format!("failed to convert amount to Decimal: {}", e))
                 })?;
             return Ok(Self {
-                denom: coin.denom.clone(),
-                value: amount.clone(),
+                denom: balance.denom.clone(),
+                amount_usdc: amount.clone(),
                 price: Decimal::one(),
-                amount,
+                amount_token: amount,
             });
         }
 
-        let AmmSwapEstimationByDenomResponse {
-            spot_price: price,
-            amount: whole_value,
-            ..
-        } = querier
-            .amm_swap_estimation_by_denom(&coin, &coin.denom, value_denom, &Decimal::zero())
+        let price = querier
+            .get_amm_price_by_denom(coin(1, balance.denom.clone()), Decimal::zero())
             .map_err(|e| {
-                StdError::generic_err(format!("failed to get amm_swap_estimation_by_denom: {}", e))
+                StdError::generic_err(format!("failed to get_amm_price_by_denom: {}", e))
             })?;
 
         let decimal_point_value = asset_info.decimal;
-        let amount =
-            Decimal::from_atomics(coin.amount, decimal_point_coin as u32).map_err(|e| {
+        let amount_token = Decimal::from_atomics(balance.amount, decimal_point_coin as u32)
+            .map_err(|e| {
                 StdError::generic_err(format!("failed to convert amount to Decimal: {}", e))
             })?;
 
-        let value =
-            Decimal::from_atomics(whole_value.amount, decimal_point_value as u32).map_err(|e| {
-                StdError::generic_err(format!("failed to convert whole_value to Decimal: {}", e))
+        let amount_usdc_base = balance.amount * price;
+
+        let amount_usdc = Decimal::from_atomics(amount_usdc_base, decimal_point_value as u32)
+            .map_err(|e| {
+                StdError::generic_err(format!(
+                    "failed to convert amount_usdc_base to Decimal: {}",
+                    e
+                ))
             })?;
 
         Ok(Self {
-            denom: coin.denom.clone(),
-            amount,
+            denom: balance.denom.clone(),
+            amount_token,
             price,
-            value,
+            amount_usdc,
         })
     }
 }
