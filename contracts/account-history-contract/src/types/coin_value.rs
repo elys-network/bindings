@@ -53,7 +53,7 @@ impl CoinValue {
         }
 
         let price = querier
-            .get_amm_price_by_denom(coin(1, balance.denom.clone()), Decimal::zero())
+            .get_amm_price_by_denom(coin(1000000, balance.denom.clone()), Decimal::zero())
             .map_err(|e| {
                 StdError::generic_err(format!("failed to get_amm_price_by_denom: {}", e))
             })?;
