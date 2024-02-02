@@ -16,6 +16,9 @@ pub fn reply_to_spot_order(
     let _: AmmSwapExactAmountInResp = match get_response_from_reply(module_resp) {
         Ok(expr) => expr,
         Err(err) => {
+            order.status = Status::Canceled;
+            SPOT_ORDER.save(deps.storage, order_id, &order)?;
+            PENDING_SPOT_ORDER.remove(deps.storage, order.order_id);
             return Ok(err);
         }
     };
