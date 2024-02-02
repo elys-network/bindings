@@ -16,8 +16,9 @@ pub fn reply_to_open_perpetual_position(
     let res: PerpetualOpenResponse = match get_response_from_reply(module_resp) {
         Ok(expr) => expr,
         Err(err) => {
-            order.status = Status::Pending;
+            order.status = Status::Canceled;
             PERPETUAL_ORDER.save(deps.storage, order_id, &order)?;
+            PENDING_PERPETUAL_ORDER.remove(deps.storage, order.order_id);
             return Ok(err);
         }
     };

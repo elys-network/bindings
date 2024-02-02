@@ -57,7 +57,8 @@ mod get_spot_orders {
 
 mod process_spot_order {
     use super::*;
-    mod succesful_process_limit_buy_order;
+    mod process_limit_buy_order_with_executed_status;
+    mod process_limit_buy_order_with_pending_status;
     mod successful_process_5_of_10_orders;
     mod successful_process_limit_sell_order;
     mod successful_process_stop_loss_order;
