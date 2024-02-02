@@ -593,8 +593,10 @@ pub fn get_rewards(deps: Deps<ElysQuery>, address: String) -> StdResult<GetRewar
                 if reward.denom == denom_ueden {
                     // if it is eden, we should elys denom instead of ueden as it is not available in LP pool and has the same value with elys.
                     let reward_in_elys = coin(reward.amount.u128(), denom_uelys.to_owned());
-                    let price = querier
-                        .get_amm_price_by_denom(coin(1, reward_in_elys.denom), Decimal::zero())?;
+                    let price = querier.get_amm_price_by_denom(
+                        coin(1000000, reward_in_elys.denom),
+                        Decimal::zero(),
+                    )?;
 
                     let amount = coin(
                         (price
@@ -624,7 +626,8 @@ pub fn get_rewards(deps: Deps<ElysQuery>, address: String) -> StdResult<GetRewar
                 }
 
                 // We accumulate other denoms in a single usd.
-                let price = querier.get_amm_price_by_denom(reward.clone(), Decimal::zero())?;
+                let price = querier
+                    .get_amm_price_by_denom(coin(1000000, &reward.denom), Decimal::zero())?;
 
                 let amount = coin(
                     (price
