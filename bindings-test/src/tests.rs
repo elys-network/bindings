@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use cosmwasm_std::{
     coin, coins, Addr, Coin, Decimal, Int128, Int64, SignedDecimal, SignedDecimal256, StdError,
     Uint128,
@@ -79,10 +81,7 @@ fn amm_swap_estimation() {
         ))
         .unwrap();
 
-    assert_eq!(
-        swap.spot_price,
-        Decimal::from_atomics(Uint128::new(20000), 0).unwrap()
-    );
+    assert_eq!(swap.spot_price, Decimal::from_str("0.00005").unwrap());
 
     assert_eq!(swap.token_out, coin(100000, "usdc"));
 }

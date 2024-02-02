@@ -316,7 +316,7 @@ fn process_limit_buy_order_with_executed_status() {
             // denom_out
             quote_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
                 .to_string(),
-            rate: Decimal::from_atomics(Uint128::new(2), 0).unwrap(),
+            rate: Decimal::from_atomics(Uint128::new(15), 1).unwrap(),
         }),
         coin(10_000000, "uelys"),
         Addr::unchecked("user"),

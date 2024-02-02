@@ -100,6 +100,7 @@ pub fn process_orders(
         }
 
         let amm_swap_estimation = match querier.amm_swap_estimation_by_denom(
+            // TODO: FIXME
             &perpetual_order.collateral,
             &perpetual_order.collateral.denom,
             &perpetual_order.trading_asset,
@@ -233,8 +234,8 @@ fn check_perpetual_order(
     }
 
     let (order_price, market_price) = (
-        order.trigger_price.clone().unwrap().rate,
-        amm_swap_estimation.spot_price,
+        Decimal::one() / order.trigger_price.clone().unwrap().rate,
+        Decimal::one() / amm_swap_estimation.spot_price,
     );
 
     match (&order.order_type, &order.position) {
@@ -256,7 +257,10 @@ fn check_spot_order(
         return false;
     }
 
-    let (order_price, market_price) = (order.order_price.rate, amm_swap_estimation.spot_price);
+    let (order_price, market_price) = (
+        Decimal::one() / order.order_price.rate,
+        Decimal::one() / amm_swap_estimation.spot_price,
+    );
 
     match order.order_type {
         SpotOrderType::LimitBuy => market_price <= order_price,
@@ -351,9 +355,9 @@ mod tests {
             order_type: SpotOrderType::LimitBuy,
             order_id: 1,
             order_price: OrderPrice {
-                base_denom: "uatom".to_string(),
-                quote_denom: "usdc".to_string(),
-                rate: Decimal::from_str("9.0").unwrap(),
+                base_denom: "usdc".to_string(),
+                quote_denom: "uatom".to_string(),
+                rate: Decimal::one() / Decimal::from_str("9.0").unwrap(),
             },
             order_amount: coin(1000000, "usdc"),
 
@@ -367,7 +371,7 @@ mod tests {
             // Initialize the rest of the SpotOrder fields here
         };
         let amm_swap_estimation = AmmSwapEstimationByDenomResponse {
-            spot_price: Decimal::from_str("9.29").unwrap(),
+            spot_price: Decimal::one() / Decimal::from_str("9.29").unwrap(),
             in_route: None,
             out_route: None,
             amount: coin(1000000, "uatom"),
@@ -392,9 +396,9 @@ mod tests {
             order_type: SpotOrderType::LimitSell,
             order_id: 1,
             order_price: OrderPrice {
-                base_denom: "uatom".to_string(),
-                quote_denom: "usdc".to_string(),
-                rate: Decimal::from_str("10.0").unwrap(),
+                base_denom: "usdc".to_string(),
+                quote_denom: "uatom".to_string(),
+                rate: Decimal::one() / Decimal::from_str("10.0").unwrap(),
             },
             order_amount: coin(1000000, "uatom"),
 
@@ -408,7 +412,7 @@ mod tests {
             // Initialize the rest of the SpotOrder fields here
         };
         let amm_swap_estimation = AmmSwapEstimationByDenomResponse {
-            spot_price: Decimal::from_str("9.29").unwrap(),
+            spot_price: Decimal::one() / Decimal::from_str("9.29").unwrap(),
             in_route: None,
             out_route: None,
             amount: coin(1000000, "usdc"),

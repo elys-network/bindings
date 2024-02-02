@@ -170,10 +170,10 @@ impl Module for ElysModule {
                     .iter()
                     .find(|price| price.asset == routes[0].token_out_denom)
                     .unwrap();
-                let spot_price = price_in.price / price_out.price;
+                let spot_price = price_out.price / price_in.price;
                 let token_out_amount =
                     (Decimal::from_atomics(token_in.amount, spot_price.decimal_places())?
-                        * spot_price)
+                        * (Decimal::one() / spot_price))
                         .atomics()
                         .u128();
 
@@ -197,7 +197,7 @@ impl Module for ElysModule {
                     .iter()
                     .find(|price| price.asset == denom_out)
                     .unwrap();
-                let spot_price = price_in.price / price_out.price;
+                let spot_price = price_out.price / price_in.price;
 
                 let token_estimation = if amount.denom == denom_in {
                     coin(
