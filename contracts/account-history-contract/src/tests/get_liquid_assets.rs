@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use crate::states::{EXPIRATION, PAGINATION, TRADE_SHIELD_ADDRESS, VALUE_DENOM};
-use crate::tests::get_liquid_assets::query_resp::{GetLiquidAssetsResp, TotalValueOfAssetResp};
+use crate::tests::get_liquid_assets::query_resp::{GetLiquidAssetsResp, LiquidAsset};
 use crate::{
     entry_point::{execute, query, sudo},
     msg::*,
@@ -9,12 +9,11 @@ use crate::{
 use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
     coin, to_json_binary, Addr, DecCoin, Decimal, Decimal256, DepsMut, Empty, Env, MessageInfo,
-    Response, SignedDecimal, StdError, StdResult, Timestamp,
+    Response, StdError, StdResult, Timestamp,
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::query_resp::{
-    AmmSwapEstimationByDenomResponse, Entry, OracleAssetInfoResponse, QueryGetEntryResponse,
-    QueryGetPriceResponse,
+    Entry, OracleAssetInfoResponse, QueryGetEntryResponse, QueryGetPriceResponse,
 };
 use elys_bindings::types::{OracleAssetInfo, PageRequest, Price};
 use elys_bindings::{ElysMsg, ElysQuery};
@@ -141,7 +140,13 @@ impl Module for ElysModuleWrapper {
             }
             ElysQuery::AmmPriceByDenom { token_in, .. } => {
                 let spot_price = match token_in.denom.as_str() {
-                    "uelys" => Decimal::from_str("0.283221851948960688").unwrap(),
+                    "uelys" => Decimal::from_str("3.5308010067676894").unwrap(),
+                    "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65" => {
+                        Decimal::one()
+                    }
+                    "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4" => {
+                        Decimal::from_str("9.02450744362719844").unwrap()
+                    }
                     _ => return Err(Error::new(StdError::not_found(token_in.denom.as_str()))),
                 };
                 Ok(to_json_binary(&spot_price)?)
@@ -212,34 +217,8 @@ impl Module for ElysModuleWrapper {
                 };
                 Ok(to_json_binary(&resp)?)
             }
-            ElysQuery::AmmSwapEstimationByDenom {
-                amount, denom_in, ..
-            } => {
-                let spot_price = match denom_in.as_str() {
-                    "uelys" => Decimal::from_str("3.5308010067676894").unwrap(),
-                    "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65" => {
-                        Decimal::one()
-                    }
-                    "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4" => {
-                        Decimal::from_str("9.02450744362719844").unwrap()
-                    }
-                    _ => return Err(Error::new(StdError::not_found(denom_in.as_str()))),
-                };
-                let amount = amount.amount * spot_price.clone();
-
-                let resp = AmmSwapEstimationByDenomResponse {
-                    in_route: None,
-                    out_route: None,
-                    spot_price,
-                    amount: coin(amount.u128(), &denom_in),
-                    swap_fee: SignedDecimal::zero(),
-                    discount: SignedDecimal::zero(),
-                    available_liquidity: coin(95841644452, &denom_in),
-                    weight_balance_ratio: SignedDecimal::zero(),
-                    price_impact: SignedDecimal::zero(),
-                };
-
-                Ok(to_json_binary(&resp)?)
+            ElysQuery::AmmSwapEstimationByDenom { .. } => {
+                panic!("not implemented")
             }
             _ => self.0.query(api, storage, querier, block, request),
         }
@@ -419,28 +398,28 @@ fn get_liquid_assets() {
 
     let mut expected: GetLiquidAssetsResp = GetLiquidAssetsResp {
         liquid_assets: vec![
-            TotalValueOfAssetResp {
+            LiquidAsset {
                 denom: "uelys".to_string(),
                 price: Decimal::from_str("3.5308010067676894").unwrap(),
                 available_amount: Decimal::from_str("45.666543").unwrap(),
-                available_value: Decimal::from_str("161.239475").unwrap(),
+                available_value: Decimal::from_str("161.239475999999978995").unwrap(),
                 in_order_amount: Decimal::zero(),
                 in_order_value: Decimal::zero(),
                 total_amount: Decimal::from_str("45.666543").unwrap(),
-                total_value: Decimal::from_str("161.239475").unwrap(),
+                total_value: Decimal::from_str("161.239475999999978995").unwrap(),
             },
-            TotalValueOfAssetResp {
+            LiquidAsset {
                 denom: "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4"
                     .to_string(),
                 price: Decimal::from_str("9.02450744362719844").unwrap(),
                 available_amount: Decimal::from_str("37.403942").unwrap(),
-                available_value: Decimal::from_str("337.552153").unwrap(),
+                available_value: Decimal::from_str("337.552153000000000072").unwrap(),
                 in_order_amount: Decimal::zero(),
                 in_order_value: Decimal::zero(),
                 total_amount: Decimal::from_str("37.403942").unwrap(),
-                total_value: Decimal::from_str("337.552153").unwrap(),
+                total_value: Decimal::from_str("337.552153000000000072").unwrap(),
             },
-            TotalValueOfAssetResp {
+            LiquidAsset {
                 denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
                     .to_string(),
                 price: Decimal::one(),

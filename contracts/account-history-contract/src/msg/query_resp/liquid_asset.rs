@@ -2,7 +2,7 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::Decimal;
 
 #[cw_serde]
-pub struct TotalValueOfAssetResp {
+pub struct LiquidAsset {
     pub denom: String,
     pub price: Decimal,
     pub available_amount: Decimal,

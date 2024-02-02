@@ -5,17 +5,14 @@ use cosmwasm_std::{
     coin, BlockInfo, Coin, DecCoin, Decimal, Decimal256, Deps, QuerierWrapper, StdError, Uint128,
 };
 use cw_utils::Expiration;
-use elys_bindings::{
-    query_resp::AmmSwapEstimationByDenomResponse,
-    trade_shield::{
-        msg::{
-            query_resp::{
-                GetPerpetualOrdersResp, GetPerpetualPositionsForAddressResp, GetSpotOrdersResp,
-            },
-            QueryMsg,
+use elys_bindings::trade_shield::{
+    msg::{
+        query_resp::{
+            GetPerpetualOrdersResp, GetPerpetualPositionsForAddressResp, GetSpotOrdersResp,
         },
-        types::{PerpetualOrder, PerpetualOrderType, SpotOrder, Status},
+        QueryMsg,
     },
+    types::{PerpetualOrder, PerpetualOrderType, SpotOrder, Status},
 };
 
 use crate::{
@@ -257,13 +254,13 @@ fn create_new_part(
     for balance in &available_asset_balance {
         total_available_balance.amount = total_available_balance
             .amount
-            .checked_add(Decimal256::from(balance.value.clone()))?
+            .checked_add(Decimal256::from(balance.amount_usdc.clone()))?
     }
 
     for balance in &in_orders_asset_balance {
         total_in_orders_balance.amount = total_in_orders_balance
             .amount
-            .checked_add(Decimal256::from(balance.value.clone()))?
+            .checked_add(Decimal256::from(balance.amount_usdc.clone()))?
     }
 
     let mut total_value_per_asset: HashMap<&String, CoinValue> = HashMap::new();
@@ -272,8 +269,8 @@ fn create_new_part(
         total_value_per_asset
             .entry(&available.denom)
             .and_modify(|e| {
-                e.amount += available.amount.clone();
-                e.value += available.value.clone();
+                e.amount_token += available.amount_token.clone();
+                e.amount_usdc += available.amount_usdc.clone();
             })
             .or_insert_with(|| available.clone());
     }
@@ -282,8 +279,8 @@ fn create_new_part(
         total_value_per_asset
             .entry(&in_order.denom)
             .and_modify(|e| {
-                e.amount += in_order.amount.clone();
-                e.value += in_order.value.clone();
+                e.amount_token += in_order.amount_token.clone();
+                e.amount_usdc += in_order.amount_usdc.clone();
             })
             .or_insert_with(|| in_order.clone());
     }
@@ -294,7 +291,7 @@ fn create_new_part(
         Decimal256::from(
             total_value_per_asset
                 .iter()
-                .map(|v| v.value)
+                .map(|v| v.amount_usdc)
                 .fold(Decimal::zero(), |acc, item| acc + item),
         ),
         value_denom,
@@ -596,17 +593,29 @@ pub fn get_rewards(deps: Deps<ElysQuery>, address: String) -> StdResult<GetRewar
                 if reward.denom == denom_ueden {
                     // if it is eden, we should elys denom instead of ueden as it is not available in LP pool and has the same value with elys.
                     let reward_in_elys = coin(reward.amount.u128(), denom_uelys.to_owned());
-                    let AmmSwapEstimationByDenomResponse { amount, .. } = querier
-                        .amm_swap_estimation_by_denom(
-                            &reward_in_elys,
-                            denom_uelys.to_owned(),
-                            denom_uusdc.to_owned(),
-                            &Decimal::zero(),
-                        )?;
+                    let price = querier.get_amm_price_by_denom(
+                        coin(1000000, reward_in_elys.denom),
+                        Decimal::zero(),
+                    )?;
+
+                    let amount = coin(
+                        (price
+                            .checked_mul(Decimal::from_atomics(reward_in_elys.amount, 0).map_err(
+                                |_| StdError::generic_err(format!("failed to convert to decimal")),
+                            )?)
+                            .map_err(|e| {
+                                StdError::generic_err(format!(
+                                    "failed to get_amm_price_by_denom: {}",
+                                    e
+                                ))
+                            })?)
+                        .to_uint_floor()
+                        .u128(),
+                        &denom_uusdc,
+                    );
                     let rewards_in_usdc = Decimal::from_atomics(amount.amount, 0).unwrap();
                     rewards.eden_usd = rewards_in_usdc.checked_mul(usdc_price).unwrap();
                     rewards.total_usd = rewards.total_usd.checked_add(rewards.eden_usd).unwrap();
-
                     continue;
                 }
 
@@ -617,13 +626,24 @@ pub fn get_rewards(deps: Deps<ElysQuery>, address: String) -> StdResult<GetRewar
                 }
 
                 // We accumulate other denoms in a single usd.
-                let AmmSwapEstimationByDenomResponse { amount, .. } = querier
-                    .amm_swap_estimation_by_denom(
-                        &reward,
-                        reward.denom.to_owned(),
-                        &denom_uusdc.to_owned(),
-                        &Decimal::zero(),
-                    )?;
+                let price = querier
+                    .get_amm_price_by_denom(coin(1000000, &reward.denom), Decimal::zero())?;
+
+                let amount = coin(
+                    (price
+                        .checked_mul(Decimal::from_atomics(reward.amount, 0).map_err(|_| {
+                            StdError::generic_err(format!("failed to convert to decimal"))
+                        })?)
+                        .map_err(|e| {
+                            StdError::generic_err(format!(
+                                "failed to get_amm_price_by_denom: {}",
+                                e
+                            ))
+                        })?)
+                    .to_uint_floor()
+                    .u128(),
+                    &denom_uusdc,
+                );
                 let rewards_in_usdc = Decimal::from_atomics(amount.amount, 0).unwrap();
                 let rewards_in_usd = rewards_in_usdc.checked_mul(usdc_price).unwrap();
 
