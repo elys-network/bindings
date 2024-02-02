@@ -1,5 +1,6 @@
 use super::*;
 use cosmwasm_std::{coins, BlockInfo, Coin, Timestamp};
+use elys_bindings::trade_shield::msg::query_resp::GetSpotOrderResp;
 
 // This test case verifies the successful processing of a "limit buy" order in the contract.
 // The scenario involves a "limit buy" order created by a user to buy ubtc at a specific price.
@@ -78,6 +79,13 @@ fn successful_process_limit_buy_order() {
     app.wasm_sudo(addr.clone(), &sudo_msg).unwrap();
 
     // Verify the resulting balances after order processing.
+    // let a: GetSpotOrderResp = app
+    //     .wrap()
+    //     .query_wasm_smart(addr.clone(), &QueryMsg::GetSpotOrder { order_id: 0 })
+    //     .unwrap();
+
+    // assert_eq!(a.order.status, Status::Canceled);
+
     assert_eq!(
         app.wrap()
             .query_balance(&addr, "usdc")

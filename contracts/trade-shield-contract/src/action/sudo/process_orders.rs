@@ -286,20 +286,25 @@ fn process_spot_order(
     Ok(())
 }
 
-fn calculate_token_out_min_amount(order: &SpotOrder) -> Int128 {
-    let SpotOrder {
-        order_amount,
-        order_price,
-        ..
-    } = order;
+fn calculate_token_out_min_amount(_order: &SpotOrder) -> Int128 {
+    // FIXME:
+    // insteade we want to use the amount field from swap-estimation-by-denom that
+    // include slippage and reduce it by 1% that should be our token out min amount to return here
+    //
+    // let SpotOrder {
+    //     order_amount,
+    //     order_price,
+    //     ..
+    // } = order;
 
-    let amount = if order_amount.denom == order_price.base_denom {
-        order_amount.amount * order_price.rate
-    } else {
-        order_amount.amount * Decimal::one().div(order_price.rate)
-    };
+    // let amount = if order_amount.denom == order_price.base_denom {
+    //     order_amount.amount * order_price.rate
+    // } else {
+    //     order_amount.amount * Decimal::one().div(order_price.rate)
+    // };
 
-    Int128::new((amount.u128()) as i128)
+    // Int128::new((amount.u128()) as i128)
+    Int128::zero()
 }
 
 #[cfg(test)]
