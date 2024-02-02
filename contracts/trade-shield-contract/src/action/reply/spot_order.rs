@@ -19,7 +19,11 @@ pub fn reply_to_spot_order(
             order.status = Status::Canceled;
             SPOT_ORDER.save(deps.storage, order_id, &order)?;
             PENDING_SPOT_ORDER.remove(deps.storage, order.order_id);
-            return Ok(err);
+
+            return Ok(err.add_message(BankMsg::Send {
+                to_address: order.owner_address.to_string(),
+                amount: vec![order.order_amount],
+            }));
         }
     };
 
