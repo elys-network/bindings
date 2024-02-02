@@ -17,32 +17,8 @@ jobs:
           profile: minimal
           toolchain: stable
 
-      - name: Build and test bindings-multitest
+      - name: Build and test
         run: |
           cargo build --verbose
           cargo test --verbose
-        working-directory: bindings-test
-
-      - name: Build and test bindings
-        run: |
-          cargo build --verbose
-          cargo test --verbose
-        working-directory: bindings
-
-      - name: Build and test account history contract
-        run: |
-          cargo build --verbose
-          cargo test --verbose
-        working-directory: contracts/account-history-contract
-
-      - name: Build and test financial snapshot contract
-        run: |
-          cargo build --verbose
-          cargo test --verbose
-        working-directory: contracts/financial-snapshot-contract
-
-      - name: Build and test trade shield contract
-        run: |
-          cargo build --verbose
-          cargo test --verbose
-        working-directory: contracts/trade-shield-contract
+        working-directory: .
