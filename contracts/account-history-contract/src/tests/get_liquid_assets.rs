@@ -402,22 +402,22 @@ fn get_liquid_assets() {
                 denom: "uelys".to_string(),
                 price: Decimal::from_str("3.5308010067676894").unwrap(),
                 available_amount: Decimal::from_str("45.666543").unwrap(),
-                available_value: Decimal::from_str("161.239475").unwrap(),
+                available_value: Decimal::from_str("161.239475999999978995").unwrap(),
                 in_order_amount: Decimal::zero(),
                 in_order_value: Decimal::zero(),
                 total_amount: Decimal::from_str("45.666543").unwrap(),
-                total_value: Decimal::from_str("161.239475").unwrap(),
+                total_value: Decimal::from_str("161.239475999999978995").unwrap(),
             },
             LiquidAsset {
                 denom: "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4"
                     .to_string(),
                 price: Decimal::from_str("9.02450744362719844").unwrap(),
                 available_amount: Decimal::from_str("37.403942").unwrap(),
-                available_value: Decimal::from_str("337.552153").unwrap(),
+                available_value: Decimal::from_str("337.552153000000000072").unwrap(),
                 in_order_amount: Decimal::zero(),
                 in_order_value: Decimal::zero(),
                 total_amount: Decimal::from_str("37.403942").unwrap(),
-                total_value: Decimal::from_str("337.552153").unwrap(),
+                total_value: Decimal::from_str("337.552153000000000072").unwrap(),
             },
             LiquidAsset {
                 denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
