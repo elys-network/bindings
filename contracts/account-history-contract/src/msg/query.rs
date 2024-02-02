@@ -9,6 +9,7 @@ use elys_bindings::query_resp::{
     AuthAddressesResponse, BalanceBorrowed, QueryStakedPositionResponse,
     QueryUnstakedPositionResponse, QueryVestingInfoResponse, StakedAvailable,
 };
+#[allow(unused_imports)]
 use elys_bindings::types::{BalanceAvailable, PageRequest};
 
 #[cw_serde]
