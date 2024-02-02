@@ -256,8 +256,26 @@ fn process_limit_buy_order_with_pending_status() {
 
     let o: GetSpotOrderResp = app
         .wrap()
-        .query_wasm_smart(addr, &QueryMsg::GetSpotOrder { order_id: 0 })
+        .query_wasm_smart(addr.clone(), &QueryMsg::GetSpotOrder { order_id: 0 })
         .unwrap();
 
     assert_eq!(o.order.status, Status::Pending);
+
+    assert_eq!(
+        app.wrap()
+            .query_balance(&addr, "uelys")
+            .unwrap()
+            .amount
+            .u128(),
+        10_000000
+    );
+
+    assert_eq!(
+        app.wrap()
+            .query_balance("user", "uelys")
+            .unwrap()
+            .amount
+            .u128(),
+        90_000000
+    );
 }

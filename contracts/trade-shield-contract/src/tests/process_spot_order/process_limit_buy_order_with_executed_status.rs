@@ -273,8 +273,38 @@ fn process_limit_buy_order_with_executed_status() {
 
     let o: GetSpotOrderResp = app
         .wrap()
-        .query_wasm_smart(addr, &QueryMsg::GetSpotOrder { order_id: 0 })
+        .query_wasm_smart(addr.clone(), &QueryMsg::GetSpotOrder { order_id: 0 })
         .unwrap();
 
     assert_eq!(o.order.status, Status::Executed);
+
+    assert_eq!(
+        app.wrap()
+            .query_balance(&addr, "uelys")
+            .unwrap()
+            .amount
+            .u128(),
+        0
+    );
+
+    assert_eq!(
+        app.wrap()
+            .query_balance("user", "uelys")
+            .unwrap()
+            .amount
+            .u128(),
+        90_000000
+    );
+
+    assert_eq!(
+        app.wrap()
+            .query_balance(
+                "user",
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+            )
+            .unwrap()
+            .amount
+            .u128(),
+        17820000
+    );
 }
