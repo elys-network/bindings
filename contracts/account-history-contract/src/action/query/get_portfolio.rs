@@ -18,6 +18,8 @@ pub fn get_portfolio(deps: Deps<ElysQuery>, user_address: String) -> StdResult<G
         None => {
             return Ok(GetPortfolioResp {
                 portfolio: AccountSnapshot::zero(&usdc_denom).portfolio,
+                actual_portfolio_balance: SignedDecimal256::zero(),
+                old_portfolio_balance: SignedDecimal256::zero(),
                 balance_24h_change: SignedDecimal256::zero(),
             })
         }
@@ -27,6 +29,8 @@ pub fn get_portfolio(deps: Deps<ElysQuery>, user_address: String) -> StdResult<G
         None => {
             return Ok(GetPortfolioResp {
                 portfolio: AccountSnapshot::zero(&usdc_denom).portfolio,
+                actual_portfolio_balance: SignedDecimal256::zero(),
+                old_portfolio_balance: SignedDecimal256::zero(),
                 balance_24h_change: SignedDecimal256::zero(),
             })
         }
@@ -43,6 +47,8 @@ pub fn get_portfolio(deps: Deps<ElysQuery>, user_address: String) -> StdResult<G
         None => {
             return Ok(GetPortfolioResp {
                 portfolio: snapshot.portfolio,
+                actual_portfolio_balance: SignedDecimal256::zero(),
+                old_portfolio_balance: SignedDecimal256::zero(),
                 balance_24h_change: SignedDecimal256::zero(),
             })
         }
@@ -54,6 +60,8 @@ pub fn get_portfolio(deps: Deps<ElysQuery>, user_address: String) -> StdResult<G
             Err(_) => {
                 return Ok(GetPortfolioResp {
                     portfolio: snapshot.portfolio,
+                    actual_portfolio_balance: SignedDecimal256::zero(),
+                    old_portfolio_balance: SignedDecimal256::zero(),
                     balance_24h_change: SignedDecimal256::zero(),
                 })
             }
@@ -65,6 +73,8 @@ pub fn get_portfolio(deps: Deps<ElysQuery>, user_address: String) -> StdResult<G
             Err(_) => {
                 return Ok(GetPortfolioResp {
                     portfolio: snapshot.portfolio,
+                    actual_portfolio_balance: SignedDecimal256::zero(),
+                    old_portfolio_balance: SignedDecimal256::zero(),
                     balance_24h_change: SignedDecimal256::zero(),
                 })
             }
@@ -74,6 +84,8 @@ pub fn get_portfolio(deps: Deps<ElysQuery>, user_address: String) -> StdResult<G
 
     let resp = GetPortfolioResp {
         portfolio: snapshot.portfolio,
+        actual_portfolio_balance,
+        old_portfolio_balance,
         balance_24h_change,
     };
     Ok(resp)
