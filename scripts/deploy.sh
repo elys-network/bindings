@@ -50,11 +50,6 @@ if ! command_exists elysd; then
     exit 1
 fi
 
-# recover key
-if [ -n "$CI" ]; then
-    echo ${{ secrets.KEY_MNEMONIC }} | elysd keys add $NAME --recover --keyring-backend test
-fi
-
 # Ensure that the account has been set using elysd keys show command
 if ! elysd keys show $NAME &> /dev/null; then
     echo "$NAME account has not been set. Please set the $NAME account using elysd keys show command."
