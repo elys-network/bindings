@@ -219,7 +219,6 @@ fn create_perpetual_open_order(
 fn create_perpetual_close_order(
     info: MessageInfo,
     deps: DepsMut<ElysQuery>,
-
     order_type: PerpetualOrderType,
     position_id: u64,
     trigger_price: Option<OrderPrice>,
@@ -243,7 +242,11 @@ fn create_perpetual_close_order(
 
     if orders
         .iter()
-        .find(|order| order.position_id == Some(position_id) && order.status != Status::Canceled)
+        .find(|order| {
+            order.position_id == Some(position_id)
+                && order.status != Status::Canceled
+                && order.order_type != order_type
+        })
         .is_some()
     {
         return Err(StdError::generic_err("this position had an order already assigned").into());

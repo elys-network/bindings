@@ -27,7 +27,7 @@ echo tradeshield : $addr
 txhash=$(elysd tx wasm store artifacts/account_history_contract.wasm $OPTIONS | extract_txhash)
 sleep 10
 codeid=$(elysd q tx $txhash | extract_code_id)
-msg=$(echo '{"limit" : 300, "expiration": {"at_time":"604800000000000"}, "value_denom" : "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", "trade_shield_address" :"'$addr'"}')
+msg=$(echo '{"limit" : 300, "expiration": {"at_time":"604800000000000"}, "trade_shield_address" :"'$addr'"}')
 txhash=$(elysd tx wasm init $codeid "$msg" $OPTIONS --label "Contract" --admin validator | extract_txhash)
 sleep 10
 addr=$(elysd q tx $txhash | extract_contract_address)
