@@ -27,12 +27,28 @@ query_contract() {
 }
 
 # Environment variables
-NODE="https://rpc.testnet.elys.network:443"
+if [ -z "$NODE" ]; then
+    NODE="https://rpc.testnet.elys.network:443"
+fi
+
+printf "# Node: %s\n" "$NODE"
 
 # Contract addresses
-ah_contract_address="elys1s37xz7tzrru2cpl96juu9lfqrsd4jh73j9slyv440q5vttx2uyesetjpne"
-fs_contract_address="elys1g2xwx805epc897rwyrykskjque07yxfmc4qq2p4ef5dwd6znl30qnxje76"
-ts_contract_address="elys1m3hduhk4uzxn8mxuvpz02ysndxfwgy5mq60h4c34qqn67xud584qeee3m4"
+if [ -n "$AH_CONTRACT_ADDRESS" ]; then
+    ah_contract_address=$AH_CONTRACT_ADDRESS
+else
+    ah_contract_address="elys1s37xz7tzrru2cpl96juu9lfqrsd4jh73j9slyv440q5vttx2uyesetjpne"
+fi
+if [ -n "$FS_CONTRACT_ADDRESS" ]; then
+    fs_contract_address=$FS_CONTRACT_ADDRESS
+else
+    fs_contract_address="elys1g2xwx805epc897rwyrykskjque07yxfmc4qq2p4ef5dwd6znl30qnxje76"
+fi
+if [ -n "$TS_CONTRACT_ADDRESS" ]; then
+    ts_contract_address=$TS_CONTRACT_ADDRESS
+else
+    ts_contract_address="elys1m3hduhk4uzxn8mxuvpz02ysndxfwgy5mq60h4c34qqn67xud584qeee3m4"
+fi
 
 # Print contract addresses
 printf "# AH contract address: %s\n" "$ah_contract_address"
