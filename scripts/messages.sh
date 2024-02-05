@@ -99,24 +99,45 @@ printf "\n# User address: %s\n" "$user_address"
 # Create spot order
 function create_spot_order() {
     order_type=$1
-    order_price=$2
-    printf "\n# Create spot order as $1\n"
+    source=$2
+    target=$3
+    order_price=$4
+    printf "\n# Create spot order as $1 source=$2 target=$3 order_price=$4\n"
     execute_message \
         "$ts_contract_address" \
         '{
             "create_spot_order": {
                 "order_price": {
-                    "base_denom": "'"$atom_denom"'",
-                    "quote_denom": "'"$usdc_denom"'",
+                    "base_denom": "'"$source"'",
+                    "quote_denom": "'"$target"'",
                     "rate": "'"$order_price"'"
                 },
                 "order_type": "'"$order_type"'",
-                "order_source_denom": "'"$usdc_denom"'",
-                "order_target_denom": "'"$atom_denom"'"
+                "order_source_denom": "'"$source"'",
+                "order_target_denom": "'"$target"'"
             }
         }' \
         wasm-create_spot_order \
-        "1000000$usdc_denom"
+        "1000000$source"
+}
+
+# amm swap exact amount in
+function amm_swap_exact_amount_in() {
+    printf "\n# AMM swap exact amount in\n"
+    execute_message \
+        "$ah_contract_address" \
+        '{
+            "swap_exact_amount_in": {
+                "routes": [
+                    {
+                        "pool_id": 3,
+                        "token_out_denom": "'"$usdc_denom"'"
+                    },
+                ],
+            }
+        }' \
+        wasm-swap_exact_amount_in \
+        "1000000uelys"
 }
 
 # Create spot order as market buy
@@ -271,16 +292,13 @@ case "$1" in
         create_spot_order_as_market_buy
         ;;
     "create_spot_order_as_limit_buy")
-        create_spot_order "limit_buy" 0.1
+        create_spot_order "limit_buy" $2 $3 $4
         ;;
     "create_spot_order_as_limit_sell")
-        create_spot_order "limit_sell" 100
+        create_spot_order "limit_sell" $2 $3 $4
         ;;
     "create_spot_order_as_stop_loss")
-        create_spot_order "stop_loss" 0.1
-        ;;
-    "create_spot_order_as_limit_buy_usdc_atom")
-        create_spot_order "limit_buy" 12
+        create_spot_order "stop_loss" $2 $3 $4
         ;;
     "all_spot_orders")
         all_spot_orders

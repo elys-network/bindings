@@ -1,4 +1,5 @@
 use super::*;
+use cosmwasm_std::{Decimal, Int128};
 use msg::ExecuteMsg;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -118,5 +119,19 @@ pub fn execute(
             share_amount_in,
             token_out_denom,
         ),
+        AmmSwapExactAmountIn { routes } => {
+            cw_utils::one_coin(&info)?;
+
+            let msg = ElysMsg::AmmSwapExactAmountIn {
+                sender: env.contract.address.into_string(),
+                routes,
+                token_in: info.funds[0].clone(),
+                token_out_min_amount: Int128::zero(),
+                discount: Decimal::zero(),
+                recipient: info.sender.into_string(),
+            };
+
+            Ok(Response::new().add_message(msg))
+        }
     }
 }
