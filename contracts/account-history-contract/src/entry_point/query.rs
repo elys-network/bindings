@@ -29,6 +29,9 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
                 .collect::<Vec<(String, Vec<AccountSnapshot>)>>();
             list
         }),
+        UserSnapshots { user_address } => {
+            to_json_binary(&{ HISTORY.load(deps.storage, &user_address)? })
+        }
         LastSnapshot { user_address } => to_json_binary(&{
             let snapshots = HISTORY.load(deps.storage, &user_address)?;
             match snapshots.last().cloned() {

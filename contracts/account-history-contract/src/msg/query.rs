@@ -21,6 +21,8 @@ pub enum QueryMsg {
     Accounts { pagination: Option<PageRequest> },
     #[returns(Vec<(String, Vec<AccountSnapshot>)>)]
     All {},
+    #[returns(Vec<AccountSnapshot>)]
+    UserSnapshots { user_address: String },
     #[returns(AccountSnapshot)]
     LastSnapshot { user_address: String },
     #[returns(GetLiquidAssetsResp)]
