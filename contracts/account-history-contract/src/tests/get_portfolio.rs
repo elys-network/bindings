@@ -1,17 +1,19 @@
 use std::str::FromStr;
 
 use crate::states::{EXPIRATION, PAGINATION, TRADE_SHIELD_ADDRESS};
-use crate::tests::get_liquid_assets::query_resp::{GetLiquidAssetsResp, LiquidAsset};
+use crate::tests::get_portfolio::query_resp::{GetPortfolioResp, UserValueResponse};
+use crate::types::{AccountSnapshot, Portfolio};
 use crate::{
     entry_point::{execute, query, sudo},
     msg::*,
 };
 use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
-    coin, to_json_binary, Addr, DecCoin, Decimal, Decimal256, DepsMut, Empty, Env, MessageInfo,
-    Response, StdError, StdResult, Timestamp,
+    coin, to_json_binary, Addr, BlockInfo, DecCoin, Decimal, Decimal256, DepsMut, Empty, Env,
+    MessageInfo, Response, SignedDecimal256, StdError, StdResult, Timestamp,
 };
-use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
+use cw_multi_test::{AppResponse, BankSudo, BasicAppBuilder, ContractWrapper, Executor, Module};
+use cw_utils::Expiration;
 use elys_bindings::query_resp::{
     Entry, OracleAssetInfoResponse, QueryGetEntryResponse, QueryGetPriceResponse,
 };
@@ -139,12 +141,12 @@ impl Module for ElysModuleWrapper {
             }
             ElysQuery::AmmPriceByDenom { token_in, .. } => {
                 let spot_price = match token_in.denom.as_str() {
-                    "uelys" => Decimal::from_str("3.5308010067676894").unwrap(),
+                    "uelys" => Decimal::from_str("3.449114").unwrap(),
                     "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65" => {
                         Decimal::one()
                     }
                     "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4" => {
-                        Decimal::from_str("9.02450744362719844").unwrap()
+                        Decimal::from_str("9.165195").unwrap()
                     }
                     _ => return Err(Error::new(StdError::not_found(token_in.denom.as_str()))),
                 };
@@ -268,65 +270,29 @@ impl Module for ElysModuleWrapper {
 }
 
 #[test]
-fn get_liquid_assets() {
+fn get_portfolio() {
     // Create a wallet for the "user" with an initial balance of 100 usdc
     let wallet = vec![(
         "user",
         vec![
             coin(
-                21798000,
-                "ibc/0E1517E2771CA7C03F2ED3F9BAECCAEADF0BFD79B89679E834933BC0F179AD98",
-            ),
-            coin(
-                5333229342748,
+                1445910542,
                 "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
             ),
             coin(
-                2704998,
-                "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
-            ),
-            coin(
-                594000000000200000,
-                "ibc/2FBCFC209420E6CECED6EE0BC599E74349759352CE953E27A6871BB3D84BC058",
-            ),
-            coin(
-                1085352,
-                "ibc/326A89923D85047E6418A671FBACCAFA2686B01A16ED4A0AD92954FCE1485910",
-            ),
-            coin(
-                168400000000000000,
-                "ibc/43881AB3B3D05FD9D3606D7F57CBE6EEEA89D18AC66AF9E2915ED43940E71CFD",
-            ),
-            coin(
-                49765000,
-                "ibc/4DAE26570FD24ABA40E2BE4137E39D946C78B00B248D3F78B0919567C4371156",
-            ),
-            coin(
-                9100000,
-                "ibc/977D5388D2FBE72D9A33FE2423BF8F4DADF3B591207CC98A295B9ACF81E4DE40",
-            ),
-            coin(
-                141000000000000000,
-                "ibc/E059CD828E5009D4CF03C4494BEA73749250287FC98DD46E19F9016B918BF49D",
-            ),
-            coin(
-                37403942,
+                19295155,
                 "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4",
             ),
-            coin(
-                79979999999749000,
-                "ibc/FB22E35236996F6B0B1C9D407E8A379A7B1F4083F1960907A1622F022AE450E1",
-            ),
-            coin(45666543, "uelys"),
+            coin(104332087, "uelys"),
         ],
     )];
 
     let mut addresses: Vec<String> = vec![];
     let mut app = BasicAppBuilder::<ElysMsg, ElysQuery>::new_custom()
         .with_custom(ElysModuleWrapper(ElysModule {}))
-        .build(|roouter, _, storage| {
+        .build(|router, _, storage| {
             for (wallet_owner, wallet_contenent) in wallet {
-                roouter
+                router
                     .bank
                     .init_balance(storage, &Addr::unchecked(wallet_owner), wallet_contenent)
                     .unwrap();
@@ -379,93 +345,206 @@ fn get_liquid_assets() {
         )
         .unwrap();
 
+    // t0
+    app.set_block(BlockInfo {
+        height: 1,
+        time: Timestamp::from_seconds(0),
+        chain_id: "elys".to_string(),
+    });
+
+    // update account
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();
 
     // Query the contract for the existing order.
-    let resp: GetLiquidAssetsResp = app
+    let resp: GetPortfolioResp = app
         .wrap()
         .query_wasm_smart(
             &addr,
-            &QueryMsg::GetLiquidAssets {
+            &QueryMsg::GetPortfolio {
                 user_address: "user".to_string(),
             },
         )
         .unwrap();
 
-    let mut expected: GetLiquidAssetsResp = GetLiquidAssetsResp {
-        liquid_assets: vec![
-            LiquidAsset {
-                denom: "uelys".to_string(),
-                price: Decimal::from_str("3.5308010067676894").unwrap(),
-                available_amount: Decimal::from_str("45.666543").unwrap(),
-                available_value: Decimal::from_str("161.239475999999978995").unwrap(),
-                in_order_amount: Decimal::zero(),
-                in_order_value: Decimal::zero(),
-                total_amount: Decimal::from_str("45.666543").unwrap(),
-                total_value: Decimal::from_str("161.239475999999978995").unwrap(),
-            },
-            LiquidAsset {
-                denom: "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4"
-                    .to_string(),
-                price: Decimal::from_str("9.02450744362719844").unwrap(),
-                available_amount: Decimal::from_str("37.403942").unwrap(),
-                available_value: Decimal::from_str("337.552153000000000072").unwrap(),
-                in_order_amount: Decimal::zero(),
-                in_order_value: Decimal::zero(),
-                total_amount: Decimal::from_str("37.403942").unwrap(),
-                total_value: Decimal::from_str("337.552153000000000072").unwrap(),
-            },
-            LiquidAsset {
+    let expected = GetPortfolioResp {
+        actual_portfolio_balance: SignedDecimal256::from_str("1982.608896785343").unwrap(),
+        old_portfolio_balance: SignedDecimal256::from_str("0").unwrap(),
+        balance_24h_change: SignedDecimal256::from_str("0").unwrap(),
+        portfolio: Portfolio {
+            balance_usd: DecCoin {
                 denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
                     .to_string(),
-                price: Decimal::one(),
-                available_amount: Decimal::from_str("5333229.342748").unwrap(),
-                available_value: Decimal::from_str("5333229.342748").unwrap(),
-                in_order_amount: Decimal::zero(),
-                in_order_value: Decimal::zero(),
-                total_amount: Decimal::from_str("5333229.342748").unwrap(),
-                total_value: Decimal::from_str("5333229.342748").unwrap(),
+                amount: Decimal256::from_str("1982.608896785343").unwrap(),
             },
-        ],
-        total_liquid_asset_balance: DecCoin::new(
-            Decimal256::zero(),
-            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
-        ),
+            liquid_assets_usd: DecCoin {
+                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                amount: Decimal256::from_str("1982.607662051143").unwrap(),
+            },
+            staked_committed_usd: DecCoin {
+                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                amount: Decimal256::from_str("0.0012347342").unwrap(),
+            },
+            liquidity_positions_usd: DecCoin {
+                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                amount: Decimal256::from_str("0").unwrap(),
+            },
+            leverage_lp_usd: DecCoin {
+                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                amount: Decimal256::from_str("0").unwrap(),
+            },
+            perpetual_assets_usd: DecCoin {
+                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                amount: Decimal256::from_str("0").unwrap(),
+            },
+            usdc_earn_usd: DecCoin {
+                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                amount: Decimal256::from_str("0").unwrap(),
+            },
+            borrows_usd: DecCoin {
+                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                amount: Decimal256::from_str("0").unwrap(),
+            },
+        },
     };
 
-    for i in expected.liquid_assets.iter() {
-        expected.total_liquid_asset_balance.amount += Decimal256::from(i.total_value.clone());
-    }
+    // test if the response is the same as the expected
+    assert_eq!(resp.portfolio.balance_usd, expected.portfolio.balance_usd);
+    assert_eq!(
+        resp.portfolio.liquid_assets_usd,
+        expected.portfolio.liquid_assets_usd
+    );
+    assert_eq!(
+        resp.portfolio.staked_committed_usd,
+        expected.portfolio.staked_committed_usd
+    );
+    assert_eq!(
+        resp.portfolio.liquidity_positions_usd,
+        expected.portfolio.liquidity_positions_usd
+    );
+    assert_eq!(
+        resp.portfolio.leverage_lp_usd,
+        expected.portfolio.leverage_lp_usd
+    );
+    assert_eq!(
+        resp.portfolio.perpetual_assets_usd,
+        expected.portfolio.perpetual_assets_usd
+    );
+    assert_eq!(
+        resp.portfolio.usdc_earn_usd,
+        expected.portfolio.usdc_earn_usd
+    );
+    assert_eq!(resp.portfolio.borrows_usd, expected.portfolio.borrows_usd);
+    assert_eq!(resp, expected);
+
+    // t1 (1d later)
+    app.set_block(BlockInfo {
+        height: 2,
+        time: Timestamp::from_seconds(24 * 60 * 60),
+        chain_id: "elys".to_string(),
+    });
+
+    // mint some coins
+    app.sudo(
+        BankSudo::Mint {
+            to_address: "user".to_string(),
+            amount: vec![coin(100000000, "uelys")],
+        }
+        .into(),
+    )
+    .unwrap();
+
+    // update account
+    app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
+        .unwrap();
+
+    // t2 (2d later)
+    app.set_block(BlockInfo {
+        height: 3,
+        time: Timestamp::from_seconds(24 * 60 * 60 * 2),
+        chain_id: "elys".to_string(),
+    });
+
+    // mint some coins
+    app.sudo(
+        BankSudo::Mint {
+            to_address: "user".to_string(),
+            amount: vec![coin(300000000, "uelys")],
+        }
+        .into(),
+    )
+    .unwrap();
+
+    // update account
+    app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
+        .unwrap();
+
+    // t3 (3d later)
+    app.set_block(BlockInfo {
+        height: 4,
+        time: Timestamp::from_seconds(24 * 60 * 60 * 3),
+        chain_id: "elys".to_string(),
+    });
+
+    // mint some coins
+    app.sudo(
+        BankSudo::Mint {
+            to_address: "user".to_string(),
+            amount: vec![coin(50000000, "uelys")],
+        }
+        .into(),
+    )
+    .unwrap();
+
+    // update account
+    app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
+        .unwrap();
+
+    // Query the contract for the existing order.
+    let last_snapshot: AccountSnapshot = app
+        .wrap()
+        .query_wasm_smart(
+            &addr,
+            &QueryMsg::LastSnapshot {
+                user_address: "user".to_string(),
+            },
+        )
+        .unwrap();
 
     // test if the response is the same as the expected
-    assert_eq!(resp.liquid_assets.len(), expected.liquid_assets.len());
+    assert_eq!(
+        last_snapshot.date,
+        Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 3))
+    );
+
+    // Query the contract for the existing order.
+    let resp: GetPortfolioResp = app
+        .wrap()
+        .query_wasm_smart(
+            &addr,
+            &QueryMsg::GetPortfolio {
+                user_address: "user".to_string(),
+            },
+        )
+        .unwrap();
 
     assert_eq!(
-        resp.liquid_assets
-            .iter()
-            .find(|l| l.denom.as_str() == "uelys")
-            .cloned(),
-        Some(expected.liquid_assets[0].clone())
+        resp.actual_portfolio_balance,
+        SignedDecimal256::from_str("3534.710196785343").unwrap()
     );
     assert_eq!(
-        resp.liquid_assets
-            .iter()
-            .find(|l| l.denom.as_str()
-                == "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4")
-            .cloned(),
-        Some(expected.liquid_assets[1].clone())
+        resp.old_portfolio_balance,
+        SignedDecimal256::from_str("2327.520296785343").unwrap()
     );
     assert_eq!(
-        resp.liquid_assets
-            .iter()
-            .find(|l| l.denom.as_str()
-                == "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65")
-            .cloned(),
-        Some(expected.liquid_assets[2].clone())
-    );
-    assert_eq!(
-        resp.total_liquid_asset_balance,
-        expected.total_liquid_asset_balance
+        resp.balance_24h_change,
+        SignedDecimal256::from_str("1207.1899").unwrap()
     );
 }

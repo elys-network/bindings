@@ -553,8 +553,6 @@ fn get_staked_assets() {
     let instantiate_msg = InstantiateMsg {
         limit: 3,
         expiration: cw_utils::Expiration::AtTime(Timestamp::from_seconds(604800)),
-        value_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-            .to_string(),
         trade_shield_address,
     };
 

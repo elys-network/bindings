@@ -81,8 +81,6 @@ fn history() {
     let init_msg = InstantiateMsg {
         limit: 2,
         expiration: Expiration::AtHeight(2),
-        value_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-            .to_string(),
         trade_shield_address: trade_shield_address.to_string(),
     };
 

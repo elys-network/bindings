@@ -154,6 +154,21 @@ function create_perpetual_order_as_market_open() {
         "100000000$usdc_denom"
 }
 
+# Create perpetual order as market close
+function create_perpetual_order_as_market_close() {
+    position_id=$1
+    printf "\n# Create perpetual order as market close\n"
+    execute_message \
+        "$ts_contract_address" \
+        '{
+            "create_perpetual_order": {
+                "order_type": "market_close",
+                "position_id": '"$position_id"'
+            }
+        }' \
+        wasm-create_perpetual_order
+}
+
 # Create perpetual order
 function create_perpetual_order() {
     order_type=$1
@@ -278,6 +293,9 @@ case "$1" in
         ;;
     "create_perpetual_order_as_market_open")
         create_perpetual_order_as_market_open
+        ;;
+    "create_perpetual_order_as_market_close")
+        create_perpetual_order_as_market_close $2
         ;;
     "create_perpetual_order_as_limit_open")
         create_perpetual_order "limit_open"

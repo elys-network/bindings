@@ -2,7 +2,8 @@ use super::*;
 use std::collections::HashMap;
 
 use cosmwasm_std::{
-    coin, BlockInfo, Coin, DecCoin, Decimal, Decimal256, Deps, QuerierWrapper, StdError, Uint128,
+    coin, BlockInfo, Coin, DecCoin, Decimal, Decimal256, Deps, QuerierWrapper, StdError, Timestamp,
+    Uint128,
 };
 use cw_utils::Expiration;
 use elys_bindings::trade_shield::{
@@ -148,8 +149,8 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
         .map_err(|_| StdError::generic_err("an error occurred while getting edenb apr in elys"))?;
 
     for address in resp.addresses {
-        let mut history = if let Some(history) = HISTORY.may_load(deps.storage, &address)? {
-            update_history(history, &env.block, &expiration)
+        let mut history = if let Some(histories) = HISTORY.may_load(deps.storage, &address)? {
+            update_history(histories, &env.block, &expiration)
         } else {
             vec![]
         };
@@ -354,24 +355,76 @@ fn create_new_part(
 }
 
 fn update_history(
-    history: Vec<AccountSnapshot>,
+    histories: Vec<AccountSnapshot>,
     block_info: &BlockInfo,
     expiration: &Expiration,
 ) -> Vec<AccountSnapshot> {
-    let clean_history: Vec<AccountSnapshot> = history
-        .into_iter()
+    let clean_history: Vec<AccountSnapshot> = histories
+        .iter()
         .filter(|history| match (history.date, expiration) {
             (Expiration::AtHeight(time), Expiration::AtHeight(expiration)) => {
-                block_info.height > time + expiration
+                block_info.height < time + expiration
             }
             (Expiration::AtTime(time), Expiration::AtTime(expiration)) => {
-                block_info.time.nanos() > time.nanos() + expiration.nanos()
+                block_info.time.nanos() < time.nanos() + expiration.nanos()
             }
             _ => false,
         })
+        .cloned()
         .collect();
 
     clean_history
+}
+
+#[test]
+fn test_update_history() {
+    let histories = vec![AccountSnapshot {
+        date: Expiration::AtTime(Timestamp::from_seconds(60)),
+        total_balance: TotalBalance {
+            total_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            portfolio_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            reward_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+        },
+        portfolio: Portfolio {
+            balance_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            liquid_assets_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            staked_committed_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            liquidity_positions_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            leverage_lp_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            perpetual_assets_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            usdc_earn_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            borrows_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+        },
+        reward: Reward {
+            usdc_usd: Decimal::zero(),
+            eden_usd: Decimal::zero(),
+            eden_boost: Uint128::zero(),
+            other_usd: Decimal::zero(),
+            total_usd: Decimal::zero(),
+        },
+        liquid_asset: LiquidAsset {
+            total_liquid_asset_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            total_available_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            total_in_orders_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            available_asset_balance: vec![],
+            in_orders_asset_balance: vec![],
+            total_value_per_asset: vec![],
+        },
+        staked_assets: StakedAssets::default(),
+        perpetual_assets: PerpetualAssets {
+            total_perpetual_asset_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            perpetual_asset: vec![],
+        },
+    }];
+    let block_info = BlockInfo {
+        height: 0,
+        time: Timestamp::from_seconds(60),
+        chain_id: "chain_id".to_string(),
+    };
+    let expiration = Expiration::AtTime(Timestamp::from_seconds(24 * 3600 * 7));
+
+    let result = update_history(histories.clone(), &block_info, &expiration);
+    assert_eq!(result, histories);
 }
 
 pub fn get_all_order(

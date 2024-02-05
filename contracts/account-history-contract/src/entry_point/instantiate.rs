@@ -22,8 +22,6 @@ pub fn instantiate(
             count_total: false,
         },
     )?;
-    let querier = ElysQuerier::new(&deps.querier);
-    querier.asset_info(msg.value_denom.clone())?;
     TRADE_SHIELD_ADDRESS.save(deps.storage, &msg.trade_shield_address)?;
     Ok(Response::new())
 }

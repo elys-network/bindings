@@ -36,48 +36,49 @@ pub fn get_portfolio(deps: Deps<ElysQuery>, user_address: String) -> StdResult<G
         }
     };
 
-    const TWENTY_FOUR_HOURS: Expiration = Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60));
-
     let old_snapshot = match snapshots
         .iter()
-        .filter(|snapshot| snapshot.date >= TWENTY_FOUR_HOURS)
+        .filter(|old_snapshot| match (old_snapshot.date, snapshot.date) {
+            (Expiration::AtHeight(old_time), Expiration::AtHeight(new_time)) => {
+                old_time < new_time - (24 * 60 * 60 / 3)
+            }
+            (Expiration::AtTime(old_time), Expiration::AtTime(new_time)) => {
+                if new_time < Timestamp::from_seconds(24 * 60 * 60) {
+                    false
+                } else {
+                    old_time < new_time.minus_days(1)
+                }
+            }
+            _ => false,
+        })
         .last()
     {
         Some(snapshot) => snapshot,
         None => {
+            let actual_portfolio_balance =
+                match SignedDecimal256::try_from(snapshot.portfolio.balance_usd.amount) {
+                    Ok(actual_portfolio_balance) => actual_portfolio_balance,
+                    Err(_) => SignedDecimal256::zero(),
+                };
             return Ok(GetPortfolioResp {
                 portfolio: snapshot.portfolio,
-                actual_portfolio_balance: SignedDecimal256::zero(),
+                actual_portfolio_balance,
                 old_portfolio_balance: SignedDecimal256::zero(),
                 balance_24h_change: SignedDecimal256::zero(),
-            })
+            });
         }
     };
 
     let actual_portfolio_balance =
         match SignedDecimal256::try_from(snapshot.portfolio.balance_usd.amount) {
             Ok(balance) => balance,
-            Err(_) => {
-                return Ok(GetPortfolioResp {
-                    portfolio: snapshot.portfolio,
-                    actual_portfolio_balance: SignedDecimal256::zero(),
-                    old_portfolio_balance: SignedDecimal256::zero(),
-                    balance_24h_change: SignedDecimal256::zero(),
-                })
-            }
+            Err(_) => SignedDecimal256::zero(),
         };
 
     let old_portfolio_balance =
         match SignedDecimal256::try_from(old_snapshot.portfolio.balance_usd.amount) {
             Ok(balance) => balance,
-            Err(_) => {
-                return Ok(GetPortfolioResp {
-                    portfolio: snapshot.portfolio,
-                    actual_portfolio_balance: SignedDecimal256::zero(),
-                    old_portfolio_balance: SignedDecimal256::zero(),
-                    balance_24h_change: SignedDecimal256::zero(),
-                })
-            }
+            Err(_) => SignedDecimal256::zero(),
         };
 
     let balance_24h_change = actual_portfolio_balance - old_portfolio_balance;
