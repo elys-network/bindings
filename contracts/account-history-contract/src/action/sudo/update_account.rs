@@ -2,8 +2,7 @@ use super::*;
 use std::collections::HashMap;
 
 use cosmwasm_std::{
-    coin, BlockInfo, Coin, DecCoin, Decimal, Decimal256, Deps, QuerierWrapper, StdError, Timestamp,
-    Uint128,
+    coin, BlockInfo, Coin, DecCoin, Decimal, Decimal256, Deps, QuerierWrapper, StdError, Uint128,
 };
 use cw_utils::Expiration;
 use elys_bindings::trade_shield::{
@@ -376,55 +375,61 @@ fn update_history(
     clean_history
 }
 
-#[test]
-fn test_update_history() {
-    let histories = vec![AccountSnapshot {
-        date: Expiration::AtTime(Timestamp::from_seconds(60)),
-        total_balance: TotalBalance {
-            total_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-            portfolio_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-            reward_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-        },
-        portfolio: Portfolio {
-            balance_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-            liquid_assets_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-            staked_committed_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-            liquidity_positions_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-            leverage_lp_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-            perpetual_assets_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-            usdc_earn_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-            borrows_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-        },
-        reward: Reward {
-            usdc_usd: Decimal::zero(),
-            eden_usd: Decimal::zero(),
-            eden_boost: Uint128::zero(),
-            other_usd: Decimal::zero(),
-            total_usd: Decimal::zero(),
-        },
-        liquid_asset: LiquidAsset {
-            total_liquid_asset_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-            total_available_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-            total_in_orders_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-            available_asset_balance: vec![],
-            in_orders_asset_balance: vec![],
-            total_value_per_asset: vec![],
-        },
-        staked_assets: StakedAssets::default(),
-        perpetual_assets: PerpetualAssets {
-            total_perpetual_asset_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-            perpetual_asset: vec![],
-        },
-    }];
-    let block_info = BlockInfo {
-        height: 0,
-        time: Timestamp::from_seconds(60),
-        chain_id: "chain_id".to_string(),
-    };
-    let expiration = Expiration::AtTime(Timestamp::from_seconds(24 * 3600 * 7));
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use cosmwasm_std::Timestamp;
 
-    let result = update_history(histories.clone(), &block_info, &expiration);
-    assert_eq!(result, histories);
+    #[test]
+    fn test_update_history() {
+        let histories = vec![AccountSnapshot {
+            date: Expiration::AtTime(Timestamp::from_seconds(60)),
+            total_balance: TotalBalance {
+                total_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                portfolio_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                reward_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            },
+            portfolio: Portfolio {
+                balance_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                liquid_assets_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                staked_committed_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                liquidity_positions_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                leverage_lp_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                perpetual_assets_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                usdc_earn_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                borrows_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            },
+            reward: Reward {
+                usdc_usd: Decimal::zero(),
+                eden_usd: Decimal::zero(),
+                eden_boost: Uint128::zero(),
+                other_usd: Decimal::zero(),
+                total_usd: Decimal::zero(),
+            },
+            liquid_asset: LiquidAsset {
+                total_liquid_asset_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                total_available_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                total_in_orders_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                available_asset_balance: vec![],
+                in_orders_asset_balance: vec![],
+                total_value_per_asset: vec![],
+            },
+            staked_assets: StakedAssets::default(),
+            perpetual_assets: PerpetualAssets {
+                total_perpetual_asset_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                perpetual_asset: vec![],
+            },
+        }];
+        let block_info = BlockInfo {
+            height: 0,
+            time: Timestamp::from_seconds(60),
+            chain_id: "chain_id".to_string(),
+        };
+        let expiration = Expiration::AtTime(Timestamp::from_seconds(24 * 3600 * 7));
+
+        let result = update_history(histories.clone(), &block_info, &expiration);
+        assert_eq!(result, histories);
+    }
 }
 
 pub fn get_all_order(

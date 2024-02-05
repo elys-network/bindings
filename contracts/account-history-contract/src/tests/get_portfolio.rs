@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use crate::states::{EXPIRATION, PAGINATION, TRADE_SHIELD_ADDRESS};
-use crate::tests::get_portfolio::query_resp::{GetPortfolioResp, UserValueResponse};
+use crate::tests::get_portfolio::query_resp::GetPortfolioResp;
 use crate::types::{AccountSnapshot, Portfolio};
 use crate::{
     entry_point::{execute, query, sudo},

@@ -364,6 +364,16 @@ function get_amm_price_by_denom() {
     }'
 }
 
+# get user snapshots
+function get_user_snapshots() {
+    printf "\n# Get user snapshots\n"
+    query_contract "$ah_contract_address" '{
+        "user_snapshots": {
+            "user_address": "'"$user_address"'"
+        }
+    }'
+}
+
 # function(s) to run based on the provided argument
 case "$2" in
     "ah_params")
@@ -482,6 +492,9 @@ case "$2" in
         ;;
     "get_amm_price_by_denom")
         get_amm_price_by_denom $3
+        ;;
+    "get_user_snapshots")
+        get_user_snapshots
         ;;
 
     *)
