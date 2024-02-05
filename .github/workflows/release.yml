@@ -27,14 +27,8 @@ jobs:
 
       - name: Deploy to TestNet
         run: |
-          # set key name
-          NAME=contract-initiator
-
-          # recover key
-          echo ${{ secrets.KEY_MNEMONIC }} | elysd keys add $NAME --recover --keyring-backend test
-
           # deploy
-          ./scripts/deploy.sh
+          ./scripts/deploy.sh "${{ secrets.KEY_MNEMONIC }}"
 
       - name: Test Queries
         run: |
