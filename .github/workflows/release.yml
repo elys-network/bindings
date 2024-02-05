@@ -14,7 +14,10 @@ jobs:
 
       - name: Compile with Docker
         run: |
+          # build wasm files
           ./scripts/build.sh
+
+          # compress artifacts
           tar -zcvf elys-bindings-${{  github.ref_name }}.tar.gz artifacts
 
       - name: Create Release
@@ -24,6 +27,13 @@ jobs:
 
       - name: Deploy to TestNet
         run: |
+          # set key name
+          NAME=contract-initiator
+
+          # recover key
+          echo ${{ secrets.KEY_MNEMONIC }} | elysd keys add $NAME --recover --keyring-backend test
+
+          # deploy
           ./scripts/deploy.sh
 
       - name: Test Queries
