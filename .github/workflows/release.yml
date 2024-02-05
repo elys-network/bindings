@@ -24,50 +24,7 @@ jobs:
 
       - name: Deploy to TestNet
         run: |
-          # helper functions
-          extract_txhash() { awk -F 'txhash: ' '/txhash:/{print $2; exit}'; }
-          extract_code_id() { awk -F 'key: code_id|value: ' '/key: code_id/ { getline; gsub(/"/, "", $2); print $2; exit }'; }
-
-          # environment variables
-          ELYSD=/tmp/elysd
-          NODE=https://rpc.testnet.elys.network:443
-          URL=https://github.com/elys-network/elys/releases/download/v0.26.0/elysd-v0.26.0-linux-amd64
-          NAME=contract-initiator
-          OPTIONS="--from $NAME --keyring-backend test --node $NODE --chain-id elystestnet-1 --gas auto --gas-adjustment=1.3 --fees 100000uelys -b sync -y"
-
-          # contract addresses
-          AH_CONTRACT_ADDRESS=elys1s37xz7tzrru2cpl96juu9lfqrsd4jh73j9slyv440q5vttx2uyesetjpne
-          FS_CONTRACT_ADDRESS=elys1g2xwx805epc897rwyrykskjque07yxfmc4qq2p4ef5dwd6znl30qnxje76
-          TS_CONTRACT_ADDRESS=elys1m3hduhk4uzxn8mxuvpz02ysndxfwgy5mq60h4c34qqn67xud584qeee3m4
-
-          # download elysd and binary to path
-          wget $URL -O $ELYSD
-          chmod +x $ELYSD
-          export PATH=/tmp:$PATH
-
-          # recover key
-          echo ${{ secrets.KEY_MNEMONIC }} | elysd keys add $NAME --recover --keyring-backend test
-
-          # store and migrate account history contract
-          txhash=$(elysd tx wasm store artifacts/account_history_contract.wasm $OPTIONS | extract_txhash)
-          sleep 10
-          codeid=$(elysd q tx $txhash --node $NODE | extract_code_id)
-          elysd tx wasm migrate $AH_CONTRACT_ADDRESS $codeid '{}' $OPTIONS
-          sleep 10
-
-          # store and migrate financial snapshot contract
-          txhash=$(elysd tx wasm store artifacts/financial_snapshot_contract.wasm $OPTIONS | extract_txhash)
-          sleep 10
-          codeid=$(elysd q tx $txhash --node $NODE | extract_code_id)
-          elysd tx wasm migrate $FS_CONTRACT_ADDRESS $codeid '{}' $OPTIONS
-          sleep 10
-
-          # store and migrate trade shield contract
-          txhash=$(elysd tx wasm store artifacts/trade_shield_contract.wasm $OPTIONS | extract_txhash)
-          sleep 10
-          codeid=$(elysd q tx $txhash --node $NODE | extract_code_id)
-          elysd tx wasm migrate $TS_CONTRACT_ADDRESS $codeid '{}' $OPTIONS
-          sleep 10
+          ./scripts/deploy.sh
 
       - name: Test Queries
         run: |
