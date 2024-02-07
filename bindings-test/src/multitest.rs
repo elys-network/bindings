@@ -499,7 +499,7 @@ impl Module for ElysModule {
             ElysQuery::StableStakeParams { .. } => {
                 let resp = StableStakeParamsResp {
                     params: StableStakeParamsData {
-                        deposit_denom: String,
+                        deposit_denom: String::from("uusdc"),
                         redemption_rate: Decimal::new(Uint128::from(1u128)),
                         epoch_length: 10i64,
                         interest_rate: Decimal::zero(),
