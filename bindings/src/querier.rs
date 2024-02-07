@@ -357,6 +357,13 @@ impl<'a> ElysQuerier<'a> {
         Ok(resp)
     }
 
+    pub fn get_stable_stake_params(&self) -> StdResult<StableStakeParamsData> {
+        let query: ElysQuery = ElysQuery::StableStakeParams {};
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
+        let resp: StableStakeParamsResp = self.querier.query(&request)?;
+        Ok(resp.params)
+    }
+
     pub fn get_delegations(
         &self,
         delegator_addr: String,
