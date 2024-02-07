@@ -233,6 +233,25 @@ pub struct BalanceBorrowed {
 }
 
 #[cw_serde]
+pub struct StableStakeParamsResp {
+    pub params: StableStakeParamsData,
+}
+
+#[cw_serde]
+pub struct StableStakeParamsData {
+    pub deposit_denom: String,
+    pub redemption_rate: Decimal,
+    pub epoch_length: i64,
+    pub interest_rate: Decimal,
+    pub interest_rate_max: Decimal,
+    pub interest_rate_min: Decimal,
+    pub interest_rate_increase: Decimal,
+    pub interest_rate_decrease: Decimal,
+    pub health_gain_factor: Decimal,
+    pub total_value: Uint128,
+}
+
+#[cw_serde]
 pub struct QueryBalanceResponse {
     pub balance: Coin,
 }

@@ -7,7 +7,8 @@ use cosmwasm_std::{Coin, Decimal};
 #[allow(unused_imports)]
 use elys_bindings::query_resp::{
     AuthAddressesResponse, BalanceBorrowed, QueryStakedPositionResponse,
-    QueryUnstakedPositionResponse, QueryVestingInfoResponse, StakedAvailable,
+    QueryUnstakedPositionResponse, QueryVestingInfoResponse, StableStakeParamsData,
+    StakedAvailable,
 };
 #[allow(unused_imports)]
 use elys_bindings::types::{BalanceAvailable, PageRequest};
@@ -57,6 +58,8 @@ pub enum QueryMsg {
     CommitmentStakedBalanceOfDenom { address: String, denom: String },
     #[returns(BalanceBorrowed)]
     StableStakeBalanceOfBorrow {},
+    #[returns(StableStakeParamsData)]
+    StableStakeParams {},
     #[returns(QueryVestingInfoResponse)]
     CommitmentVestingInfo { address: String },
     #[returns(BalanceAvailable)]
