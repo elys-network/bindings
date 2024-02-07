@@ -1,4 +1,4 @@
-use cosmwasm_std::{DecCoin, Decimal, Decimal256, Deps, StdResult};
+use cosmwasm_std::{DecCoin, Decimal, Decimal256, Deps, Env, StdResult};
 use elys_bindings::{
     query_resp::{Entry, QueryGetEntryResponse},
     ElysQuerier, ElysQuery,
@@ -8,11 +8,13 @@ use crate::{
     msg::query_resp::{GetLiquidAssetsResp, LiquidAsset},
     states::HISTORY,
     types::CoinValue,
+    utils::get_today,
 };
 
 pub fn get_liquid_assets(
     deps: Deps<ElysQuery>,
     user_address: String,
+    env: Env,
 ) -> StdResult<GetLiquidAssetsResp> {
     let querier = ElysQuerier::new(&deps.querier);
     let QueryGetEntryResponse {
@@ -30,7 +32,10 @@ pub fn get_liquid_assets(
             });
         }
     };
-    let snapshot = match snapshots.last().cloned() {
+
+    let today = get_today(&env.block);
+
+    let snapshot = match snapshots.get(&today) {
         Some(snapshot) => snapshot,
         None => {
             return Ok(GetLiquidAssetsResp {
@@ -42,7 +47,7 @@ pub fn get_liquid_assets(
 
     let mut liquid_assets: Vec<LiquidAsset> = vec![];
 
-    for total in snapshot.liquid_asset.total_value_per_asset {
+    for total in snapshot.liquid_asset.total_value_per_asset.clone() {
         let (available_amount, available_value) =
             get_info(&snapshot.liquid_asset.available_asset_balance, &total.denom);
         let (in_order_amount, in_order_value) =
@@ -62,7 +67,7 @@ pub fn get_liquid_assets(
 
     Ok(GetLiquidAssetsResp {
         liquid_assets,
-        total_liquid_asset_balance: snapshot.liquid_asset.total_liquid_asset_balance,
+        total_liquid_asset_balance: snapshot.liquid_asset.total_liquid_asset_balance.clone(),
     })
 }
 

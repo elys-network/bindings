@@ -419,7 +419,7 @@ fn interval() {
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();
 
-    // Query the contract for the existing order.
+    // Query the contract for the existing snapshot.
     let snapshots: Vec<AccountSnapshot> = app
         .wrap()
         .query_wasm_smart(

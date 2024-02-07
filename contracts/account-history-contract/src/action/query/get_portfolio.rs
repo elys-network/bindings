@@ -1,12 +1,23 @@
-use crate::{msg::query_resp::GetPortfolioResp, states::HISTORY, types::AccountSnapshot};
-use cosmwasm_std::{Deps, SignedDecimal256, StdResult, Timestamp};
-use cw_utils::Expiration;
+use core::panic;
+
+use crate::{
+    msg::query_resp::GetPortfolioResp,
+    states::HISTORY,
+    types::AccountSnapshot,
+    utils::{get_raw_today, get_today},
+};
+use chrono::Days;
+use cosmwasm_std::{Deps, Env, SignedDecimal256, StdResult};
 use elys_bindings::{
     query_resp::{Entry, QueryGetEntryResponse},
     ElysQuerier, ElysQuery,
 };
 
-pub fn get_portfolio(deps: Deps<ElysQuery>, user_address: String) -> StdResult<GetPortfolioResp> {
+pub fn get_portfolio(
+    deps: Deps<ElysQuery>,
+    user_address: String,
+    env: Env,
+) -> StdResult<GetPortfolioResp> {
     let querier = ElysQuerier::new(&deps.querier);
     let QueryGetEntryResponse {
         entry: Entry {
@@ -24,7 +35,10 @@ pub fn get_portfolio(deps: Deps<ElysQuery>, user_address: String) -> StdResult<G
             })
         }
     };
-    let snapshot = match snapshots.last().cloned() {
+
+    let today = get_today(&env.block);
+
+    let snapshot = match snapshots.get(&today) {
         Some(expr) => expr,
         None => {
             return Ok(GetPortfolioResp {
@@ -36,23 +50,12 @@ pub fn get_portfolio(deps: Deps<ElysQuery>, user_address: String) -> StdResult<G
         }
     };
 
-    let old_snapshot = match snapshots
-        .iter()
-        .filter(|old_snapshot| match (old_snapshot.date, snapshot.date) {
-            (Expiration::AtHeight(old_time), Expiration::AtHeight(new_time)) => {
-                old_time < new_time - (24 * 60 * 60 / 3)
-            }
-            (Expiration::AtTime(old_time), Expiration::AtTime(new_time)) => {
-                if new_time < Timestamp::from_seconds(24 * 60 * 60) {
-                    false
-                } else {
-                    old_time < new_time.minus_days(1)
-                }
-            }
-            _ => false,
-        })
-        .last()
-    {
+    let twenty_four_hours_ago = match get_raw_today(&env.block).checked_sub_days(Days::new(1)) {
+        Some(date_time) => date_time.format("%Y-%m-%d").to_string(),
+        None => panic!("Failed to convert block time to date"),
+    };
+
+    let old_snapshot = match snapshots.get(&twenty_four_hours_ago) {
         Some(snapshot) => snapshot,
         None => {
             let actual_portfolio_balance =
@@ -61,7 +64,7 @@ pub fn get_portfolio(deps: Deps<ElysQuery>, user_address: String) -> StdResult<G
                     Err(_) => SignedDecimal256::zero(),
                 };
             return Ok(GetPortfolioResp {
-                portfolio: snapshot.portfolio,
+                portfolio: snapshot.portfolio.clone(),
                 actual_portfolio_balance,
                 old_portfolio_balance: SignedDecimal256::zero(),
                 balance_24h_change: SignedDecimal256::zero(),
@@ -84,7 +87,7 @@ pub fn get_portfolio(deps: Deps<ElysQuery>, user_address: String) -> StdResult<G
     let balance_24h_change = actual_portfolio_balance - old_portfolio_balance;
 
     let resp = GetPortfolioResp {
-        portfolio: snapshot.portfolio,
+        portfolio: snapshot.portfolio.clone(),
         actual_portfolio_balance,
         old_portfolio_balance,
         balance_24h_change,

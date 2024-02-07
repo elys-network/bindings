@@ -1,7 +1,10 @@
 use super::*;
 use std::collections::HashMap;
 
-use cosmwasm_std::{coin, BlockInfo, Coin, DecCoin, Decimal, Decimal256, StdError, Uint128};
+use chrono::Days;
+use cosmwasm_std::{
+    coin, BlockInfo, Coin, DecCoin, Decimal, Decimal256, StdError, Timestamp, Uint128,
+};
 use cw_utils::Expiration;
 
 use crate::{
@@ -14,6 +17,7 @@ use crate::{
         AccountSnapshot, CoinValue, ElysDenom, LiquidAsset, PerpetualAssets, Portfolio,
         TotalBalance,
     },
+    utils::{get_raw_today, get_today},
 };
 use elys_bindings::types::EarnType;
 
@@ -136,11 +140,12 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
         .map_err(|_| StdError::generic_err("an error occurred while getting edenb apr in elys"))?;
 
     for address in resp.addresses {
-        let mut history = if let Some(histories) = HISTORY.may_load(deps.storage, &address)? {
-            update_history(histories, &env.block, &expiration)
-        } else {
-            vec![]
-        };
+        let mut history: HashMap<String, AccountSnapshot> =
+            if let Some(histories) = HISTORY.may_load(deps.storage, &address)? {
+                update_history(histories, &env.block, &expiration)
+            } else {
+                HashMap::new()
+            };
         let account_balances = deps.querier.query_all_balances(&address)?;
         let order_balances = get_all_orders(&deps.querier, &trade_shield_address, &address)?;
         let staked_response = get_staked_assets(
@@ -186,8 +191,11 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             perpetual_response,
             &usdc_denom,
         )?;
+
+        let today = get_today(&env.block);
+
         if let Some(part) = new_part {
-            history.push(part);
+            history.insert(today, part);
         }
         if history.is_empty() {
             HISTORY.remove(deps.storage, &address);
@@ -342,25 +350,35 @@ fn create_new_part(
 }
 
 fn update_history(
-    histories: Vec<AccountSnapshot>,
+    history: HashMap<String, AccountSnapshot>,
     block_info: &BlockInfo,
     expiration: &Expiration,
-) -> Vec<AccountSnapshot> {
-    let clean_history: Vec<AccountSnapshot> = histories
-        .iter()
-        .filter(|history| match (history.date, expiration) {
-            (Expiration::AtHeight(block), Expiration::AtHeight(expiration)) => {
-                block_info.height - block < expiration.clone()
-            }
-            (Expiration::AtTime(time), Expiration::AtTime(expiration)) => {
-                block_info.time.nanos() - time.nanos() < expiration.nanos()
-            }
-            _ => false,
-        })
-        .cloned()
-        .collect();
+) -> HashMap<String, AccountSnapshot> {
+    let mut history = history;
 
-    clean_history
+    let expiration = match expiration {
+        Expiration::AtHeight(h) => Timestamp::from_seconds(h * 3), // since a block is created every 3 seconds
+        Expiration::AtTime(t) => t.clone(),
+        _ => panic!("never expire"),
+    };
+
+    if expiration > block_info.time {
+        return history;
+    }
+
+    let expired_date = match get_raw_today(&block_info)
+        .checked_sub_days(Days::new(expiration.seconds() / (24 * 3600)))
+    {
+        Some(date) => date.format("%Y-%m-%d").to_string(),
+        None => panic!("invalid date"),
+    };
+
+    if history.get(&expired_date).is_some() {
+        history.remove_entry(&expired_date);
+        history.remove(&expired_date);
+    };
+
+    return history;
 }
 
 #[cfg(test)]
@@ -372,8 +390,10 @@ mod tests {
 
     #[test]
     fn test_update_history() {
-        let histories = vec![AccountSnapshot {
-            date: Expiration::AtTime(Timestamp::from_seconds(60)),
+        let mut history: HashMap<String, AccountSnapshot> = HashMap::new();
+
+        let snapshot = AccountSnapshot {
+            date: Expiration::AtTime(Timestamp::from_seconds(1707306681)),
             total_balance: TotalBalance {
                 total_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
                 portfolio_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
@@ -409,15 +429,63 @@ mod tests {
                 total_perpetual_asset_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
                 perpetual_asset: vec![],
             },
-        }];
+        };
+
+        let old_snapshot = AccountSnapshot {
+            date: Expiration::AtTime(Timestamp::from_seconds(1706701881)),
+            total_balance: TotalBalance {
+                total_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                portfolio_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                reward_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            },
+            portfolio: Portfolio {
+                balance_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                liquid_assets_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                staked_committed_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                liquidity_positions_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                leverage_lp_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                perpetual_assets_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                usdc_earn_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                borrows_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            },
+            reward: Reward {
+                usdc_usd: Decimal::zero(),
+                eden_usd: Decimal::zero(),
+                eden_boost: Uint128::zero(),
+                other_usd: Decimal::zero(),
+                total_usd: Decimal::zero(),
+            },
+            liquid_asset: LiquidAsset {
+                total_liquid_asset_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                total_available_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                total_in_orders_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                available_asset_balance: vec![],
+                in_orders_asset_balance: vec![],
+                total_value_per_asset: vec![],
+            },
+            staked_assets: StakedAssets::default(),
+            perpetual_assets: PerpetualAssets {
+                total_perpetual_asset_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                perpetual_asset: vec![],
+            },
+        };
+
         let block_info = BlockInfo {
             height: 0,
-            time: Timestamp::from_seconds(60),
+            time: Timestamp::from_seconds(1707306681),
             chain_id: "chain_id".to_string(),
         };
         let expiration = Expiration::AtTime(Timestamp::from_seconds(24 * 3600 * 7));
 
-        let result = update_history(histories.clone(), &block_info, &expiration);
-        assert_eq!(result, histories);
+        history.insert("2024-02-07".to_string(), snapshot.clone());
+        history.insert("2024-01-31".to_string(), old_snapshot.clone());
+
+        assert!(history.get("2024-02-07").is_some());
+        assert!(history.get("2024-01-31").is_some());
+
+        let history = update_history(history, &block_info, &expiration);
+
+        assert!(history.get("2024-02-07").is_some());
+        assert!(history.get("2024-01-31").is_none());
     }
 }
