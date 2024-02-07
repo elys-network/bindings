@@ -26,7 +26,7 @@ use elys_bindings::{
         PerpetualOpenEstimationResponse, PerpetualQueryPositionsResponse, QueryAprResponse,
         QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse,
         QueryShowCommitmentsResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
-        QueryVestingInfoResponse,
+        QueryVestingInfoResponse, StableStakeParamsData, StableStakeParamsResp,
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
@@ -493,6 +493,23 @@ impl Module for ElysModule {
             ElysQuery::CommitmentUnStakedPositions { .. } => {
                 let resp = QueryUnstakedPositionResponse {
                     unstaked_position: None,
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::StableStakeParams { .. } => {
+                let resp = StableStakeParamsResp {
+                    params: StableStakeParamsData {
+                        deposit_denom: String,
+                        redemption_rate: Decimal::new(Uint128::from(1u128)),
+                        epoch_length: 10i64,
+                        interest_rate: Decimal::zero(),
+                        interest_rate_max: Decimal::zero(),
+                        interest_rate_min: Decimal::zero(),
+                        interest_rate_increase: Decimal::zero(),
+                        interest_rate_decrease: Decimal::zero(),
+                        health_gain_factor: Decimal::zero(),
+                        total_value: Uint128::zero(),
+                    },
                 };
                 Ok(to_json_binary(&resp)?)
             }
