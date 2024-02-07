@@ -1,19 +1,18 @@
 use std::str::FromStr;
 
 use crate::states::{EXPIRATION, PAGINATION, TRADE_SHIELD_ADDRESS};
-use crate::tests::get_portfolio::query_resp::GetPortfolioResp;
-use crate::types::{AccountSnapshot, Portfolio};
+use crate::types::AccountSnapshot;
 use crate::{
     entry_point::{execute, query, sudo},
     msg::*,
 };
 use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
-    coin, to_json_binary, Addr, BlockInfo, DecCoin, Decimal, Decimal256, DepsMut, Empty, Env,
-    MessageInfo, Response, SignedDecimal256, StdError, StdResult, Timestamp,
+    coin, to_json_binary, Addr, BlockInfo, Decimal, DepsMut, Empty, Env, MessageInfo, Response,
+    StdError, StdResult, Timestamp,
 };
 use cw_multi_test::{AppResponse, BankSudo, BasicAppBuilder, ContractWrapper, Executor, Module};
-use cw_utils::{Duration, Expiration};
+use cw_utils::DAY;
 use elys_bindings::query_resp::{
     Entry, OracleAssetInfoResponse, QueryGetEntryResponse, QueryGetPriceResponse,
 };
@@ -270,7 +269,7 @@ impl Module for ElysModuleWrapper {
 }
 
 #[test]
-fn get_portfolio() {
+fn interval() {
     // Create a wallet for the "user" with an initial balance of 100 usdc
     let wallet = vec![(
         "user",
@@ -328,7 +327,7 @@ fn get_portfolio() {
 
     // Create a mock message to instantiate the contract with no initial orders.
     let instantiate_msg = InstantiateMsg {
-        interval: Duration::Time(1),
+        interval: DAY,
         limit: 3,
         expiration: cw_utils::Expiration::AtTime(Timestamp::from_seconds(604800)),
         trade_shield_address,
@@ -356,94 +355,6 @@ fn get_portfolio() {
     // update account
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();
-
-    // Query the contract for the existing order.
-    let resp: GetPortfolioResp = app
-        .wrap()
-        .query_wasm_smart(
-            &addr,
-            &QueryMsg::GetPortfolio {
-                user_address: "user".to_string(),
-            },
-        )
-        .unwrap();
-
-    let expected = GetPortfolioResp {
-        actual_portfolio_balance: SignedDecimal256::from_str("1982.608896785343").unwrap(),
-        old_portfolio_balance: SignedDecimal256::from_str("0").unwrap(),
-        balance_24h_change: SignedDecimal256::from_str("0").unwrap(),
-        portfolio: Portfolio {
-            balance_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("1982.608896785343").unwrap(),
-            },
-            liquid_assets_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("1982.607662051143").unwrap(),
-            },
-            staked_committed_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("0.0012347342").unwrap(),
-            },
-            liquidity_positions_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("0").unwrap(),
-            },
-            leverage_lp_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("0").unwrap(),
-            },
-            perpetual_assets_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("0").unwrap(),
-            },
-            usdc_earn_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("0").unwrap(),
-            },
-            borrows_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("0").unwrap(),
-            },
-        },
-    };
-
-    // test if the response is the same as the expected
-    assert_eq!(resp.portfolio.balance_usd, expected.portfolio.balance_usd);
-    assert_eq!(
-        resp.portfolio.liquid_assets_usd,
-        expected.portfolio.liquid_assets_usd
-    );
-    assert_eq!(
-        resp.portfolio.staked_committed_usd,
-        expected.portfolio.staked_committed_usd
-    );
-    assert_eq!(
-        resp.portfolio.liquidity_positions_usd,
-        expected.portfolio.liquidity_positions_usd
-    );
-    assert_eq!(
-        resp.portfolio.leverage_lp_usd,
-        expected.portfolio.leverage_lp_usd
-    );
-    assert_eq!(
-        resp.portfolio.perpetual_assets_usd,
-        expected.portfolio.perpetual_assets_usd
-    );
-    assert_eq!(
-        resp.portfolio.usdc_earn_usd,
-        expected.portfolio.usdc_earn_usd
-    );
-    assert_eq!(resp.portfolio.borrows_usd, expected.portfolio.borrows_usd);
-    assert_eq!(resp, expected);
 
     // t1 (1d later)
     app.set_block(BlockInfo {
@@ -509,43 +420,16 @@ fn get_portfolio() {
         .unwrap();
 
     // Query the contract for the existing order.
-    let last_snapshot: AccountSnapshot = app
+    let snapshots: Vec<AccountSnapshot> = app
         .wrap()
         .query_wasm_smart(
             &addr,
-            &QueryMsg::LastSnapshot {
+            &QueryMsg::UserSnapshots {
                 user_address: "user".to_string(),
             },
         )
         .unwrap();
 
-    // test if the response is the same as the expected
-    assert_eq!(
-        last_snapshot.date,
-        Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 3))
-    );
-
-    // Query the contract for the existing order.
-    let resp: GetPortfolioResp = app
-        .wrap()
-        .query_wasm_smart(
-            &addr,
-            &QueryMsg::GetPortfolio {
-                user_address: "user".to_string(),
-            },
-        )
-        .unwrap();
-
-    assert_eq!(
-        resp.actual_portfolio_balance,
-        SignedDecimal256::from_str("3534.710196785343").unwrap()
-    );
-    assert_eq!(
-        resp.old_portfolio_balance,
-        SignedDecimal256::from_str("2327.520296785343").unwrap()
-    );
-    assert_eq!(
-        resp.balance_24h_change,
-        SignedDecimal256::from_str("1207.1899").unwrap()
-    );
+    // check if snapshots contain 4 items
+    assert_eq!(snapshots.len(), 4);
 }

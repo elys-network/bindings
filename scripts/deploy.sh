@@ -68,7 +68,7 @@ txhash=$(elysd tx wasm store $OPTIONS artifacts/financial_snapshot_contract.wasm
 sleep 10
 codeid=$(elysd q tx $txhash --node $NODE | extract_code_id)
 echo "fs code id: $codeid"
-if [ -n "$CI" ]; then
+if [ -n "$FS_CONTRACT_ADDRESS" ]; then
     txhash=$(elysd tx wasm migrate $OPTIONS $FS_CONTRACT_ADDRESS $codeid '{}' | extract_txhash)
 else
     txhash=$(elysd tx wasm init $OPTIONS --label "fs" --admin $NAME $codeid '{}' | extract_txhash)
@@ -82,7 +82,7 @@ txhash=$(elysd tx wasm store $OPTIONS artifacts/trade_shield_contract.wasm | ext
 sleep 10
 codeid=$(elysd q tx $txhash --node $NODE | extract_code_id)
 echo "ts code id: $codeid"
-if [ -n "$CI" ]; then
+if [ -n "$TS_CONTRACT_ADDRESS" ]; then
     txhash=$(elysd tx wasm migrate $OPTIONS $TS_CONTRACT_ADDRESS $codeid '{}' | extract_txhash)
 else
     txhash=$(elysd tx wasm init $OPTIONS --label "ts" --admin $NAME $codeid '{}' | extract_txhash)
@@ -96,7 +96,7 @@ txhash=$(elysd tx wasm store artifacts/account_history_contract.wasm $OPTIONS | 
 sleep 10
 codeid=$(elysd q tx $txhash --node $NODE | extract_code_id)
 echo "ah code id: $codeid"
-if [ -n "$CI" ]; then
+if [ -n "$AH_CONTRACT_ADDRESS" ]; then
     txhash=$(elysd tx wasm migrate $OPTIONS $AH_CONTRACT_ADDRESS $codeid '{}' | extract_txhash)
 else
     txhash=$(elysd tx wasm init $OPTIONS --label "ah" --admin $NAME $codeid '{

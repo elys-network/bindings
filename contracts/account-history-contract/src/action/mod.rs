@@ -6,6 +6,10 @@ pub mod sudo {
     use super::*;
     mod update_account;
     pub use update_account::update_account;
+    mod get_all_orders;
+    mod get_perpetuals;
+    mod get_rewards;
+    mod get_staked_assets;
 }
 
 pub mod query {

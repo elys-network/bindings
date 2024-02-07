@@ -390,6 +390,14 @@ function get_user_snapshots() {
     }'
 }
 
+# get stable stake params
+function get_stable_stake_params() {
+    printf "\n# Get stable stake params\n"
+    query_contract "$ah_contract_address" '{
+        "stable_stake_params": {}
+    }'
+}
+
 # function(s) to run based on the provided argument
 case "$2" in
     "ah_params")
@@ -512,6 +520,9 @@ case "$2" in
     "get_user_snapshots")
         get_user_snapshots
         ;;
+    "get_stable_stake_params")
+        get_stable_stake_params
+        ;;
 
     *)
         # Default case: run all functions
@@ -556,5 +567,6 @@ case "$2" in
         get_amm_price_by_denom $usdc_denom
         get_amm_price_by_denom $elys_denom
         get_amm_price_by_denom $eden_denom
+        get_stable_stake_params
         ;;
 esac
