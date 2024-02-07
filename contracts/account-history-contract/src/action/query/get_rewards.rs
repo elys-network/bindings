@@ -1,13 +1,19 @@
-use crate::{action::HISTORY, msg::query_resp::GetRewardsResp, types::AccountSnapshot};
+use crate::{
+    action::HISTORY, msg::query_resp::GetRewardsResp, types::AccountSnapshot, utils::get_today,
+};
 
-use cosmwasm_std::{Deps, StdResult};
+use cosmwasm_std::{Deps, Env, StdResult};
 
 use elys_bindings::{
     query_resp::{Entry, QueryGetEntryResponse},
     ElysQuerier, ElysQuery,
 };
 
-pub fn get_rewards(deps: Deps<ElysQuery>, user_address: String) -> StdResult<GetRewardsResp> {
+pub fn get_rewards(
+    deps: Deps<ElysQuery>,
+    user_address: String,
+    env: Env,
+) -> StdResult<GetRewardsResp> {
     let querier = ElysQuerier::new(&deps.querier);
     let QueryGetEntryResponse {
         entry: Entry {
@@ -23,7 +29,10 @@ pub fn get_rewards(deps: Deps<ElysQuery>, user_address: String) -> StdResult<Get
             })
         }
     };
-    let snapshot = match snapshots.last().cloned() {
+
+    let today = get_today(&env.block);
+
+    let snapshot = match snapshots.get(&today) {
         Some(expr) => expr,
         None => {
             return Ok(GetRewardsResp {
@@ -31,8 +40,10 @@ pub fn get_rewards(deps: Deps<ElysQuery>, user_address: String) -> StdResult<Get
             })
         }
     };
+
     let resp = GetRewardsResp {
-        rewards: snapshot.reward,
+        rewards: snapshot.reward.clone(),
     };
+
     Ok(resp)
 }

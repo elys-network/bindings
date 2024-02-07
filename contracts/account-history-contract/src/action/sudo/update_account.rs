@@ -1,33 +1,25 @@
 use super::*;
 use std::collections::HashMap;
 
+use chrono::Days;
 use cosmwasm_std::{
-    coin, BlockInfo, Coin, DecCoin, Decimal, Decimal256, Deps, QuerierWrapper, StdError, Uint128,
+    coin, BlockInfo, Coin, DecCoin, Decimal, Decimal256, StdError, Timestamp, Uint128,
 };
 use cw_utils::Expiration;
-use elys_bindings::trade_shield::{
-    msg::{
-        query_resp::{
-            GetPerpetualOrdersResp, GetPerpetualPositionsForAddressResp, GetSpotOrdersResp,
-        },
-        QueryMsg,
-    },
-    types::{PerpetualOrder, PerpetualOrderType, SpotOrder, Status},
-};
 
 use crate::{
-    action::query::{
-        get_eden_boost_earn_program_details, get_eden_earn_program_details,
-        get_elys_earn_program_details, get_usdc_earn_program_details,
+    action::sudo::{
+        get_all_orders::get_all_orders, get_perpetuals::get_perpetuals, get_rewards::get_rewards,
+        get_staked_assets::get_staked_assets,
     },
     msg::query_resp::{GetRewardsResp, StakedAssetsResponse},
     types::{
-        earn_program::{EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram},
-        AccountSnapshot, CoinValue, ElysDenom, LiquidAsset, PerpetualAsset, PerpetualAssets,
-        Portfolio, Reward, StakedAssets, TotalBalance,
+        AccountSnapshot, CoinValue, ElysDenom, LiquidAsset, PerpetualAssets, Portfolio,
+        TotalBalance,
     },
+    utils::{get_raw_today, get_today},
 };
-use elys_bindings::{query_resp::QueryAprResponse, types::EarnType};
+use elys_bindings::types::EarnType;
 
 pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<ElysMsg>> {
     let querier = ElysQuerier::new(&deps.querier);
@@ -148,13 +140,14 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
         .map_err(|_| StdError::generic_err("an error occurred while getting edenb apr in elys"))?;
 
     for address in resp.addresses {
-        let mut history = if let Some(histories) = HISTORY.may_load(deps.storage, &address)? {
-            update_history(histories, &env.block, &expiration)
-        } else {
-            vec![]
-        };
+        let mut history: HashMap<String, AccountSnapshot> =
+            if let Some(histories) = HISTORY.may_load(deps.storage, &address)? {
+                update_history(histories, &env.block, &expiration)
+            } else {
+                HashMap::new()
+            };
         let account_balances = deps.querier.query_all_balances(&address)?;
-        let order_balances = get_all_order(&deps.querier, &trade_shield_address, &address)?;
+        let order_balances = get_all_orders(&deps.querier, &trade_shield_address, &address)?;
         let staked_response = get_staked_assets(
             &deps,
             &address,
@@ -198,8 +191,11 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             perpetual_response,
             &usdc_denom,
         )?;
+
+        let today = get_today(&env.block);
+
         if let Some(part) = new_part {
-            history.push(part);
+            history.insert(today, part);
         }
         if history.is_empty() {
             HISTORY.remove(deps.storage, &address);
@@ -354,36 +350,50 @@ fn create_new_part(
 }
 
 fn update_history(
-    histories: Vec<AccountSnapshot>,
+    history: HashMap<String, AccountSnapshot>,
     block_info: &BlockInfo,
     expiration: &Expiration,
-) -> Vec<AccountSnapshot> {
-    let clean_history: Vec<AccountSnapshot> = histories
-        .iter()
-        .filter(|history| match (history.date, expiration) {
-            (Expiration::AtHeight(time), Expiration::AtHeight(expiration)) => {
-                block_info.height < time + expiration
-            }
-            (Expiration::AtTime(time), Expiration::AtTime(expiration)) => {
-                block_info.time.nanos() < time.nanos() + expiration.nanos()
-            }
-            _ => false,
-        })
-        .cloned()
-        .collect();
+) -> HashMap<String, AccountSnapshot> {
+    let mut history = history;
 
-    clean_history
+    let expiration = match expiration {
+        Expiration::AtHeight(h) => Timestamp::from_seconds(h * 3), // since a block is created every 3 seconds
+        Expiration::AtTime(t) => t.clone(),
+        _ => panic!("never expire"),
+    };
+
+    if expiration > block_info.time {
+        return history;
+    }
+
+    let expired_date = match get_raw_today(&block_info)
+        .checked_sub_days(Days::new(expiration.seconds() / (24 * 3600)))
+    {
+        Some(date) => date.format("%Y-%m-%d").to_string(),
+        None => panic!("invalid date"),
+    };
+
+    if history.get(&expired_date).is_some() {
+        history.remove_entry(&expired_date);
+        history.remove(&expired_date);
+    };
+
+    return history;
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::types::{Reward, StakedAssets};
+
     use super::*;
     use cosmwasm_std::Timestamp;
 
     #[test]
     fn test_update_history() {
-        let histories = vec![AccountSnapshot {
-            date: Expiration::AtTime(Timestamp::from_seconds(60)),
+        let mut history: HashMap<String, AccountSnapshot> = HashMap::new();
+
+        let snapshot = AccountSnapshot {
+            date: Expiration::AtTime(Timestamp::from_seconds(1707306681)),
             total_balance: TotalBalance {
                 total_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
                 portfolio_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
@@ -419,342 +429,63 @@ mod tests {
                 total_perpetual_asset_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
                 perpetual_asset: vec![],
             },
-        }];
+        };
+
+        let old_snapshot = AccountSnapshot {
+            date: Expiration::AtTime(Timestamp::from_seconds(1706701881)),
+            total_balance: TotalBalance {
+                total_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                portfolio_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                reward_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            },
+            portfolio: Portfolio {
+                balance_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                liquid_assets_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                staked_committed_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                liquidity_positions_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                leverage_lp_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                perpetual_assets_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                usdc_earn_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                borrows_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            },
+            reward: Reward {
+                usdc_usd: Decimal::zero(),
+                eden_usd: Decimal::zero(),
+                eden_boost: Uint128::zero(),
+                other_usd: Decimal::zero(),
+                total_usd: Decimal::zero(),
+            },
+            liquid_asset: LiquidAsset {
+                total_liquid_asset_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                total_available_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                total_in_orders_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                available_asset_balance: vec![],
+                in_orders_asset_balance: vec![],
+                total_value_per_asset: vec![],
+            },
+            staked_assets: StakedAssets::default(),
+            perpetual_assets: PerpetualAssets {
+                total_perpetual_asset_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+                perpetual_asset: vec![],
+            },
+        };
+
         let block_info = BlockInfo {
             height: 0,
-            time: Timestamp::from_seconds(60),
+            time: Timestamp::from_seconds(1707306681),
             chain_id: "chain_id".to_string(),
         };
         let expiration = Expiration::AtTime(Timestamp::from_seconds(24 * 3600 * 7));
 
-        let result = update_history(histories.clone(), &block_info, &expiration);
-        assert_eq!(result, histories);
+        history.insert("2024-02-07".to_string(), snapshot.clone());
+        history.insert("2024-01-31".to_string(), old_snapshot.clone());
+
+        assert!(history.get("2024-02-07").is_some());
+        assert!(history.get("2024-01-31").is_some());
+
+        let history = update_history(history, &block_info, &expiration);
+
+        assert!(history.get("2024-02-07").is_some());
+        assert!(history.get("2024-01-31").is_none());
     }
-}
-
-pub fn get_all_order(
-    querier: &QuerierWrapper<ElysQuery>,
-    trade_shield_address: &String,
-    owner: &String,
-) -> StdResult<Vec<Coin>> {
-    let spot_order: GetSpotOrdersResp = querier
-        .query_wasm_smart(
-            trade_shield_address,
-            &QueryMsg::GetSpotOrders {
-                pagination: None,
-                order_owner: Some(owner.clone()),
-                order_type: None,
-                order_status: Some(Status::Pending),
-            },
-        )
-        .map_err(|e| StdError::generic_err(format!("GetSpotOrders failed {}", e)))?;
-    let perpetual_order: GetPerpetualOrdersResp = querier
-        .query_wasm_smart(
-            trade_shield_address,
-            &QueryMsg::GetPerpetualOrders {
-                pagination: None,
-                order_owner: Some(owner.clone()),
-                order_type: Some(PerpetualOrderType::LimitOpen),
-                order_status: Some(Status::Pending),
-            },
-        )
-        .map_err(|e| StdError::generic_err(format!("GetPerpetualOrders failed {}", e)))?;
-    let mut map: HashMap<String, Uint128> = HashMap::new();
-
-    for SpotOrder { order_amount, .. } in spot_order.orders {
-        map.entry(order_amount.denom)
-            .and_modify(|e| *e += order_amount.amount)
-            .or_insert(order_amount.amount);
-    }
-
-    for PerpetualOrder { collateral, .. } in perpetual_order.orders {
-        map.entry(collateral.denom)
-            .and_modify(|e| *e += collateral.amount)
-            .or_insert(collateral.amount);
-    }
-
-    let consolidated_coins: Vec<Coin> = map
-        .into_iter()
-        .map(|(denom, amount)| Coin { denom, amount })
-        .collect();
-    Ok(consolidated_coins)
-}
-
-pub fn get_staked_assets(
-    deps: &DepsMut<ElysQuery>,
-    address: &String,
-    uusdc_usd_price: Decimal,
-    uelys_price_in_uusdc: Decimal,
-    usdc_denom: String,
-    eden_decimal: u64,
-    usdc_apr_usdc: QueryAprResponse,
-    eden_apr_usdc: QueryAprResponse,
-    usdc_apr_edenb: QueryAprResponse,
-    eden_apr_edenb: QueryAprResponse,
-    usdc_apr_eden: QueryAprResponse,
-    eden_apr_eden: QueryAprResponse,
-    edenb_apr_eden: QueryAprResponse,
-    usdc_apr_elys: QueryAprResponse,
-    eden_apr_elys: QueryAprResponse,
-    edenb_apr_elys: QueryAprResponse,
-) -> StakedAssetsResponse {
-    // create staked_assets variable that is a StakedAssets struct
-    let mut staked_assets = StakedAssets::default();
-    let mut total_balance = Decimal::zero();
-
-    let usdc_details = get_usdc_earn_program_details(
-        deps,
-        Some(address.to_owned()),
-        ElysDenom::Usdc.as_str().to_string(),
-        usdc_denom.to_owned(),
-        uusdc_usd_price,
-        uelys_price_in_uusdc,
-        usdc_apr_usdc,
-        eden_apr_usdc,
-    )
-    .unwrap();
-    // usdc program
-    let staked_asset_usdc = usdc_details.data.clone();
-    total_balance = total_balance
-        .checked_add(match staked_asset_usdc.clone() {
-            UsdcEarnProgram {
-                staked: Some(r), ..
-            } => r.usd_amount,
-            _ => Decimal::zero(),
-        })
-        .unwrap();
-    staked_assets.usdc_earn_program = staked_asset_usdc;
-
-    // elys program
-    let elys_details = get_elys_earn_program_details(
-        deps,
-        Some(address.to_owned()),
-        ElysDenom::Elys.as_str().to_string(),
-        usdc_denom.to_owned(),
-        uusdc_usd_price,
-        uelys_price_in_uusdc,
-        usdc_apr_elys,
-        eden_apr_elys,
-        edenb_apr_elys,
-    )
-    .unwrap();
-    let staked_asset_elys = elys_details.data;
-    total_balance = total_balance
-        .checked_add(match staked_asset_elys.clone() {
-            ElysEarnProgram {
-                staked: Some(r), ..
-            } => r.usd_amount,
-            _ => Decimal::zero(),
-        })
-        .unwrap();
-    staked_assets.elys_earn_program = staked_asset_elys;
-
-    // eden program
-    let eden_details = get_eden_earn_program_details(
-        deps,
-        Some(address.to_owned()),
-        ElysDenom::Eden.as_str().to_string(),
-        usdc_denom.to_owned(),
-        uusdc_usd_price,
-        uelys_price_in_uusdc,
-        usdc_apr_eden,
-        eden_apr_eden,
-        edenb_apr_eden,
-    )
-    .unwrap();
-    let staked_asset_eden = eden_details.data;
-    total_balance = total_balance
-        .checked_add(match staked_asset_eden.clone() {
-            EdenEarnProgram {
-                staked: Some(r), ..
-            } => r.usd_amount,
-            _ => Decimal::zero(),
-        })
-        .unwrap();
-    staked_assets.eden_earn_program = staked_asset_eden;
-
-    let edenb_details = get_eden_boost_earn_program_details(
-        deps,
-        Some(address.to_owned()),
-        ElysDenom::EdenBoost.as_str().to_string(),
-        usdc_denom.to_owned(),
-        uusdc_usd_price,
-        uelys_price_in_uusdc,
-        eden_decimal,
-        usdc_apr_edenb,
-        eden_apr_edenb,
-    )
-    .unwrap();
-    let staked_asset_edenb = edenb_details.data;
-    total_balance = total_balance
-        .checked_add(match staked_asset_edenb.clone() {
-            EdenBoostEarnProgram {
-                rewards: Some(r), ..
-            } => r.iter().fold(Decimal::zero(), |acc, item| {
-                acc.checked_add(item.usd_amount.unwrap()).unwrap()
-            }),
-            _ => Decimal::zero(),
-        })
-        .unwrap();
-    staked_assets.eden_boost_earn_program = staked_asset_edenb;
-
-    StakedAssetsResponse {
-        staked_assets,
-        total_staked_balance: DecCoin::new(Decimal256::from(total_balance), usdc_denom),
-    }
-}
-
-pub fn get_rewards(deps: Deps<ElysQuery>, address: String) -> StdResult<GetRewardsResp> {
-    let querier = ElysQuerier::new(&deps.querier);
-    let commitments = querier.get_commitments(address)?;
-
-    let denom_usdc_entry = querier.get_asset_profile(ElysDenom::Usdc.as_str().to_string())?;
-    let denom_uusdc = denom_usdc_entry.entry.denom;
-    let usdc_display_denom = denom_usdc_entry.entry.display_name;
-
-    let denom_uelys = ElysDenom::Elys.as_str().to_string();
-    let denom_ueden = ElysDenom::Eden.as_str().to_string();
-    let denom_uedenb = ElysDenom::EdenBoost.as_str().to_string();
-
-    let usdc_oracle_price = querier.get_oracle_price(
-        usdc_display_denom.clone(),
-        ElysDenom::AnySource.as_str().to_string(),
-        0,
-    )?;
-    let usdc_price = usdc_oracle_price
-        .price
-        .price
-        .checked_div(Decimal::from_atomics(Uint128::new(1000000), 0).unwrap())
-        .unwrap();
-
-    let mut rewards = Reward {
-        usdc_usd: Decimal::zero(),
-        eden_usd: Decimal::zero(),
-        eden_boost: Uint128::zero(),
-        other_usd: Decimal::zero(),
-        total_usd: Decimal::zero(),
-    };
-
-    match commitments.commitments.rewards_unclaimed {
-        Some(rewards_unclaimed) => {
-            for reward in rewards_unclaimed {
-                // uusdc
-                if reward.denom == denom_uusdc {
-                    let usdc_rewards = Decimal::from_atomics(reward.amount, 0).unwrap();
-                    rewards.usdc_usd = usdc_rewards.checked_mul(usdc_price).unwrap();
-                    rewards.total_usd = rewards.total_usd.checked_add(rewards.usdc_usd).unwrap();
-
-                    continue;
-                }
-
-                // ueden
-                if reward.denom == denom_ueden {
-                    // if it is eden, we should elys denom instead of ueden as it is not available in LP pool and has the same value with elys.
-                    let reward_in_elys = coin(reward.amount.u128(), denom_uelys.to_owned());
-                    let price = querier.get_amm_price_by_denom(
-                        coin(1000000, reward_in_elys.denom),
-                        Decimal::zero(),
-                    )?;
-
-                    let amount = coin(
-                        (price
-                            .checked_mul(Decimal::from_atomics(reward_in_elys.amount, 0).map_err(
-                                |_| StdError::generic_err(format!("failed to convert to decimal")),
-                            )?)
-                            .map_err(|e| {
-                                StdError::generic_err(format!(
-                                    "failed to get_amm_price_by_denom: {}",
-                                    e
-                                ))
-                            })?)
-                        .to_uint_floor()
-                        .u128(),
-                        &denom_uusdc,
-                    );
-                    let rewards_in_usdc = Decimal::from_atomics(amount.amount, 0).unwrap();
-                    rewards.eden_usd = rewards_in_usdc.checked_mul(usdc_price).unwrap();
-                    rewards.total_usd = rewards.total_usd.checked_add(rewards.eden_usd).unwrap();
-                    continue;
-                }
-
-                // uedenb - we don't value eden boost in usd.
-                if reward.denom == denom_uedenb {
-                    rewards.eden_boost = reward.amount;
-                    continue;
-                }
-
-                // We accumulate other denoms in a single usd.
-                let price = querier
-                    .get_amm_price_by_denom(coin(1000000, &reward.denom), Decimal::zero())?;
-
-                let amount = coin(
-                    (price
-                        .checked_mul(Decimal::from_atomics(reward.amount, 0).map_err(|_| {
-                            StdError::generic_err(format!("failed to convert to decimal"))
-                        })?)
-                        .map_err(|e| {
-                            StdError::generic_err(format!(
-                                "failed to get_amm_price_by_denom: {}",
-                                e
-                            ))
-                        })?)
-                    .to_uint_floor()
-                    .u128(),
-                    &denom_uusdc,
-                );
-                let rewards_in_usdc = Decimal::from_atomics(amount.amount, 0).unwrap();
-                let rewards_in_usd = rewards_in_usdc.checked_mul(usdc_price).unwrap();
-
-                rewards.other_usd = rewards.other_usd.checked_add(rewards_in_usd).unwrap();
-                rewards.total_usd = rewards.total_usd.checked_add(rewards_in_usd).unwrap();
-            }
-        }
-        None => {
-            return Ok(GetRewardsResp {
-                rewards: AccountSnapshot::zero(&denom_uusdc).reward,
-            });
-        }
-    }
-
-    let resp = GetRewardsResp { rewards: rewards };
-    Ok(resp)
-}
-
-fn get_perpetuals(
-    deps: Deps<ElysQuery>,
-    trade_shield_address: String,
-    usdc_denom: &String,
-    address: String,
-) -> StdResult<PerpetualAssets> {
-    let GetPerpetualPositionsForAddressResp { mtps, .. } = deps
-        .querier
-        .query_wasm_smart(
-            trade_shield_address,
-            &QueryMsg::PerpetualGetPositionsForAddress {
-                address,
-                pagination: None,
-            },
-        )
-        .map_err(|_| StdError::generic_err("an error occurred while getting perpetuals"))?;
-    let mut perpetual_vec: Vec<PerpetualAsset> = vec![];
-    let querier = ElysQuerier::new(&deps.querier);
-
-    for mtp in mtps {
-        match PerpetualAsset::new(mtp, usdc_denom.to_owned(), &querier) {
-            Ok(perpetual_asset) => perpetual_vec.push(perpetual_asset),
-            Err(_) => continue,
-        }
-    }
-
-    let total_perpetual_asset_balance_amount = perpetual_vec
-        .iter()
-        .map(|perpetual| perpetual.size.amount)
-        .fold(Decimal256::zero(), |acc, item| acc + item);
-    let total_perpetual_asset_balance =
-        DecCoin::new(total_perpetual_asset_balance_amount, usdc_denom.to_owned());
-
-    Ok(PerpetualAssets {
-        total_perpetual_asset_balance,
-        perpetual_asset: perpetual_vec,
-    })
 }

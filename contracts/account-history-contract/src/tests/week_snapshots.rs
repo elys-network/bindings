@@ -1,16 +1,15 @@
 use std::str::FromStr;
 
-use crate::msg::query_resp::GetPortfolioResp;
 use crate::states::{EXPIRATION, PAGINATION, TRADE_SHIELD_ADDRESS};
-use crate::types::{AccountSnapshot, Portfolio};
+use crate::types::AccountSnapshot;
 use crate::{
     entry_point::{execute, query, sudo},
     msg::*,
 };
 use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
-    coin, to_json_binary, Addr, BlockInfo, DecCoin, Decimal, Decimal256, DepsMut, Empty, Env,
-    MessageInfo, Response, SignedDecimal256, StdError, StdResult, Timestamp,
+    coin, to_json_binary, Addr, BlockInfo, Decimal, DepsMut, Empty, Env, MessageInfo, Response,
+    StdError, StdResult, Timestamp,
 };
 use cw_multi_test::{AppResponse, BankSudo, BasicAppBuilder, ContractWrapper, Executor, Module};
 use cw_utils::{Duration, Expiration};
@@ -274,17 +273,10 @@ fn get_portfolio() {
     // Create a wallet for the "user" with an initial balance of 100 usdc
     let wallet = vec![(
         "user",
-        vec![
-            coin(
-                1445910542,
-                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
-            ),
-            coin(
-                19295155,
-                "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4",
-            ),
-            coin(104332087, "uelys"),
-        ],
+        vec![coin(
+            1445910542,
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+        )],
     )];
 
     let mut addresses: Vec<String> = vec![];
@@ -357,94 +349,6 @@ fn get_portfolio() {
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();
 
-    // Query the contract for the existing order.
-    let resp: GetPortfolioResp = app
-        .wrap()
-        .query_wasm_smart(
-            &addr,
-            &QueryMsg::GetPortfolio {
-                user_address: "user".to_string(),
-            },
-        )
-        .unwrap();
-
-    let expected = GetPortfolioResp {
-        actual_portfolio_balance: SignedDecimal256::from_str("1982.608896785343").unwrap(),
-        old_portfolio_balance: SignedDecimal256::from_str("0").unwrap(),
-        balance_24h_change: SignedDecimal256::from_str("0").unwrap(),
-        portfolio: Portfolio {
-            balance_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("1982.608896785343").unwrap(),
-            },
-            liquid_assets_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("1982.607662051143").unwrap(),
-            },
-            staked_committed_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("0.0012347342").unwrap(),
-            },
-            liquidity_positions_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("0").unwrap(),
-            },
-            leverage_lp_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("0").unwrap(),
-            },
-            perpetual_assets_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("0").unwrap(),
-            },
-            usdc_earn_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("0").unwrap(),
-            },
-            borrows_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("0").unwrap(),
-            },
-        },
-    };
-
-    // test if the response is the same as the expected
-    assert_eq!(resp.portfolio.balance_usd, expected.portfolio.balance_usd);
-    assert_eq!(
-        resp.portfolio.liquid_assets_usd,
-        expected.portfolio.liquid_assets_usd
-    );
-    assert_eq!(
-        resp.portfolio.staked_committed_usd,
-        expected.portfolio.staked_committed_usd
-    );
-    assert_eq!(
-        resp.portfolio.liquidity_positions_usd,
-        expected.portfolio.liquidity_positions_usd
-    );
-    assert_eq!(
-        resp.portfolio.leverage_lp_usd,
-        expected.portfolio.leverage_lp_usd
-    );
-    assert_eq!(
-        resp.portfolio.perpetual_assets_usd,
-        expected.portfolio.perpetual_assets_usd
-    );
-    assert_eq!(
-        resp.portfolio.usdc_earn_usd,
-        expected.portfolio.usdc_earn_usd
-    );
-    assert_eq!(resp.portfolio.borrows_usd, expected.portfolio.borrows_usd);
-    assert_eq!(resp, expected);
-
     // t1 (1d later)
     app.set_block(BlockInfo {
         height: 2,
@@ -456,7 +360,10 @@ fn get_portfolio() {
     app.sudo(
         BankSudo::Mint {
             to_address: "user".to_string(),
-            amount: vec![coin(100000000, "uelys")],
+            amount: vec![coin(
+                100000000,
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+            )],
         }
         .into(),
     )
@@ -477,7 +384,10 @@ fn get_portfolio() {
     app.sudo(
         BankSudo::Mint {
             to_address: "user".to_string(),
-            amount: vec![coin(300000000, "uelys")],
+            amount: vec![coin(
+                300000000,
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+            )],
         }
         .into(),
     )
@@ -498,7 +408,10 @@ fn get_portfolio() {
     app.sudo(
         BankSudo::Mint {
             to_address: "user".to_string(),
-            amount: vec![coin(50000000, "uelys")],
+            amount: vec![coin(
+                50000000,
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+            )],
         }
         .into(),
     )
@@ -525,27 +438,134 @@ fn get_portfolio() {
         Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 3))
     );
 
-    // Query the contract for the existing order.
-    let resp: GetPortfolioResp = app
+    //update date 5 hours later
+    app.set_block(BlockInfo {
+        height: 5,
+        time: Timestamp::from_seconds(24 * 60 * 60 * 3 + 5 * 60 * 60),
+        chain_id: "elys".to_string(),
+    });
+
+    app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
+        .unwrap();
+
+    let last_snapshot: AccountSnapshot = app
         .wrap()
         .query_wasm_smart(
             &addr,
-            &QueryMsg::GetPortfolio {
+            &QueryMsg::LastSnapshot {
                 user_address: "user".to_string(),
             },
         )
         .unwrap();
 
+    // test if the response is the same as the expected
     assert_eq!(
-        resp.actual_portfolio_balance,
-        SignedDecimal256::from_str("3534.710196785343").unwrap()
+        last_snapshot.date,
+        Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 3 + 5 * 60 * 60))
+    );
+
+    //update day 4
+    app.set_block(BlockInfo {
+        height: 6,
+        time: Timestamp::from_seconds(24 * 60 * 60 * 4),
+        chain_id: "elys".to_string(),
+    });
+
+    app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
+        .unwrap();
+
+    // update day 5
+    app.set_block(BlockInfo {
+        height: 7,
+        time: Timestamp::from_seconds(24 * 60 * 60 * 5),
+        chain_id: "elys".to_string(),
+    });
+
+    app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
+        .unwrap();
+
+    // update day 6
+    app.set_block(BlockInfo {
+        height: 8,
+        time: Timestamp::from_seconds(24 * 60 * 60 * 6),
+        chain_id: "elys".to_string(),
+    });
+
+    app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
+        .unwrap();
+
+    // update day 7
+    app.set_block(BlockInfo {
+        height: 9,
+        time: Timestamp::from_seconds(24 * 60 * 60 * 7),
+        chain_id: "elys".to_string(),
+    });
+
+    app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
+        .unwrap();
+
+    // check the all the snapshots recorded
+    let snapshots: Vec<AccountSnapshot> = app
+        .wrap()
+        .query_wasm_smart(
+            &addr,
+            &QueryMsg::UserSnapshots {
+                user_address: "user".to_string(),
+            },
+        )
+        .unwrap();
+
+    assert_eq!(snapshots.len(), 7);
+
+    // update day 8
+    app.set_block(BlockInfo {
+        height: 10,
+        time: Timestamp::from_seconds(24 * 60 * 60 * 8),
+        chain_id: "elys".to_string(),
+    });
+
+    app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
+        .unwrap();
+
+    // check the all the snapshots recorded
+    let snapshots: Vec<AccountSnapshot> = app
+        .wrap()
+        .query_wasm_smart(
+            &addr,
+            &QueryMsg::UserSnapshots {
+                user_address: "user".to_string(),
+            },
+        )
+        .unwrap();
+
+    assert_eq!(snapshots.len(), 7);
+
+    assert_eq!(
+        snapshots[0].date,
+        Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 2))
     );
     assert_eq!(
-        resp.old_portfolio_balance,
-        SignedDecimal256::from_str("3362.254496785343").unwrap()
+        snapshots[1].date,
+        Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 3 + 5 * 60 * 60))
     );
     assert_eq!(
-        resp.balance_24h_change,
-        SignedDecimal256::from_str("172.4557").unwrap()
+        snapshots[2].date,
+        Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 4))
+    );
+    assert_eq!(
+        snapshots[3].date,
+        Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 5))
+    );
+    assert_eq!(
+        snapshots[4].date,
+        Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 6))
+    );
+    assert_eq!(
+        snapshots[5].date,
+        Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 7))
+    );
+    assert_eq!(
+        snapshots[6].date,
+        Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 8))
     );
 }

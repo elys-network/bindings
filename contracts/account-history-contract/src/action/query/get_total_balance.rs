@@ -1,5 +1,7 @@
-use crate::{msg::query_resp::GetTotalBalanceResp, states::HISTORY, types::AccountSnapshot};
-use cosmwasm_std::{Deps, StdResult};
+use crate::{
+    msg::query_resp::GetTotalBalanceResp, states::HISTORY, types::AccountSnapshot, utils::get_today,
+};
+use cosmwasm_std::{Deps, Env, StdResult};
 use elys_bindings::{
     query_resp::{Entry, QueryGetEntryResponse},
     ElysQuerier, ElysQuery,
@@ -7,6 +9,7 @@ use elys_bindings::{
 
 pub fn get_total_balance(
     deps: Deps<ElysQuery>,
+    env: Env,
     user_address: String,
 ) -> StdResult<GetTotalBalanceResp> {
     let querier = ElysQuerier::new(&deps.querier);
@@ -24,7 +27,10 @@ pub fn get_total_balance(
             })
         }
     };
-    let snapshot = match snapshots.last().cloned() {
+
+    let today = get_today(&env.block);
+
+    let snapshot = match snapshots.get(&today) {
         Some(expr) => expr,
         None => {
             return Ok(GetTotalBalanceResp {
@@ -32,8 +38,9 @@ pub fn get_total_balance(
             })
         }
     };
+
     let resp = GetTotalBalanceResp {
-        balances: snapshot.total_balance,
+        balances: snapshot.total_balance.clone(),
     };
     Ok(resp)
 }

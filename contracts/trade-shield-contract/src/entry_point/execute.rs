@@ -1,5 +1,5 @@
 use super::*;
-use cosmwasm_std::{Decimal, Int128};
+use cosmwasm_std::{Decimal, Int128, SubMsg};
 use msg::ExecuteMsg;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -131,7 +131,9 @@ pub fn execute(
                 recipient: info.sender.into_string(),
             };
 
-            Ok(Response::new().add_message(msg))
+            let sub_msg = SubMsg::reply_always(msg, 1);
+
+            Ok(Response::new().add_submessage(sub_msg))
         }
     }
 }

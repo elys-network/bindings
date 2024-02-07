@@ -146,34 +146,35 @@ function amm_swap_exact_amount_in() {
     execute_message \
         "$ah_contract_address" \
         '{
-            "swap_exact_amount_in": {
+            "amm_swap_exact_amount_in": {
                 "routes": [
                     {
                         "pool_id": 3,
                         "token_out_denom": "'"$usdc_denom"'"
-                    },
-                ],
+                    }
+                ]
             }
         }' \
-        wasm-swap_exact_amount_in \
+        wasm-amm_swap_exact_amount_in \
         "1000000uelys"
 }
 
 # Create spot order as market buy
 function create_spot_order_as_market_buy() {
-    printf "\n# Create spot order as market buy\n"
+    source=$1
+    target=$2
+    printf "\n# Create spot order as market buy source=$source target=$target\n"
     execute_message \
         "$ts_contract_address" \
         '{
             "create_spot_order": {
-                "order_price": null,
                 "order_type": "market_buy",
-                "order_target_denom": "'"$atom_denom"'",
-                "order_source_denom": "'"$usdc_denom"'"
+                "order_target_denom": "'"$target"'",
+                "order_source_denom": "'"$source"'"
             }
         }' \
         wasm-create_spot_order \
-        "1000000$usdc_denom"
+        "1000000$source"
 }
 
 # Create perpetual order as market open
@@ -307,8 +308,11 @@ function all_perpetual_orders() {
 
 # function(s) to run based on the provided argument
 case "$1" in
+    "amm_swap_exact_amount_in")
+        amm_swap_exact_amount_in
+        ;;
     "create_spot_order_as_market_buy")
-        create_spot_order_as_market_buy
+        create_spot_order_as_market_buy $2 $3
         ;;
     "create_spot_order_as_limit_buy")
         create_spot_order "limit_buy" $2 $3 $4
@@ -349,9 +353,7 @@ case "$1" in
 
     *)
         # Default case: run all functions
-        create_spot_order
         all_spot_orders
-        cancel_spot_order
         all_perpetual_orders
         ;;
 esac
