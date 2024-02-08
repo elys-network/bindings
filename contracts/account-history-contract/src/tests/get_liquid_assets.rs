@@ -12,7 +12,6 @@ use cosmwasm_std::{
     Response, StdError, StdResult, Timestamp,
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
-use cw_utils::Duration;
 use elys_bindings::query_resp::{
     Entry, OracleAssetInfoResponse, QueryGetEntryResponse, QueryGetPriceResponse,
 };

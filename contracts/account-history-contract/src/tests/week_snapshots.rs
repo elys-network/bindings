@@ -12,7 +12,7 @@ use cosmwasm_std::{
     StdError, StdResult, Timestamp,
 };
 use cw_multi_test::{AppResponse, BankSudo, BasicAppBuilder, ContractWrapper, Executor, Module};
-use cw_utils::{Duration, Expiration};
+use cw_utils::Expiration;
 use elys_bindings::query_resp::{
     Entry, OracleAssetInfoResponse, QueryGetEntryResponse, QueryGetPriceResponse,
 };

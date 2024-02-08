@@ -5,7 +5,7 @@ use crate::msg::{InstantiateMsg, QueryMsg};
 use crate::{entry_point::*, msg::SudoMsg};
 use cosmwasm_std::{coins, Addr, Coin, DecCoin, Decimal, Decimal256, Uint128};
 use cw_multi_test::{BankSudo, ContractWrapper, Executor, SudoMsg as AppSudo};
-use cw_utils::{Duration, Expiration};
+use cw_utils::Expiration;
 use elys_bindings::types::{OracleAssetInfo, Price};
 use elys_bindings_test::ElysApp;
 use trade_shield_contract::entry_point::{
