@@ -16,7 +16,6 @@ use cosmwasm_std::{
     MessageInfo, Response, StdError, StdResult, Timestamp, Uint128,
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
-use cw_utils::Duration;
 use elys_bindings::query_resp::{
     BalanceBorrowed, Entry, Lockup, QueryAprResponse, QueryGetEntryResponse, QueryGetPriceResponse,
     QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryVestingInfoResponse,
@@ -552,7 +551,6 @@ fn get_staked_assets() {
 
     // Create a mock message to instantiate the contract with no initial orders.
     let instantiate_msg = InstantiateMsg {
-        interval: Duration::Time(1),
         limit: 3,
         expiration: cw_utils::Expiration::AtTime(Timestamp::from_seconds(604800)),
         trade_shield_address,
