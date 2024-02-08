@@ -1,9 +1,9 @@
-use super::*;
 use std::collections::HashMap;
 
 use chrono::Days;
 use cosmwasm_std::{
-    coin, BlockInfo, Coin, DecCoin, Decimal, Decimal256, StdError, Timestamp, Uint128,
+    coin, BlockInfo, Coin, DecCoin, Decimal, Decimal256, DepsMut, Env, Response, StdError,
+    StdResult, Timestamp, Uint128,
 };
 use cw_utils::Expiration;
 
@@ -13,13 +13,14 @@ use crate::{
         get_staked_assets::get_staked_assets,
     },
     msg::query_resp::{GetRewardsResp, StakedAssetsResponse},
+    states::{EXPIRATION, HISTORY, PAGINATION, TRADE_SHIELD_ADDRESS},
     types::{
         AccountSnapshot, CoinValue, ElysDenom, LiquidAsset, PerpetualAssets, Portfolio,
         TotalBalance,
     },
     utils::{get_raw_today, get_today},
 };
-use elys_bindings::types::EarnType;
+use elys_bindings::{types::EarnType, ElysMsg, ElysQuerier, ElysQuery};
 
 pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<ElysMsg>> {
     let querier = ElysQuerier::new(&deps.querier);

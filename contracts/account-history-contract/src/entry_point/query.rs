@@ -1,10 +1,12 @@
-use super::*;
 use crate::action::query::{
     all, get_liquid_assets, get_membership_tier, get_perpetuals_assets, get_portfolio, get_rewards,
     get_staked_assets, get_total_balance, last_snapshot, params, user_snapshots, user_value,
 };
 
-use msg::QueryMsg;
+use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult};
+use elys_bindings::{ElysQuerier, ElysQuery};
+
+use crate::msg::QueryMsg;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary> {

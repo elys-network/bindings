@@ -1,6 +1,8 @@
 use elys_bindings::types::PageRequest;
 
-use super::*;
+use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult};
+use elys_bindings::{ElysMsg, ElysQuery};
+
 use crate::msg::InstantiateMsg;
 use crate::states::{EXPIRATION, INTERVAL, PAGINATION, TRADE_SHIELD_ADDRESS};
 

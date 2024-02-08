@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use cosmwasm_std::{Deps, StdResult};
 use elys_bindings::ElysQuery;
 
-use crate::{action::HISTORY, types::AccountSnapshot};
+use crate::{states::HISTORY, types::AccountSnapshot};
 
 pub fn user_snapshots(
     deps: Deps<ElysQuery>,

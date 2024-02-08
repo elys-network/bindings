@@ -2,16 +2,15 @@ use cosmwasm_std::{DecCoin, Decimal, Decimal256, DepsMut};
 use elys_bindings::{query_resp::QueryAprResponse, ElysQuery};
 
 use crate::{
+    action::query::{
+        get_eden_boost_earn_program_details, get_eden_earn_program_details,
+        get_elys_earn_program_details, get_usdc_earn_program_details,
+    },
     msg::query_resp::StakedAssetsResponse,
     types::{
         earn_program::{EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram},
         ElysDenom, StakedAssets,
     },
-};
-
-use super::query::{
-    get_eden_boost_earn_program_details, get_eden_earn_program_details,
-    get_elys_earn_program_details, get_usdc_earn_program_details,
 };
 
 pub fn get_staked_assets(
