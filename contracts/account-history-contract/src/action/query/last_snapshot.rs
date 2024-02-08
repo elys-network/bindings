@@ -1,7 +1,7 @@
 use cosmwasm_std::{Deps, Env, StdResult};
 use elys_bindings::ElysQuery;
 
-use crate::{action::HISTORY, types::AccountSnapshot, utils::get_today};
+use crate::{states::HISTORY, types::AccountSnapshot, utils::get_today};
 
 pub fn last_snapshot(
     deps: Deps<ElysQuery>,

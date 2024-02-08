@@ -1,5 +1,5 @@
 use crate::{
-    action::HISTORY, msg::query_resp::GetRewardsResp, types::AccountSnapshot, utils::get_today,
+    msg::query_resp::GetRewardsResp, states::HISTORY, types::AccountSnapshot, utils::get_today,
 };
 
 use cosmwasm_std::{Deps, Env, StdResult};

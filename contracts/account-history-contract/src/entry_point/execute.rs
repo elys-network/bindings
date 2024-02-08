@@ -1,6 +1,6 @@
 use cosmwasm_std::Empty;
-
-use super::*;
+use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult};
+use elys_bindings::{ElysMsg, ElysQuery};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(

@@ -1,6 +1,6 @@
 use crate::{
-    action::{EXPIRATION, PAGINATION, TRADE_SHIELD_ADDRESS},
     msg::query_resp::ParamsResp,
+    states::{EXPIRATION, PAGINATION, TRADE_SHIELD_ADDRESS},
 };
 use cosmwasm_std::{Deps, StdResult};
 use elys_bindings::ElysQuery;

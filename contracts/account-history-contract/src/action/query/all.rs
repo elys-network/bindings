@@ -1,7 +1,7 @@
 use cosmwasm_std::{Deps, Order, StdResult};
 use elys_bindings::ElysQuery;
 
-use crate::{action::HISTORY, types::AccountSnapshot};
+use crate::{states::HISTORY, types::AccountSnapshot};
 
 pub fn all(deps: Deps<ElysQuery>) -> StdResult<Vec<(String, Vec<(String, AccountSnapshot)>)>> {
     let list: Vec<(String, Vec<(String, AccountSnapshot)>)> = HISTORY
