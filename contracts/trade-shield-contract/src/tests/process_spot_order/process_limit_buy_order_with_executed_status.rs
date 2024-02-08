@@ -4,7 +4,7 @@ use crate::entry_point::{execute, query, sudo};
 use anyhow::{bail, Result as AnyResult};
 use cosmwasm_std::{
     coin, to_json_binary, Addr, BankMsg, BlockInfo, Decimal, Empty, Int64, SignedDecimal, StdError,
-    Timestamp, Uint128,
+    Timestamp,
 };
 use cw_multi_test::BankSudo;
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
@@ -123,7 +123,7 @@ impl Module for ElysModuleWrapper {
                     (
                         "uelys",
                         "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
-                    ) => Decimal::from_str("1.8").unwrap(),
+                    ) => Decimal::from_str("3.88").unwrap(),
                     _ => panic!(
                         "price not found for the pair of {} and {}",
                         denom_in, denom_out
@@ -211,7 +211,7 @@ impl Module for ElysModuleWrapper {
                     (
                         "uelys",
                         "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
-                    ) => Decimal::from_str("1.8").unwrap(),
+                    ) => Decimal::from_str("3.88").unwrap(),
                     _ => panic!(
                         "price not found for the pair of {} and {}",
                         token_in.denom, routes[0].token_out_denom
@@ -316,7 +316,7 @@ fn process_limit_buy_order_with_executed_status() {
             // denom_out
             quote_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
                 .to_string(),
-            rate: Decimal::from_atomics(Uint128::new(2), 0).unwrap(),
+            rate: Decimal::from_str("0.5").unwrap(),
         }),
         coin(10_000000, "uelys"),
         Addr::unchecked("user"),
@@ -382,6 +382,6 @@ fn process_limit_buy_order_with_executed_status() {
             .unwrap()
             .amount
             .u128(),
-        17820000
+        38412000
     );
 }

@@ -256,7 +256,16 @@ fn check_spot_order(
         return false;
     }
 
-    let (order_price, market_price) = (order.order_price.rate, amm_swap_estimation.spot_price);
+    let order_price = order.order_price.rate;
+
+    let market_price = if order.order_type == SpotOrderType::LimitBuy {
+        match Decimal::one().checked_div(amm_swap_estimation.spot_price) {
+            Ok(market_price) => market_price,
+            Err(_) => return false,
+        }
+    } else {
+        amm_swap_estimation.spot_price
+    };
 
     match order.order_type {
         SpotOrderType::LimitBuy => market_price <= order_price,
@@ -353,7 +362,7 @@ mod tests {
             order_price: OrderPrice {
                 base_denom: "uatom".to_string(),
                 quote_denom: "usdc".to_string(),
-                rate: Decimal::from_str("9.0").unwrap(),
+                rate: Decimal::from_str("0.1").unwrap(),
             },
             order_amount: coin(1000000, "usdc"),
 
@@ -394,7 +403,7 @@ mod tests {
             order_price: OrderPrice {
                 base_denom: "uatom".to_string(),
                 quote_denom: "usdc".to_string(),
-                rate: Decimal::from_str("10.0").unwrap(),
+                rate: Decimal::from_str("0.111111").unwrap(),
             },
             order_amount: coin(1000000, "uatom"),
 
@@ -423,6 +432,6 @@ mod tests {
         let result = check_spot_order(&spot_order, &amm_swap_estimation);
 
         // Assert
-        assert_eq!(result, false); // Change as needed
+        assert_eq!(result, true); // Change as needed
     }
 }

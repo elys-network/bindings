@@ -1,5 +1,6 @@
 use super::*;
 use cosmwasm_std::{coins, BlockInfo, Coin, Timestamp};
+use elys_bindings::trade_shield::msg::query_resp::GetSpotOrderResp;
 // This test case verifies the successful processing of a "stop-loss" order in the contract.
 // The scenario involves a "stop-loss" order created by a user to protect against a decline in BTC price.
 // - Initially, the BTC price is 30,000 USDC, and the trigger price in the order is 20,000 USDC.
@@ -41,7 +42,7 @@ fn successful_process_stop_loss_order() {
         Some(OrderPrice {
             base_denom: "btc".to_string(),
             quote_denom: "usdc".to_string(),
-            rate: Decimal::from_atomics(Uint128::new(20000), 0).unwrap(), // Trigger price of 20,000 USDC per BTC.
+            rate: Decimal::from_str("20000").unwrap(), // Trigger price of 20,000 USDC per BTC.
         }),
         coin(2, "btc"), // 2 BTC to be sold.
         Addr::unchecked("user"),
@@ -80,6 +81,13 @@ fn successful_process_stop_loss_order() {
 
     // Execute the order processing.
     app.wasm_sudo(addr.clone(), &sudo_msg).unwrap();
+
+    let o: GetSpotOrderResp = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::GetSpotOrder { order_id: 0 })
+        .unwrap();
+
+    assert_eq!(o.order.status, Status::Pending);
 
     // Verify the resulting balances after order processing.
     assert_eq!(
@@ -121,6 +129,14 @@ fn successful_process_stop_loss_order() {
 
     // Execute the order processing.
     app.wasm_sudo(addr.clone(), &sudo_msg).unwrap();
+
+    let o: GetSpotOrderResp = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::GetSpotOrder { order_id: 0 })
+        .unwrap();
+
+    assert_eq!(o.order.status, Status::Executed);
+
     // Verify the resulting balances after order processing.
     assert_eq!(
         app.wrap()

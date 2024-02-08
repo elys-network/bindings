@@ -207,10 +207,11 @@ function asset_info() {
 
 # Get spot order
 function spot_order() {
-    printf "\n# Spot order\n"
+    order_id=$1
+    printf "\n# Spot order order_id=$order_id\n"
     query_contract "$ts_contract_address" '{
         "get_spot_order": {
-            "order_id": 1
+            "order_id": '"$order_id"'
         }
     }'
 }
@@ -455,7 +456,7 @@ case "$2" in
         asset_info
         ;;
     "spot_order")
-        spot_order
+        spot_order $3
         ;;
     "all_spot_orders")
         all_spot_orders
