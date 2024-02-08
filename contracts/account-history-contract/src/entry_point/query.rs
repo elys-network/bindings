@@ -1,7 +1,10 @@
 use crate::action::query::{
-    all, get_liquid_assets, get_membership_tier, get_perpetuals_assets, get_portfolio, get_rewards,
-    get_staked_assets, get_total_balance, last_snapshot, params, user_snapshots, user_value,
+    get_liquid_assets, get_membership_tier, get_perpetuals_assets, get_portfolio, get_rewards,
+    get_staked_assets, get_total_balance,
 };
+
+#[cfg(feature = "debug")]
+use crate::action::query::{all, last_snapshot, params, user_snapshots, user_value};
 
 use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult};
 use elys_bindings::{ElysQuerier, ElysQuery};
@@ -13,7 +16,6 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
     use QueryMsg::*;
 
     match msg {
-        UserValue { user_address } => to_json_binary(&user_value(deps, user_address)?),
         Accounts { pagination } => to_json_binary(&{
             let querrier = ElysQuerier::new(&deps.querier);
 
@@ -21,18 +23,12 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
             resp
         }),
 
-        All {} => to_json_binary(&all(deps)?),
-
-        UserSnapshots { user_address } => to_json_binary(&user_snapshots(deps, user_address)?),
-
-        LastSnapshot { user_address } => to_json_binary(&last_snapshot(deps, user_address, env)?),
         GetLiquidAssets { user_address } => {
             to_json_binary(&get_liquid_assets(deps, user_address, env)?)
         }
         GetStakedAssets { user_address } => {
             to_json_binary(&get_staked_assets(deps, user_address, env)?)
         }
-        Params {} => to_json_binary(&params(deps)?),
         GetPortfolio { user_address } => to_json_binary(&get_portfolio(deps, user_address, env)?),
         GetTotalBalance { user_address } => {
             to_json_binary(&get_total_balance(deps, env, user_address)?)
@@ -47,14 +43,27 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         }
 
         // debug only
+        #[cfg(feature = "debug")]
+        Params {} => to_json_binary(&params(deps)?),
+        #[cfg(feature = "debug")]
+        All {} => to_json_binary(&all(deps)?),
+        #[cfg(feature = "debug")]
+        UserSnapshots { user_address } => to_json_binary(&user_snapshots(deps, user_address)?),
+        #[cfg(feature = "debug")]
+        LastSnapshot { user_address } => to_json_binary(&last_snapshot(deps, user_address, env)?),
+        #[cfg(feature = "debug")]
+        UserValue { user_address } => to_json_binary(&user_value(deps, user_address)?),
+        #[cfg(feature = "debug")]
         CommitmentStakedPositions { delegator_address } => {
             let querier = ElysQuerier::new(&deps.querier);
             to_json_binary(&querier.get_staked_positions(delegator_address)?)
         }
+        #[cfg(feature = "debug")]
         CommitmentUnStakedPositions { delegator_address } => {
             let querier = ElysQuerier::new(&deps.querier);
             to_json_binary(&querier.get_unstaked_positions(delegator_address)?)
         }
+        #[cfg(feature = "debug")]
         CommitmentRewardsSubBucketBalanceOfDenom {
             address,
             denom,
@@ -63,26 +72,32 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
             let querier = ElysQuerier::new(&deps.querier);
             to_json_binary(&querier.get_sub_bucket_rewards_balance(address, denom, program)?)
         }
+        #[cfg(feature = "debug")]
         CommitmentStakedBalanceOfDenom { address, denom } => {
             let querier = ElysQuerier::new(&deps.querier);
             to_json_binary(&querier.get_staked_balance(address, denom)?)
         }
+        #[cfg(feature = "debug")]
         StableStakeBalanceOfBorrow {} => {
             let querier = ElysQuerier::new(&deps.querier);
             to_json_binary(&querier.get_borrowed_balance()?)
         }
+        #[cfg(feature = "debug")]
         StableStakeParams {} => {
             let querier = ElysQuerier::new(&deps.querier);
             to_json_binary(&querier.get_stable_stake_params()?)
         }
+        #[cfg(feature = "debug")]
         CommitmentVestingInfo { address } => {
             let querier = ElysQuerier::new(&deps.querier);
             to_json_binary(&querier.get_vesting_info(address)?)
         }
+        #[cfg(feature = "debug")]
         Balance { address, denom } => {
             let querier = ElysQuerier::new(&deps.querier);
             to_json_binary(&querier.get_balance(address, denom)?)
         }
+        #[cfg(feature = "debug")]
         AmmPriceByDenom { token_in, discount } => {
             let querier = ElysQuerier::new(&deps.querier);
             to_json_binary(&querier.get_amm_price_by_denom(token_in, discount)?)
