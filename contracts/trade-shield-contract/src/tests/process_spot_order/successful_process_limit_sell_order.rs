@@ -43,9 +43,7 @@ fn successful_process_limit_sell_order() {
         Some(OrderPrice {
             base_denom: "btc".to_string(),
             quote_denom: "usdc".to_string(),
-            rate: Decimal::one()
-                .checked_div(Decimal::from_str("30000").unwrap())
-                .unwrap(), // Rate at which BTC will be sold (30,000 USDC per BTC).
+            rate: Decimal::from_str("30000").unwrap(), // Rate at which BTC will be sold (30,000 USDC per BTC).
         }),
         coin(2, "btc"), // 2 BTC to be sold.
         Addr::unchecked("user"),

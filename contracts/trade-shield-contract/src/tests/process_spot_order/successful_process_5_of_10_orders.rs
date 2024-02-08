@@ -238,9 +238,7 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
             order_price: OrderPrice {
                 base_denom: "eth".to_string(),
                 quote_denom: "usdc".to_string(),
-                rate: Decimal::one()
-                    .checked_div(Decimal::from_atomics(Uint128::new(1700), 0).unwrap())
-                    .unwrap(),
+                rate: Decimal::from_atomics(Uint128::new(1700), 0).unwrap(),
             },
             status: Status::Pending,
             date: Date {
@@ -256,9 +254,7 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
             order_price: OrderPrice {
                 base_denom: "btc".to_string(),
                 quote_denom: "usdc".to_string(),
-                rate: Decimal::one()
-                    .checked_div(Decimal::from_atomics(Uint128::new(12000), 0).unwrap())
-                    .unwrap(),
+                rate: Decimal::from_atomics(Uint128::new(12000), 0).unwrap(),
             },
             order_target_denom: "usdc".to_string(),
             status: Status::Pending,
@@ -275,9 +271,7 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
             order_price: OrderPrice {
                 base_denom: "btc".to_string(),
                 quote_denom: "usdc".to_string(),
-                rate: Decimal::one()
-                    .checked_div(Decimal::from_atomics(Uint128::new(10000), 0).unwrap())
-                    .unwrap(),
+                rate: Decimal::from_atomics(Uint128::new(10000), 0).unwrap(),
             },
             order_target_denom: "usdc".to_string(),
             status: Status::Pending,
@@ -294,9 +288,7 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
             order_price: OrderPrice {
                 base_denom: "eth".to_string(),
                 quote_denom: "usdc".to_string(),
-                rate: Decimal::one()
-                    .checked_div(Decimal::from_atomics(Uint128::new(1800), 0).unwrap())
-                    .unwrap(),
+                rate: Decimal::from_atomics(Uint128::new(1800), 0).unwrap(),
             },
             order_target_denom: "usdc".to_string(),
             status: Status::Pending,
@@ -313,9 +305,7 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
             order_price: OrderPrice {
                 base_denom: "eth".to_string(),
                 quote_denom: "usdc".to_string(),
-                rate: Decimal::one()
-                    .checked_div(Decimal::from_atomics(Uint128::new(1200), 0).unwrap())
-                    .unwrap(),
+                rate: Decimal::from_atomics(Uint128::new(1200), 0).unwrap(),
             },
             order_target_denom: "usdc".to_string(),
             status: Status::Pending,
@@ -332,9 +322,7 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
             order_price: OrderPrice {
                 base_denom: "eth".to_string(),
                 quote_denom: "usdc".to_string(),
-                rate: Decimal::one()
-                    .checked_div(Decimal::from_atomics(Uint128::new(2500), 0).unwrap())
-                    .unwrap(),
+                rate: Decimal::from_atomics(Uint128::new(2500), 0).unwrap(),
             },
             order_target_denom: "usdc".to_string(),
             status: Status::Pending,
@@ -351,9 +339,7 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
             order_price: OrderPrice {
                 base_denom: "btc".to_string(),
                 quote_denom: "usdc".to_string(),
-                rate: Decimal::one()
-                    .checked_div(Decimal::from_atomics(Uint128::new(21000), 0).unwrap())
-                    .unwrap(),
+                rate: Decimal::from_atomics(Uint128::new(21000), 0).unwrap(),
             },
             order_target_denom: "usdc".to_string(),
             status: Status::Pending,
@@ -370,9 +356,7 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
             order_price: OrderPrice {
                 base_denom: "btc".to_string(),
                 quote_denom: "usdc".to_string(),
-                rate: Decimal::one()
-                    .checked_div(Decimal::from_atomics(Uint128::new(25000), 0).unwrap())
-                    .unwrap(),
+                rate: Decimal::from_atomics(Uint128::new(25000), 0).unwrap(),
             },
             order_target_denom: "usdc".to_string(),
             status: Status::Pending,
@@ -389,9 +373,7 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
             order_price: OrderPrice {
                 base_denom: "btc".to_string(),
                 quote_denom: "usdc".to_string(),
-                rate: Decimal::one()
-                    .checked_div(Decimal::from_atomics(Uint128::new(30000), 0).unwrap())
-                    .unwrap(),
+                rate: Decimal::from_atomics(Uint128::new(30000), 0).unwrap(),
             },
             order_target_denom: "usdc".to_string(),
             status: Status::Pending,
@@ -408,9 +390,7 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
             order_price: OrderPrice {
                 base_denom: "eth".to_string(),
                 quote_denom: "usdc".to_string(),
-                rate: Decimal::one()
-                    .checked_div(Decimal::from_atomics(Uint128::new(2100), 0).unwrap())
-                    .unwrap(),
+                rate: Decimal::from_atomics(Uint128::new(2100), 0).unwrap(),
             },
             order_target_denom: "usdc".to_string(),
             status: Status::Pending,

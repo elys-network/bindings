@@ -42,7 +42,7 @@ fn successful_process_stop_loss_order() {
         Some(OrderPrice {
             base_denom: "btc".to_string(),
             quote_denom: "usdc".to_string(),
-            rate: Decimal::from_str("0.00005").unwrap(), // Trigger price of 20,000 USDC per BTC.
+            rate: Decimal::from_str("20000").unwrap(), // Trigger price of 20,000 USDC per BTC.
         }),
         coin(2, "btc"), // 2 BTC to be sold.
         Addr::unchecked("user"),
