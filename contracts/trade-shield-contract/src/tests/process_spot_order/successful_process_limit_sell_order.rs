@@ -2,6 +2,7 @@ use crate::tests::read_processed_order_id::read_processed_order_id;
 
 use super::*;
 use cosmwasm_std::{coins, BlockInfo, Coin, Timestamp};
+use elys_bindings::trade_shield::msg::query_resp::GetSpotOrderResp;
 // This test case verifies the successful processing of a "limit sell" order in the contract.
 // The scenario involves a "limit sell" order created by a user to sell BTC at a specific price.
 // - Initially, the BTC price is 20,000 USDC, and the order rate is set at 30,000 USDC per BTC.
@@ -42,7 +43,9 @@ fn successful_process_limit_sell_order() {
         Some(OrderPrice {
             base_denom: "btc".to_string(),
             quote_denom: "usdc".to_string(),
-            rate: Decimal::from_atomics(Uint128::new(30000), 0).unwrap(), // Rate at which BTC will be sold (30,000 USDC per BTC).
+            rate: Decimal::one()
+                .checked_div(Decimal::from_str("30000").unwrap())
+                .unwrap(), // Rate at which BTC will be sold (30,000 USDC per BTC).
         }),
         coin(2, "btc"), // 2 BTC to be sold.
         Addr::unchecked("user"),
@@ -128,6 +131,13 @@ fn successful_process_limit_sell_order() {
 
     // Execute the order processing.
     app.wasm_sudo(addr.clone(), &sudo_msg).unwrap();
+
+    let o: GetSpotOrderResp = app
+        .wrap()
+        .query_wasm_smart(addr.clone(), &QueryMsg::GetSpotOrder { order_id: 0 })
+        .unwrap();
+
+    assert_eq!(o.order.status, Status::Executed);
 
     // Verify the resulting balances after order processing.
     assert_eq!(

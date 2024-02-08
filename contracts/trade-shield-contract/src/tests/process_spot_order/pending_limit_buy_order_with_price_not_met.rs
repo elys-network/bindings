@@ -3,11 +3,12 @@ use std::str::FromStr;
 use crate::entry_point::{execute, query, sudo};
 use anyhow::{bail, Result as AnyResult};
 use cosmwasm_std::{
-    coin, to_json_binary, Addr, BankMsg, BlockInfo, Decimal, Empty, SignedDecimal, StdError,
-    Timestamp, Uint128,
+    coin, to_json_binary, Addr, BankMsg, BlockInfo, Decimal, Empty, Int64, SignedDecimal, StdError,
+    Timestamp,
 };
 use cw_multi_test::BankSudo;
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
+use elys_bindings::msg_resp::AmmSwapExactAmountInResp;
 use elys_bindings::query_resp::{AmmSwapEstimationByDenomResponse, Entry, QueryGetEntryResponse};
 use elys_bindings::trade_shield::msg::query_resp::GetSpotOrderResp;
 use elys_bindings::trade_shield::msg::{QueryMsg, SudoMsg};
@@ -118,13 +119,11 @@ impl Module for ElysModuleWrapper {
                 denom_out,
                 ..
             } => {
-                // 1 denom_in = spot_price denom_out
-                // 1 base = rate quote
                 let spot_price = match (denom_in.as_str(), denom_out.as_str()) {
                     (
-                        "uelys",
                         "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
-                    ) => Decimal::from_str("3.5").unwrap(),
+                        "uelys",
+                    ) => Decimal::from_str("0.264489000000000000").unwrap(),
                     _ => panic!(
                         "price not found for the pair of {} and {}",
                         denom_in, denom_out
@@ -192,13 +191,9 @@ impl Module for ElysModuleWrapper {
                 routes,
                 token_in,
                 recipient,
+                token_out_min_amount,
                 ..
             } => {
-                let resp = AppResponse {
-                    events: vec![],
-                    data: Some(to_json_binary(&token_in)?),
-                };
-
                 let burn_msg = BankMsg::Burn {
                     amount: vec![token_in.clone()],
                 };
@@ -214,24 +209,44 @@ impl Module for ElysModuleWrapper {
 
                 let price = match (token_in.denom.as_str(), routes[0].token_out_denom.as_str()) {
                     (
-                        "uelys",
                         "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
-                    ) => Decimal::from_atomics(Uint128::new(2), 0).unwrap(),
-                    _ => panic!("price"),
+                        "uelys",
+                    ) => Decimal::from_str("0.264489000000000000").unwrap(),
+                    _ => panic!(
+                        "price not found for the pair of {} and {}",
+                        token_in.denom, routes[0].token_out_denom
+                    ),
                 };
 
                 let mint_amount: u128 = price
                     .checked_mul(Decimal::from_atomics(token_in.amount, 0).unwrap())
                     .unwrap()
+                    .checked_mul(Decimal::from_str("0.99").unwrap())
+                    .unwrap()
                     .to_uint_floor()
                     .u128();
 
+                if mint_amount < token_out_min_amount.i128() as u128 {
+                    panic!("insufficient amount to mint");
+                }
+
                 let mint_msg = BankSudo::Mint {
-                    to_address: recipient,
+                    to_address: recipient.clone(),
                     amount: vec![coin(mint_amount, &routes[0].token_out_denom)],
                 };
                 router.sudo(api, storage, block, mint_msg.into()).unwrap();
 
+                let data = to_json_binary(&AmmSwapExactAmountInResp {
+                    token_out_amount: Int64::new(mint_amount as i64),
+                    discount: Decimal::zero(),
+                    swap_fee: Decimal::from_str("0.1").unwrap(),
+                    recipient,
+                })?;
+
+                let resp = AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                };
                 Ok(resp)
             }
             _ => panic!("not implemented"),
@@ -260,11 +275,23 @@ impl Module for ElysModuleWrapper {
 }
 
 #[test]
-fn process_limit_buy_order_with_pending_status() {
+fn pending_limit_buy_order_with_price_not_met() {
     // Create a wallet for the "user" with an initial balance of 100 usdc
     let wallet = vec![
-        ("user", vec![coin(90_000000, "uelys")]),
-        ("owner", vec![coin(10_000000, "uelys")]),
+        (
+            "user",
+            vec![coin(
+                90_000000,
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+            )],
+        ),
+        (
+            "owner",
+            vec![coin(
+                10_000000,
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+            )],
+        ),
     ];
 
     let mut addresses: Vec<String> = vec![];
@@ -296,14 +323,19 @@ fn process_limit_buy_order_with_pending_status() {
         0,
         SpotOrderType::LimitBuy,
         Some(OrderPrice {
-            base_denom: "uelys".to_string(),
-            quote_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+            // denom_in
+            base_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
                 .to_string(),
-            rate: Decimal::from_str("0.10").unwrap(),
+            // denom_out
+            quote_denom: "uelys".to_string(),
+            rate: Decimal::from_str("2.0").unwrap(),
         }),
-        coin(10_000000, "uelys"),
+        coin(
+            10_000000,
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+        ),
         Addr::unchecked("user"),
-        "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
+        "uelys".to_string(),
         &BlockInfo {
             height: 50,
             time: Timestamp::from_seconds(600),
@@ -322,7 +354,10 @@ fn process_limit_buy_order_with_pending_status() {
             code_id,
             Addr::unchecked("owner"),
             &instantiate_msg,
-            &[coin(10_000000, "uelys")],
+            &[coin(
+                10_000000,
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+            )],
             "Contract",
             None,
         )
@@ -340,7 +375,10 @@ fn process_limit_buy_order_with_pending_status() {
 
     assert_eq!(
         app.wrap()
-            .query_balance(&addr, "uelys")
+            .query_balance(
+                &addr,
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+            )
             .unwrap()
             .amount
             .u128(),
@@ -349,10 +387,22 @@ fn process_limit_buy_order_with_pending_status() {
 
     assert_eq!(
         app.wrap()
-            .query_balance("user", "uelys")
+            .query_balance(
+                "user",
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+            )
             .unwrap()
             .amount
             .u128(),
         90_000000
+    );
+
+    assert_eq!(
+        app.wrap()
+            .query_balance("user", "uelys")
+            .unwrap()
+            .amount
+            .u128(),
+        0
     );
 }
