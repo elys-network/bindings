@@ -4,7 +4,7 @@ use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult};
 use elys_bindings::{ElysMsg, ElysQuery};
 
 use crate::msg::InstantiateMsg;
-use crate::states::{EXPIRATION, INTERVAL, PAGINATION, TRADE_SHIELD_ADDRESS};
+use crate::states::{EXPIRATION, PAGINATION, TRADE_SHIELD_ADDRESS};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -13,7 +13,6 @@ pub fn instantiate(
     _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response<ElysMsg>> {
-    INTERVAL.save(deps.storage, &msg.interval)?;
     EXPIRATION.save(deps.storage, &msg.expiration)?;
     PAGINATION.save(
         deps.storage,

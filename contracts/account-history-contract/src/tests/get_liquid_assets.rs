@@ -363,7 +363,6 @@ fn get_liquid_assets() {
 
     // Create a mock message to instantiate the contract with no initial orders.
     let instantiate_msg = InstantiateMsg {
-        interval: Duration::Time(1),
         limit: 3,
         expiration: cw_utils::Expiration::AtTime(Timestamp::from_seconds(604800)),
         trade_shield_address,

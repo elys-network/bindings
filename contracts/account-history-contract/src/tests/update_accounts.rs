@@ -79,7 +79,6 @@ fn history() {
         .unwrap();
 
     let init_msg = InstantiateMsg {
-        interval: Duration::Time(1),
         limit: 2,
         expiration: Expiration::AtHeight(2),
         trade_shield_address: trade_shield_address.to_string(),
