@@ -42,7 +42,7 @@ elysd config chain-id elystestnet-1
 elysd config broadcast-mode sync
 
 # environment variables
-OPTIONS="--from $NAME --gas auto --gas-adjustment=1.3 --fees 100000uelys -y"
+OPTIONS="--from $NAME --gas 1000000 --gas-adjustment=1.3 --fees 100000uelys -y"
 
 # Ensure elysd is installed
 if ! command_exists elysd; then
