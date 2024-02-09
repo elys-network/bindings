@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
+use crate::entry_point::instantiate;
 use crate::msg::query_resp::GetPortfolioResp;
-use crate::states::{EXPIRATION, PAGINATION, TRADE_SHIELD_ADDRESS};
 use crate::types::{AccountSnapshot, Portfolio};
 use crate::{
     entry_point::{execute, query, sudo},
@@ -9,15 +9,15 @@ use crate::{
 };
 use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
-    coin, to_json_binary, Addr, BlockInfo, DecCoin, Decimal, Decimal256, DepsMut, Empty, Env,
-    MessageInfo, Response, SignedDecimal256, StdError, StdResult, Timestamp,
+    coin, to_json_binary, Addr, BlockInfo, DecCoin, Decimal, Decimal256, Empty, SignedDecimal256,
+    StdError, Timestamp,
 };
 use cw_multi_test::{AppResponse, BankSudo, BasicAppBuilder, ContractWrapper, Executor, Module};
 use cw_utils::Expiration;
 use elys_bindings::query_resp::{
     Entry, OracleAssetInfoResponse, QueryGetEntryResponse, QueryGetPriceResponse,
 };
-use elys_bindings::types::{OracleAssetInfo, PageRequest, Price};
+use elys_bindings::types::{OracleAssetInfo, Price};
 use elys_bindings::{ElysMsg, ElysQuery};
 use elys_bindings_test::{
     ElysModule, ACCOUNT, ASSET_INFO, LAST_MODULE_USED, PERPETUAL_OPENED_POSITION, PRICES,
@@ -26,27 +26,6 @@ use trade_shield_contract::entry_point::{
     execute as trade_shield_execute, instantiate as trade_shield_init, query as trade_shield_query,
 };
 use trade_shield_contract::msg::InstantiateMsg as TradeShieldInstantiateMsg;
-
-fn mock_instantiate(
-    deps: DepsMut<ElysQuery>,
-    _env: Env,
-    _info: MessageInfo,
-    msg: InstantiateMsg,
-) -> StdResult<Response<ElysMsg>> {
-    EXPIRATION.save(deps.storage, &msg.expiration)?;
-    PAGINATION.save(
-        deps.storage,
-        &PageRequest {
-            key: None,
-            limit: msg.limit,
-            reverse: false,
-            offset: None,
-            count_total: false,
-        },
-    )?;
-    TRADE_SHIELD_ADDRESS.save(deps.storage, &msg.trade_shield_address)?;
-    Ok(Response::new())
-}
 
 struct ElysModuleWrapper(ElysModule);
 
@@ -309,7 +288,9 @@ fn get_portfolio() {
     let trade_shield_code =
         ContractWrapper::new(trade_shield_execute, trade_shield_init, trade_shield_query);
     let trade_shield_code_id = app.store_code(Box::new(trade_shield_code));
-    let trade_shield_init = TradeShieldInstantiateMsg {};
+    let trade_shield_init = TradeShieldInstantiateMsg {
+        account_history_address: None,
+    };
     let trade_shield_address = app
         .instantiate_contract(
             trade_shield_code_id,
@@ -323,14 +304,16 @@ fn get_portfolio() {
         .to_string();
 
     // Create a contract wrapper and store its code.
-    let code = ContractWrapper::new(execute, mock_instantiate, query).with_sudo(sudo);
+    let code = ContractWrapper::new(execute, instantiate, query).with_sudo(sudo);
     let code_id = app.store_code(Box::new(code));
 
     // Create a mock message to instantiate the contract with no initial orders.
     let instantiate_msg = InstantiateMsg {
-        limit: 3,
-        expiration: cw_utils::Expiration::AtTime(Timestamp::from_seconds(604800)),
-        trade_shield_address,
+        limit: Some(3),
+        expiration: Some(cw_utils::Expiration::AtTime(Timestamp::from_seconds(
+            604800,
+        ))),
+        trade_shield_address: Some(trade_shield_address),
     };
 
     // Instantiate the contract with "owner" as the deployer.

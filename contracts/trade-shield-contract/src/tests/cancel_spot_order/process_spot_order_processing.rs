@@ -34,6 +34,7 @@ fn process_spot_order_processing() {
 
     // Create a mock message to instantiate the contract with the dummy order.
     let instantiate_msg = InstantiateMockMsg {
+        account_history_address: None,
         spot_orders: vec![dummy_order],
         perpetual_orders: vec![],
     };

@@ -1,8 +1,8 @@
+use crate::trade_shield::types::PerpetualPositionPlus;
+use crate::types::PerpetualPosition;
+use crate::ElysQuerier;
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{DecCoin, Decimal, Decimal256, SignedDecimal, StdError, StdResult, Uint128};
-use elys_bindings::trade_shield::types::PerpetualPositionPlus;
-use elys_bindings::types::PerpetualPosition;
-use elys_bindings::ElysQuerier;
 
 #[cw_serde]
 pub struct PerpetualAssets {

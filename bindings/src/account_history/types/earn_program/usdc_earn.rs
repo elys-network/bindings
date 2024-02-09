@@ -1,5 +1,5 @@
-use crate::types::{AprUsdc, BalanceReward};
-use elys_bindings::{
+use crate::{
+    account_history::types::{AprUsdc, BalanceReward},
     query_resp::{BalanceBorrowed, StakedAvailable},
     types::BalanceAvailable,
 };

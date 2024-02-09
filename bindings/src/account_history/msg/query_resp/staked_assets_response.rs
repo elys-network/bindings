@@ -1,7 +1,7 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::DecCoin;
 
-use crate::types::StakedAssets;
+use crate::account_history::types::StakedAssets;
 
 #[cw_serde]
 pub struct StakedAssetsResponse {

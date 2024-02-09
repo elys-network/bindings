@@ -1,4 +1,4 @@
-use crate::msg::ReplyType;
+use crate::{helper::get_discount, msg::ReplyType};
 use cosmwasm_std::{
     to_json_binary, Decimal, Int128, OverflowError, StdError, StdResult, Storage, SubMsg,
 };
@@ -47,11 +47,13 @@ pub fn process_orders(
             continue;
         }
 
+        let discount = get_discount(&deps.as_ref(), spot_order.owner_address.to_string())?;
+
         let amm_swap_estimation = match querier.amm_swap_estimation_by_denom(
             &spot_order.order_amount,
             &spot_order.order_amount.denom,
             &spot_order.order_target_denom,
-            &Decimal::zero(),
+            &discount,
         ) {
             Ok(amm_swap_estimation) => amm_swap_estimation,
             Err(_) => {
@@ -75,6 +77,7 @@ pub fn process_orders(
                 &mut reply_info_id,
                 amm_swap_estimation,
                 deps.storage,
+                discount,
             )?;
         }
     }
@@ -99,11 +102,13 @@ pub fn process_orders(
             continue;
         }
 
+        let discount = get_discount(&deps.as_ref(), perpetual_order.owner.clone())?;
+
         let amm_swap_estimation = match querier.amm_swap_estimation_by_denom(
             &perpetual_order.collateral,
             &perpetual_order.collateral.denom,
             &perpetual_order.trading_asset,
-            &Decimal::zero(),
+            &discount,
         ) {
             Ok(amm_swap_estimation) => amm_swap_estimation,
             Err(_) => {
@@ -282,6 +287,7 @@ fn process_spot_order(
     reply_info_id: &mut u64,
     amm_swap_estimation: AmmSwapEstimationByDenomResponse,
     storage: &mut dyn Storage,
+    discount: Decimal,
 ) -> StdResult<()> {
     let token_out_min_amount: Int128 = match order.order_type {
         SpotOrderType::LimitBuy => calculate_token_out_min_amount(order),
@@ -295,7 +301,7 @@ fn process_spot_order(
         &order.order_amount,
         &amm_swap_estimation.in_route.unwrap(),
         token_out_min_amount,
-        Decimal::zero(),
+        discount,
         &order.owner_address,
     );
 

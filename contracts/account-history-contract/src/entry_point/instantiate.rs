@@ -1,6 +1,7 @@
+use cw_utils::Expiration;
 use elys_bindings::types::PageRequest;
 
-use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult};
+use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, Timestamp};
 use elys_bindings::{ElysMsg, ElysQuery};
 
 use crate::msg::InstantiateMsg;
@@ -13,17 +14,31 @@ pub fn instantiate(
     _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response<ElysMsg>> {
-    EXPIRATION.save(deps.storage, &msg.expiration)?;
+    match msg.expiration {
+        Some(expiration) => EXPIRATION.save(deps.storage, &expiration)?,
+        None => EXPIRATION.save(
+            deps.storage,
+            &Expiration::AtTime(Timestamp::from_seconds(7 * 24 * 60 * 60)),
+        )?,
+    };
+
+    let limit = match msg.limit {
+        Some(limit) => limit,
+        None => 10,
+    };
+
     PAGINATION.save(
         deps.storage,
         &PageRequest {
             key: None,
-            limit: msg.limit,
+            limit,
             reverse: false,
             offset: None,
             count_total: false,
         },
     )?;
+
     TRADE_SHIELD_ADDRESS.save(deps.storage, &msg.trade_shield_address)?;
+
     Ok(Response::new())
 }

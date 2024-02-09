@@ -65,7 +65,9 @@ fn history() {
 
     let trade_shield_code_id = app.store_code(Box::new(trade_shield_code));
 
-    let trade_shield_init = TradeShieldInstantiateMsg {};
+    let trade_shield_init = TradeShieldInstantiateMsg {
+        account_history_address: None,
+    };
 
     let trade_shield_address = app
         .instantiate_contract(
@@ -79,9 +81,9 @@ fn history() {
         .unwrap();
 
     let init_msg = InstantiateMsg {
-        limit: 2,
-        expiration: Expiration::AtHeight(2),
-        trade_shield_address: trade_shield_address.to_string(),
+        limit: Some(2),
+        expiration: Some(Expiration::AtHeight(2)),
+        trade_shield_address: Some(trade_shield_address.to_string()),
     };
 
     let addr = app

@@ -1,4 +1,4 @@
-use crate::types::earn_program::eden_boost_earn::EdenBoostEarnProgram;
+use crate::account_history::types::earn_program::eden_boost_earn::EdenBoostEarnProgram;
 
 use cosmwasm_schema::cw_serde;
 

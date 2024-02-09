@@ -10,6 +10,7 @@ fn get_spot_orders() {
     let mut app = ElysApp::new();
 
     let instantiate_msg = InstantiateMockMsg {
+        account_history_address: None,
         spot_orders: spot_orders.clone(),
         perpetual_orders: vec![],
     };

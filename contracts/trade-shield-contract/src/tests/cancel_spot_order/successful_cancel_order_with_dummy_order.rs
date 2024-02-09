@@ -14,6 +14,7 @@ fn successful_cancel_order_with_dummy_order() {
 
     // Create a mock message to instantiate the contract with the dummy order.
     let instantiate_msg = InstantiateMockMsg {
+        account_history_address: None,
         spot_orders: vec![dummy_order.clone()],
         perpetual_orders: vec![],
     };

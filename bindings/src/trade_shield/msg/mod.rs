@@ -1,11 +1,13 @@
 mod execute_msg;
 mod instantiate_msg;
+mod migrate_msg;
 mod query_msg;
 mod reply_type;
 mod sudo_msg;
 
 pub use execute_msg::ExecuteMsg;
 pub use instantiate_msg::InstantiateMsg;
+pub use migrate_msg::MigrateMsg;
 pub use query_msg::QueryMsg;
 pub use reply_type::ReplyType;
 pub use sudo_msg::SudoMsg;

@@ -1,9 +1,9 @@
-use crate::msg::ReplyType;
+use crate::{helper::get_discount, msg::ReplyType};
 
 use super::*;
 use cosmwasm_std::{
-    coin, to_json_binary, Decimal, OverflowError, OverflowOperation, SignedDecimal,
-    SignedDecimal256, StdError, StdResult, SubMsg,
+    coin, to_json_binary, OverflowError, OverflowOperation, SignedDecimal, SignedDecimal256,
+    StdError, StdResult, SubMsg,
 };
 use cw_utils;
 use elys_bindings::query_resp::{Entry, QueryGetEntryResponse};
@@ -124,7 +124,7 @@ fn create_perpetual_open_order(
         &trading_asset,
         collateral.clone(),
         take_profit_price.clone(),
-        Decimal::zero(),
+        get_discount(&deps.as_ref(), info.sender.to_string())?,
     )?;
 
     if !open_estimation.valid_collateral {

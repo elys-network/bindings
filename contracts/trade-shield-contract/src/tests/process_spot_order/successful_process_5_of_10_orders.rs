@@ -36,6 +36,7 @@ fn successful_process_5_of_10_orders() {
     let spot_orders = create_dummy_orders();
 
     let instantiate_msg = InstantiateMockMsg {
+        account_history_address: None,
         spot_orders,
         perpetual_orders: vec![],
     };
