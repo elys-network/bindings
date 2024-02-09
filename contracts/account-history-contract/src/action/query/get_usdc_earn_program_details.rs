@@ -10,6 +10,7 @@ pub fn get_usdc_earn_program_details(
     address: Option<String>,
     asset: String,
     usdc_denom: String,
+    usdc_base_denom: String,
     uusdc_usd_price: Decimal,
     uelys_price_in_uusdc: Decimal,
     usdc_apr: QueryAprResponse,
@@ -39,7 +40,7 @@ pub fn get_usdc_earn_program_details(
                 let mut available = querier.get_balance(addr.clone(), usdc_denom.clone())?;
                 available.usd_amount = available.usd_amount.checked_mul(uusdc_usd_price).unwrap();
 
-                let mut staked = querier.get_staked_balance(addr.clone(), usdc_denom.clone())?;
+                let mut staked = querier.get_staked_balance(addr.clone(), usdc_base_denom.clone())?;
                 staked.usd_amount = staked.usd_amount.checked_mul(uusdc_usd_price).unwrap();
 
                 let mut borrowed = querier.get_borrowed_balance()?;
