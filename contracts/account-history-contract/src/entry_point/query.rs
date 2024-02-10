@@ -41,6 +41,20 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         GetPerpetualAssets { user_address } => {
             to_json_binary(&get_perpetuals_assets(deps, user_address, env)?)
         }
+        GetAssetPrice { asset } => {
+            let querier = ElysQuerier::new(&deps.querier);
+            to_json_binary(&querier.get_asset_price(asset)?)
+        }
+
+        GetAssetPriceFromDenomInToDenomOut {
+            denom_in,
+            denom_out,
+        } => {
+            let querier = ElysQuerier::new(&deps.querier);
+            to_json_binary(
+                &querier.get_asset_price_from_denom_in_to_denom_out(denom_in, denom_out)?,
+            )
+        }
 
         // debug only
         #[cfg(feature = "debug")]

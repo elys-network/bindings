@@ -1,6 +1,7 @@
 use crate::{query_resp::OracleAssetInfoResponse, types::OracleAssetInfo, ElysQuerier};
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{coin, Coin, Decimal, StdError, StdResult};
+use cosmwasm_std::{Coin, Decimal, StdError, StdResult};
+use elys_bindings::{query_resp::OracleAssetInfoResponse, types::OracleAssetInfo, ElysQuerier};
 
 #[cw_serde]
 pub struct CoinValue {
@@ -53,10 +54,8 @@ impl CoinValue {
         }
 
         let price = querier
-            .get_amm_price_by_denom(coin(1000000, balance.denom.clone()), Decimal::zero())
-            .map_err(|e| {
-                StdError::generic_err(format!("failed to get_amm_price_by_denom: {}", e))
-            })?;
+            .get_asset_price(&balance.denom)
+            .map_err(|e| StdError::generic_err(format!("failed to get_asset_price: {}", e)))?;
 
         let decimal_point_usdc = asset_info.decimal;
 

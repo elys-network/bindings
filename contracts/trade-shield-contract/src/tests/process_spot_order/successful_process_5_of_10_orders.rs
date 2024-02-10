@@ -16,7 +16,10 @@ fn successful_process_5_of_10_orders() {
             "btc",
             Decimal::from_atomics(Uint128::new(20000), 0).unwrap(),
         ),
-        Price::new("usdc", Decimal::from_atomics(Uint128::new(1), 0).unwrap()),
+        Price::new(
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+            Decimal::from_atomics(Uint128::new(1), 0).unwrap(),
+        ),
         Price::new("eth", Decimal::from_atomics(Uint128::new(2000), 0).unwrap()),
     ];
     let prices_at_t1 = vec![
@@ -24,7 +27,10 @@ fn successful_process_5_of_10_orders() {
             "btc",
             Decimal::from_atomics(Uint128::new(30000), 0).unwrap(),
         ),
-        Price::new("usdc", Decimal::from_atomics(Uint128::new(1), 0).unwrap()),
+        Price::new(
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+            Decimal::from_atomics(Uint128::new(1), 0).unwrap(),
+        ),
         Price::new("eth", Decimal::from_atomics(Uint128::new(1700), 0).unwrap()),
     ];
 
@@ -78,7 +84,10 @@ fn successful_process_5_of_10_orders() {
     );
     assert_eq!(
         app.wrap()
-            .query_balance(&addr, "usdc")
+            .query_balance(
+                &addr,
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+            )
             .unwrap()
             .amount
             .u128(),
@@ -103,7 +112,10 @@ fn successful_process_5_of_10_orders() {
     );
     assert_eq!(
         app.wrap()
-            .query_balance("user", "usdc")
+            .query_balance(
+                "user",
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+            )
             .unwrap()
             .amount
             .u128(),
@@ -138,7 +150,10 @@ fn successful_process_5_of_10_orders() {
     );
     assert_eq!(
         app.wrap()
-            .query_balance(&addr, "usdc")
+            .query_balance(
+                &addr,
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+            )
             .unwrap()
             .amount
             .u128(),
@@ -163,7 +178,10 @@ fn successful_process_5_of_10_orders() {
     );
     assert_eq!(
         app.wrap()
-            .query_balance("user", "usdc")
+            .query_balance(
+                "user",
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+            )
             .unwrap()
             .amount
             .u128(),
@@ -195,7 +213,10 @@ fn successful_process_5_of_10_orders() {
     );
     assert_eq!(
         app.wrap()
-            .query_balance(&addr, "usdc")
+            .query_balance(
+                &addr,
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+            )
             .unwrap()
             .amount
             .u128(),
@@ -220,7 +241,10 @@ fn successful_process_5_of_10_orders() {
     );
     assert_eq!(
         app.wrap()
-            .query_balance("user", "usdc")
+            .query_balance(
+                "user",
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+            )
             .unwrap()
             .amount
             .u128(),
@@ -233,12 +257,14 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
         SpotOrder {
             order_type: SpotOrderType::StopLoss,
             order_id: 0,
-            order_target_denom: "usdc".to_string(),
+            order_target_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
             order_amount: coin(1, "eth"),
             owner_address: Addr::unchecked("user"),
             order_price: OrderPrice {
                 base_denom: "eth".to_string(),
-                quote_denom: "usdc".to_string(),
+                quote_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
                 rate: Decimal::from_atomics(Uint128::new(1700), 0).unwrap(),
             },
             status: Status::Pending,
@@ -254,10 +280,12 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
             owner_address: Addr::unchecked("user"),
             order_price: OrderPrice {
                 base_denom: "btc".to_string(),
-                quote_denom: "usdc".to_string(),
+                quote_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
                 rate: Decimal::from_atomics(Uint128::new(12000), 0).unwrap(),
             },
-            order_target_denom: "usdc".to_string(),
+            order_target_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
             status: Status::Pending,
             date: Date {
                 height: 20,
@@ -271,10 +299,12 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
             owner_address: Addr::unchecked("user"),
             order_price: OrderPrice {
                 base_denom: "btc".to_string(),
-                quote_denom: "usdc".to_string(),
+                quote_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
                 rate: Decimal::from_atomics(Uint128::new(10000), 0).unwrap(),
             },
-            order_target_denom: "usdc".to_string(),
+            order_target_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
             status: Status::Pending,
             date: Date {
                 height: 20,
@@ -288,10 +318,12 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
             owner_address: Addr::unchecked("user"),
             order_price: OrderPrice {
                 base_denom: "eth".to_string(),
-                quote_denom: "usdc".to_string(),
+                quote_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
                 rate: Decimal::from_atomics(Uint128::new(1800), 0).unwrap(),
             },
-            order_target_denom: "usdc".to_string(),
+            order_target_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
             status: Status::Pending,
             date: Date {
                 height: 20,
@@ -305,10 +337,12 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
             owner_address: Addr::unchecked("user"),
             order_price: OrderPrice {
                 base_denom: "eth".to_string(),
-                quote_denom: "usdc".to_string(),
+                quote_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
                 rate: Decimal::from_atomics(Uint128::new(1200), 0).unwrap(),
             },
-            order_target_denom: "usdc".to_string(),
+            order_target_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
             status: Status::Pending,
             date: Date {
                 height: 20,
@@ -322,10 +356,12 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
             owner_address: Addr::unchecked("user"),
             order_price: OrderPrice {
                 base_denom: "eth".to_string(),
-                quote_denom: "usdc".to_string(),
+                quote_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
                 rate: Decimal::from_atomics(Uint128::new(2500), 0).unwrap(),
             },
-            order_target_denom: "usdc".to_string(),
+            order_target_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
             status: Status::Pending,
             date: Date {
                 height: 20,
@@ -339,10 +375,12 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
             owner_address: Addr::unchecked("user"),
             order_price: OrderPrice {
                 base_denom: "btc".to_string(),
-                quote_denom: "usdc".to_string(),
+                quote_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
                 rate: Decimal::from_atomics(Uint128::new(21000), 0).unwrap(),
             },
-            order_target_denom: "usdc".to_string(),
+            order_target_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
             status: Status::Pending,
             date: Date {
                 height: 20,
@@ -356,10 +394,12 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
             owner_address: Addr::unchecked("user"),
             order_price: OrderPrice {
                 base_denom: "btc".to_string(),
-                quote_denom: "usdc".to_string(),
+                quote_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
                 rate: Decimal::from_atomics(Uint128::new(25000), 0).unwrap(),
             },
-            order_target_denom: "usdc".to_string(),
+            order_target_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
             status: Status::Pending,
             date: Date {
                 height: 20,
@@ -373,10 +413,12 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
             owner_address: Addr::unchecked("user"),
             order_price: OrderPrice {
                 base_denom: "btc".to_string(),
-                quote_denom: "usdc".to_string(),
+                quote_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
                 rate: Decimal::from_atomics(Uint128::new(30000), 0).unwrap(),
             },
-            order_target_denom: "usdc".to_string(),
+            order_target_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
             status: Status::Pending,
             date: Date {
                 height: 20,
@@ -390,10 +432,12 @@ fn create_dummy_orders() -> Vec<SpotOrder> {
             owner_address: Addr::unchecked("user"),
             order_price: OrderPrice {
                 base_denom: "eth".to_string(),
-                quote_denom: "usdc".to_string(),
+                quote_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
                 rate: Decimal::from_atomics(Uint128::new(2100), 0).unwrap(),
             },
-            order_target_denom: "usdc".to_string(),
+            order_target_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
             status: Status::Pending,
             date: Date {
                 height: 20,
