@@ -46,6 +46,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
         .get_asset_profile(ElysDenom::Usdc.as_str().to_string())
         .map_err(|_| StdError::generic_err("an error occurred while getting usdc denom"))?;
     let usdc_denom = usdc_denom_entry.entry.denom;
+    let usdc_base_denom = usdc_denom_entry.entry.base_denom;
     let usdc_display_denom = usdc_denom_entry.entry.display_name;
     let usdc_decimal = u64::checked_pow(10, usdc_denom_entry.entry.decimals as u32).unwrap();
 
@@ -148,6 +149,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             uusdc_usd_price,
             uelys_price_in_uusdc,
             usdc_denom.to_owned(),
+            usdc_base_denom.to_owned(),
             eden_decimal,
             usdc_apr_usdc.to_owned(),
             eden_apr_usdc.to_owned(),

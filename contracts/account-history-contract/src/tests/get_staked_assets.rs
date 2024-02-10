@@ -365,7 +365,7 @@ impl Module for ElysModuleWrapper {
             }
             ElysQuery::CommitmentStakedBalanceOfDenom { denom, .. } => {
                 let resp: StakedAvailable = match denom.as_str() {
-                    "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65" => {
+                    "uusdc" => {
                         StakedAvailable {
                             usd_amount: Decimal::zero(),
                             amount: Uint128::zero(),
