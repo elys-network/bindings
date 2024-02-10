@@ -1,7 +1,7 @@
-use crate::types::{AprUsdc, BalanceReward};
-
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::Uint128;
+
+use crate::account_history::types::{AprUsdc, BalanceReward};
 
 #[cw_serde]
 pub struct EdenBoostEarnProgram {

@@ -1,4 +1,4 @@
-use crate::types::Reward;
+use crate::account_history::types::Reward;
 
 use cosmwasm_schema::cw_serde;
 

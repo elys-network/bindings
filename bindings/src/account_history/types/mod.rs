@@ -34,8 +34,6 @@ pub mod earn_program {
 pub mod denom;
 pub use denom::ElysDenom;
 
-use elys_bindings::types::BalanceAvailable;
-
 pub use portfolio::Portfolio;
 pub use total_balance::TotalBalance;
 

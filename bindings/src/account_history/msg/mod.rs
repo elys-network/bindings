@@ -1,8 +1,10 @@
 mod instantiate;
+mod migration;
 mod query;
 mod sudo;
 
 pub use instantiate::InstantiateMsg;
+pub use migration::MigrationMsg;
 pub use query::QueryMsg;
 pub use sudo::SudoMsg;
 

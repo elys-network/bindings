@@ -83,9 +83,14 @@ sleep 10
 codeid=$(elysd q tx $txhash --node $NODE | extract_code_id)
 echo "ts code id: $codeid"
 if [ -n "$TS_CONTRACT_ADDRESS" ]; then
-    txhash=$(elysd tx wasm migrate $OPTIONS $TS_CONTRACT_ADDRESS $codeid '{}' | extract_txhash)
+    txhash=$(elysd tx wasm migrate $OPTIONS $TS_CONTRACT_ADDRESS $codeid '{
+        "account_history_address": "'"$AH_CONTRACT_ADDRESS"'"
+    }' | extract_txhash)
 else
-    txhash=$(elysd tx wasm init $OPTIONS --label "ts" --admin $NAME $codeid '{}' | extract_txhash)
+    # set localnet AH deterministic address as param
+    txhash=$(elysd tx wasm init $OPTIONS --label "ts" --admin $NAME $codeid '{
+        "account_history_address": "elys17p9rzwnnfxcjp32un9ug7yhhzgtkhvl9jfksztgw5uh69wac2pgs98tvuy"
+    }' | extract_txhash)
 fi
 sleep 10
 export ts_contract_address=$(elysd q tx $txhash --node $NODE | extract_contract_address)
@@ -97,7 +102,9 @@ sleep 10
 codeid=$(elysd q tx $txhash --node $NODE | extract_code_id)
 echo "ah code id: $codeid"
 if [ -n "$AH_CONTRACT_ADDRESS" ]; then
-    txhash=$(elysd tx wasm migrate $OPTIONS $AH_CONTRACT_ADDRESS $codeid '{}' | extract_txhash)
+    txhash=$(elysd tx wasm migrate $OPTIONS $AH_CONTRACT_ADDRESS $codeid '{
+        "trade_shield_address": "'"$TS_CONTRACT_ADDRESS"'"
+    }' | extract_txhash)
 else
     txhash=$(elysd tx wasm init $OPTIONS --label "ah" --admin $NAME $codeid '{
         "limit": 300,

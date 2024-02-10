@@ -11,9 +11,14 @@ use elys_bindings::{
 
 pub fn get_all_orders(
     querier: &QuerierWrapper<ElysQuery>,
-    trade_shield_address: &String,
+    trade_shield_address: &Option<String>,
     owner: &String,
 ) -> StdResult<Vec<Coin>> {
+    let trade_shield_address = match trade_shield_address {
+        Some(trade_shield_address) => trade_shield_address,
+        None => return Ok(vec![]),
+    };
+
     let spot_order: GetSpotOrdersResp = querier
         .query_wasm_smart(
             trade_shield_address,

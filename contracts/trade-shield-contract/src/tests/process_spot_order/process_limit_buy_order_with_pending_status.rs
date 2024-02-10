@@ -325,6 +325,7 @@ fn process_limit_buy_order_with_pending_status() {
 
     // Create a mock message to instantiate the contract with the dummy order.
     let instantiate_msg = InstantiateMockMsg {
+        account_history_address: None,
         spot_orders: vec![order],
         perpetual_orders: vec![],
     };

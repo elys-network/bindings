@@ -1,5 +1,7 @@
+use crate::helper::get_discount;
+
 use super::*;
-use cosmwasm_std::{Decimal, Int128, SubMsg};
+use cosmwasm_std::{Int128, SubMsg};
 use msg::ExecuteMsg;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -127,7 +129,7 @@ pub fn execute(
                 routes,
                 token_in: info.funds[0].clone(),
                 token_out_min_amount: Int128::zero(),
-                discount: Decimal::zero(),
+                discount: get_discount(&deps.as_ref(), info.sender.to_string())?,
                 recipient: info.sender.into_string(),
             };
 

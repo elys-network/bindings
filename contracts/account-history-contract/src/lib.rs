@@ -1,9 +1,12 @@
 pub mod entry_point;
-pub mod msg;
-pub mod types;
+
+pub use elys_bindings::account_history::msg;
+pub use elys_bindings::account_history::types;
+
 pub mod utils;
 
 mod action;
+
 mod error;
 mod states;
 

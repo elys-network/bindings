@@ -1,4 +1,4 @@
-use crate::types::TotalBalance;
+use crate::account_history::types::TotalBalance;
 
 use cosmwasm_schema::cw_serde;
 

@@ -1,6 +1,6 @@
+use crate::{query_resp::OracleAssetInfoResponse, types::OracleAssetInfo, ElysQuerier};
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal, StdError, StdResult};
-use elys_bindings::{query_resp::OracleAssetInfoResponse, types::OracleAssetInfo, ElysQuerier};
 
 #[cw_serde]
 pub struct CoinValue {

@@ -10,6 +10,7 @@ use elys_bindings::{ElysMsg, ElysQuery};
 pub struct InstantiateMockMsg {
     pub spot_orders: Vec<SpotOrder>,
     pub perpetual_orders: Vec<PerpetualOrder>,
+    pub account_history_address: Option<String>,
 }
 
 pub fn instantiate(
@@ -32,6 +33,7 @@ pub fn instantiate(
     }
     MAX_REPLY_ID.save(deps.storage, &0)?;
     SPOT_ORDER_MAX_ID.save(deps.storage, &0)?;
+    ACCOUNT_HISTORY_ADDRESS.save(deps.storage, &msg.account_history_address)?;
 
     Ok(Response::new())
 }

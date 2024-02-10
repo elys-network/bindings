@@ -3,7 +3,7 @@ use cosmwasm_std::{
 };
 use elys_bindings::query_resp::AmmSwapEstimationByDenomResponse;
 
-use crate::msg::ReplyType;
+use crate::{helper::get_discount, msg::ReplyType};
 
 use super::*;
 
@@ -34,11 +34,13 @@ pub fn create_spot_order(
         &info.funds[0].denom,
     )?;
 
+    let discount = get_discount(&deps.as_ref(), info.sender.to_string())?;
+
     let AmmSwapEstimationByDenomResponse { in_route, .. } = querier.amm_swap_estimation_by_denom(
         &info.funds[0],
         &order_source_denom,
         &order_target_denom,
-        &Decimal::zero(),
+        &discount,
     )?;
     let spot_order_max_id = SPOT_ORDER_MAX_ID.load(deps.storage)?;
     let order_id = match spot_order_max_id.checked_add(1) {
@@ -68,6 +70,7 @@ pub fn create_spot_order(
         env.contract.address.as_str(),
         &new_order,
         deps.storage,
+        discount,
         in_route.unwrap(),
     )?;
 
@@ -118,6 +121,7 @@ fn create_resp(
     sender: &str,
     new_order: &SpotOrder,
     storage: &mut dyn Storage,
+    discount: Decimal,
     in_route: Vec<SwapAmountInRoute>,
 ) -> StdResult<Response<ElysMsg>> {
     let resp = Response::new().add_event(
@@ -148,7 +152,7 @@ fn create_resp(
         &new_order.order_amount,
         &in_route,
         Int128::zero(),
-        Decimal::zero(),
+        discount,
         &new_order.owner_address,
     );
 

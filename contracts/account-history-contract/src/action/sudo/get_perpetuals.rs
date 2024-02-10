@@ -6,10 +6,15 @@ use crate::types::{PerpetualAsset, PerpetualAssets};
 
 pub fn get_perpetuals(
     deps: Deps<ElysQuery>,
-    trade_shield_address: String,
+    trade_shield_address: Option<String>,
     usdc_denom: &String,
     address: String,
 ) -> StdResult<PerpetualAssets> {
+    let trade_shield_address = match trade_shield_address {
+        Some(trade_shield_address) => trade_shield_address,
+        None => return Ok(PerpetualAssets::default()),
+    };
+
     let GetPerpetualPositionsForAddressResp { mtps, .. } = deps
         .querier
         .query_wasm_smart(

@@ -1,7 +1,7 @@
-use crate::types::Portfolio;
-
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::SignedDecimal256;
+
+use crate::account_history::types::Portfolio;
 
 #[cw_serde]
 pub struct GetPortfolioResp {

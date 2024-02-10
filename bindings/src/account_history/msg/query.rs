@@ -1,18 +1,18 @@
 #[allow(unused_imports)]
+use super::super::types::{AccountSnapshot, PerpetualAssets};
+#[allow(unused_imports)]
 use super::query_resp::*;
 #[allow(unused_imports)]
-use crate::types::{AccountSnapshot, PerpetualAssets};
-use cosmwasm_schema::{cw_serde, QueryResponses};
-#[cfg(feature = "debug")]
-use cosmwasm_std::{Coin, Decimal};
-#[allow(unused_imports)]
-use elys_bindings::query_resp::{
+use crate::query_resp::{
     AuthAddressesResponse, BalanceBorrowed, QueryStakedPositionResponse,
     QueryUnstakedPositionResponse, QueryVestingInfoResponse, StableStakeParamsData,
     StakedAvailable,
 };
 #[allow(unused_imports)]
-use elys_bindings::types::{BalanceAvailable, PageRequest};
+use crate::types::{BalanceAvailable, PageRequest};
+use cosmwasm_schema::{cw_serde, QueryResponses};
+#[cfg(feature = "debug")]
+use cosmwasm_std::{Coin, Decimal};
 
 #[cw_serde]
 #[derive(QueryResponses)]
