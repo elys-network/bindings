@@ -19,14 +19,20 @@ fn successful_process_stop_loss_order() {
             "btc",
             Decimal::from_atomics(Uint128::new(30000), 0).unwrap(),
         ),
-        Price::new("usdc", Decimal::from_atomics(Uint128::new(1), 0).unwrap()),
+        Price::new(
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+            Decimal::from_atomics(Uint128::new(1), 0).unwrap(),
+        ),
     ];
     let prices_at_t1 = vec![
         Price::new(
             "btc",
             Decimal::from_atomics(Uint128::new(20000), 0).unwrap(),
         ),
-        Price::new("usdc", Decimal::from_atomics(Uint128::new(1), 0).unwrap()),
+        Price::new(
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+            Decimal::from_atomics(Uint128::new(1), 0).unwrap(),
+        ),
     ];
 
     // Create a contract wrapper and store its code.
@@ -41,12 +47,13 @@ fn successful_process_stop_loss_order() {
         SpotOrderType::StopLoss,
         Some(OrderPrice {
             base_denom: "btc".to_string(),
-            quote_denom: "usdc".to_string(),
+            quote_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                .to_string(),
             rate: Decimal::from_str("20000").unwrap(), // Trigger price of 20,000 USDC per BTC.
         }),
         coin(2, "btc"), // 2 BTC to be sold.
         Addr::unchecked("user"),
-        "usdc".to_string(),
+        "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
         &BlockInfo {
             height: 50,
             time: Timestamp::from_seconds(600),
@@ -100,7 +107,10 @@ fn successful_process_stop_loss_order() {
     );
     assert_eq!(
         app.wrap()
-            .query_balance(&addr, "usdc")
+            .query_balance(
+                &addr,
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+            )
             .unwrap()
             .amount
             .u128(),
@@ -116,7 +126,10 @@ fn successful_process_stop_loss_order() {
     );
     assert_eq!(
         app.wrap()
-            .query_balance("user", "usdc")
+            .query_balance(
+                "user",
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+            )
             .unwrap()
             .amount
             .u128(),
@@ -148,7 +161,10 @@ fn successful_process_stop_loss_order() {
     );
     assert_eq!(
         app.wrap()
-            .query_balance(&addr, "usdc")
+            .query_balance(
+                &addr,
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+            )
             .unwrap()
             .amount
             .u128(),
@@ -164,7 +180,10 @@ fn successful_process_stop_loss_order() {
     );
     assert_eq!(
         app.wrap()
-            .query_balance("user", "usdc")
+            .query_balance(
+                "user",
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+            )
             .unwrap()
             .amount
             .u128(),

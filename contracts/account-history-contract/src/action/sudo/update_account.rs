@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use chrono::Days;
 use cosmwasm_std::{
-    coin, BlockInfo, Coin, DecCoin, Decimal, Decimal256, DepsMut, Env, Response, StdError,
-    StdResult, Timestamp, Uint128,
+    BlockInfo, Coin, DecCoin, Decimal, Decimal256, DepsMut, Env, Response, StdError, StdResult,
+    Timestamp, Uint128,
 };
 use cw_utils::Expiration;
 
@@ -55,7 +55,6 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
         .map_err(|_| StdError::generic_err("an error occurred while getting eden denom"))?;
     let eden_decimal = u64::checked_pow(10, eden_denom_entry.entry.decimals as u32).unwrap();
 
-    let discount = Decimal::zero();
     let usdc_oracle_price = querier
         .get_oracle_price(
             usdc_display_denom.clone(),
@@ -68,13 +67,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
         .price
         .checked_div(Decimal::from_atomics(Uint128::new(usdc_decimal as u128), 0).unwrap())
         .unwrap();
-    let uelys_price_in_uusdc = querier.get_amm_price_by_denom(
-        coin(
-            Uint128::new(1000000).u128(),
-            ElysDenom::Elys.as_str().to_string(),
-        ),
-        discount,
-    )?;
+    let uelys_price_in_uusdc = querier.get_asset_price(ElysDenom::Elys.as_str())?;
 
     // APR section
     let usdc_apr_usdc = querier

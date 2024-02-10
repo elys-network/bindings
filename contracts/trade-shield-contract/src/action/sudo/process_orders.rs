@@ -53,7 +53,7 @@ pub fn process_orders(
             &spot_order.order_target_denom,
             &Decimal::zero(),
         ) {
-            Ok(amm_swap_estimation) => amm_swap_estimation,
+            Ok(market_price) => market_price,
             Err(_) => {
                 let mut order = spot_order.to_owned();
                 order.status = Status::Canceled;
@@ -67,7 +67,25 @@ pub fn process_orders(
             }
         };
 
-        if check_spot_order(&spot_order, &amm_swap_estimation) {
+        let market_price = match querier.get_asset_price_from_denom_in_to_denom_out(
+            &spot_order.order_amount.denom,
+            &spot_order.order_target_denom,
+        ) {
+            Ok(market_price) => market_price,
+            Err(_) => {
+                let mut order = spot_order.to_owned();
+                order.status = Status::Canceled;
+                bank_msgs.push(BankMsg::Send {
+                    to_address: order.owner_address.to_string(),
+                    amount: vec![order.order_amount.clone()],
+                });
+                PENDING_SPOT_ORDER.remove(deps.storage, order.order_id);
+                SPOT_ORDER.save(deps.storage, order.order_id, &order)?;
+                continue;
+            }
+        };
+
+        if check_spot_order(&spot_order, market_price) {
             process_spot_order(
                 spot_order,
                 &mut submsgs,
@@ -99,13 +117,11 @@ pub fn process_orders(
             continue;
         }
 
-        let amm_swap_estimation = match querier.amm_swap_estimation_by_denom(
-            &perpetual_order.collateral,
+        let market_price = match querier.get_asset_price_from_denom_in_to_denom_out(
             &perpetual_order.collateral.denom,
             &perpetual_order.trading_asset,
-            &Decimal::zero(),
         ) {
-            Ok(amm_swap_estimation) => amm_swap_estimation,
+            Ok(market_price) => market_price,
             Err(_) => {
                 order.status = Status::Canceled;
                 PENDING_PERPETUAL_ORDER.remove(deps.storage, order.order_id);
@@ -119,6 +135,7 @@ pub fn process_orders(
                 continue;
             }
         };
+
         if order.order_type != PerpetualOrderType::LimitOpen {
             match querier.mtp(order.owner.clone(), order.position_id.clone().unwrap()) {
                 Ok(mtp) => match mtp.mtp {
@@ -139,7 +156,7 @@ pub fn process_orders(
             };
         }
 
-        if check_perpetual_order(&perpetual_order, amm_swap_estimation) {
+        if check_perpetual_order(&perpetual_order, market_price) {
             process_perpetual_order(
                 perpetual_order,
                 &mut submsgs,
@@ -222,20 +239,14 @@ fn process_perpetual_order(
     Ok(())
 }
 
-fn check_perpetual_order(
-    order: &PerpetualOrder,
-    amm_swap_estimation: AmmSwapEstimationByDenomResponse,
-) -> bool {
+fn check_perpetual_order(order: &PerpetualOrder, market_price: Decimal) -> bool {
     if order.order_type == PerpetualOrderType::MarketClose
         || order.order_type == PerpetualOrderType::MarketOpen
     {
         return false;
     }
 
-    let (order_price, market_price) = (
-        order.trigger_price.clone().unwrap().rate,
-        amm_swap_estimation.spot_price,
-    );
+    let (order_price, market_price) = (order.trigger_price.clone().unwrap().rate, market_price);
 
     match (&order.order_type, &order.position) {
         (PerpetualOrderType::LimitOpen, PerpetualPosition::Long) => market_price <= order_price,
@@ -248,10 +259,7 @@ fn check_perpetual_order(
     }
 }
 
-fn check_spot_order(
-    order: &SpotOrder,
-    amm_swap_estimation: &AmmSwapEstimationByDenomResponse,
-) -> bool {
+fn check_spot_order(order: &SpotOrder, market_price: Decimal) -> bool {
     if order.order_type == SpotOrderType::MarketBuy {
         return false;
     }
@@ -259,12 +267,12 @@ fn check_spot_order(
     let order_price = order.order_price.rate;
 
     let market_price = if order.order_type == SpotOrderType::LimitBuy {
-        match Decimal::one().checked_div(amm_swap_estimation.spot_price) {
+        match Decimal::one().checked_div(market_price.clone()) {
             Ok(market_price) => market_price,
             Err(_) => return false,
         }
     } else {
-        amm_swap_estimation.spot_price
+        market_price
     };
 
     match order.order_type {
@@ -349,7 +357,7 @@ fn calculate_token_out_min_amount(_order: &SpotOrder) -> Int128 {
 mod tests {
     use std::str::FromStr;
 
-    use cosmwasm_std::{coin, Addr, SignedDecimal, Timestamp};
+    use cosmwasm_std::{coin, Addr, Timestamp};
 
     use super::*;
 
@@ -375,20 +383,10 @@ mod tests {
             },
             // Initialize the rest of the SpotOrder fields here
         };
-        let amm_swap_estimation = AmmSwapEstimationByDenomResponse {
-            spot_price: Decimal::from_str("9.29").unwrap(),
-            in_route: None,
-            out_route: None,
-            amount: coin(1000000, "uatom"),
-            swap_fee: SignedDecimal::zero(),
-            discount: SignedDecimal::zero(),
-            available_liquidity: coin(1000000, "uatom"),
-            weight_balance_ratio: SignedDecimal::zero(),
-            price_impact: SignedDecimal::zero(),
-        };
+        let market_price = Decimal::from_str("9.29").unwrap();
 
         // Act
-        let result = check_spot_order(&spot_order, &amm_swap_estimation);
+        let result = check_spot_order(&spot_order, market_price);
 
         // Assert
         assert_eq!(result, false); // Change as needed
@@ -416,20 +414,9 @@ mod tests {
             },
             // Initialize the rest of the SpotOrder fields here
         };
-        let amm_swap_estimation = AmmSwapEstimationByDenomResponse {
-            spot_price: Decimal::from_str("9.29").unwrap(),
-            in_route: None,
-            out_route: None,
-            amount: coin(1000000, "usdc"),
-            swap_fee: SignedDecimal::zero(),
-            discount: SignedDecimal::zero(),
-            available_liquidity: coin(1000000, "usdc"),
-            weight_balance_ratio: SignedDecimal::zero(),
-            price_impact: SignedDecimal::zero(),
-        };
-
+        let market_price = Decimal::from_str("9.29").unwrap();
         // Act
-        let result = check_spot_order(&spot_order, &amm_swap_estimation);
+        let result = check_spot_order(&spot_order, market_price);
 
         // Assert
         assert_eq!(result, true); // Change as needed

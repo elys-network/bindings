@@ -443,13 +443,29 @@ impl Module for ElysModule {
                 };
                 Ok(to_json_binary(&resp)?)
             }
-            ElysQuery::OraclePrice { .. } => {
+            ElysQuery::OraclePrice { asset, .. } => {
+                let prices = PRICES.load(storage).unwrap();
+                let info = ASSET_INFO.load(storage).unwrap();
+
+                let asset_info = info
+                    .iter()
+                    .find(|i| i.band_ticker == asset)
+                    .cloned()
+                    .unwrap();
+
+                let price = prices
+                    .iter()
+                    .find(|price| price.asset == asset_info.denom)
+                    .cloned()
+                    .unwrap()
+                    .price;
+
                 let resp = QueryGetPriceResponse {
                     price: Price {
-                        asset: "ueden".to_string(),
-                        price: Decimal::zero(),
-                        source: "uelys".to_string(),
-                        provider: "uelys".to_string(),
+                        asset: asset.clone(),
+                        price,
+                        source: asset.clone(),
+                        provider: asset.clone(),
                         timestamp: 0,
                     },
                 };
