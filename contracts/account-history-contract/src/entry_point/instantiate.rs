@@ -24,7 +24,7 @@ pub fn instantiate(
 
     let limit = match msg.limit {
         Some(limit) => limit,
-        None => 10,
+        None => 100,
     };
 
     PAGINATION.save(
