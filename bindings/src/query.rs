@@ -33,6 +33,12 @@ pub enum ElysQuery {
     OraclePriceAll { pagination: PageRequest },
     #[returns(OracleAssetInfoResponse)]
     OracleAssetInfo { denom: String },
+    #[returns(QueryGetPriceResponse)]
+    OraclePrice {
+        asset: String,
+        source: String,
+        timestamp: u64,
+    },
     // Define PerpetualQuery
     #[returns(PerpetualQueryPositionsResponse)]
     PerpetualQueryPositions { pagination: PageRequest },
@@ -61,12 +67,6 @@ pub enum ElysQuery {
     AssetProfileEntryAll { pagination: Option<PageRequest> },
     #[returns(QueryAprResponse)]
     IncentiveApr { withdraw_type: i32, denom: String },
-    #[returns(QueryGetPriceResponse)]
-    OraclePrice {
-        asset: String,
-        source: String,
-        timestamp: u64,
-    },
     #[returns(BalanceAvailable)]
     CommitmentRewardsSubBucketBalanceOfDenom {
         address: String,

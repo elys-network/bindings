@@ -29,7 +29,7 @@ fn history() {
         OracleAssetInfo::new(
             "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
             "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
-            "".to_string(),
+            "USDC".to_string(),
             "".to_string(),
             2,
         ),
