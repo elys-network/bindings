@@ -33,6 +33,10 @@ pub enum QueryMsg {
     GetMembershipTier { user_address: String },
     #[returns(PerpetualAssets)]
     GetPerpetualAssets { user_address: String },
+    #[returns(Decimal)]
+    GetAssetPrice { asset: String },
+    #[returns(Decimal)]
+    GetAssetPriceFromDenomInToDenomOut { denom_in: String, denom_out: String },
 
     // debug only
     #[cfg(feature = "debug")]

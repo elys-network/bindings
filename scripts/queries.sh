@@ -205,6 +205,31 @@ function asset_info() {
     }'
 }
 
+# Get Asset Price
+function get_asset_price() {
+    asset=$1
+    printf "\n# Get Asset Price\n"
+    query_contract "$ah_contract_address" '{
+        "get_asset_price" : {
+            "asset": "'"$asset"'"
+        }
+    }'
+}
+
+# Get Asset Price From Denom In To Denom Out
+function get_asset_price_from_denom_in_to_denom_out() {
+    denom_in=$1
+    denom_out=$2
+    printf "\n# Get Asset Price From Denom In To Denom Outs\n"
+    query_contract "$ah_contract_address" '{
+        "get_asset_price_from_denom_in_to_denom_out": {
+            "denom_in": "'"$denom_in"'",
+            "denom_out": "'"$denom_out"'"
+        }
+    }'
+}
+
+
 # Get spot order
 function spot_order() {
     order_id=$1
@@ -526,6 +551,12 @@ case "$2" in
         ;;
     "get_stable_stake_params")
         get_stable_stake_params
+        ;;
+    "get_asset_price")
+        get_asset_price $3
+        ;;
+    "get_asset_price_from_denom_in_to_denom_out")
+        get_asset_price_from_denom_in_to_denom_out $3 $4
         ;;
 
     *)

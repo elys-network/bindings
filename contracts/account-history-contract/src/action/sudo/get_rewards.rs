@@ -53,10 +53,7 @@ pub fn get_rewards(deps: Deps<ElysQuery>, address: String) -> StdResult<GetRewar
                 if reward.denom == denom_ueden {
                     // if it is eden, we should elys denom instead of ueden as it is not available in LP pool and has the same value with elys.
                     let reward_in_elys = coin(reward.amount.u128(), denom_uelys.to_owned());
-                    let price = querier.get_amm_price_by_denom(
-                        coin(1000000, reward_in_elys.denom),
-                        Decimal::zero(),
-                    )?;
+                    let price = querier.get_asset_price(reward_in_elys.denom)?;
 
                     let amount = coin(
                         (price
@@ -64,10 +61,7 @@ pub fn get_rewards(deps: Deps<ElysQuery>, address: String) -> StdResult<GetRewar
                                 |_| StdError::generic_err(format!("failed to convert to decimal")),
                             )?)
                             .map_err(|e| {
-                                StdError::generic_err(format!(
-                                    "failed to get_amm_price_by_denom: {}",
-                                    e
-                                ))
+                                StdError::generic_err(format!("failed to get_asset_price: {}", e))
                             })?)
                         .to_uint_floor()
                         .u128(),
@@ -86,8 +80,7 @@ pub fn get_rewards(deps: Deps<ElysQuery>, address: String) -> StdResult<GetRewar
                 }
 
                 // We accumulate other denoms in a single usd.
-                let price = querier
-                    .get_amm_price_by_denom(coin(1000000, &reward.denom), Decimal::zero())?;
+                let price = querier.get_asset_price(reward.denom)?;
 
                 let amount = coin(
                     (price
@@ -95,10 +88,7 @@ pub fn get_rewards(deps: Deps<ElysQuery>, address: String) -> StdResult<GetRewar
                             StdError::generic_err(format!("failed to convert to decimal"))
                         })?)
                         .map_err(|e| {
-                            StdError::generic_err(format!(
-                                "failed to get_amm_price_by_denom: {}",
-                                e
-                            ))
+                            StdError::generic_err(format!("failed to get_asset_price: {}", e))
                         })?)
                     .to_uint_floor()
                     .u128(),

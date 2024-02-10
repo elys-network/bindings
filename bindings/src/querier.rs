@@ -1,7 +1,8 @@
 use std::str::FromStr;
 
 use cosmwasm_std::{
-    Coin, Decimal, QuerierWrapper, QueryRequest, SignedDecimal, SignedDecimal256, StdResult,
+    coin, Coin, Decimal, QuerierWrapper, QueryRequest, SignedDecimal, SignedDecimal256, StdError,
+    StdResult,
 };
 
 use crate::{
@@ -19,6 +20,7 @@ impl<'a> ElysQuerier<'a> {
     pub fn new(querier: &'a QuerierWrapper<'a, ElysQuery>) -> Self {
         ElysQuerier { querier }
     }
+
     pub fn oracle_get_all_prices(&self, pagination: &mut PageRequest) -> StdResult<Vec<Price>> {
         let prices_query = ElysQuery::oracle_get_all_prices(pagination.clone());
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(prices_query);
@@ -455,5 +457,56 @@ impl<'a> ElysQuerier<'a> {
 
         let resp: QueryEarnPoolResponse = self.querier.query(&request)?;
         Ok(resp)
+    }
+
+    pub fn get_asset_price(&self, asset: impl Into<String>) -> StdResult<Decimal> {
+        let asset: String = asset.into();
+
+        let QueryGetEntryResponse {
+            entry: Entry {
+                denom: usdc_denom, ..
+            },
+        } = self.get_asset_profile("uusdc".to_string())?;
+
+        if asset == usdc_denom {
+            return Ok(Decimal::one());
+        }
+
+        let band_ticker = match self.asset_info(asset.clone()) {
+            Ok(asset_info) => Some(asset_info.asset_info.band_ticker),
+            Err(_) => None,
+        };
+
+        if let Some(band_ticker) = band_ticker {
+            if let Ok(oracle_price) = self.get_oracle_price(band_ticker, "".to_string(), 0) {
+                return Ok(oracle_price.price.price);
+            }
+        }
+
+        // FIXME: convert first 1USDC to DENOM IN and use the result as input amount to convert DENOM IN to DENOM OUT
+
+        let spot_price = self
+            .get_amm_price_by_denom(coin(1000000, asset), Decimal::zero())
+            .map_err(|e| {
+                StdError::generic_err(format!("get_asset_price: spot price not found:{:?}", e))
+            })?;
+
+        Ok(spot_price)
+    }
+
+    pub fn get_asset_price_from_denom_in_to_denom_out(
+        &self,
+        denom_in: impl Into<String>,
+        denom_out: impl Into<String>,
+    ) -> StdResult<Decimal> {
+        let price_in = self.get_asset_price(denom_in)?;
+        let price_out = self.get_asset_price(denom_out)?;
+
+        price_in.checked_div(price_out).map_err(|e| {
+            StdError::generic_err(format!(
+                "get_asset_price_from_denom_in_to_denom_out: price calculation error : {:?}",
+                e
+            ))
+        })
     }
 }

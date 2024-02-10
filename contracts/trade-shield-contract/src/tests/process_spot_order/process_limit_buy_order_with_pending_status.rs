@@ -164,7 +164,19 @@ impl Module for ElysModuleWrapper {
 
                 Ok(to_json_binary(&resp)?)
             }
-            _ => panic!("not implemented"),
+            ElysQuery::OracleAssetInfo { .. } => {
+                Err(StdError::generic_err("not_implemented").into())
+            }
+            ElysQuery::AmmPriceByDenom { token_in, .. } => {
+                let spot_price = match token_in.denom.as_str() {
+                    "uelys" => Decimal::from_str("3.5").unwrap(),
+                    _ => panic!("price not found for {}", token_in.denom),
+                };
+
+                Ok(to_json_binary(&spot_price)?)
+            }
+
+            _ => panic!("not implemented {:?}", request),
         }
     }
 
