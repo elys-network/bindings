@@ -17,7 +17,7 @@ pub fn migrate(
 
     let limit = match msg.limit {
         Some(limit) => limit,
-        None => 10,
+        None => 5,
     };
 
     PAGINATION.save(
