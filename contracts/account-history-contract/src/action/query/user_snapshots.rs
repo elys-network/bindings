@@ -1,9 +1,9 @@
 use std::cmp::Ordering;
 
 use cosmwasm_std::{Deps, StdResult};
-use elys_bindings::ElysQuery;
+use elys_bindings::{account_history::types::AccountSnapshot, ElysQuery};
 
-use crate::{states::HISTORY, types::AccountSnapshot};
+use crate::states::HISTORY;
 
 pub fn user_snapshots(
     deps: Deps<ElysQuery>,

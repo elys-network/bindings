@@ -1,12 +1,13 @@
 use super::*;
 use crate::msg::query_resp::earn::GetEdenEarnProgramResp;
-use crate::types::{earn_program::eden_earn::EdenEarnProgram, AprElys, BalanceReward, ElysDenom};
-use cosmwasm_std::{Decimal, DepsMut};
+use cosmwasm_std::{Decimal, Deps};
+use elys_bindings::account_history::types::earn_program::EdenEarnProgram;
+use elys_bindings::account_history::types::{AprElys, BalanceReward, ElysDenom};
 use elys_bindings::types::VestingDetail;
 use elys_bindings::{query_resp::QueryAprResponse, types::EarnType, ElysQuerier, ElysQuery};
 
 pub fn get_eden_earn_program_details(
-    deps: &DepsMut<ElysQuery>,
+    deps: &Deps<ElysQuery>,
     address: Option<String>,
     asset: String,
     usdc_denom: String,

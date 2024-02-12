@@ -3,12 +3,12 @@ use core::panic;
 use crate::{
     msg::query_resp::GetPortfolioResp,
     states::HISTORY,
-    types::AccountSnapshot,
     utils::{get_raw_today, get_today},
 };
 use chrono::Days;
 use cosmwasm_std::{Deps, Env, SignedDecimal256, StdResult};
 use elys_bindings::{
+    account_history::types::AccountSnapshot,
     query_resp::{Entry, QueryGetEntryResponse},
     ElysQuerier, ElysQuery,
 };

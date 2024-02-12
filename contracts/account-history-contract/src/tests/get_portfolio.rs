@@ -2,7 +2,6 @@ use std::str::FromStr;
 
 use crate::entry_point::instantiate;
 use crate::msg::query_resp::GetPortfolioResp;
-use crate::types::{AccountSnapshot, Portfolio};
 use crate::{
     entry_point::{execute, query, sudo},
     msg::*,
@@ -14,6 +13,7 @@ use cosmwasm_std::{
 };
 use cw_multi_test::{AppResponse, BankSudo, BasicAppBuilder, ContractWrapper, Executor, Module};
 use cw_utils::Expiration;
+use elys_bindings::account_history::types::{AccountSnapshot, Portfolio};
 use elys_bindings::query_resp::{
     Entry, OracleAssetInfoResponse, QueryGetEntryResponse, QueryGetPriceResponse,
 };

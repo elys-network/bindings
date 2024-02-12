@@ -1,7 +1,7 @@
 use crate::states::HISTORY;
-use crate::types::AccountSnapshot;
 use crate::{msg::query_resp::StakedAssetsResponse, utils::get_today};
 use cosmwasm_std::{DecCoin, Decimal256, Deps, Env, StdResult};
+use elys_bindings::account_history::types::AccountSnapshot;
 use elys_bindings::{
     query_resp::{Entry, QueryGetEntryResponse},
     ElysQuerier, ElysQuery,

@@ -2,10 +2,6 @@ use std::str::FromStr;
 
 use crate::entry_point::instantiate;
 use crate::tests::get_staked_assets::query_resp::StakedAssetsResponse;
-use crate::types::earn_program::{
-    EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram,
-};
-use crate::types::{AprElys, AprUsdc, BalanceReward, StakedAssets};
 use crate::{
     entry_point::{execute, query, sudo},
     msg::*,
@@ -16,6 +12,10 @@ use cosmwasm_std::{
     Uint128,
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
+use elys_bindings::account_history::types::earn_program::{
+    EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram,
+};
+use elys_bindings::account_history::types::{AprElys, AprUsdc, BalanceReward, StakedAssets};
 use elys_bindings::query_resp::{
     BalanceBorrowed, Entry, Lockup, QueryAprResponse, QueryGetEntryResponse, QueryGetPriceResponse,
     QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryVestingInfoResponse,
@@ -344,13 +344,11 @@ impl Module for ElysModuleWrapper {
             }
             ElysQuery::CommitmentStakedBalanceOfDenom { denom, .. } => {
                 let resp: StakedAvailable = match denom.as_str() {
-                    "uusdc" => {
-                        StakedAvailable {
-                            usd_amount: Decimal::zero(),
-                            amount: Uint128::zero(),
-                            lockups: None,
-                        }
-                    }
+                    "uusdc" => StakedAvailable {
+                        usd_amount: Decimal::zero(),
+                        amount: Uint128::zero(),
+                        lockups: None,
+                    },
                     "uelys" => StakedAvailable {
                         usd_amount: Decimal::from_str("10000000").unwrap(),
                         amount: Uint128::new(10000000),

@@ -1,14 +1,14 @@
 use cosmwasm_std::{DecCoin, Decimal, Decimal256, Deps, Env, StdResult};
 use elys_bindings::{
+    account_history::types::CoinValue,
     query_resp::{Entry, QueryGetEntryResponse},
     ElysQuerier, ElysQuery,
 };
 
 use crate::{
     msg::query_resp::{GetLiquidAssetsResp, LiquidAsset},
-    states::HISTORY,
-    types::CoinValue,
-    utils::get_today,
+    states::{EXPIRATION, TRADE_SHIELD_ADDRESS},
+    types::AccountSnapshotGenerator,
 };
 
 pub fn get_liquid_assets(
@@ -17,25 +17,24 @@ pub fn get_liquid_assets(
     env: Env,
 ) -> StdResult<GetLiquidAssetsResp> {
     let querier = ElysQuerier::new(&deps.querier);
+
+    let expiration = EXPIRATION.load(deps.storage)?;
+    let trade_shield_address = TRADE_SHIELD_ADDRESS.load(deps.storage)?;
+
     let QueryGetEntryResponse {
         entry: Entry {
             denom: usdc_denom, ..
         },
     } = querier.get_asset_profile("uusdc".to_string())?;
 
-    let snapshots = match HISTORY.may_load(deps.storage, &user_address)? {
-        Some(snapshots) => snapshots,
-        None => {
-            return Ok(GetLiquidAssetsResp {
-                liquid_assets: vec![],
-                total_liquid_asset_balance: DecCoin::new(Decimal256::zero(), usdc_denom),
-            });
-        }
-    };
+    let generator = AccountSnapshotGenerator::new(&querier, trade_shield_address, expiration)?;
 
-    let today = get_today(&env.block);
-
-    let snapshot = match snapshots.get(&today) {
+    let snapshot = match generator.generate_account_snapshot_for_address(
+        &querier,
+        &deps,
+        &env,
+        &user_address,
+    )? {
         Some(snapshot) => snapshot,
         None => {
             return Ok(GetLiquidAssetsResp {

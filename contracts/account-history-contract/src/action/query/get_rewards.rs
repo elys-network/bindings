@@ -1,10 +1,9 @@
-use crate::{
-    msg::query_resp::GetRewardsResp, states::HISTORY, types::AccountSnapshot, utils::get_today,
-};
+use crate::{msg::query_resp::GetRewardsResp, states::HISTORY, utils::get_today};
 
 use cosmwasm_std::{Deps, Env, StdResult};
 
 use elys_bindings::{
+    account_history::types::AccountSnapshot,
     query_resp::{Entry, QueryGetEntryResponse},
     ElysQuerier, ElysQuery,
 };

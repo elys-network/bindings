@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use crate::entry_point::instantiate;
-use crate::types::AccountSnapshot;
 use crate::{
     entry_point::{execute, query, sudo},
     msg::*,
@@ -10,6 +9,7 @@ use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{coin, to_json_binary, Addr, BlockInfo, Decimal, Empty, StdError, Timestamp};
 use cw_multi_test::{AppResponse, BankSudo, BasicAppBuilder, ContractWrapper, Executor, Module};
 use cw_utils::Expiration;
+use elys_bindings::account_history::types::AccountSnapshot;
 use elys_bindings::query_resp::{
     Entry, OracleAssetInfoResponse, QueryGetEntryResponse, QueryGetPriceResponse,
 };

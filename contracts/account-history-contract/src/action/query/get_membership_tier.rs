@@ -1,6 +1,6 @@
-use crate::{msg::query_resp::MembershipTierResponse, states::HISTORY, types::AccountSnapshot};
+use crate::{msg::query_resp::MembershipTierResponse, states::HISTORY};
 use cosmwasm_std::{Deps, StdResult};
-use elys_bindings::ElysQuery;
+use elys_bindings::{account_history::types::AccountSnapshot, ElysQuery};
 
 pub fn get_membership_tier(
     deps: Deps<ElysQuery>,

@@ -211,6 +211,14 @@ pub struct QueryAprResponse {
     pub apr: Uint128,
 }
 
+impl Default for QueryAprResponse {
+    fn default() -> Self {
+        Self {
+            apr: Uint128::zero(),
+        }
+    }
+}
+
 #[cw_serde]
 pub struct QueryGetPriceResponse {
     pub price: Price,

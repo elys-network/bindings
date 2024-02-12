@@ -1,8 +1,7 @@
-use crate::{
-    msg::query_resp::GetTotalBalanceResp, states::HISTORY, types::AccountSnapshot, utils::get_today,
-};
+use crate::{msg::query_resp::GetTotalBalanceResp, states::HISTORY, utils::get_today};
 use cosmwasm_std::{Deps, Env, StdResult};
 use elys_bindings::{
+    account_history::types::AccountSnapshot,
     query_resp::{Entry, QueryGetEntryResponse},
     ElysQuerier, ElysQuery,
 };
