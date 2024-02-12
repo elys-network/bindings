@@ -25,8 +25,6 @@ use elys_bindings::{types::EarnType, ElysMsg, ElysQuerier, ElysQuery};
 pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<ElysMsg>> {
     let querier = ElysQuerier::new(&deps.querier);
 
-    let trade_shield_address = TRADE_SHIELD_ADDRESS.load(deps.storage)?;
-
     let mut pagination = PAGINATION.load(deps.storage)?;
     let expiration = EXPIRATION.load(deps.storage)?;
 
@@ -39,6 +37,21 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
 
     pagination.update(resp.pagination.next_key);
     PAGINATION.save(deps.storage, &pagination)?;
+
+    let today = get_today(&env.block);
+
+    let mut addresses_to_process: Vec<String> = vec![];
+    for address in resp.addresses {
+        if let Some(history) = HISTORY.may_load(deps.storage, &address)? {
+            if history.get(&today.clone()).is_some() {
+                // skip if the account has been updated today
+                continue;
+            }
+        }
+        addresses_to_process.push(address)
+    }
+
+    let trade_shield_address = TRADE_SHIELD_ADDRESS.load(deps.storage)?;
 
     // Read common variables before looping
     // To enhance querying speed.
@@ -134,14 +147,14 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
         )
         .map_err(|_| StdError::generic_err("an error occurred while getting edenb apr in elys"))?;
 
-    for address in resp.addresses {
+    for address in addresses_to_process.iter() {
         let mut history: HashMap<String, AccountSnapshot> =
             if let Some(histories) = HISTORY.may_load(deps.storage, &address)? {
                 update_history(histories, &env.block, &expiration)
             } else {
                 HashMap::new()
             };
-        let account_balances = deps.querier.query_all_balances(&address)?;
+        let account_balances = deps.querier.query_all_balances(address)?;
         let order_balances = get_all_orders(&deps.querier, &trade_shield_address, &address)?;
         let staked_response = get_staked_assets(
             &deps,
@@ -188,10 +201,8 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             &usdc_denom,
         )?;
 
-        let today = get_today(&env.block);
-
         if let Some(part) = new_part {
-            history.insert(today, part);
+            history.insert(today.clone(), part);
         }
         if history.is_empty() {
             HISTORY.remove(deps.storage, &address);

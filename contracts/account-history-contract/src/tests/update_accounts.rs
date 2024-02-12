@@ -3,7 +3,9 @@ use std::str::FromStr;
 use crate::msg::query_resp::UserValueResponse;
 use crate::msg::{InstantiateMsg, QueryMsg};
 use crate::{entry_point::*, msg::SudoMsg};
-use cosmwasm_std::{coins, Addr, Coin, DecCoin, Decimal, Decimal256, Uint128};
+use cosmwasm_std::{
+    coins, Addr, BlockInfo, Coin, DecCoin, Decimal, Decimal256, Timestamp, Uint128,
+};
 use cw_multi_test::{BankSudo, ContractWrapper, Executor, SudoMsg as AppSudo};
 use cw_utils::Expiration;
 use elys_bindings::types::{OracleAssetInfo, Price};
@@ -82,7 +84,9 @@ fn history() {
 
     let init_msg = InstantiateMsg {
         limit: Some(2),
-        expiration: Some(Expiration::AtHeight(2)),
+        expiration: Some(Expiration::AtTime(Timestamp::from_seconds(
+            7 * 24 * 60 * 60,
+        ))),
         trade_shield_address: Some(trade_shield_address.to_string()),
     };
 
@@ -99,13 +103,18 @@ fn history() {
 
     let update_msg = SudoMsg::ClockEndBlock {};
 
+    // t0
+    app.set_block(BlockInfo {
+        height: 1,
+        time: Timestamp::from_seconds(0 * 24 * 60 * 60),
+        chain_id: "elys-app".to_string(),
+    });
+
     app.wasm_sudo(addr.clone(), &update_msg).unwrap();
 
     let query_msg = QueryMsg::UserValue {
         user_address: "user-a".to_string(),
     };
-
-    app.next_block();
 
     let res: UserValueResponse = app.wrap().query_wasm_smart(&addr, &query_msg).unwrap();
 
@@ -123,15 +132,21 @@ fn history() {
     }))
     .unwrap();
 
+    // t1
+    app.set_block(BlockInfo {
+        height: 2,
+        time: Timestamp::from_seconds(1 * 24 * 60 * 60),
+        chain_id: "elys-app".to_string(),
+    });
+
     app.wasm_sudo(addr.clone(), &update_msg).unwrap();
-    app.next_block();
 
     let res: UserValueResponse = app.wrap().query_wasm_smart(&addr, &query_msg).unwrap();
 
     assert_eq!(
         res.value.liquid_asset.total_liquid_asset_balance,
         DecCoin::new(
-            Decimal256::from_atomics(Uint128::new(75), 1).unwrap(),
+            Decimal256::from_atomics(Uint128::new(45), 1).unwrap(),
             "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
         )
     ); // The previous value wasn't removed yet but wasn't read either since it's expired.
