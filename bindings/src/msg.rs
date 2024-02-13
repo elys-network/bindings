@@ -241,10 +241,10 @@ impl ElysMsg {
         }
     }
 
-    pub fn withdraw_rewards(delegator_address: String, witdhraw_type: EarnType) -> Self {
+    pub fn withdraw_rewards(delegator_address: String, withdraw_type: EarnType) -> Self {
         Self::IncentiveWithdrawRewards {
             delegator_address: delegator_address.to_owned(),
-            withdraw_type: witdhraw_type as i32,
+            withdraw_type: withdraw_type as i32,
         }
     }
 
