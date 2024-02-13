@@ -31,12 +31,13 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
 
     let mut addresses_to_process: Vec<String> = vec![];
     for address in resp.addresses {
-        if let Some(history) = HISTORY.may_load(deps.storage, &address)? {
-            if history.get(&today.clone()).is_some() {
-                // skip if the account has been updated today
-                continue;
-            }
-        }
+        // disable the filtering for now until the logic is moved to query level
+        // if let Some(history) = HISTORY.may_load(deps.storage, &address)? {
+        //     if history.get(&today.clone()).is_some() {
+        //         // skip if the account has been updated today
+        //         continue;
+        //     }
+        // }
         addresses_to_process.push(address)
     }
 
