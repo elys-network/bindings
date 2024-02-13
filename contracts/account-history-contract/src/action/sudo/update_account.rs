@@ -5,7 +5,7 @@ use cosmwasm_std::{BlockInfo, DepsMut, Env, Response, StdError, StdResult, Times
 use cw_utils::Expiration;
 
 use crate::{
-    states::{EXPIRATION, HISTORY, PAGINATION, TRADE_SHIELD_ADDRESS},
+    states::{HISTORY, PAGINATION},
     types::AccountSnapshotGenerator,
     utils::{get_raw_today, get_today},
 };
@@ -15,7 +15,6 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     let querier = ElysQuerier::new(&deps.querier);
 
     let mut pagination = PAGINATION.load(deps.storage)?;
-    let expiration = EXPIRATION.load(deps.storage)?;
 
     let resp = querier.accounts(Some(pagination.clone())).map_err(|e| {
         StdError::generic_err(format!(
@@ -31,26 +30,23 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
 
     let mut addresses_to_process: Vec<String> = vec![];
     for address in resp.addresses {
-        // disable the filtering for now until the logic is moved to query level
-        // if let Some(history) = HISTORY.may_load(deps.storage, &address)? {
-        //     if history.get(&today.clone()).is_some() {
-        //         // skip if the account has been updated today
-        //         continue;
-        //     }
-        // }
+        if let Some(history) = HISTORY.may_load(deps.storage, &address)? {
+            if history.get(&today.clone()).is_some() {
+                // skip if the account has been updated today
+                continue;
+            }
+        }
         addresses_to_process.push(address)
     }
 
-    let trade_shield_address = TRADE_SHIELD_ADDRESS.load(deps.storage)?;
-
     // Read common variables before looping
     // To enhance querying speed.
-    let generator = AccountSnapshotGenerator::new(&querier, trade_shield_address, expiration)?;
+    let generator = AccountSnapshotGenerator::new(&deps.as_ref())?;
 
     for address in addresses_to_process.iter() {
         let mut history: HashMap<String, AccountSnapshot> =
             if let Some(histories) = HISTORY.may_load(deps.storage, &address)? {
-                update_history(histories, &env.block, &expiration)
+                update_history(histories, &env.block, &generator.expiration)
             } else {
                 HashMap::new()
             };

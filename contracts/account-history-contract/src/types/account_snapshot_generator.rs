@@ -13,184 +13,47 @@ use elys_bindings::{
             earn_program::{
                 EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram,
             },
-            AccountSnapshot, CoinValue, ElysDenom, LiquidAsset, PerpetualAsset, PerpetualAssets,
-            Portfolio, Reward, StakedAssets, TotalBalance,
+            AccountSnapshot, CoinValue, ElysDenom, LiquidAsset, Metadata, PerpetualAsset,
+            PerpetualAssets, Portfolio, Reward, StakedAssets, TotalBalance,
         },
     },
-    query_resp::QueryAprResponse,
     trade_shield::{
-        msg::query_resp::{
-            GetPerpetualOrdersResp, GetPerpetualPositionsForAddressResp, GetSpotOrdersResp,
+        msg::{
+            query_resp::{
+                GetPerpetualOrdersResp, GetPerpetualPositionsForAddressResp, GetSpotOrdersResp,
+            },
+            QueryMsg::{GetPerpetualOrders, GetSpotOrders, PerpetualGetPositionsForAddress},
         },
-        msg::QueryMsg::{GetPerpetualOrders, GetSpotOrders, PerpetualGetPositionsForAddress},
         types::{PerpetualOrder, PerpetualOrderType, SpotOrder, Status},
     },
-    types::EarnType,
     ElysQuerier, ElysQuery,
 };
 
-use crate::action::query::{
-    get_eden_boost_earn_program_details, get_eden_earn_program_details,
-    get_elys_earn_program_details, get_usdc_earn_program_details,
+use crate::{
+    action::query::{
+        get_eden_boost_earn_program_details, get_eden_earn_program_details,
+        get_elys_earn_program_details, get_usdc_earn_program_details,
+    },
+    states::{EXPIRATION, METADATA, TRADE_SHIELD_ADDRESS},
 };
 
 #[cw_serde]
 pub struct AccountSnapshotGenerator {
     pub trade_shield_address: Option<String>,
     pub expiration: Expiration,
-    pub usdc_denom: String,
-    pub usdc_base_denom: String,
-    pub usdc_display_denom: String,
-    pub usdc_decimal: u64,
-    pub eden_decimal: u64,
-    pub uusdc_usd_price: Decimal,
-    pub uelys_price_in_uusdc: Decimal,
-    pub usdc_apr_usdc: QueryAprResponse,
-    pub eden_apr_usdc: QueryAprResponse,
-    pub usdc_apr_edenb: QueryAprResponse,
-    pub eden_apr_edenb: QueryAprResponse,
-    pub usdc_apr_eden: QueryAprResponse,
-    pub eden_apr_eden: QueryAprResponse,
-    pub edenb_apr_eden: QueryAprResponse,
-    pub usdc_apr_elys: QueryAprResponse,
-    pub eden_apr_elys: QueryAprResponse,
-    pub edenb_apr_elys: QueryAprResponse,
+    pub metadata: Metadata,
 }
 
 impl AccountSnapshotGenerator {
-    pub fn new(
-        querier: &ElysQuerier,
-        trade_shield_address: Option<String>,
-        expiration: Expiration,
-    ) -> StdResult<Self> {
-        let usdc_denom_entry = querier
-            .get_asset_profile(ElysDenom::Usdc.as_str().to_string())
-            .map_err(|_| StdError::generic_err("an error occurred while getting usdc denom"))?;
-        let usdc_denom = usdc_denom_entry.entry.denom;
-        let usdc_base_denom = usdc_denom_entry.entry.base_denom;
-        let usdc_display_denom = usdc_denom_entry.entry.display_name;
-        let usdc_decimal = u64::checked_pow(10, usdc_denom_entry.entry.decimals as u32).unwrap();
-
-        let eden_denom_entry = querier
-            .get_asset_profile(ElysDenom::Eden.as_str().to_string())
-            .map_err(|_| StdError::generic_err("an error occurred while getting eden denom"))?;
-        let usdc_oracle_price = querier
-            .get_oracle_price(
-                usdc_display_denom.clone(),
-                ElysDenom::AnySource.as_str().to_string(),
-                0,
-            )
-            .map_err(|_| StdError::generic_err("an error occurred while getting usdc price"))?;
+    pub fn new(deps: &Deps<ElysQuery>) -> StdResult<Self> {
+        let expiration = EXPIRATION.load(deps.storage)?;
+        let trade_shield_address = TRADE_SHIELD_ADDRESS.load(deps.storage)?;
+        let metadata = METADATA.load(deps.storage)?;
 
         Ok(Self {
             trade_shield_address,
             expiration,
-            usdc_denom,
-            usdc_base_denom,
-            usdc_display_denom,
-            usdc_decimal,
-            eden_decimal: u64::checked_pow(10, eden_denom_entry.entry.decimals as u32).unwrap(),
-            uusdc_usd_price: usdc_oracle_price
-                .price
-                .price
-                .checked_div(Decimal::from_atomics(Uint128::new(usdc_decimal as u128), 0).unwrap())
-                .unwrap(),
-            uelys_price_in_uusdc: querier.get_asset_price(ElysDenom::Elys.as_str())?,
-
-            usdc_apr_usdc: QueryAprResponse::default(),
-            eden_apr_usdc: QueryAprResponse::default(),
-            usdc_apr_edenb: QueryAprResponse::default(),
-            eden_apr_edenb: QueryAprResponse::default(),
-            usdc_apr_eden: QueryAprResponse::default(),
-            eden_apr_eden: QueryAprResponse::default(),
-            edenb_apr_eden: QueryAprResponse::default(),
-            usdc_apr_elys: QueryAprResponse::default(),
-            eden_apr_elys: QueryAprResponse::default(),
-            edenb_apr_elys: QueryAprResponse::default(),
-            // // APR section
-            // usdc_apr_usdc: querier
-            //     .get_incentive_apr(
-            //         EarnType::UsdcProgram as i32,
-            //         ElysDenom::Usdc.as_str().to_string(),
-            //     )
-            //     .map_err(|_| {
-            //         StdError::generic_err("an error occurred while getting usdc apr in usdc")
-            //     })?,
-            // eden_apr_usdc: querier
-            //     .get_incentive_apr(
-            //         EarnType::UsdcProgram as i32,
-            //         ElysDenom::Eden.as_str().to_string(),
-            //     )
-            //     .map_err(|_| {
-            //         StdError::generic_err("an error occurred while getting eden apr in usdc")
-            //     })?,
-
-            // usdc_apr_edenb: querier
-            //     .get_incentive_apr(
-            //         EarnType::EdenBProgram as i32,
-            //         ElysDenom::Usdc.as_str().to_string(),
-            //     )
-            //     .map_err(|_| {
-            //         StdError::generic_err("an error occurred while getting usdc apr in edenb")
-            //     })?,
-            // eden_apr_edenb: querier
-            //     .get_incentive_apr(
-            //         EarnType::EdenBProgram as i32,
-            //         ElysDenom::Eden.as_str().to_string(),
-            //     )
-            //     .map_err(|_| {
-            //         StdError::generic_err("an error occurred while getting eden apr in edenb")
-            //     })?,
-
-            // usdc_apr_eden: querier
-            //     .get_incentive_apr(
-            //         EarnType::EdenProgram as i32,
-            //         ElysDenom::Usdc.as_str().to_string(),
-            //     )
-            //     .map_err(|_| {
-            //         StdError::generic_err("an error occurred while getting usdc apr in eden")
-            //     })?,
-            // eden_apr_eden: querier
-            //     .get_incentive_apr(
-            //         EarnType::EdenProgram as i32,
-            //         ElysDenom::Eden.as_str().to_string(),
-            //     )
-            //     .map_err(|_| {
-            //         StdError::generic_err("an error occurred while getting eden apr in eden")
-            //     })?,
-            // edenb_apr_eden: querier
-            //     .get_incentive_apr(
-            //         EarnType::EdenProgram as i32,
-            //         ElysDenom::EdenBoost.as_str().to_string(),
-            //     )
-            //     .map_err(|_| {
-            //         StdError::generic_err("an error occurred while getting edenb apr in eden")
-            //     })?,
-
-            // usdc_apr_elys: querier
-            //     .get_incentive_apr(
-            //         EarnType::ElysProgram as i32,
-            //         ElysDenom::Usdc.as_str().to_string(),
-            //     )
-            //     .map_err(|_| {
-            //         StdError::generic_err("an error occurred while getting usdc apr in elys")
-            //     })?,
-            // eden_apr_elys: querier
-            //     .get_incentive_apr(
-            //         EarnType::ElysProgram as i32,
-            //         ElysDenom::Eden.as_str().to_string(),
-            //     )
-            //     .map_err(|_| {
-            //         StdError::generic_err("an error occurred while getting eden apr in elys")
-            //     })?,
-            // edenb_apr_elys: querier
-            //     .get_incentive_apr(
-            //         EarnType::ElysProgram as i32,
-            //         ElysDenom::EdenBoost.as_str().to_string(),
-            //     )
-            //     .map_err(|_| {
-            //         StdError::generic_err("an error occurred while getting edenb apr in elys")
-            //     })?,
+            metadata,
         })
     }
 
@@ -201,57 +64,27 @@ impl AccountSnapshotGenerator {
         env: &Env,
         address: &String,
     ) -> StdResult<Option<AccountSnapshot>> {
-        let account_balances = deps.querier.query_all_balances(address)?;
-        let order_balances =
-            self.get_all_orders(&deps.querier, &self.trade_shield_address, &address)?;
-        // let staked_response = self.get_staked_assets(
-        //     &deps,
-        //     &address,
-        //     self.uusdc_usd_price,
-        //     self.uelys_price_in_uusdc,
-        //     self.usdc_denom.to_owned(),
-        //     self.usdc_base_denom.to_owned(),
-        //     self.eden_decimal,
-        //     self.usdc_apr_usdc.to_owned(),
-        //     self.eden_apr_usdc.to_owned(),
-        //     self.usdc_apr_edenb.to_owned(),
-        //     self.eden_apr_edenb.to_owned(),
-        //     self.usdc_apr_eden.to_owned(),
-        //     self.eden_apr_eden.to_owned(),
-        //     self.edenb_apr_eden.to_owned(),
-        //     self.usdc_apr_elys.to_owned(),
-        //     self.eden_apr_elys.to_owned(),
-        //     self.edenb_apr_elys.to_owned(),
-        // );
-        // let rewards_response = self.get_rewards(&deps, address.clone())?;
-        // let perpetual_response = match self.get_perpetuals(
-        //     &deps,
-        //     self.trade_shield_address.clone(),
-        //     &self.usdc_denom,
-        //     address.clone(),
-        // ) {
-        //     Ok(perpetual_response) => perpetual_response,
-        //     Err(_) => PerpetualAssets {
-        //         total_perpetual_asset_balance: DecCoin::new(Decimal256::zero(), &self.usdc_denom),
-        //         perpetual_asset: vec![],
-        //     },
-        // };
+        let liquid_assets_response = self.get_liquid_assets(&deps, querier, &address)?;
+        let staked_assets_response = self.get_staked_assets(&deps, &querier, &address)?;
+        let rewards_response = self.get_rewards(&deps, address.clone())?;
+        let perpetual_response = match self.get_perpetuals(&deps, address.clone()) {
+            Ok(perpetual_response) => perpetual_response,
+            Err(_) => PerpetualAssets {
+                total_perpetual_asset_balance: DecCoin::new(
+                    Decimal256::zero(),
+                    &self.metadata.usdc_denom,
+                ),
+                perpetual_asset: vec![],
+            },
+        };
 
         let new_part = self.create_new_part(
             &env.block,
-            &querier,
-            &self.expiration,
-            account_balances,
-            order_balances,
-            StakedAssetsResponse {
-                total_staked_balance: DecCoin::new(Decimal256::zero(), &self.usdc_denom),
-                staked_assets: StakedAssets::default(),
-            },
-            GetRewardsResp {
-                rewards: Reward::default(),
-            },
-            PerpetualAssets::default(),
-            &self.usdc_denom,
+            liquid_assets_response,
+            staked_assets_response,
+            rewards_response,
+            perpetual_response,
+            &self.metadata.usdc_denom,
         );
 
         return new_part;
@@ -260,43 +93,102 @@ impl AccountSnapshotGenerator {
     pub fn create_new_part(
         &self,
         block: &BlockInfo,
-        querier: &ElysQuerier<'_>,
-        expiration: &Expiration,
-        account_balances: Vec<Coin>,
-        orders_balances: Vec<Coin>,
-        staked_assets_resp: StakedAssetsResponse,
+        liquid_assets_response: LiquidAsset,
+        staked_assets_response: StakedAssetsResponse,
         rewards_response: GetRewardsResp,
         perpetual_response: PerpetualAssets,
         usdc_denom: &String,
     ) -> StdResult<Option<AccountSnapshot>> {
-        let date = match expiration {
+        let date = match self.expiration {
             Expiration::AtHeight(_) => Expiration::AtHeight(block.height),
             Expiration::AtTime(_) => Expiration::AtTime(block.time),
             Expiration::Never {} => panic!("never expire"),
         };
 
+        let reward = rewards_response.rewards;
+        let portfolio_usd = DecCoin::new(
+            liquid_assets_response
+                .total_liquid_asset_balance
+                .amount
+                .checked_add(Decimal256::from(
+                    staked_assets_response.total_staked_balance.amount.clone(),
+                ))?
+                .checked_add(
+                    perpetual_response
+                        .total_perpetual_asset_balance
+                        .amount
+                        .clone(),
+                )?,
+            usdc_denom,
+        );
+        let reward_usd: DecCoin =
+            DecCoin::new(Decimal256::from(reward.clone().total_usd), usdc_denom);
+        let total_balance = DecCoin::new(
+            portfolio_usd.amount.checked_add(reward_usd.amount)?,
+            usdc_denom,
+        );
+
+        // Adds the records all the time as we should return data to the FE even if it is 0 balanced.
+        Ok(Some(AccountSnapshot {
+            date,
+            total_balance: TotalBalance {
+                total_balance,
+                portfolio_usd: portfolio_usd.clone(),
+                reward_usd,
+            },
+            portfolio: Portfolio {
+                balance_usd: portfolio_usd,
+                liquid_assets_usd: liquid_assets_response.total_liquid_asset_balance.clone(),
+                staked_committed_usd: DecCoin::new(
+                    Decimal256::from(staked_assets_response.total_staked_balance.amount),
+                    usdc_denom,
+                ),
+                liquidity_positions_usd: DecCoin::new(Decimal256::zero(), usdc_denom),
+                leverage_lp_usd: DecCoin::new(Decimal256::zero(), usdc_denom),
+                perpetual_assets_usd: perpetual_response.total_perpetual_asset_balance.clone(),
+                usdc_earn_usd: DecCoin::new(Decimal256::zero(), usdc_denom),
+                borrows_usd: DecCoin::new(Decimal256::zero(), usdc_denom),
+            },
+            reward,
+            liquid_asset: liquid_assets_response,
+            staked_assets: staked_assets_response.staked_assets,
+            perpetual_assets: perpetual_response,
+        }))
+    }
+
+    pub fn get_liquid_assets(
+        &self,
+        deps: &Deps<ElysQuery>,
+        querier: &ElysQuerier,
+        address: &String,
+    ) -> StdResult<LiquidAsset> {
+        let account_balances = deps.querier.query_all_balances(address)?;
+        let orders_balances =
+            self.get_all_orders(&deps.querier, &self.trade_shield_address, &address)?;
         let available_asset_balance: Vec<CoinValue> = account_balances
             .iter()
-            .filter_map(
-                |coin| match CoinValue::from_coin(coin, querier, usdc_denom) {
+            .filter_map(|coin| {
+                match CoinValue::from_coin(coin, querier, &self.metadata.usdc_denom) {
                     Ok(res) => Some(res),
                     Err(_) => None,
-                },
-            )
+                }
+            })
             .collect();
 
         let in_orders_asset_balance: Vec<CoinValue> = orders_balances
             .iter()
-            .filter_map(
-                |coin| match CoinValue::from_coin(coin, querier, usdc_denom) {
+            .filter_map(|coin| {
+                match CoinValue::from_coin(coin, querier, &self.metadata.usdc_denom) {
                     Ok(res) => Some(res),
                     Err(_) => None,
-                },
-            )
+                }
+            })
             .collect();
 
-        let mut total_available_balance = DecCoin::new(Decimal256::zero(), usdc_denom);
-        let mut total_in_orders_balance = DecCoin::new(Decimal256::zero(), usdc_denom);
+        let mut total_available_balance =
+            DecCoin::new(Decimal256::zero(), &self.metadata.usdc_denom);
+        let mut total_in_orders_balance =
+            DecCoin::new(Decimal256::zero(), &self.metadata.usdc_denom);
 
         for balance in &available_asset_balance {
             total_available_balance.amount = total_available_balance
@@ -342,86 +234,41 @@ impl AccountSnapshotGenerator {
                     .map(|v| v.amount_usdc)
                     .fold(Decimal::zero(), |acc, item| acc + item),
             ),
-            usdc_denom,
+            &self.metadata.usdc_denom,
         );
 
-        let reward = rewards_response.rewards;
-        let portfolio_usd = DecCoin::new(
-            total_liquid_asset_balance
-                .amount
-                .checked_add(Decimal256::from(
-                    staked_assets_resp.total_staked_balance.amount.clone(),
-                ))?
-                .checked_add(
-                    perpetual_response
-                        .total_perpetual_asset_balance
-                        .amount
-                        .clone(),
-                )?,
-            usdc_denom,
-        );
-        let reward_usd: DecCoin =
-            DecCoin::new(Decimal256::from(reward.clone().total_usd), usdc_denom);
-        let total_balance = DecCoin::new(
-            portfolio_usd.amount.checked_add(reward_usd.amount)?,
-            usdc_denom,
-        );
-
-        // Adds the records all the time as we should return data to the FE even if it is 0 balanced.
-        Ok(Some(AccountSnapshot {
-            date,
-            total_balance: TotalBalance {
-                total_balance,
-                portfolio_usd: portfolio_usd.clone(),
-                reward_usd,
-            },
-            portfolio: Portfolio {
-                balance_usd: portfolio_usd,
-                liquid_assets_usd: total_liquid_asset_balance.clone(),
-                staked_committed_usd: DecCoin::new(
-                    Decimal256::from(staked_assets_resp.total_staked_balance.amount),
-                    usdc_denom,
-                ),
-                liquidity_positions_usd: DecCoin::new(Decimal256::zero(), usdc_denom),
-                leverage_lp_usd: DecCoin::new(Decimal256::zero(), usdc_denom),
-                perpetual_assets_usd: perpetual_response.total_perpetual_asset_balance.clone(),
-                usdc_earn_usd: DecCoin::new(Decimal256::zero(), usdc_denom),
-                borrows_usd: DecCoin::new(Decimal256::zero(), usdc_denom),
-            },
-            reward,
-            liquid_asset: LiquidAsset {
-                total_liquid_asset_balance,
-                total_available_balance,
-                total_in_orders_balance,
-                available_asset_balance,
-                in_orders_asset_balance,
-                total_value_per_asset,
-            },
-            staked_assets: staked_assets_resp.staked_assets,
-            perpetual_assets: perpetual_response,
-        }))
+        Ok(LiquidAsset {
+            total_liquid_asset_balance,
+            total_available_balance,
+            total_in_orders_balance,
+            available_asset_balance,
+            in_orders_asset_balance,
+            total_value_per_asset,
+        })
     }
 
     pub fn get_staked_assets(
         &self,
         deps: &Deps<ElysQuery>,
+        querier: &ElysQuerier,
         address: &String,
-        uusdc_usd_price: Decimal,
-        uelys_price_in_uusdc: Decimal,
-        usdc_denom: String,
-        usdc_base_denom: String,
-        eden_decimal: u64,
-        usdc_apr_usdc: QueryAprResponse,
-        eden_apr_usdc: QueryAprResponse,
-        usdc_apr_edenb: QueryAprResponse,
-        eden_apr_edenb: QueryAprResponse,
-        usdc_apr_eden: QueryAprResponse,
-        eden_apr_eden: QueryAprResponse,
-        edenb_apr_eden: QueryAprResponse,
-        usdc_apr_elys: QueryAprResponse,
-        eden_apr_elys: QueryAprResponse,
-        edenb_apr_elys: QueryAprResponse,
-    ) -> StakedAssetsResponse {
+    ) -> StdResult<StakedAssetsResponse> {
+        let usdc_oracle_price = querier
+            .get_oracle_price(
+                self.metadata.usdc_display_denom.clone(),
+                ElysDenom::AnySource.as_str().to_string(),
+                0,
+            )
+            .map_err(|_| StdError::generic_err("an error occurred while getting usdc price"))?;
+        let uusdc_usd_price = usdc_oracle_price
+            .price
+            .price
+            .checked_div(
+                Decimal::from_atomics(Uint128::new(self.metadata.usdc_decimal as u128), 0).unwrap(),
+            )
+            .unwrap();
+        let uelys_price_in_uusdc = querier.get_asset_price(ElysDenom::Elys.as_str())?;
+
         // create staked_assets variable that is a StakedAssets struct
         let mut staked_assets = StakedAssets::default();
         let mut total_balance = Decimal::zero();
@@ -430,12 +277,12 @@ impl AccountSnapshotGenerator {
             deps,
             Some(address.to_owned()),
             ElysDenom::Usdc.as_str().to_string(),
-            usdc_denom.to_owned(),
-            usdc_base_denom.to_owned(),
+            self.metadata.usdc_denom.to_owned(),
+            self.metadata.usdc_base_denom.to_owned(),
             uusdc_usd_price,
             uelys_price_in_uusdc,
-            usdc_apr_usdc,
-            eden_apr_usdc,
+            self.metadata.usdc_apr_usdc.to_owned(),
+            self.metadata.eden_apr_usdc.to_owned(),
         )
         .unwrap();
         // usdc program
@@ -455,12 +302,12 @@ impl AccountSnapshotGenerator {
             deps,
             Some(address.to_owned()),
             ElysDenom::Elys.as_str().to_string(),
-            usdc_denom.to_owned(),
+            self.metadata.usdc_denom.to_owned(),
             uusdc_usd_price,
             uelys_price_in_uusdc,
-            usdc_apr_elys,
-            eden_apr_elys,
-            edenb_apr_elys,
+            self.metadata.usdc_apr_elys.to_owned(),
+            self.metadata.eden_apr_elys.to_owned(),
+            self.metadata.edenb_apr_elys.to_owned(),
         )
         .unwrap();
         let staked_asset_elys = elys_details.data;
@@ -479,12 +326,12 @@ impl AccountSnapshotGenerator {
             deps,
             Some(address.to_owned()),
             ElysDenom::Eden.as_str().to_string(),
-            usdc_denom.to_owned(),
+            self.metadata.usdc_denom.to_owned(),
             uusdc_usd_price,
             uelys_price_in_uusdc,
-            usdc_apr_eden,
-            eden_apr_eden,
-            edenb_apr_eden,
+            self.metadata.usdc_apr_eden.to_owned(),
+            self.metadata.eden_apr_eden.to_owned(),
+            self.metadata.edenb_apr_eden.to_owned(),
         )
         .unwrap();
         let staked_asset_eden = eden_details.data;
@@ -502,12 +349,12 @@ impl AccountSnapshotGenerator {
             deps,
             Some(address.to_owned()),
             ElysDenom::EdenBoost.as_str().to_string(),
-            usdc_denom.to_owned(),
+            self.metadata.usdc_denom.to_owned(),
             uusdc_usd_price,
             uelys_price_in_uusdc,
-            eden_decimal,
-            usdc_apr_edenb,
-            eden_apr_edenb,
+            self.metadata.eden_decimal,
+            self.metadata.usdc_apr_edenb.to_owned(),
+            self.metadata.eden_apr_edenb.to_owned(),
         )
         .unwrap();
         let staked_asset_edenb = edenb_details.data;
@@ -523,10 +370,13 @@ impl AccountSnapshotGenerator {
             .unwrap();
         staked_assets.eden_boost_earn_program = staked_asset_edenb;
 
-        StakedAssetsResponse {
+        Ok(StakedAssetsResponse {
             staked_assets,
-            total_staked_balance: DecCoin::new(Decimal256::from(total_balance), usdc_denom),
-        }
+            total_staked_balance: DecCoin::new(
+                Decimal256::from(total_balance),
+                self.metadata.usdc_denom.to_owned(),
+            ),
+        })
     }
 
     pub fn get_all_orders(
@@ -607,7 +457,7 @@ impl AccountSnapshotGenerator {
         let querier = ElysQuerier::new(&deps.querier);
 
         for mtp in mtps {
-            match PerpetualAsset::new(mtp, self.usdc_denom.to_owned(), &querier) {
+            match PerpetualAsset::new(mtp, self.metadata.usdc_denom.to_owned(), &querier) {
                 Ok(perpetual_asset) => perpetual_vec.push(perpetual_asset),
                 Err(_) => continue,
             }
@@ -619,7 +469,7 @@ impl AccountSnapshotGenerator {
             .fold(Decimal256::zero(), |acc, item| acc + item);
         let total_perpetual_asset_balance = DecCoin::new(
             total_perpetual_asset_balance_amount,
-            self.usdc_denom.to_owned(),
+            self.metadata.usdc_denom.to_owned(),
         );
 
         Ok(PerpetualAssets {
