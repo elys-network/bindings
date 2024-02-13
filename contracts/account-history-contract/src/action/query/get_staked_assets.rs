@@ -1,18 +1,16 @@
 use crate::msg::query_resp::StakedAssetsResponse;
 use crate::types::AccountSnapshotGenerator;
 use cosmwasm_std::{DecCoin, Decimal256, Deps, Env, StdResult};
-use elys_bindings::{ElysQuerier, ElysQuery};
+use elys_bindings::ElysQuery;
 
 pub fn get_staked_assets(
     deps: Deps<ElysQuery>,
     address: String,
     _env: Env,
 ) -> StdResult<StakedAssetsResponse> {
-    let querier = ElysQuerier::new(&deps.querier);
-
     let generator = AccountSnapshotGenerator::new(&deps)?;
 
-    let staked_assets_response = generator.get_staked_assets(&deps, &querier, &address)?;
+    let staked_assets_response = generator.get_staked_assets(&deps, &address)?;
 
     Ok(StakedAssetsResponse {
         total_staked_balance: DecCoin::new(

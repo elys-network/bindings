@@ -10,5 +10,5 @@ pub fn get_perpetuals_assets(
 ) -> StdResult<PerpetualAssets> {
     let generator = AccountSnapshotGenerator::new(&deps)?;
 
-    generator.get_perpetuals(&deps, address)
+    generator.get_perpetuals(&deps, &address)
 }
