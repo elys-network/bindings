@@ -5,7 +5,6 @@ use super::query_resp::pod::*;
 use cosmwasm_schema::{cw_serde, QueryResponses};
 #[allow(unused_imports)]
 use elys_bindings::query_resp::*;
-use elys_bindings::types::PageRequest;
 
 #[cw_serde]
 #[derive(QueryResponses)]
@@ -27,12 +26,6 @@ pub enum QueryMsg {
     GetUnbondingDelegations { delegator_addr: String },
     #[returns(QueryShowCommitmentsResponse)]
     GetCommitments { delegator_addr: String },
-    #[returns(QueryEarnPoolResponse)]
-    GetLiquidityPools {
-        pool_ids: Option<Vec<u64>>,
-        filter_type: FilterType,
-        pagination: Option<PageRequest>,
-    },
     #[returns(GetUsdcPriceResp)]
     GetUsdcPrice {},
 }

@@ -371,3 +371,12 @@ pub struct PoolResp {
     pub tvl: Decimal,
     pub rewards: Decimal,
 }
+
+#[cw_serde]
+pub enum PoolFilterType {
+    FilterAll = 0,
+    FilterPerpetual = 1,
+    FilterFixedWeight = 2,
+    FilterDynamicWeight = 3,
+    FilterLeverage = 4,
+}

@@ -4,9 +4,9 @@ use super::super::types::{AccountSnapshot, PerpetualAssets};
 use super::query_resp::*;
 #[allow(unused_imports)]
 use crate::query_resp::{
-    AuthAddressesResponse, BalanceBorrowed, QueryStakedPositionResponse,
-    QueryUnstakedPositionResponse, QueryVestingInfoResponse, StableStakeParamsData,
-    StakedAvailable,
+    AuthAddressesResponse, BalanceBorrowed, PoolFilterType, QueryEarnPoolResponse,
+    QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryVestingInfoResponse,
+    StableStakeParamsData, StakedAvailable,
 };
 #[allow(unused_imports)]
 use crate::types::{BalanceAvailable, PageRequest};
@@ -37,6 +37,13 @@ pub enum QueryMsg {
     GetAssetPrice { asset: String },
     #[returns(Decimal)]
     GetAssetPriceFromDenomInToDenomOut { denom_in: String, denom_out: String },
+
+    #[returns(QueryEarnPoolResponse)]
+    GetLiquidityPools {
+        pool_ids: Option<Vec<u64>>,
+        filter_type: PoolFilterType,
+        pagination: Option<PageRequest>,
+    },
 
     // debug only
     #[cfg(feature = "debug")]
