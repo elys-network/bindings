@@ -11,7 +11,7 @@ pub fn get_rewards(
 ) -> StdResult<GetRewardsResp> {
     let generator = AccountSnapshotGenerator::new(&deps)?;
 
-    let rewards_response = generator.get_rewards(&deps, user_address)?;
+    let rewards_response = generator.get_rewards(&deps, &user_address)?;
 
     let resp = GetRewardsResp {
         rewards: rewards_response.rewards.clone(),

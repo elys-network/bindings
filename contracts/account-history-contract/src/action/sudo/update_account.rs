@@ -5,7 +5,7 @@ use cosmwasm_std::{BlockInfo, DepsMut, Env, Response, StdError, StdResult, Times
 use cw_utils::Expiration;
 
 use crate::{
-    states::{HISTORY, PAGINATION},
+    states::{HISTORY, METADATA, PAGINATION},
     types::AccountSnapshotGenerator,
     utils::{get_raw_today, get_today},
 };
@@ -14,6 +14,12 @@ use elys_bindings::{account_history::types::AccountSnapshot, ElysMsg, ElysQuerie
 pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<ElysMsg>> {
     let querier = ElysQuerier::new(&deps.querier);
 
+    // update metadata prices
+    let mut metadata = METADATA.load(deps.storage)?;
+    metadata = metadata.update_prices(&querier)?;
+    METADATA.save(deps.storage, &metadata)?;
+
+    // update pagination
     let mut pagination = PAGINATION.load(deps.storage)?;
 
     let resp = querier.accounts(Some(pagination.clone())).map_err(|e| {
@@ -39,8 +45,6 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
         addresses_to_process.push(address)
     }
 
-    // Read common variables before looping
-    // To enhance querying speed.
     let generator = AccountSnapshotGenerator::new(&deps.as_ref())?;
 
     for address in addresses_to_process.iter() {

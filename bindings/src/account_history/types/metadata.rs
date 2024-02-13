@@ -1,5 +1,5 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{StdError, StdResult};
+use cosmwasm_std::{Decimal, StdError, StdResult, Uint128};
 
 use crate::{query_resp::QueryAprResponse, trade_shield::types::EarnType, ElysQuerier};
 
@@ -22,9 +22,33 @@ pub struct Metadata {
     pub usdc_apr_elys: QueryAprResponse,
     pub eden_apr_elys: QueryAprResponse,
     pub edenb_apr_elys: QueryAprResponse,
+    pub uusdc_usd_price: Decimal,
+    pub uelys_price_in_uusdc: Decimal,
 }
 
 impl Metadata {
+    pub fn update_prices(&self, querier: &ElysQuerier) -> StdResult<Self> {
+        let usdc_oracle_price = querier
+            .get_oracle_price(
+                self.usdc_display_denom.clone(),
+                ElysDenom::AnySource.as_str().to_string(),
+                0,
+            )
+            .map_err(|_| StdError::generic_err("an error occurred while getting usdc price"))?;
+        let uusdc_usd_price = usdc_oracle_price
+            .price
+            .price
+            .checked_div(Decimal::from_atomics(Uint128::new(self.usdc_decimal as u128), 0).unwrap())
+            .unwrap();
+        let uelys_price_in_uusdc = querier.get_asset_price(ElysDenom::Elys.as_str())?;
+
+        Ok(Self {
+            uusdc_usd_price,
+            uelys_price_in_uusdc,
+            ..self.clone()
+        })
+    }
+
     pub fn collect(querier: &ElysQuerier) -> StdResult<Self> {
         let usdc_denom_entry = querier
             .get_asset_profile(ElysDenom::Usdc.as_str().to_string())
@@ -129,6 +153,10 @@ impl Metadata {
                 .map_err(|_| {
                     StdError::generic_err("an error occurred while getting edenb apr in elys")
                 })?,
+
+            // prices
+            uusdc_usd_price: Decimal::zero(),
+            uelys_price_in_uusdc: Decimal::zero(),
         })
     }
 }
@@ -152,6 +180,8 @@ impl Default for Metadata {
             usdc_apr_elys: QueryAprResponse::default(),
             eden_apr_elys: QueryAprResponse::default(),
             edenb_apr_elys: QueryAprResponse::default(),
+            uusdc_usd_price: Decimal::zero(),
+            uelys_price_in_uusdc: Decimal::zero(),
         }
     }
 }

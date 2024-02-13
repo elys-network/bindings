@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    coin, BlockInfo, Coin, DecCoin, Decimal, Decimal256, Deps, Env, QuerierWrapper, StdError,
-    StdResult, Uint128,
+    coin, Coin, DecCoin, Decimal, Decimal256, Deps, Env, QuerierWrapper, StdError, StdResult,
+    Uint128,
 };
 use cw_utils::Expiration;
 use elys_bindings::{
@@ -65,43 +65,13 @@ impl AccountSnapshotGenerator {
         address: &String,
     ) -> StdResult<Option<AccountSnapshot>> {
         let liquid_assets_response = self.get_liquid_assets(&deps, querier, &address)?;
-        let staked_assets_response = self.get_staked_assets(&deps, &querier, &address)?;
-        let rewards_response = self.get_rewards(&deps, address.clone())?;
-        let perpetual_response = match self.get_perpetuals(&deps, address.clone()) {
-            Ok(perpetual_response) => perpetual_response,
-            Err(_) => PerpetualAssets {
-                total_perpetual_asset_balance: DecCoin::new(
-                    Decimal256::zero(),
-                    &self.metadata.usdc_denom,
-                ),
-                perpetual_asset: vec![],
-            },
-        };
+        let staked_assets_response = self.get_staked_assets(&deps, &address)?;
+        let rewards_response = self.get_rewards(&deps, &address)?;
+        let perpetual_response = self.get_perpetuals(&deps, &address)?;
 
-        let new_part = self.create_new_part(
-            &env.block,
-            liquid_assets_response,
-            staked_assets_response,
-            rewards_response,
-            perpetual_response,
-            &self.metadata.usdc_denom,
-        );
-
-        return new_part;
-    }
-
-    pub fn create_new_part(
-        &self,
-        block: &BlockInfo,
-        liquid_assets_response: LiquidAsset,
-        staked_assets_response: StakedAssetsResponse,
-        rewards_response: GetRewardsResp,
-        perpetual_response: PerpetualAssets,
-        usdc_denom: &String,
-    ) -> StdResult<Option<AccountSnapshot>> {
         let date = match self.expiration {
-            Expiration::AtHeight(_) => Expiration::AtHeight(block.height),
-            Expiration::AtTime(_) => Expiration::AtTime(block.time),
+            Expiration::AtHeight(_) => Expiration::AtHeight(env.block.height),
+            Expiration::AtTime(_) => Expiration::AtTime(env.block.time),
             Expiration::Never {} => panic!("never expire"),
         };
 
@@ -119,13 +89,15 @@ impl AccountSnapshotGenerator {
                         .amount
                         .clone(),
                 )?,
-            usdc_denom,
+            &self.metadata.usdc_denom,
         );
-        let reward_usd: DecCoin =
-            DecCoin::new(Decimal256::from(reward.clone().total_usd), usdc_denom);
+        let reward_usd: DecCoin = DecCoin::new(
+            Decimal256::from(reward.clone().total_usd),
+            &self.metadata.usdc_denom,
+        );
         let total_balance = DecCoin::new(
             portfolio_usd.amount.checked_add(reward_usd.amount)?,
-            usdc_denom,
+            &self.metadata.usdc_denom,
         );
 
         // Adds the records all the time as we should return data to the FE even if it is 0 balanced.
@@ -141,13 +113,16 @@ impl AccountSnapshotGenerator {
                 liquid_assets_usd: liquid_assets_response.total_liquid_asset_balance.clone(),
                 staked_committed_usd: DecCoin::new(
                     Decimal256::from(staked_assets_response.total_staked_balance.amount),
-                    usdc_denom,
+                    &self.metadata.usdc_denom,
                 ),
-                liquidity_positions_usd: DecCoin::new(Decimal256::zero(), usdc_denom),
-                leverage_lp_usd: DecCoin::new(Decimal256::zero(), usdc_denom),
+                liquidity_positions_usd: DecCoin::new(
+                    Decimal256::zero(),
+                    &self.metadata.usdc_denom,
+                ),
+                leverage_lp_usd: DecCoin::new(Decimal256::zero(), &self.metadata.usdc_denom),
                 perpetual_assets_usd: perpetual_response.total_perpetual_asset_balance.clone(),
-                usdc_earn_usd: DecCoin::new(Decimal256::zero(), usdc_denom),
-                borrows_usd: DecCoin::new(Decimal256::zero(), usdc_denom),
+                usdc_earn_usd: DecCoin::new(Decimal256::zero(), &self.metadata.usdc_denom),
+                borrows_usd: DecCoin::new(Decimal256::zero(), &self.metadata.usdc_denom),
             },
             reward,
             liquid_asset: liquid_assets_response,
@@ -250,25 +225,8 @@ impl AccountSnapshotGenerator {
     pub fn get_staked_assets(
         &self,
         deps: &Deps<ElysQuery>,
-        querier: &ElysQuerier,
         address: &String,
     ) -> StdResult<StakedAssetsResponse> {
-        let usdc_oracle_price = querier
-            .get_oracle_price(
-                self.metadata.usdc_display_denom.clone(),
-                ElysDenom::AnySource.as_str().to_string(),
-                0,
-            )
-            .map_err(|_| StdError::generic_err("an error occurred while getting usdc price"))?;
-        let uusdc_usd_price = usdc_oracle_price
-            .price
-            .price
-            .checked_div(
-                Decimal::from_atomics(Uint128::new(self.metadata.usdc_decimal as u128), 0).unwrap(),
-            )
-            .unwrap();
-        let uelys_price_in_uusdc = querier.get_asset_price(ElysDenom::Elys.as_str())?;
-
         // create staked_assets variable that is a StakedAssets struct
         let mut staked_assets = StakedAssets::default();
         let mut total_balance = Decimal::zero();
@@ -279,8 +237,8 @@ impl AccountSnapshotGenerator {
             ElysDenom::Usdc.as_str().to_string(),
             self.metadata.usdc_denom.to_owned(),
             self.metadata.usdc_base_denom.to_owned(),
-            uusdc_usd_price,
-            uelys_price_in_uusdc,
+            self.metadata.uusdc_usd_price,
+            self.metadata.uelys_price_in_uusdc,
             self.metadata.usdc_apr_usdc.to_owned(),
             self.metadata.eden_apr_usdc.to_owned(),
         )
@@ -303,8 +261,8 @@ impl AccountSnapshotGenerator {
             Some(address.to_owned()),
             ElysDenom::Elys.as_str().to_string(),
             self.metadata.usdc_denom.to_owned(),
-            uusdc_usd_price,
-            uelys_price_in_uusdc,
+            self.metadata.uusdc_usd_price,
+            self.metadata.uelys_price_in_uusdc,
             self.metadata.usdc_apr_elys.to_owned(),
             self.metadata.eden_apr_elys.to_owned(),
             self.metadata.edenb_apr_elys.to_owned(),
@@ -327,8 +285,8 @@ impl AccountSnapshotGenerator {
             Some(address.to_owned()),
             ElysDenom::Eden.as_str().to_string(),
             self.metadata.usdc_denom.to_owned(),
-            uusdc_usd_price,
-            uelys_price_in_uusdc,
+            self.metadata.uusdc_usd_price,
+            self.metadata.uelys_price_in_uusdc,
             self.metadata.usdc_apr_eden.to_owned(),
             self.metadata.eden_apr_eden.to_owned(),
             self.metadata.edenb_apr_eden.to_owned(),
@@ -350,8 +308,8 @@ impl AccountSnapshotGenerator {
             Some(address.to_owned()),
             ElysDenom::EdenBoost.as_str().to_string(),
             self.metadata.usdc_denom.to_owned(),
-            uusdc_usd_price,
-            uelys_price_in_uusdc,
+            self.metadata.uusdc_usd_price,
+            self.metadata.uelys_price_in_uusdc,
             self.metadata.eden_decimal,
             self.metadata.usdc_apr_edenb.to_owned(),
             self.metadata.eden_apr_edenb.to_owned(),
@@ -436,7 +394,7 @@ impl AccountSnapshotGenerator {
     pub fn get_perpetuals(
         &self,
         deps: &Deps<ElysQuery>,
-        address: String,
+        address: &String,
     ) -> StdResult<PerpetualAssets> {
         let trade_shield_address = match self.trade_shield_address.clone() {
             Some(trade_shield_address) => trade_shield_address,
@@ -448,7 +406,7 @@ impl AccountSnapshotGenerator {
             .query_wasm_smart(
                 trade_shield_address,
                 &PerpetualGetPositionsForAddress {
-                    address,
+                    address: address.to_string(),
                     pagination: None,
                 },
             )
@@ -481,10 +439,10 @@ impl AccountSnapshotGenerator {
     pub fn get_rewards(
         &self,
         deps: &Deps<ElysQuery>,
-        address: String,
+        address: &String,
     ) -> StdResult<GetRewardsResp> {
         let querier = ElysQuerier::new(&deps.querier);
-        let commitments = querier.get_commitments(address)?;
+        let commitments = querier.get_commitments(address.to_string())?;
 
         let denom_usdc_entry = querier.get_asset_profile(ElysDenom::Usdc.as_str().to_string())?;
         let denom_uusdc = denom_usdc_entry.entry.denom;
