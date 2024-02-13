@@ -1,17 +1,12 @@
 use core::panic;
 
 use crate::{
-    msg::query_resp::GetPortfolioResp,
-    states::HISTORY,
-    types::AccountSnapshot,
-    utils::{get_raw_today, get_today},
+    msg::query_resp::GetPortfolioResp, states::HISTORY, types::AccountSnapshotGenerator,
+    utils::get_raw_today,
 };
 use chrono::Days;
 use cosmwasm_std::{Deps, Env, SignedDecimal256, StdResult};
-use elys_bindings::{
-    query_resp::{Entry, QueryGetEntryResponse},
-    ElysQuerier, ElysQuery,
-};
+use elys_bindings::{account_history::types::AccountSnapshot, ElysQuerier, ElysQuery};
 
 pub fn get_portfolio(
     deps: Deps<ElysQuery>,
@@ -19,16 +14,19 @@ pub fn get_portfolio(
     env: Env,
 ) -> StdResult<GetPortfolioResp> {
     let querier = ElysQuerier::new(&deps.querier);
-    let QueryGetEntryResponse {
-        entry: Entry {
-            denom: usdc_denom, ..
-        },
-    } = querier.get_asset_profile("uusdc".to_string())?;
-    let snapshots = match HISTORY.may_load(deps.storage, &user_address)? {
-        Some(snapshots) => snapshots,
+
+    let generator = AccountSnapshotGenerator::new(&deps)?;
+
+    let new_snapshot = match generator.generate_account_snapshot_for_address(
+        &querier,
+        &deps,
+        &env,
+        &user_address,
+    )? {
+        Some(snapshot) => snapshot,
         None => {
             return Ok(GetPortfolioResp {
-                portfolio: AccountSnapshot::zero(&usdc_denom).portfolio,
+                portfolio: AccountSnapshot::zero(&generator.metadata.usdc_denom).portfolio,
                 actual_portfolio_balance: SignedDecimal256::zero(),
                 old_portfolio_balance: SignedDecimal256::zero(),
                 balance_24h_change: SignedDecimal256::zero(),
@@ -36,13 +34,11 @@ pub fn get_portfolio(
         }
     };
 
-    let today = get_today(&env.block);
-
-    let snapshot = match snapshots.get(&today) {
-        Some(expr) => expr,
+    let snapshots = match HISTORY.may_load(deps.storage, &user_address)? {
+        Some(snapshots) => snapshots,
         None => {
             return Ok(GetPortfolioResp {
-                portfolio: AccountSnapshot::zero(&usdc_denom).portfolio,
+                portfolio: AccountSnapshot::zero(&generator.metadata.usdc_denom).portfolio,
                 actual_portfolio_balance: SignedDecimal256::zero(),
                 old_portfolio_balance: SignedDecimal256::zero(),
                 balance_24h_change: SignedDecimal256::zero(),
@@ -59,12 +55,12 @@ pub fn get_portfolio(
         Some(snapshot) => snapshot,
         None => {
             let actual_portfolio_balance =
-                match SignedDecimal256::try_from(snapshot.portfolio.balance_usd.amount) {
+                match SignedDecimal256::try_from(new_snapshot.portfolio.balance_usd.amount) {
                     Ok(actual_portfolio_balance) => actual_portfolio_balance,
                     Err(_) => SignedDecimal256::zero(),
                 };
             return Ok(GetPortfolioResp {
-                portfolio: snapshot.portfolio.clone(),
+                portfolio: new_snapshot.portfolio.clone(),
                 actual_portfolio_balance,
                 old_portfolio_balance: SignedDecimal256::zero(),
                 balance_24h_change: SignedDecimal256::zero(),
@@ -73,7 +69,7 @@ pub fn get_portfolio(
     };
 
     let actual_portfolio_balance =
-        match SignedDecimal256::try_from(snapshot.portfolio.balance_usd.amount) {
+        match SignedDecimal256::try_from(new_snapshot.portfolio.balance_usd.amount) {
             Ok(balance) => balance,
             Err(_) => SignedDecimal256::zero(),
         };
@@ -87,7 +83,7 @@ pub fn get_portfolio(
     let balance_24h_change = actual_portfolio_balance - old_portfolio_balance;
 
     let resp = GetPortfolioResp {
-        portfolio: snapshot.portfolio.clone(),
+        portfolio: new_snapshot.portfolio.clone(),
         actual_portfolio_balance,
         old_portfolio_balance,
         balance_24h_change,

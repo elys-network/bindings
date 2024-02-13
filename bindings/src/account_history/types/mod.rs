@@ -1,6 +1,7 @@
 mod account_snapshot;
 mod coin_value;
 mod liquid_asset;
+mod metadata;
 mod perpetual_assets;
 mod portfolio;
 mod reward;
@@ -9,6 +10,7 @@ mod total_balance;
 
 pub use account_snapshot::AccountSnapshot;
 pub use coin_value::CoinValue;
+pub use metadata::Metadata;
 
 pub mod earn_detail {
     pub mod earn_detail;

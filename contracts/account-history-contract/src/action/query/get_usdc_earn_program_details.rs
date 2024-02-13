@@ -1,12 +1,15 @@
 use super::*;
 use crate::msg::query_resp::earn::GetUsdcEarnProgramResp;
-use crate::types::{earn_program::usdc_earn::UsdcEarnProgram, ElysDenom};
-use crate::types::{AprUsdc, BalanceReward};
-use cosmwasm_std::{Decimal, DepsMut};
-use elys_bindings::{query_resp::QueryAprResponse, types::EarnType, ElysQuerier, ElysQuery};
+use cosmwasm_std::{Decimal, Deps};
+use elys_bindings::{
+    account_history::types::{earn_program::UsdcEarnProgram, AprUsdc, BalanceReward, ElysDenom},
+    query_resp::QueryAprResponse,
+    types::EarnType,
+    ElysQuerier, ElysQuery,
+};
 
 pub fn get_usdc_earn_program_details(
-    deps: &DepsMut<ElysQuery>,
+    deps: &Deps<ElysQuery>,
     address: Option<String>,
     asset: String,
     usdc_denom: String,
@@ -40,7 +43,8 @@ pub fn get_usdc_earn_program_details(
                 let mut available = querier.get_balance(addr.clone(), usdc_denom.clone())?;
                 available.usd_amount = available.usd_amount.checked_mul(uusdc_usd_price).unwrap();
 
-                let mut staked = querier.get_staked_balance(addr.clone(), usdc_base_denom.clone())?;
+                let mut staked =
+                    querier.get_staked_balance(addr.clone(), usdc_base_denom.clone())?;
                 staked.usd_amount = staked.usd_amount.checked_mul(uusdc_usd_price).unwrap();
 
                 let mut borrowed = querier.get_borrowed_balance()?;

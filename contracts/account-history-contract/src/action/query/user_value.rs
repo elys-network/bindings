@@ -1,6 +1,6 @@
-use crate::{msg::query_resp::UserValueResponse, states::HISTORY, types::AccountSnapshot};
+use crate::{msg::query_resp::UserValueResponse, states::HISTORY};
 use cosmwasm_std::{Deps, StdError, StdResult};
-use elys_bindings::ElysQuery;
+use elys_bindings::{account_history::types::AccountSnapshot, ElysQuery};
 
 pub fn user_value(deps: Deps<ElysQuery>, user_address: String) -> StdResult<UserValueResponse> {
     let user_history: Vec<AccountSnapshot> = match HISTORY.may_load(deps.storage, &user_address)? {

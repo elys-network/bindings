@@ -1,57 +1,29 @@
-use cosmwasm_std::{DecCoin, Decimal, Decimal256, Deps, Env, StdResult};
-use elys_bindings::{
-    query_resp::{Entry, QueryGetEntryResponse},
-    ElysQuerier, ElysQuery,
-};
+use cosmwasm_std::{Decimal, Deps, Env, StdResult};
+use elys_bindings::{account_history::types::CoinValue, ElysQuerier, ElysQuery};
 
 use crate::{
     msg::query_resp::{GetLiquidAssetsResp, LiquidAsset},
-    states::HISTORY,
-    types::CoinValue,
-    utils::get_today,
+    types::AccountSnapshotGenerator,
 };
 
 pub fn get_liquid_assets(
     deps: Deps<ElysQuery>,
     user_address: String,
-    env: Env,
+    _env: Env,
 ) -> StdResult<GetLiquidAssetsResp> {
     let querier = ElysQuerier::new(&deps.querier);
-    let QueryGetEntryResponse {
-        entry: Entry {
-            denom: usdc_denom, ..
-        },
-    } = querier.get_asset_profile("uusdc".to_string())?;
 
-    let snapshots = match HISTORY.may_load(deps.storage, &user_address)? {
-        Some(snapshots) => snapshots,
-        None => {
-            return Ok(GetLiquidAssetsResp {
-                liquid_assets: vec![],
-                total_liquid_asset_balance: DecCoin::new(Decimal256::zero(), usdc_denom),
-            });
-        }
-    };
+    let generator = AccountSnapshotGenerator::new(&deps)?;
 
-    let today = get_today(&env.block);
-
-    let snapshot = match snapshots.get(&today) {
-        Some(snapshot) => snapshot,
-        None => {
-            return Ok(GetLiquidAssetsResp {
-                liquid_assets: vec![],
-                total_liquid_asset_balance: DecCoin::new(Decimal256::zero(), usdc_denom),
-            });
-        }
-    };
+    let liquid_asset = generator.get_liquid_assets(&deps, &querier, &user_address)?;
 
     let mut liquid_assets: Vec<LiquidAsset> = vec![];
 
-    for total in snapshot.liquid_asset.total_value_per_asset.clone() {
+    for total in liquid_asset.total_value_per_asset.clone() {
         let (available_amount, available_value) =
-            get_info(&snapshot.liquid_asset.available_asset_balance, &total.denom);
+            get_info(&liquid_asset.available_asset_balance, &total.denom);
         let (in_order_amount, in_order_value) =
-            get_info(&snapshot.liquid_asset.in_orders_asset_balance, &total.denom);
+            get_info(&liquid_asset.in_orders_asset_balance, &total.denom);
 
         liquid_assets.push(LiquidAsset {
             denom: total.denom,
@@ -67,7 +39,7 @@ pub fn get_liquid_assets(
 
     Ok(GetLiquidAssetsResp {
         liquid_assets,
-        total_liquid_asset_balance: snapshot.liquid_asset.total_liquid_asset_balance.clone(),
+        total_liquid_asset_balance: liquid_asset.total_liquid_asset_balance.clone(),
     })
 }
 

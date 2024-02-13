@@ -1,24 +1,14 @@
 use cosmwasm_std::{Deps, Env, StdResult};
-use elys_bindings::ElysQuery;
+use elys_bindings::{account_history::types::PerpetualAssets, ElysQuery};
 
-use crate::{states::HISTORY, types::PerpetualAssets, utils::get_today};
+use crate::types::AccountSnapshotGenerator;
 
 pub fn get_perpetuals_assets(
     deps: Deps<ElysQuery>,
     address: String,
-    env: Env,
+    _env: Env,
 ) -> StdResult<PerpetualAssets> {
-    let snapshots = match HISTORY.may_load(deps.storage, &address)? {
-        Some(snapshots) => snapshots,
-        None => return Ok(PerpetualAssets::default()),
-    };
+    let generator = AccountSnapshotGenerator::new(&deps)?;
 
-    let today = get_today(&env.block);
-
-    let perpetual_assets = match snapshots.get(&today) {
-        Some(snapshot) => snapshot.perpetual_assets.clone(),
-        None => PerpetualAssets::default(),
-    };
-
-    Ok(perpetual_assets)
+    generator.get_perpetuals(&deps, address)
 }

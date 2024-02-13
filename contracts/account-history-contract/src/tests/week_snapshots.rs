@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use crate::entry_point::instantiate;
-use crate::types::AccountSnapshot;
 use crate::{
     entry_point::{execute, query, sudo},
     msg::*,
@@ -10,6 +9,7 @@ use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{coin, to_json_binary, Addr, BlockInfo, Decimal, Empty, StdError, Timestamp};
 use cw_multi_test::{AppResponse, BankSudo, BasicAppBuilder, ContractWrapper, Executor, Module};
 use cw_utils::Expiration;
+use elys_bindings::account_history::types::AccountSnapshot;
 use elys_bindings::query_resp::{
     Entry, OracleAssetInfoResponse, QueryGetEntryResponse, QueryGetPriceResponse,
 };
@@ -440,8 +440,7 @@ fn get_portfolio() {
     // test if the response is the same as the expected
     assert_eq!(
         last_snapshot.date,
-        // Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 3))
-        Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 3 + 5 * 60 * 60))
+        Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 3))
     );
 
     //update day 4
@@ -526,8 +525,7 @@ fn get_portfolio() {
     );
     assert_eq!(
         snapshots[1].date,
-        // Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 3))
-        Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 3 + 5 * 60 * 60))
+        Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 3))
     );
     assert_eq!(
         snapshots[2].date,
