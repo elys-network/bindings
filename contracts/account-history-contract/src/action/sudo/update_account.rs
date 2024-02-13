@@ -112,7 +112,7 @@ mod tests {
     use super::*;
     use cosmwasm_std::{DecCoin, Decimal, Decimal256, Timestamp, Uint128};
     use elys_bindings::account_history::types::{
-        LiquidAsset, PerpetualAssets, Portfolio, Reward, StakedAssets, TotalBalance,
+        LiquidAsset, PerpetualAssets, PoolBalances, Portfolio, Reward, StakedAssets, TotalBalance,
     };
 
     #[test]
@@ -151,6 +151,7 @@ mod tests {
                 in_orders_asset_balance: vec![],
                 total_value_per_asset: vec![],
             },
+            pool_balances: PoolBalances::default(),
             staked_assets: StakedAssets::default(),
             perpetual_assets: PerpetualAssets {
                 total_perpetual_asset_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
@@ -190,6 +191,7 @@ mod tests {
                 in_orders_asset_balance: vec![],
                 total_value_per_asset: vec![],
             },
+            pool_balances: PoolBalances::default(),
             staked_assets: StakedAssets::default(),
             perpetual_assets: PerpetualAssets {
                 total_perpetual_asset_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
