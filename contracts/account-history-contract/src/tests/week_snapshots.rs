@@ -440,8 +440,7 @@ fn get_portfolio() {
     // test if the response is the same as the expected
     assert_eq!(
         last_snapshot.date,
-        // Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 3))
-        Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 3 + 5 * 60 * 60))
+        Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 3)) // Date didn't update because we save only one snapshot per day
     );
 
     //update day 4
@@ -526,8 +525,7 @@ fn get_portfolio() {
     );
     assert_eq!(
         snapshots[1].date,
-        // Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 3))
-        Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 3 + 5 * 60 * 60))
+        Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 3)) // Date didn't update because we save only one snapshot per day
     );
     assert_eq!(
         snapshots[2].date,

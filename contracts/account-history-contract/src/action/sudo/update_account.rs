@@ -151,7 +151,12 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     for address in addresses_to_process.iter() {
         let mut history: HashMap<String, AccountSnapshot> =
             if let Some(histories) = HISTORY.may_load(deps.storage, &address)? {
-                update_history(histories, &env.block, &expiration)
+                let history = update_history(histories, &env.block, &expiration);
+                if have_history_today(&history, &env.block) {
+                    HISTORY.save(deps.storage, &address, &history)?;
+                    continue;
+                }
+                history
             } else {
                 HashMap::new()
             };
@@ -213,6 +218,11 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     }
 
     Ok(Response::default())
+}
+
+fn have_history_today(history: &HashMap<String, AccountSnapshot>, block_info: &BlockInfo) -> bool {
+    let today = get_today(block_info);
+    history.get(&today).is_some()
 }
 
 fn create_new_part(
@@ -395,6 +405,29 @@ mod tests {
 
     use super::*;
     use cosmwasm_std::Timestamp;
+
+    #[test]
+    fn test_have_history_today() {
+        let mut history: HashMap<String, AccountSnapshot> = HashMap::new();
+
+        let block: BlockInfo = BlockInfo {
+            height: 0,
+            time: Timestamp::from_seconds(24 * 3600 * 4),
+            chain_id: "chain_id".to_string(),
+        };
+        assert_eq!(have_history_today(&history, &block), false);
+
+        let today = get_today(&block);
+        history.insert(today, AccountSnapshot::default());
+        assert_eq!(have_history_today(&history, &block), true);
+
+        let block: BlockInfo = BlockInfo {
+            height: 0,
+            time: Timestamp::from_seconds(24 * 3600 * 5),
+            chain_id: "chain_id".to_string(),
+        };
+        assert_eq!(have_history_today(&history, &block), false);
+    }
 
     #[test]
     fn test_update_history() {
