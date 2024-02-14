@@ -20,7 +20,7 @@ pub fn instantiate(
         Some(expiration) => EXPIRATION.save(deps.storage, &expiration)?,
         None => EXPIRATION.save(
             deps.storage,
-            &Expiration::AtTime(Timestamp::from_seconds(7 * 24 * 60 * 60)),
+            &Expiration::AtTime(Timestamp::from_seconds(3 * 24 * 60 * 60)),
         )?,
     };
 
