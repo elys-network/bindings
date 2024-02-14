@@ -35,7 +35,7 @@ pub fn get_portfolio(
     };
 
     let snapshots = match HISTORY.may_load(deps.storage, &user_address)? {
-        Some(snapshots) => snapshots,
+        Some(snapshots) => snapshots.clone(),
         None => {
             let actual_portfolio_balance =
                 match SignedDecimal256::try_from(new_snapshot.portfolio.balance_usd.amount) {
