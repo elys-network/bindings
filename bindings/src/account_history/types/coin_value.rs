@@ -52,8 +52,14 @@ impl CoinValue {
             });
         }
 
+        let asset_price_denom = if balance.denom == "ueden" {
+            "uelys".to_string()
+        } else {
+            balance.denom.clone()
+        };
+
         let price = querier
-            .get_asset_price(&balance.denom)
+            .get_asset_price(asset_price_denom)
             .map_err(|e| StdError::generic_err(format!("failed to get_asset_price: {}", e)))?;
 
         let decimal_point_usdc = asset_info.decimal;
