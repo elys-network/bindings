@@ -37,12 +37,17 @@ pub fn get_portfolio(
     let snapshots = match HISTORY.may_load(deps.storage, &user_address)? {
         Some(snapshots) => snapshots,
         None => {
+            let actual_portfolio_balance =
+                match SignedDecimal256::try_from(new_snapshot.portfolio.balance_usd.amount) {
+                    Ok(actual_portfolio_balance) => actual_portfolio_balance,
+                    Err(_) => SignedDecimal256::zero(),
+                };
             return Ok(GetPortfolioResp {
-                portfolio: AccountSnapshot::zero(&generator.metadata.usdc_denom).portfolio,
-                actual_portfolio_balance: SignedDecimal256::zero(),
+                portfolio: new_snapshot.portfolio.clone(),
+                actual_portfolio_balance,
                 old_portfolio_balance: SignedDecimal256::zero(),
                 balance_24h_change: SignedDecimal256::zero(),
-            })
+            });
         }
     };
 

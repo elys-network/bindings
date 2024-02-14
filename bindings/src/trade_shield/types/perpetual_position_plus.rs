@@ -1,6 +1,6 @@
-use crate::{query_resp::AmmSwapEstimationByDenomResponse, types::Mtp, ElysQuerier};
+use crate::{types::Mtp, ElysQuerier};
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{coin, Decimal, Order, SignedDecimal, StdError, StdResult, Storage};
+use cosmwasm_std::{Decimal, Order, SignedDecimal, StdError, StdResult, Storage};
 
 use crate::trade_shield::{states::PENDING_PERPETUAL_ORDER, types::PerpetualOrder};
 
@@ -40,10 +40,12 @@ impl PerpetualPositionPlus {
     }
 
     pub fn new(mtp: Mtp, storage: &dyn Storage, querier: &ElysQuerier<'_>) -> StdResult<Self> {
-
         let collateral_info = querier.asset_info(mtp.collateral_asset.clone())?;
 
-        let collateral_amount = match SignedDecimal::from_atomics(mtp.collateral.i128(), collateral_info.asset_info.decimal as u32) {
+        let collateral_amount = match SignedDecimal::from_atomics(
+            mtp.collateral.i128(),
+            collateral_info.asset_info.decimal as u32,
+        ) {
             Ok(collateral_amount) => collateral_amount,
             Err(e) => return Err(StdError::generic_err(e.to_string())),
         };
