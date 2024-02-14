@@ -34,27 +34,22 @@ pub fn get_portfolio(
         }
     };
 
-    let snapshots = match HISTORY.may_load(deps.storage, &user_address)? {
-        Some(snapshots) => snapshots.clone(),
-        None => {
-            let actual_portfolio_balance =
-                match SignedDecimal256::try_from(new_snapshot.portfolio.balance_usd.amount) {
-                    Ok(actual_portfolio_balance) => actual_portfolio_balance,
-                    Err(_) => SignedDecimal256::zero(),
-                };
-            return Ok(GetPortfolioResp {
-                portfolio: new_snapshot.portfolio.clone(),
-                actual_portfolio_balance,
-                old_portfolio_balance: SignedDecimal256::zero(),
-                balance_24h_change: SignedDecimal256::zero(),
-            });
-        }
-    };
-
-    // print snapshots
-    for (key, value) in snapshots.iter() {
-        println!("{}: {}", key, value.date);
-    }
+    // let snapshots = match HISTORY.may_load(deps.storage, &user_address)? {
+    //     Some(snapshots) => snapshots.clone(),
+    //     None => {
+    //         let actual_portfolio_balance =
+    //             match SignedDecimal256::try_from(new_snapshot.portfolio.balance_usd.amount) {
+    //                 Ok(actual_portfolio_balance) => actual_portfolio_balance,
+    //                 Err(_) => SignedDecimal256::zero(),
+    //             };
+    //         return Ok(GetPortfolioResp {
+    //             portfolio: new_snapshot.portfolio.clone(),
+    //             actual_portfolio_balance,
+    //             old_portfolio_balance: SignedDecimal256::zero(),
+    //             balance_24h_change: SignedDecimal256::zero(),
+    //         });
+    //     }
+    // };
 
     // let twenty_four_hours_ago = match get_raw_today(&env.block).checked_sub_days(Days::new(1)) {
     //     Some(date_time) => date_time.format("%Y-%m-%d").to_string(),
