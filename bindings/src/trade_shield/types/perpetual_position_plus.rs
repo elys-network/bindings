@@ -31,64 +31,24 @@ impl PerpetualPositionPlus {
         for i in 0..mtps.len() {
             let mtp = mtps[i].clone();
 
-            let collateral_amount = match SignedDecimal::from_atomics(mtp.collateral.i128(), 0) {
-                Ok(collateral_amount) => collateral_amount,
-                Err(e) => return Err(StdError::generic_err(e.to_string())),
-            };
+            let mtp_plus = Self::new(mtp, storage, querier)?;
 
-            let leverage_amount = mtp.leverage.checked_mul(collateral_amount.clone())?;
-            let leverage_coin = coin(
-                leverage_amount.to_int_floor().i128() as u128,
-                &mtp.collateral_asset,
-            );
-
-            let AmmSwapEstimationByDenomResponse {
-                spot_price: current_price,
-                ..
-            } = querier.amm_swap_estimation_by_denom(
-                &leverage_coin,
-                &mtp.collateral_asset,
-                &mtp.trading_asset,
-                &Decimal::zero(),
-            )?;
-
-            let unrealized_pnl =
-                Self::calc_unrealized_pnl(&mtp, &collateral_amount, &current_price)?;
-            let liquidation_price = Self::calc_liquidation_price(&mtp, &collateral_amount)?;
-            let stop_loss_price = stop_loss_prices[i].clone();
-
-            mtps_plus.push(Self {
-                mtp,
-                unrealized_pnl,
-                liquidation_price,
-                stop_loss_price,
-            })
+            mtps_plus.push(mtp_plus)
         }
 
         Ok(mtps_plus)
     }
 
     pub fn new(mtp: Mtp, storage: &dyn Storage, querier: &ElysQuerier<'_>) -> StdResult<Self> {
-        let collateral_amount = match SignedDecimal::from_atomics(mtp.collateral.i128(), 0) {
+
+        let collateral_info = querier.asset_info(mtp.collateral_asset.clone())?;
+
+        let collateral_amount = match SignedDecimal::from_atomics(mtp.collateral.i128(), collateral_info.asset_info.decimal as u32) {
             Ok(collateral_amount) => collateral_amount,
             Err(e) => return Err(StdError::generic_err(e.to_string())),
         };
 
-        let leverage_amount = mtp.leverage.checked_mul(collateral_amount.clone())?;
-        let leverage_coin = coin(
-            leverage_amount.to_int_floor().i128() as u128,
-            &mtp.collateral_asset,
-        );
-
-        let AmmSwapEstimationByDenomResponse {
-            spot_price: current_price,
-            ..
-        } = querier.amm_swap_estimation_by_denom(
-            &leverage_coin,
-            &mtp.collateral_asset,
-            &mtp.trading_asset,
-            &Decimal::zero(),
-        )?;
+        let current_price = querier.get_asset_price(&mtp.trading_asset)?;
 
         let unrealized_pnl = Self::calc_unrealized_pnl(&mtp, &collateral_amount, &current_price)?;
         let liquidation_price = Self::calc_liquidation_price(&mtp, &collateral_amount)?;
