@@ -33,6 +33,7 @@ impl PerpetualAsset {
         querier: &ElysQuerier<'_>,
     ) -> StdResult<Self> {
         let collateral_info = querier.asset_info(mtp.mtp.collateral_asset.clone())?;
+        let trading_asset_info = querier.asset_info(mtp.mtp.trading_asset.clone())?;
 
         Ok(PerpetualAsset {
             denom: mtp.mtp.collateral_asset.clone(),
@@ -55,11 +56,11 @@ impl PerpetualAsset {
             },
             leverage: mtp.mtp.leverage,
             size: DecCoin {
-                denom: mtp.mtp.collateral_asset.clone(),
+                denom: mtp.mtp.trading_asset.clone(),
                 amount: Decimal256::from(
                     Decimal::from_atomics(
                         Uint128::new(mtp.mtp.custody.i128() as u128),
-                        collateral_info.asset_info.decimal as u32,
+                        trading_asset_info.asset_info.decimal as u32,
                     )
                     .map_err(|e| {
                         StdError::generic_err(format!(
