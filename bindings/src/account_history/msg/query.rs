@@ -60,7 +60,7 @@ pub enum QueryMsg {
 
     #[cfg(feature = "debug")]
     #[returns(Vec<(String, Vec<AccountSnapshot>)>)]
-    All {},
+    All { pagination: Option<PageRequest> },
 
     #[cfg(feature = "debug")]
     #[returns(Vec<AccountSnapshot>)]

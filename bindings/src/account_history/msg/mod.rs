@@ -9,6 +9,7 @@ pub use query::QueryMsg;
 pub use sudo::SudoMsg;
 
 pub mod query_resp {
+    mod get_all_resp;
     mod get_portfolio_resp;
     mod get_rewards_resp;
     mod get_total_balance_resp;
@@ -18,6 +19,7 @@ pub mod query_resp {
     mod total_value_per_asset_resp;
     mod user_value_response;
 
+    pub use get_all_resp::GetAllResp;
     pub use get_portfolio_resp::GetPortfolioResp;
     pub use get_rewards_resp::GetRewardsResp;
     pub use get_total_balance_resp::GetTotalBalanceResp;

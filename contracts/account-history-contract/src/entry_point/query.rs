@@ -66,7 +66,7 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         #[cfg(feature = "debug")]
         Params {} => to_json_binary(&params(deps)?),
         #[cfg(feature = "debug")]
-        All {} => to_json_binary(&all(deps)?),
+        All { pagination } => to_json_binary(&all(deps, pagination)?),
         #[cfg(feature = "debug")]
         UserSnapshots { user_address } => to_json_binary(&user_snapshots(deps, user_address)?),
         #[cfg(feature = "debug")]
