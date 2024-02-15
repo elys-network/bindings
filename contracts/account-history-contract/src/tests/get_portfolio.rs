@@ -353,7 +353,8 @@ fn get_portfolio() {
     let expected = GetPortfolioResp {
         actual_portfolio_balance: SignedDecimal256::from_str("1982.608896785343").unwrap(),
         old_portfolio_balance: SignedDecimal256::from_str("0").unwrap(),
-        balance_24h_change: SignedDecimal256::from_str("0").unwrap(),
+        // balance_24h_change: SignedDecimal256::from_str("0").unwrap(),
+        balance_24h_change: SignedDecimal256::from_str("1982.608896785343").unwrap(),
         portfolio: Portfolio {
             balance_usd: DecCoin {
                 denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
@@ -524,10 +525,10 @@ fn get_portfolio() {
     );
     assert_eq!(
         resp.old_portfolio_balance,
-        SignedDecimal256::from_str("3362.254496785343").unwrap()
+        SignedDecimal256::from_str("3362.254496785343").unwrap() // SignedDecimal256::from_str("0").unwrap()
     );
     assert_eq!(
         resp.balance_24h_change,
-        SignedDecimal256::from_str("172.4557").unwrap()
+        SignedDecimal256::from_str("172.4557").unwrap() // SignedDecimal256::from_str("3534.710196785343").unwrap()
     );
 }

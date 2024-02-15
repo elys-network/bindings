@@ -416,6 +416,24 @@ function get_user_snapshots() {
     }'
 }
 
+# get user last snapshot
+function get_user_last_snapshot() {
+    printf "\n# Get user last snapshot\n"
+    query_contract "$ah_contract_address" '{
+        "last_snapshot": {
+            "user_address": "'"$user_address"'"
+        }
+    }'
+}
+
+# get all snapshots
+function get_all_snapshots() {
+    printf "\n# Get all snapshots\n"
+    query_contract "$ah_contract_address" '{
+        "all": {}
+    }'
+}
+
 # get stable stake params
 function get_stable_stake_params() {
     printf "\n# Get stable stake params\n"
@@ -548,6 +566,12 @@ case "$2" in
         ;;
     "get_user_snapshots")
         get_user_snapshots
+        ;;
+    "get_user_last_snapshot")
+        get_user_last_snapshot
+        ;;
+    "get_all_snapshots")
+        get_all_snapshots
         ;;
     "get_stable_stake_params")
         get_stable_stake_params
