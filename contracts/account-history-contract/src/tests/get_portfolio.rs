@@ -525,12 +525,10 @@ fn get_portfolio() {
     );
     assert_eq!(
         resp.old_portfolio_balance,
-        // SignedDecimal256::from_str("3362.254496785343").unwrap()
-        SignedDecimal256::from_str("0").unwrap()
+        SignedDecimal256::from_str("3362.254496785343").unwrap() // SignedDecimal256::from_str("0").unwrap()
     );
     assert_eq!(
         resp.balance_24h_change,
-        // SignedDecimal256::from_str("172.4557").unwrap()
-        SignedDecimal256::from_str("3534.710196785343").unwrap()
+        SignedDecimal256::from_str("172.4557").unwrap() // SignedDecimal256::from_str("3534.710196785343").unwrap()
     );
 }
