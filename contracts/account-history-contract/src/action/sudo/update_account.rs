@@ -1,13 +1,12 @@
 use std::collections::HashMap;
 
-use chrono::Days;
 use cosmwasm_std::{BlockInfo, DepsMut, Env, Response, StdError, StdResult, Timestamp};
 use cw_utils::Expiration;
 
 use crate::{
     states::{HISTORY, METADATA, PAGINATION},
     types::AccountSnapshotGenerator,
-    utils::{get_raw_today, get_today},
+    utils::get_today,
 };
 use elys_bindings::{account_history::types::AccountSnapshot, ElysMsg, ElysQuerier, ElysQuery};
 
@@ -50,7 +49,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     for address in addresses_to_process.iter() {
         let mut history: HashMap<String, AccountSnapshot> =
             if let Some(histories) = HISTORY.may_load(deps.storage, &address)? {
-                update_history(histories, &env.block, &generator.expiration)
+                clean_up_history(histories, &env.block, &generator.expiration)
             } else {
                 HashMap::new()
             };
@@ -75,7 +74,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     Ok(Response::default())
 }
 
-fn update_history(
+fn clean_up_history(
     history: HashMap<String, AccountSnapshot>,
     block_info: &BlockInfo,
     expiration: &Expiration,
@@ -92,18 +91,20 @@ fn update_history(
         return history;
     }
 
-    let expired_date = match get_raw_today(&block_info)
-        .checked_sub_days(Days::new(expiration.seconds() / (24 * 3600)))
-    {
-        Some(date) => date.format("%Y-%m-%d").to_string(),
-        None => panic!("invalid date"),
-    };
+    let expired_date = block_info.time.minus_seconds(expiration.seconds());
+    let history_vec: Vec<(String, AccountSnapshot)> = history.clone().into_iter().collect();
 
-    if history.get(&expired_date).is_some() {
-        history.remove_entry(&expired_date);
-        history.remove(&expired_date);
-    };
-
+    for (date, snapshot) in history_vec {
+        let timestamp = match snapshot.date {
+            Expiration::AtHeight(h) => Timestamp::from_seconds(h * 3),
+            Expiration::AtTime(t) => t.clone(),
+            _ => panic!("never expire"),
+        };
+        if timestamp <= expired_date {
+            history.remove_entry(&date);
+            history.remove(&date);
+        }
+    }
     return history;
 }
 
@@ -116,7 +117,7 @@ mod tests {
     };
 
     #[test]
-    fn test_update_history() {
+    fn test_clean_up_history() {
         let mut history: HashMap<String, AccountSnapshot> = HashMap::new();
 
         let snapshot = AccountSnapshot {
@@ -210,7 +211,7 @@ mod tests {
         assert!(history.get("2024-02-07").is_some());
         assert!(history.get("2024-01-31").is_some());
 
-        let history = update_history(history, &block_info, &expiration);
+        let history = clean_up_history(history, &block_info, &expiration);
 
         assert!(history.get("2024-02-07").is_some());
         assert!(history.get("2024-01-31").is_none());
