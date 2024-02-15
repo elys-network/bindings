@@ -144,9 +144,13 @@ impl AccountSnapshotGenerator {
         let staked_assets = self.get_staked_assets(&deps, &address)?;
         let eden_program = staked_assets.staked_assets.eden_earn_program;
         let available = eden_program.available.unwrap();
-        let eden_coin = Coin::new(u128::from(available.amount), "ueden".to_string());
-
-        account_balances.push(eden_coin);
+        let eden_coin = Coin::new(
+            u128::from(available.amount),
+            ElysDenom::Eden.as_str()
+        );
+        if available.amount > Uint128::zero() {
+            account_balances.push(eden_coin);
+        }
 
         let available_asset_balance: Vec<CoinValue> = account_balances
             .iter()
