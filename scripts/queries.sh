@@ -434,6 +434,16 @@ function get_stable_stake_params() {
     }'
 }
 
+# get liquidity pools
+function get_liquidity_pools() {
+    printf "\n# Get stable stake params\n"
+    query_contract "$ah_contract_address" '{
+        "get_liquidity_pools": {
+            "filter_type": "all"
+        }
+    }'
+}
+
 # function(s) to run based on the provided argument
 case "$2" in
     "ah_params")
@@ -565,6 +575,9 @@ case "$2" in
     "get_stable_stake_params")
         get_stable_stake_params
         ;;
+    "get_liquidity_pools")
+        get_liquidity_pools
+        ;;
     "get_asset_price")
         get_asset_price $3
         ;;
@@ -616,5 +629,6 @@ case "$2" in
         get_amm_price_by_denom $elys_denom
         get_amm_price_by_denom $eden_denom
         get_stable_stake_params
+        get_liquidity_pools
         ;;
 esac
