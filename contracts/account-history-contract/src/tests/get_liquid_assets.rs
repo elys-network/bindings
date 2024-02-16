@@ -8,13 +8,13 @@ use crate::{
 };
 use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
-    coin, to_json_binary, Addr, DecCoin, Decimal, Decimal256, Empty, StdError, Timestamp,
+    coin, to_json_binary, Addr, DecCoin, Uint128, Decimal, Decimal256, Empty, StdError, Timestamp,
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::query_resp::{
     Entry, OracleAssetInfoResponse, QueryGetEntryResponse, QueryGetPriceResponse,
 };
-use elys_bindings::types::{OracleAssetInfo, Price};
+use elys_bindings::types::{OracleAssetInfo, Price, BalanceAvailable};
 use elys_bindings::{ElysMsg, ElysQuery};
 use elys_bindings_test::{
     ElysModule, ACCOUNT, ASSET_INFO, LAST_MODULE_USED, PERPETUAL_OPENED_POSITION, PRICES,
@@ -40,6 +40,13 @@ impl Module for ElysModuleWrapper {
         request: Self::QueryT,
     ) -> AnyResult<cosmwasm_std::Binary> {
         match request {
+            ElysQuery::AmmBalance { .. } => {
+                let resp = BalanceAvailable {
+                    amount: Uint128::new(0),
+                    usd_amount: Decimal::zero()
+                };
+                Ok(to_json_binary(&resp)?)
+            }
             ElysQuery::AssetProfileEntry { base_denom } => {
                 let resp = match base_denom.as_str() {
                     "uusdc" => QueryGetEntryResponse {
@@ -118,6 +125,7 @@ impl Module for ElysModuleWrapper {
             ElysQuery::AmmPriceByDenom { token_in, .. } => {
                 let spot_price = match token_in.denom.as_str() {
                     "uelys" => Decimal::from_str("3.5308010067676894").unwrap(),
+                    "ueden" => Decimal::from_str("3.5308010067676894").unwrap(),
                     "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65" => {
                         Decimal::one()
                     }
@@ -296,6 +304,7 @@ fn get_liquid_assets() {
                 "ibc/FB22E35236996F6B0B1C9D407E8A379A7B1F4083F1960907A1622F022AE450E1",
             ),
             coin(45666543, "uelys"),
+            coin(45666543, "ueden"),
         ],
     )];
 
@@ -388,6 +397,16 @@ fn get_liquid_assets() {
                 total_value: Decimal::from_str("161.239475999999978995").unwrap(),
             },
             LiquidAsset {
+                denom: "ueden".to_string(),
+                price: Decimal::from_str("3.5308010067676894").unwrap(),
+                available_amount: Decimal::from_str("45.666543").unwrap(),
+                available_value: Decimal::from_str("161.239475999999978995").unwrap(),
+                in_order_amount: Decimal::zero(),
+                in_order_value: Decimal::zero(),
+                total_amount: Decimal::from_str("45.666543").unwrap(),
+                total_value: Decimal::from_str("161.239475999999978995").unwrap(),
+            },
+            LiquidAsset {
                 denom: "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4"
                     .to_string(),
                 price: Decimal::from_str("9.02450744362719844").unwrap(),
@@ -433,8 +452,7 @@ fn get_liquid_assets() {
     assert_eq!(
         resp.liquid_assets
             .iter()
-            .find(|l| l.denom.as_str()
-                == "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4")
+            .find(|l| l.denom.as_str() == "ueden")
             .cloned(),
         Some(expected.liquid_assets[1].clone())
     );
@@ -442,9 +460,17 @@ fn get_liquid_assets() {
         resp.liquid_assets
             .iter()
             .find(|l| l.denom.as_str()
-                == "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65")
+                == "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4")
             .cloned(),
         Some(expected.liquid_assets[2].clone())
+    );
+    assert_eq!(
+        resp.liquid_assets
+            .iter()
+            .find(|l| l.denom.as_str()
+                == "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65")
+            .cloned(),
+        Some(expected.liquid_assets[3].clone())
     );
     assert_eq!(
         resp.total_liquid_asset_balance,

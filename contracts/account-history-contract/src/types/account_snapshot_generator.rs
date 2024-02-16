@@ -137,9 +137,30 @@ impl AccountSnapshotGenerator {
         querier: &ElysQuerier,
         address: &String,
     ) -> StdResult<LiquidAsset> {
-        let account_balances = deps.querier.query_all_balances(address)?;
+        let mut account_balances = deps.querier.query_all_balances(address)?;
         let orders_balances =
             self.get_all_orders(&deps.querier, &self.trade_shield_address, &address)?;
+
+        let eden_program = get_eden_earn_program_details(
+            deps,
+            Some(address.to_owned()),
+            ElysDenom::Eden.as_str().to_string(),
+            self.metadata.usdc_denom.to_owned(),
+            self.metadata.uusdc_usd_price,
+            self.metadata.uelys_price_in_uusdc,
+            self.metadata.usdc_apr_eden.to_owned(),
+            self.metadata.eden_apr_eden.to_owned(),
+            self.metadata.edenb_apr_eden.to_owned(),
+        ).unwrap();
+        let available = eden_program.data.available.unwrap();
+        let eden_coin = Coin::new(
+            u128::from(available.amount),
+            ElysDenom::Eden.as_str()
+        );
+        if available.amount > Uint128::zero() {
+            account_balances.push(eden_coin);
+        }
+
         let available_asset_balance: Vec<CoinValue> = account_balances
             .iter()
             .filter_map(|coin| {
