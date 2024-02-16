@@ -1,6 +1,6 @@
 use crate::action::query::{
-    get_liquid_assets, get_membership_tier, get_perpetuals_assets, get_portfolio, get_rewards,
-    get_staked_assets, get_total_balance,
+    get_liquid_assets, get_membership_tier, get_perpetuals_assets, get_pool_balances,
+    get_portfolio, get_rewards, get_staked_assets, get_total_balance,
 };
 
 #[cfg(feature = "debug")]
@@ -28,6 +28,9 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         }
         GetStakedAssets { user_address } => {
             to_json_binary(&get_staked_assets(deps, user_address, env)?)
+        }
+        GetPoolBalances { user_address } => {
+            to_json_binary(&get_pool_balances(deps, user_address, env)?)
         }
         GetPortfolio { user_address } => to_json_binary(&get_portfolio(deps, user_address, env)?),
         GetTotalBalance { user_address } => {

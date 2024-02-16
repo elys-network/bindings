@@ -5,8 +5,8 @@ use super::query_resp::*;
 #[allow(unused_imports)]
 use crate::query_resp::{
     AuthAddressesResponse, BalanceBorrowed, PoolFilterType, QueryEarnPoolResponse,
-    QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryVestingInfoResponse,
-    StableStakeParamsData, StakedAvailable,
+    QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryUserPoolResponse,
+    QueryVestingInfoResponse, StableStakeParamsData, StakedAvailable,
 };
 #[allow(unused_imports)]
 use crate::types::{BalanceAvailable, PageRequest};
@@ -25,6 +25,8 @@ pub enum QueryMsg {
     GetStakedAssets { user_address: String },
     #[returns(GetPortfolioResp)]
     GetPortfolio { user_address: String },
+    #[returns(QueryUserPoolResponse)]
+    GetPoolBalances { user_address: String },
     #[returns(GetTotalBalanceResp)]
     GetTotalBalance { user_address: String },
     #[returns(GetRewardsResp)]

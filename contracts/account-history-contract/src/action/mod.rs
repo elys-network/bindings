@@ -8,6 +8,7 @@ pub mod query {
     use crate::error::ContractError;
     mod get_membership_tier;
     mod get_perpetual_asset;
+    mod get_pool_balances;
     mod get_pools;
     mod get_portfolio;
     mod get_rewards;
@@ -35,6 +36,7 @@ pub mod query {
     #[cfg(feature = "debug")]
     pub use user_value::user_value;
 
+    pub use get_pool_balances::get_pool_balances;
     pub use get_pools::get_pools;
     mod get_eden_boost_earn_program_details;
     pub use get_eden_boost_earn_program_details::get_eden_boost_earn_program_details;
