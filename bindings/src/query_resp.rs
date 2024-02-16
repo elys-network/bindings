@@ -361,6 +361,11 @@ pub struct QueryEarnPoolResponse {
 }
 
 #[cw_serde]
+pub struct QueryUserPoolResponse {
+    pub pools: Vec<UserPoolResp>,
+}
+
+#[cw_serde]
 pub struct PoolResp {
     pub assets: Vec<PoolAsset>, // eg : [{{"denom":"uatom", "amount":"1000"}, "weight":"10"}, {{"denom":"uusdc", "amount":"100"}, "weight":"1"}, ...]
     pub pool_ratio: String,
@@ -370,4 +375,19 @@ pub struct PoolResp {
     pub perpetual: Decimal,
     pub tvl: Decimal,
     pub rewards: Decimal,
+}
+
+#[cw_serde]
+pub struct UserPoolResp {
+    pub pool: PoolResp,
+    pub balance: Coin,
+}
+
+#[cw_serde]
+pub enum PoolFilterType {
+    FilterAll = 0,
+    FilterPerpetual = 1,
+    FilterFixedWeight = 2,
+    FilterDynamicWeight = 3,
+    FilterLeverage = 4,
 }

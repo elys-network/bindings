@@ -3,6 +3,7 @@ mod coin_value;
 mod liquid_asset;
 mod metadata;
 mod perpetual_assets;
+mod pool_balances;
 mod portfolio;
 mod reward;
 mod staked_assets;
@@ -41,5 +42,6 @@ pub use total_balance::TotalBalance;
 
 pub use liquid_asset::LiquidAsset;
 pub use perpetual_assets::*;
+pub use pool_balances::PoolBalances;
 pub use reward::Reward;
 pub use staked_assets::StakedAssets;

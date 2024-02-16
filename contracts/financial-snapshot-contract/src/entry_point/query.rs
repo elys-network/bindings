@@ -36,18 +36,6 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
             delegator_addr,
         )?)?),
 
-        // Liquidity Pools
-        GetLiquidityPools {
-            pool_ids,
-            filter_type,
-            pagination,
-        } => Ok(to_json_binary(&earn::get_pools(
-            deps,
-            pool_ids,
-            filter_type,
-            pagination,
-        )?)?),
-
         // Specific function for querying USDC oracle price
         GetUsdcPrice {} => Ok(to_json_binary(&earn::get_usdc_price(deps)?)?),
     }

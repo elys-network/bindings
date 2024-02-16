@@ -1,10 +1,10 @@
 use crate::action::query::{
-    get_liquid_assets, get_membership_tier, get_perpetuals_assets, get_portfolio, get_rewards,
-    get_staked_assets, get_total_balance,
+    get_liquid_assets, get_membership_tier, get_perpetuals_assets, get_pool_balances,
+    get_portfolio, get_rewards, get_staked_assets, get_total_balance,
 };
 
 #[cfg(feature = "debug")]
-use crate::action::query::{all, last_snapshot, params, user_snapshots, user_value};
+use crate::action::query::{all, get_pools, last_snapshot, params, user_snapshots, user_value};
 
 use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult};
 use elys_bindings::{ElysQuerier, ElysQuery};
@@ -29,6 +29,9 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         GetStakedAssets { user_address } => {
             to_json_binary(&get_staked_assets(deps, user_address, env)?)
         }
+        GetPoolBalances { user_address } => {
+            to_json_binary(&get_pool_balances(deps, user_address, env)?)
+        }
         GetPortfolio { user_address } => to_json_binary(&get_portfolio(deps, user_address, env)?),
         GetTotalBalance { user_address } => {
             to_json_binary(&get_total_balance(deps, env, user_address)?)
@@ -45,6 +48,12 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
             let querier = ElysQuerier::new(&deps.querier);
             to_json_binary(&querier.get_asset_price(asset)?)
         }
+
+        GetLiquidityPools {
+            pool_ids,
+            filter_type,
+            pagination,
+        } => to_json_binary(&get_pools(deps, pool_ids, filter_type, pagination)?),
 
         GetAssetPriceFromDenomInToDenomOut {
             denom_in,

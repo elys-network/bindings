@@ -14,9 +14,10 @@ use elys_bindings::{
                 EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram,
             },
             AccountSnapshot, CoinValue, ElysDenom, LiquidAsset, Metadata, PerpetualAsset,
-            PerpetualAssets, Portfolio, Reward, StakedAssets, TotalBalance,
+            PerpetualAssets, PoolBalances, Portfolio, Reward, StakedAssets, TotalBalance,
         },
     },
+    query_resp::{PoolFilterType, QueryUserPoolResponse, UserPoolResp},
     trade_shield::{
         msg::{
             query_resp::{
@@ -32,7 +33,7 @@ use elys_bindings::{
 use crate::{
     action::query::{
         get_eden_boost_earn_program_details, get_eden_earn_program_details,
-        get_elys_earn_program_details, get_usdc_earn_program_details,
+        get_elys_earn_program_details, get_pools, get_usdc_earn_program_details,
     },
     states::{EXPIRATION, METADATA, TRADE_SHIELD_ADDRESS},
 };
@@ -68,6 +69,7 @@ impl AccountSnapshotGenerator {
         let staked_assets_response = self.get_staked_assets(&deps, &address)?;
         let rewards_response = self.get_rewards(&deps, &address)?;
         let perpetual_response = self.get_perpetuals(&deps, &address)?;
+        let pool_balances_response = self.get_pool_balances(&deps, &address)?;
 
         let date = match self.expiration {
             Expiration::AtHeight(_) => Expiration::AtHeight(env.block.height),
@@ -125,10 +127,64 @@ impl AccountSnapshotGenerator {
                 borrows_usd: DecCoin::new(Decimal256::zero(), &self.metadata.usdc_denom),
             },
             reward,
+            pool_balances: PoolBalances {
+                balances: pool_balances_response.pools,
+            },
             liquid_asset: liquid_assets_response,
             staked_assets: staked_assets_response.staked_assets,
             perpetual_assets: perpetual_response,
         }))
+    }
+
+    pub fn get_pool_balances(
+        &self,
+        deps: &Deps<ElysQuery>,
+        address: &String,
+    ) -> StdResult<QueryUserPoolResponse> {
+        let account_balances = deps.querier.query_all_balances(address)?;
+
+        struct IdSortedPoolBalance {
+            pub id: u64,
+            pub balance: Coin,
+        }
+
+        // Get all balances with denoms starting in "amm/pool/"
+        let pool_balances: Vec<Coin> = account_balances
+            .iter()
+            .filter(|coin| coin.denom.starts_with("amm/pool/"))
+            .cloned()
+            .collect();
+
+        let pool_data: Vec<IdSortedPoolBalance> = pool_balances
+            .iter()
+            .map(|coin| {
+                let id = coin
+                    .denom
+                    .split("/")
+                    .last()
+                    .unwrap()
+                    .parse::<u64>()
+                    .unwrap();
+                IdSortedPoolBalance {
+                    id,
+                    balance: coin.clone(),
+                }
+            })
+            .collect();
+
+        // For each pool_data, fetch the pool with that ID
+        let mut pool_resp: Vec<UserPoolResp> = Vec::new();
+        for user_pool in pool_data {
+            let pool_id = user_pool.id;
+            let pool = get_pools(*deps, Some(vec![pool_id]), PoolFilterType::FilterAll, None)?;
+            let pool = pool.pools.unwrap().first().unwrap().clone();
+            pool_resp.push(UserPoolResp {
+                pool,
+                balance: user_pool.balance,
+            });
+        }
+
+        Ok(QueryUserPoolResponse { pools: pool_resp })
     }
 
     pub fn get_liquid_assets(

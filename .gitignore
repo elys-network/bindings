@@ -19,4 +19,7 @@ yarn.lock
 # environment variables
 .env*
 
+# VSCode config
+.vscode/
+
 .DS_Store
