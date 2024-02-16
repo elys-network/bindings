@@ -174,7 +174,7 @@ function create_spot_order_as_market_buy() {
             }
         }' \
         wasm-create_spot_order \
-        "1000000$source"
+        "100000000$source"
 }
 
 # Create perpetual order as market open
@@ -231,6 +231,22 @@ function create_perpetual_order() {
         }' \
         wasm-create_perpetual_order \
         "100000000$usdc_denom"
+}
+
+# Perpetual Close Position
+function perpetual_close_position () {
+    order_id=$1
+    amount=$2
+    printf "\n# Perpetual Close Position"
+    execute_message \
+        "$ts_contract_address" \
+        '{
+            "close_perpetual_position": {
+                "id" : '"$order_id"',
+                "amount" : "'"$amount"'"
+            }
+        }' \
+        wasm-close_perpetual_position
 }
 
 # Perpetual open estimation
@@ -340,6 +356,9 @@ case "$1" in
         ;;
     "create_perpetual_order_as_limit_open")
         create_perpetual_order "limit_open"
+        ;;
+    "perpetual_close_position")
+        perpetual_close_position $2 $3
         ;;
     "perpetual_open_estimation")
         perpetual_open_estimation
