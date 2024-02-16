@@ -447,7 +447,7 @@ function get_liquidity_pools() {
     printf "\n# Get stable stake params\n"
     query_contract "$ah_contract_address" '{
         "get_liquidity_pools": {
-            "filter_type": "all"
+            "filter_type": "filter_all"
         }
     }'
 }
