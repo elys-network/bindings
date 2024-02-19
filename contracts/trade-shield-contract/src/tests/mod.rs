@@ -73,6 +73,7 @@ mod create_perpetual_order {
     mod successful_create_perpetual_market_close;
     mod successful_create_perpetual_market_order;
     mod successful_create_perpetual_order;
+    mod change_trigger_price;
 }
 
 mod cancel_perpetual_order {
