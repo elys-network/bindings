@@ -8,15 +8,8 @@ pub fn cancel_spot_orders(
     info: MessageInfo,
     deps: DepsMut<ElysQuery>,
     order_ids: Option<Vec<u64>>,
-    owner_address: String,
     order_type: Option<SpotOrderType>,
 ) -> Result<Response<ElysMsg>, ContractError> {
-    if info.sender.as_str() != owner_address {
-        return Err(ContractError::Unauthorized {
-            sender: info.sender,
-        });
-    }
-
     let orders: Vec<SpotOrder> = if let Some(ids) = &order_ids {
         if ids.is_empty() {
             return Err(StdError::generic_err("order_ids is defined empty").into());
@@ -28,7 +21,7 @@ pub fn cancel_spot_orders(
 
         if orders
             .iter()
-            .any(|order| order.owner_address != owner_address)
+            .any(|order| order.owner_address != info.sender.as_str())
         {
             return Err(ContractError::Unauthorized {
                 sender: info.sender,
@@ -54,7 +47,8 @@ pub fn cancel_spot_orders(
                 }
             })
             .filter(|order| {
-                order.owner_address.as_str() == &owner_address && order.status == Status::Pending
+                order.owner_address.as_str() == info.sender.as_str()
+                    && order.status == Status::Pending
             })
             .collect();
 
@@ -77,7 +71,7 @@ pub fn cancel_spot_orders(
 
     let order_ids: Vec<u64> = orders.iter().map(|order| order.order_id).collect();
 
-    let refund_msg = make_refund_msg(orders, owner_address);
+    let refund_msg = make_refund_msg(orders, info.sender.to_string());
 
     Ok(Response::new()
         .add_message(refund_msg)
