@@ -240,18 +240,6 @@ fn create_perpetual_close_order(
         .filter_map(|res| res.ok().map(|r| r.1))
         .collect();
 
-    if orders
-        .iter()
-        .find(|order| {
-            order.position_id == Some(position_id)
-                && order.status != Status::Canceled
-                && order.order_type != order_type
-        })
-        .is_some()
-    {
-        return Err(StdError::generic_err("this position had an order already assigned").into());
-    };
-
     let QueryGetEntryResponse {
         entry: Entry {
             denom: usdc_denom, ..
@@ -277,6 +265,30 @@ fn create_perpetual_close_order(
             .into());
         }
     }
+
+    if let Some(mut order) = orders
+        .iter()
+        .find(|order| {
+            order.position_id == Some(position_id)
+                && order.status == Status::Pending
+                && order_type == order.order_type
+        })
+        .cloned()
+    {
+        order.trigger_price = trigger_price;
+        PERPETUAL_ORDER.save(deps.storage, order.order_id, &order)?;
+
+        if order.order_type != PerpetualOrderType::MarketClose {
+            PENDING_PERPETUAL_ORDER.save(deps.storage, order.order_id, &order)?;
+        }
+
+        let resp = Response::new().add_event(
+            Event::new("create_perpetual_close_order")
+                .add_attribute("perpetual_order_id", order.order_id.to_string()),
+        );
+
+        return Ok(resp);
+    };
 
     let order = PerpetualOrder::new_close(
         &info.sender,
