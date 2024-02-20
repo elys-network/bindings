@@ -19,7 +19,6 @@ pub enum ExecuteMsg {
 
     CancelSpotOrders {
         order_ids: Option<Vec<u64>>,
-        owner_address: String,
         order_type: Option<SpotOrderType>,
     },
     CreatePerpetualOrder {
@@ -37,7 +36,6 @@ pub enum ExecuteMsg {
 
     CancelPerpetualOrders {
         order_ids: Option<Vec<u64>>,
-        owner_address: String,
         order_type: Option<PerpetualOrderType>,
     },
     ClosePerpetualPosition {

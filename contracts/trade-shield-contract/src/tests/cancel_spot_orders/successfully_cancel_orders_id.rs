@@ -137,7 +137,6 @@ fn successfully_cancel_orders_ids() {
             addr.clone(),
             &&ExecuteMsg::CancelSpotOrders {
                 order_ids: Some(vec![1, 3]),
-                owner_address: "user".to_string(),
                 order_type: None,
             },
             &[],

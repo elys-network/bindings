@@ -32,9 +32,8 @@ pub fn execute(
         CancelSpotOrder { order_id } => cancel_spot_order(info, deps, order_id),
         CancelSpotOrders {
             order_ids,
-            owner_address,
             order_type,
-        } => cancel_spot_orders(info, deps, order_ids, owner_address, order_type),
+        } => cancel_spot_orders(info, deps, order_ids, order_type),
 
         CreatePerpetualOrder {
             position,
@@ -58,9 +57,8 @@ pub fn execute(
         CancelPerpetualOrder { order_id } => cancel_perpetual_order(info, deps, order_id),
         CancelPerpetualOrders {
             order_ids,
-            owner_address,
             order_type,
-        } => cancel_perpetual_orders(info, deps, order_ids, owner_address, order_type),
+        } => cancel_perpetual_orders(info, deps, order_ids, order_type),
         ClosePerpetualPosition { id, amount } => close_perpetual_position(info, id, amount),
 
         StakeRequest {
