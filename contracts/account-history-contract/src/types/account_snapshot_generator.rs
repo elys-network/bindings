@@ -13,6 +13,7 @@ use elys_bindings::{
             earn_program::{
                 EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram,
             },
+            BalanceReward,
             AccountSnapshot, CoinValue, ElysDenom, LiquidAsset, Metadata, PerpetualAsset,
             PerpetualAssets, PoolBalances, Portfolio, Reward, StakedAssets, TotalBalance,
         },
@@ -77,7 +78,7 @@ impl AccountSnapshotGenerator {
             Expiration::Never {} => panic!("never expire"),
         };
 
-        let reward = rewards_response.rewards;
+        let reward = rewards_response.rewards_map;
         let portfolio_usd = DecCoin::new(
             liquid_assets_response
                 .total_liquid_asset_balance
@@ -540,6 +541,7 @@ impl AccountSnapshotGenerator {
             .checked_div(Decimal::from_atomics(Uint128::new(1000000), 0).unwrap())
             .unwrap();
 
+        let mut balance_rewards: Vec<BalanceReward> = vec![];
         let mut rewards = Reward {
             usdc_usd: Decimal::zero(),
             eden_usd: Decimal::zero(),
@@ -554,7 +556,15 @@ impl AccountSnapshotGenerator {
                     // uusdc
                     if reward.denom == denom_uusdc {
                         let usdc_rewards = Decimal::from_atomics(reward.amount, 0).unwrap();
-                        rewards.usdc_usd = usdc_rewards.checked_mul(usdc_price).unwrap();
+                        let rewards_in_usd = usdc_rewards.checked_mul(usdc_price)?;
+
+                        balance_rewards.push(BalanceReward {
+                            asset: denom_usdc_entry.entry.base_denom.clone(),
+                            amount: reward.amount,
+                            usd_amount: Some(rewards_in_usd)
+                        });
+                        
+                        rewards.usdc_usd = rewards_in_usd;
                         rewards.total_usd =
                             rewards.total_usd.checked_add(rewards.usdc_usd).unwrap();
 
@@ -589,7 +599,15 @@ impl AccountSnapshotGenerator {
                             &denom_uusdc,
                         );
                         let rewards_in_usdc = Decimal::from_atomics(amount.amount, 0).unwrap();
-                        rewards.eden_usd = rewards_in_usdc.checked_mul(usdc_price).unwrap();
+                        let rewards_in_usd = rewards_in_usdc.checked_mul(usdc_price).unwrap();
+
+                        balance_rewards.push(BalanceReward {
+                            asset: denom_ueden.clone(),
+                            amount: amount.amount,
+                            usd_amount: Some(rewards_in_usd)
+                        });
+
+                        rewards.eden_usd = rewards_in_usd;
                         rewards.total_usd =
                             rewards.total_usd.checked_add(rewards.eden_usd).unwrap();
                         continue;
@@ -597,6 +615,11 @@ impl AccountSnapshotGenerator {
 
                     // uedenb - we don't value eden boost in usd.
                     if reward.denom == denom_uedenb {
+                        balance_rewards.push(BalanceReward {
+                            asset: denom_uedenb.clone(),
+                            amount: reward.amount,
+                            usd_amount: None
+                        });
                         rewards.eden_boost = reward.amount;
                         continue;
                     }
@@ -621,16 +644,23 @@ impl AccountSnapshotGenerator {
 
                     rewards.other_usd = rewards.other_usd.checked_add(rewards_in_usd).unwrap();
                     rewards.total_usd = rewards.total_usd.checked_add(rewards_in_usd).unwrap();
+
+                    balance_rewards.push(BalanceReward {
+                        asset: amount.denom,
+                        amount: amount.amount,
+                        usd_amount: Some(rewards_in_usd)
+                    });
                 }
             }
             None => {
                 return Ok(GetRewardsResp {
-                    rewards: AccountSnapshot::zero(&denom_uusdc).reward,
+                    rewards_map: AccountSnapshot::zero(&denom_uusdc).reward,
+                    rewards: balance_rewards
                 });
             }
         }
 
-        let resp = GetRewardsResp { rewards: rewards };
+        let resp = GetRewardsResp { rewards_map: rewards, rewards: balance_rewards };
         Ok(resp)
     }
 }
