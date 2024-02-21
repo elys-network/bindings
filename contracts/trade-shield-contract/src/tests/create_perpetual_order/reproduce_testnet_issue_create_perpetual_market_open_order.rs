@@ -123,30 +123,37 @@ impl Module for ElysModule {
                     swap_fee: Decimal::zero().to_string(),
                     discount: discount.clone().to_string(),
                     open_price: Decimal::from_atomics(Uint128::new(9_440_848_026_817_446_325), 18)
-                        .unwrap().to_string(),
+                        .unwrap()
+                        .to_string(),
                     take_profit_price: take_profit_price.clone().to_string(),
                     liquidation_price: Decimal::from_atomics(
                         Uint128::new(9_240_848_026_817_446_325),
                         18,
                     )
-                    .unwrap().to_string(),
+                    .unwrap()
+                    .to_string(),
                     estimated_pnl: Int128::from_str(
                         // "4_999_999_999_999_999_999_999_999_999_999_999_999_527_957_598_6",
                         "4999999999999999999999999999999999999",
                     )
                     .unwrap(),
-                    estimated_pnl_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
+                    estimated_pnl_denom:
+                        "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                            .to_string(),
                     available_liquidity: coin(
                         7705931608,
                         "ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4",
                     ),
                     weight_balance_ratio: Decimal::zero().to_string(),
                     borrow_interest_rate: Decimal::from_atomics(Uint128::new(323_793_793_684), 18)
-                        .unwrap().to_string(),
+                        .unwrap()
+                        .to_string(),
                     funding_rate: Decimal::from_atomics(Uint128::new(1_000_000_000_000_000), 18)
-                        .unwrap().to_string(),
+                        .unwrap()
+                        .to_string(),
                     price_impact: Decimal::from_atomics(Uint128::new(6_495_303_442_450), 18)
-                        .unwrap().to_string(),
+                        .unwrap()
+                        .to_string(),
                 };
 
                 return Ok(to_json_binary(&resp)?);

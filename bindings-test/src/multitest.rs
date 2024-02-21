@@ -20,10 +20,17 @@ use elys_bindings::{
         PerpetualOpenResponse,
     },
     query_resp::{
-        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse, BalanceBorrowed, Commitments, Entry, OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse, PerpetualOpenEstimationRawResponse, PerpetualQueryPositionsResponse, QueryAprResponse, QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse, QueryShowCommitmentsResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryVestingInfoResponse, StableStakeParamsData, StableStakeParamsResp
+        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse,
+        BalanceBorrowed, Commitments, Entry, OracleAssetInfoResponse,
+        PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
+        PerpetualOpenEstimationRawResponse, PerpetualQueryPositionsResponse, QueryAprResponse,
+        QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse,
+        QueryShowCommitmentsResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
+        QueryVestingInfoResponse, StableStakeParamsData, StableStakeParamsResp,
     },
     types::{
-        BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute, SwapAmountOutRoute
+        BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
+        SwapAmountOutRoute,
     },
     ElysMsg, ElysQuery,
 };
@@ -291,7 +298,7 @@ impl Module for ElysModule {
                     position_size: coin(1, "btc"),
                     swap_fee: Decimal::zero().to_string(),
                     open_price: Decimal::zero().to_string(),
-                    take_profit_price : take_profit_price.to_string(),
+                    take_profit_price: take_profit_price.to_string(),
                     liquidation_price: Decimal::zero().to_string(),
                     estimated_pnl: Int128::zero(),
                     estimated_pnl_denom: "uelys".to_string(),

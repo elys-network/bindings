@@ -1,7 +1,8 @@
 use std::str::FromStr;
 
 use cosmwasm_std::{
-    coin, to_json_vec, Binary, Coin, ContractResult, Decimal, QuerierWrapper, QueryRequest, SignedDecimal, SignedDecimal256, StdError, StdResult, SystemResult
+    coin, to_json_vec, Binary, Coin, ContractResult, Decimal, QuerierWrapper, QueryRequest,
+    SignedDecimal, SignedDecimal256, StdError, StdResult, SystemResult,
 };
 
 use crate::{
@@ -119,7 +120,7 @@ impl<'a> ElysQuerier<'a> {
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
 
         let raw_resp: PerpetualOpenEstimationRawResponse = self.querier.query(&request)?;
-        
+
         let resp: PerpetualOpenEstimationResponse = PerpetualOpenEstimationResponse {
             position: PerpetualPosition::try_from_i32(raw_resp.position)?,
             leverage: SignedDecimal::from_str(&raw_resp.leverage)
@@ -147,9 +148,13 @@ impl<'a> ElysQuerier<'a> {
             estimated_pnl_denom: raw_resp.estimated_pnl_denom,
             available_liquidity: raw_resp.available_liquidity,
             weight_balance_ratio: SignedDecimal::from_str(&raw_resp.weight_balance_ratio)
-                .map_or(SignedDecimal::zero(), |weight_balance_ratio| weight_balance_ratio),
+                .map_or(SignedDecimal::zero(), |weight_balance_ratio| {
+                    weight_balance_ratio
+                }),
             borrow_interest_rate: SignedDecimal::from_str(&raw_resp.borrow_interest_rate)
-                .map_or(SignedDecimal::zero(), |borrow_interest_rate| borrow_interest_rate),
+                .map_or(SignedDecimal::zero(), |borrow_interest_rate| {
+                    borrow_interest_rate
+                }),
             funding_rate: SignedDecimal::from_str(&raw_resp.funding_rate)
                 .map_or(SignedDecimal::zero(), |funding_rate| funding_rate),
             price_impact: SignedDecimal::from_str(&raw_resp.price_impact)
