@@ -14,7 +14,8 @@ pub fn get_rewards(
     let rewards_response = generator.get_rewards(&deps, &user_address)?;
 
     let resp = GetRewardsResp {
-        rewards: rewards_response.rewards.clone(),
+        rewards_map: rewards_response.rewards_map.clone(),
+        rewards: rewards_response.rewards.clone()
     };
 
     Ok(resp)
