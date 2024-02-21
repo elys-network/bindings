@@ -20,17 +20,10 @@ use elys_bindings::{
         PerpetualOpenResponse,
     },
     query_resp::{
-        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse,
-        BalanceBorrowed, Commitments, Entry, OracleAssetInfoResponse,
-        PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
-        PerpetualOpenEstimationResponse, PerpetualQueryPositionsResponse, QueryAprResponse,
-        QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse,
-        QueryShowCommitmentsResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
-        QueryVestingInfoResponse, StableStakeParamsData, StableStakeParamsResp,
+        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse, BalanceBorrowed, Commitments, Entry, OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse, PerpetualOpenEstimationRawResponse, PerpetualQueryPositionsResponse, QueryAprResponse, QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse, QueryShowCommitmentsResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryVestingInfoResponse, StableStakeParamsData, StableStakeParamsResp
     },
     types::{
-        BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
-        SwapAmountOutRoute,
+        BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute, SwapAmountOutRoute
     },
     ElysMsg, ElysQuery,
 };
@@ -286,25 +279,26 @@ impl Module for ElysModule {
                 take_profit_price,
                 discount,
             } => {
-                return Ok(to_json_binary(&PerpetualOpenEstimationResponse {
+                return Ok(to_json_binary(&PerpetualOpenEstimationRawResponse {
                     position,
                     min_collateral: coin(0, &collateral.denom),
                     available_liquidity: coin(99999999, &trading_asset),
-                    leverage,
+                    leverage: leverage.to_string(),
                     collateral,
                     trading_asset,
-                    discount,
-                    valid_collateral: true,
+                    discount: discount.to_string(),
+                    valid_collateral: Some(true),
                     position_size: coin(1, "btc"),
-                    swap_fee: Decimal::zero(),
-                    open_price: Decimal::zero(),
-                    take_profit_price,
-                    liquidation_price: Decimal::zero(),
+                    swap_fee: Decimal::zero().to_string(),
+                    open_price: Decimal::zero().to_string(),
+                    take_profit_price : take_profit_price.to_string(),
+                    liquidation_price: Decimal::zero().to_string(),
                     estimated_pnl: Int128::zero(),
-                    weight_balance_ratio: Decimal::zero(),
-                    borrow_interest_rate: Decimal::zero(),
-                    funding_rate: Decimal::zero(),
-                    price_impact: Decimal::zero(),
+                    estimated_pnl_denom: "uelys".to_string(),
+                    weight_balance_ratio: Decimal::zero().to_string(),
+                    borrow_interest_rate: Decimal::zero().to_string(),
+                    funding_rate: Decimal::zero().to_string(),
+                    price_impact: Decimal::zero().to_string(),
                 })?)
             }
             ElysQuery::AssetProfileEntryAll { .. } => {

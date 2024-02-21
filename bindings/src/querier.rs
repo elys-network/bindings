@@ -1,8 +1,7 @@
 use std::str::FromStr;
 
 use cosmwasm_std::{
-    coin, Coin, Decimal, QuerierWrapper, QueryRequest, SignedDecimal, SignedDecimal256, StdError,
-    StdResult,
+    coin, to_json_vec, Binary, Coin, ContractResult, Decimal, QuerierWrapper, QueryRequest, SignedDecimal, SignedDecimal256, StdError, StdResult, SystemResult
 };
 
 use crate::{
@@ -120,9 +119,9 @@ impl<'a> ElysQuerier<'a> {
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
 
         let raw_resp: PerpetualOpenEstimationRawResponse = self.querier.query(&request)?;
-
+        
         let resp: PerpetualOpenEstimationResponse = PerpetualOpenEstimationResponse {
-            position: raw_resp.position,
+            position: PerpetualPosition::try_from_i32(raw_resp.position)?,
             leverage: SignedDecimal::from_str(&raw_resp.leverage)
                 .map_or(SignedDecimal::zero(), |leverage| leverage),
             trading_asset: raw_resp.trading_asset,
@@ -142,18 +141,19 @@ impl<'a> ElysQuerier<'a> {
                 .map_or(SignedDecimal256::zero(), |take_profit_price| {
                     take_profit_price
                 }),
-            liquidation_price: Decimal::from_str(&raw_resp.liquidation_price)
-                .map_or(Decimal::zero(), |liquidation_price| liquidation_price),
+            liquidation_price: SignedDecimal::from_str(&raw_resp.liquidation_price)
+                .map_or(SignedDecimal::zero(), |liquidation_price| liquidation_price),
             estimated_pnl: raw_resp.estimated_pnl,
+            estimated_pnl_denom: raw_resp.estimated_pnl_denom,
             available_liquidity: raw_resp.available_liquidity,
-            weight_balance_ratio: Decimal::from_str(&raw_resp.weight_balance_ratio)
-                .map_or(Decimal::zero(), |weight_balance_ratio| weight_balance_ratio),
-            borrow_interest_rate: Decimal::from_str(&raw_resp.borrow_interest_rate)
-                .map_or(Decimal::zero(), |borrow_interest_rate| borrow_interest_rate),
-            funding_rate: Decimal::from_str(&raw_resp.funding_rate)
-                .map_or(Decimal::zero(), |funding_rate| funding_rate),
-            price_impact: Decimal::from_str(&raw_resp.price_impact)
-                .map_or(Decimal::zero(), |price_impact| price_impact),
+            weight_balance_ratio: SignedDecimal::from_str(&raw_resp.weight_balance_ratio)
+                .map_or(SignedDecimal::zero(), |weight_balance_ratio| weight_balance_ratio),
+            borrow_interest_rate: SignedDecimal::from_str(&raw_resp.borrow_interest_rate)
+                .map_or(SignedDecimal::zero(), |borrow_interest_rate| borrow_interest_rate),
+            funding_rate: SignedDecimal::from_str(&raw_resp.funding_rate)
+                .map_or(SignedDecimal::zero(), |funding_rate| funding_rate),
+            price_impact: SignedDecimal::from_str(&raw_resp.price_impact)
+                .map_or(SignedDecimal::zero(), |price_impact| price_impact),
         };
 
         Ok(resp)
@@ -508,5 +508,21 @@ impl<'a> ElysQuerier<'a> {
                 e
             ))
         })
+    }
+    #[allow(dead_code)]
+    #[cfg(feature = "debug")]
+    fn query_binary(&self, request: &QueryRequest<ElysQuery>) -> StdResult<Binary> {
+        let raw = to_json_vec(request).map_err(|serialize_err| {
+            StdError::generic_err(format!("Serializing QueryRequest: {serialize_err}"))
+        })?;
+        match self.querier.raw_query(&raw) {
+            SystemResult::Err(system_err) => Err(StdError::generic_err(format!(
+                "Querier system error: {system_err}"
+            ))),
+            SystemResult::Ok(ContractResult::Err(contract_err)) => Err(StdError::generic_err(
+                format!("Querier contract error: {contract_err}"),
+            )),
+            SystemResult::Ok(ContractResult::Ok(value)) => Ok(value),
+        }
     }
 }
