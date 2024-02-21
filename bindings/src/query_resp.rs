@@ -1,9 +1,12 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal, Int128, SignedDecimal, SignedDecimal256, Uint128};
 
-use crate::types::{
-    BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, PoolAsset, Price, StakedPosition,
-    SwapAmountInRoute, SwapAmountOutRoute, UnstakedPosition, ValidatorDetail, VestingDetail,
+use crate::{
+    trade_shield::types::PerpetualPosition,
+    types::{
+        BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, PoolAsset, Price, StakedPosition,
+        SwapAmountInRoute, SwapAmountOutRoute, UnstakedPosition, ValidatorDetail, VestingDetail,
+    },
 };
 
 #[cw_serde]
@@ -76,6 +79,7 @@ pub struct PerpetualOpenEstimationRawResponse {
     pub take_profit_price: String,
     pub liquidation_price: String,
     pub estimated_pnl: Int128,
+    pub estimated_pnl_denom: String,
     pub available_liquidity: Coin,
     pub weight_balance_ratio: String,
     pub borrow_interest_rate: String,
@@ -85,7 +89,7 @@ pub struct PerpetualOpenEstimationRawResponse {
 
 #[cw_serde]
 pub struct PerpetualOpenEstimationResponse {
-    pub position: i32,
+    pub position: PerpetualPosition,
     pub leverage: SignedDecimal,
     pub trading_asset: String,
     pub collateral: Coin,
@@ -96,13 +100,14 @@ pub struct PerpetualOpenEstimationResponse {
     pub discount: Decimal,
     pub open_price: Decimal,
     pub take_profit_price: SignedDecimal256,
-    pub liquidation_price: Decimal,
+    pub liquidation_price: SignedDecimal,
     pub estimated_pnl: Int128,
+    pub estimated_pnl_denom: String,
     pub available_liquidity: Coin,
-    pub weight_balance_ratio: Decimal,
-    pub borrow_interest_rate: Decimal,
-    pub funding_rate: Decimal,
-    pub price_impact: Decimal,
+    pub weight_balance_ratio: SignedDecimal,
+    pub borrow_interest_rate: SignedDecimal,
+    pub funding_rate: SignedDecimal,
+    pub price_impact: SignedDecimal,
 }
 
 #[cw_serde]
