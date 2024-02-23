@@ -85,6 +85,8 @@ impl Default for BalanceReward {
 
 #[cw_serde]
 pub struct StakingValidator {
+    // The validator identity.
+    pub id: String,
     // The validator address.
     pub address: String,
     // The validator name.
@@ -92,20 +94,18 @@ pub struct StakingValidator {
     // Voting power percentage for this validator.
     pub voting_power: Decimal,
     // commission percentage for the validator.
-    pub commission: Decimal,
-    // The url of the validator profile picture
-    pub profile_picture_src: Option<String>,
+    pub commission: Decimal
 }
 
 // implement default
 impl Default for StakingValidator {
     fn default() -> Self {
         Self {
+            id: "".to_string(),
             address: "".to_string(),
             name: "".to_string(),
             voting_power: Decimal::zero(),
-            commission: Decimal::zero(),
-            profile_picture_src: None,
+            commission: Decimal::zero()
         }
     }
 }
