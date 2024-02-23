@@ -302,6 +302,8 @@ pub struct AmmExitPool {
 
 #[cw_serde]
 pub struct StakingValidator {
+    // The validator Identity.
+    pub id: String,
     // The validator address.
     pub address: String,
     // The validator name.
@@ -309,9 +311,7 @@ pub struct StakingValidator {
     // Voting power percentage for this validator.
     pub voting_power: Decimal,
     // commission percentage for the validator.
-    pub commission: Decimal,
-    // The url of the validator profile picture
-    pub profile_picture_src: Option<String>,
+    pub commission: Decimal
 }
 
 #[cw_serde]
@@ -337,6 +337,8 @@ pub struct UnstakedPosition {
 
 #[cw_serde]
 pub struct ValidatorDetail {
+    // Validator Identity
+    pub id: String,
     // The validator address.
     pub address: String,
     // The validator name.
@@ -345,8 +347,6 @@ pub struct ValidatorDetail {
     pub voting_power: Decimal,
     // commission percentage for the validator.
     pub commission: Decimal,
-    // The url of the validator profile picture
-    pub profile_picture_src: Option<String>,
     // The staked amount the user has w/ this validator
     // Only available if there's some and if address.
     // is sent in request object.
