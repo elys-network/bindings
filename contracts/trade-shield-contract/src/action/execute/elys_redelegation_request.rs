@@ -1,5 +1,5 @@
 use super::*;
-use cosmwasm_std::Coin;
+use cosmwasm_std::{Coin, StdError};
 
 pub fn elys_redelegation_request(
     info: MessageInfo,
@@ -12,6 +12,9 @@ pub fn elys_redelegation_request(
     // uelys.
     amount: Coin,
 ) -> Result<Response<ElysMsg>, ContractError> {
+    if amount.amount.is_zero() {
+        return Err(StdError::generic_err("amount is zero").into());
+    }
     let msg = ElysMsg::begin_redelegate(
         info.sender.into_string(),
         validator_src_address,
