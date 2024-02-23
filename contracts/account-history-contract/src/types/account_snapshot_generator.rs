@@ -209,13 +209,33 @@ impl AccountSnapshotGenerator {
             self.metadata.eden_apr_eden.to_owned(),
             self.metadata.edenb_apr_eden.to_owned(),
         ).unwrap();
-        let available = eden_program.data.available.unwrap();
+        let eden_available = eden_program.data.available.unwrap();
         let eden_coin = Coin::new(
-            u128::from(available.amount),
+            u128::from(eden_available.amount),
             ElysDenom::Eden.as_str()
         );
-        if available.amount > Uint128::zero() {
+        if eden_available.amount > Uint128::zero() {
             account_balances.push(eden_coin);
+        }
+
+        let eden_boost_program = get_eden_boost_earn_program_details(
+            deps,
+            Some(address.to_owned()),
+            ElysDenom::EdenBoost.as_str().to_string(),
+            self.metadata.usdc_denom.to_owned(),
+            self.metadata.uusdc_usd_price,
+            self.metadata.uelys_price_in_uusdc,
+            self.metadata.usdc_apr_edenb.to_owned(),
+            self.metadata.eden_apr_edenb.to_owned(),
+        )
+        .unwrap();
+        let eden_boost_available = eden_boost_program.data.available.unwrap();
+        let eden_boost_coin = Coin::new(
+            u128::from(eden_boost_available),
+            ElysDenom::Eden.as_str()
+        );
+        if eden_boost_available > Uint128::zero() {
+            account_balances.push(eden_boost_coin);
         }
 
         let available_asset_balance: Vec<CoinValue> = account_balances
@@ -388,7 +408,6 @@ impl AccountSnapshotGenerator {
             self.metadata.usdc_denom.to_owned(),
             self.metadata.uusdc_usd_price,
             self.metadata.uelys_price_in_uusdc,
-            self.metadata.eden_decimal,
             self.metadata.usdc_apr_edenb.to_owned(),
             self.metadata.eden_apr_edenb.to_owned(),
         )
