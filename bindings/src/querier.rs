@@ -477,21 +477,10 @@ impl<'a> ElysQuerier<'a> {
             return Ok(Decimal::one());
         }
 
-        let band_ticker = match self.asset_info(asset.clone()) {
-            Ok(asset_info) => Some(asset_info.asset_info.band_ticker),
-            Err(_) => None,
-        };
-
-        if let Some(band_ticker) = band_ticker {
-            if let Ok(oracle_price) = self.get_oracle_price(band_ticker, "".to_string(), 0) {
-                return Ok(oracle_price.price.price);
-            }
-        }
-
         // FIXME: convert first 1USDC to DENOM IN and use the result as input amount to convert DENOM IN to DENOM OUT
 
         let spot_price = self
-            .get_amm_price_by_denom(coin(1000000, asset), Decimal::one())
+            .get_amm_price_by_denom(coin(1000000, asset), Decimal::zero())
             .map_err(|e| {
                 StdError::generic_err(format!("get_asset_price: spot price not found:{:?}", e))
             })?;
