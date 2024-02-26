@@ -68,12 +68,12 @@ mod process_spot_order {
 
 mod create_perpetual_order {
     use super::*;
+    mod change_trigger_price;
     mod coin_number;
     mod reproduce_testnet_issue_create_perpetual_market_open_order;
     mod successful_create_perpetual_market_close;
     mod successful_create_perpetual_market_order;
     mod successful_create_perpetual_order;
-    mod change_trigger_price;
 }
 
 mod cancel_perpetual_order {
@@ -99,6 +99,16 @@ mod get_perpetual_order {
 mod close_perpetual_position {
     use super::*;
     mod closing_a_perpetual_position;
+}
+
+mod stake_error_handling {
+    use super::*;
+    mod eden_cancel_vest_request;
+    mod eden_vest_request;
+    mod elys_cancel_unstake_request;
+    mod elys_redelegation_request;
+    mod stake_request;
+    mod unstake_request;
 }
 
 pub use mock::instantiate::*;

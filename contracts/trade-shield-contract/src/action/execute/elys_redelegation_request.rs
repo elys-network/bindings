@@ -12,9 +12,21 @@ pub fn elys_redelegation_request(
     // uelys.
     amount: Coin,
 ) -> Result<Response<ElysMsg>, ContractError> {
+    let uelys_denom = "uelys".to_string();
+
     if amount.amount.is_zero() {
         return Err(StdError::generic_err("amount is zero").into());
     }
+
+    if (validator_dst_address.is_empty() || validator_src_address.is_empty())
+        && amount.denom == uelys_denom
+    {
+        return Err(StdError::generic_err(
+            "The validator Address is required only if the staked asset is uelys",
+        )
+        .into());
+    };
+
     let msg = ElysMsg::begin_redelegate(
         info.sender.into_string(),
         validator_src_address,
