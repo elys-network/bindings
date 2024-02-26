@@ -388,7 +388,6 @@ impl AccountSnapshotGenerator {
             self.metadata.usdc_denom.to_owned(),
             self.metadata.uusdc_usd_price,
             self.metadata.uelys_price_in_uusdc,
-            self.metadata.eden_decimal,
             self.metadata.usdc_apr_edenb.to_owned(),
             self.metadata.eden_apr_edenb.to_owned(),
         )
