@@ -477,6 +477,17 @@ impl<'a> ElysQuerier<'a> {
             return Ok(Decimal::one());
         }
 
+        let band_ticker = match self.asset_info(asset.clone()) {
+            Ok(asset_info) => Some(asset_info.asset_info.band_ticker),
+            Err(_) => None,
+        };
+
+        if let Some(band_ticker) = band_ticker {
+            if let Ok(oracle_price) = self.get_oracle_price(band_ticker, "".to_string(), 0) {
+                return Ok(oracle_price.price.price);
+            }
+        }
+
         // FIXME: convert first 1USDC to DENOM IN and use the result as input amount to convert DENOM IN to DENOM OUT
 
         //discount is set to ONE because we need to keep at 100% so it does not apply the swap fee in the price calculation
