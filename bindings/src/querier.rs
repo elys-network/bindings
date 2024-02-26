@@ -480,7 +480,7 @@ impl<'a> ElysQuerier<'a> {
         // FIXME: convert first 1USDC to DENOM IN and use the result as input amount to convert DENOM IN to DENOM OUT
 
         let spot_price = self
-            .get_amm_price_by_denom(coin(1000000, asset), Decimal::zero())
+            .get_amm_price_by_denom(coin(1000000, asset), Decimal::one())
             .map_err(|e| {
                 StdError::generic_err(format!("get_asset_price: spot price not found:{:?}", e))
             })?;
