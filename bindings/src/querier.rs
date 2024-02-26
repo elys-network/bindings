@@ -479,6 +479,7 @@ impl<'a> ElysQuerier<'a> {
 
         // FIXME: convert first 1USDC to DENOM IN and use the result as input amount to convert DENOM IN to DENOM OUT
 
+        //discount is set to ONE because we need to keep at 100% so it does not apply the swap fee in the price calculation
         let spot_price = self
             .get_amm_price_by_denom(coin(1000000, asset), Decimal::one())
             .map_err(|e| {
