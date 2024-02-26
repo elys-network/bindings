@@ -338,7 +338,7 @@ pub struct UnstakedPosition {
 #[cw_serde]
 pub struct ValidatorDetail {
     // Validator Identity
-    pub id: String,
+    pub id: Option<String>,
     // The validator address.
     pub address: String,
     // The validator name.
