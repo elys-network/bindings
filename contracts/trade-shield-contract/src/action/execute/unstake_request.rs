@@ -1,5 +1,5 @@
 use super::*;
-use cosmwasm_std::Int128;
+use cosmwasm_std::{Int128, StdError};
 
 pub fn unstake_request(
     info: MessageInfo,
@@ -15,6 +15,10 @@ pub fn unstake_request(
     let querier = ElysQuerier::new(&deps.querier);
     let denom_entry = querier.get_asset_profile(asset.clone())?;
     let real_denom = denom_entry.entry.denom;
+
+    if amount == 0 {
+        return Err(StdError::generic_err("amount is zero").into());
+    }
 
     let msg = ElysMsg::unstake_token(
         info.sender.into_string(),

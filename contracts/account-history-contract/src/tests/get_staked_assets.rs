@@ -211,12 +211,12 @@ impl Module for ElysModuleWrapper {
                         staked_position: Some(vec![StakedPosition {
                             id: "2".to_string(),
                             validator: StakingValidator {
+                                id: String::from("1"),
                                 address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw"
                                     .to_string(),
                                 name: "nirvana".to_string(),
                                 voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
-                                commission: Decimal::from_str("0.1").unwrap(),
-                                profile_picture_src: Some("https://elys.network".to_string()),
+                                commission: Decimal::from_str("0.1").unwrap()
                             },
                             staked: BalanceAvailable {
                                 amount: Uint128::new(10000000),
@@ -234,12 +234,12 @@ impl Module for ElysModuleWrapper {
                         unstaked_position: Some(vec![UnstakedPosition {
                             id: "1".to_string(),
                             validator: StakingValidator {
+                                id: String::from("1"),
                                 address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw"
                                     .to_string(),
                                 name: "nirvana".to_string(),
                                 voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
-                                commission: Decimal::from_str("0.1").unwrap(),
-                                profile_picture_src: Some("https://elys.network".to_string()),
+                                commission: Decimal::from_str("0.1").unwrap()
                             },
                             remaining_time: 1707328694,
                             unstaked: BalanceAvailable {
@@ -668,11 +668,11 @@ fn get_staked_assets() {
                 staked_positions: Some(vec![StakedPosition {
                     id: "2".to_string(),
                     validator: StakingValidator {
+                        id: String::from("1"),
                         address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw".to_string(),
                         name: "nirvana".to_string(),
                         voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
-                        commission: Decimal::from_str("0.1").unwrap(),
-                        profile_picture_src: Some("https://elys.network".to_string()),
+                        commission: Decimal::from_str("0.1").unwrap()
                     },
                     staked: BalanceAvailable {
                         amount: Uint128::new(10000000),
@@ -682,11 +682,11 @@ fn get_staked_assets() {
                 unstaked_positions: Some(vec![UnstakedPosition {
                     id: "1".to_string(),
                     validator: StakingValidator {
+                        id: String::from("1"),
                         address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw".to_string(),
                         name: "nirvana".to_string(),
                         voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
-                        commission: Decimal::from_str("0.1").unwrap(),
-                        profile_picture_src: Some("https://elys.network".to_string()),
+                        commission: Decimal::from_str("0.1").unwrap()
                     },
                     remaining_time: 1707328694000,
                     unstaked: BalanceAvailable {
