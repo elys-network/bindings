@@ -44,10 +44,14 @@ impl CoinValue {
                 .map_err(|e| {
                     StdError::generic_err(format!("failed to convert amount to Decimal: {}", e))
                 })?;
+            let price = querier.get_asset_price(usdc_denom)?;
+            let amount_usdc = amount.checked_mul(price.clone()).map_err(|e| {
+                StdError::generic_err(format!("failed to convert amount to amount_usdc: {}", e))
+            })?;
             return Ok(Self {
                 denom: balance.denom.clone(),
-                amount_usdc: amount.clone(),
-                price: Decimal::one(),
+                amount_usdc,
+                price,
                 amount_token: amount,
             });
         }

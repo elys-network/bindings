@@ -468,13 +468,23 @@ impl<'a> ElysQuerier<'a> {
         let asset: String = asset.into();
 
         let QueryGetEntryResponse {
-            entry: Entry {
-                denom: usdc_denom, ..
-            },
+            entry:
+                Entry {
+                    denom: usdc_denom,
+                    display_name,
+                    ..
+                },
         } = self.get_asset_profile("uusdc".to_string())?;
 
+        let QueryGetPriceResponse {
+            price: Price {
+                price: usdc_usd_price,
+                ..
+            },
+        } = self.get_oracle_price(display_name, "".to_string(), 0)?;
+
         if asset == usdc_denom {
-            return Ok(Decimal::one());
+            return Ok(usdc_usd_price);
         }
 
         let band_ticker = match self.asset_info(asset.clone()) {
@@ -482,21 +492,32 @@ impl<'a> ElysQuerier<'a> {
             Err(_) => None,
         };
 
-        if let Some(band_ticker) = band_ticker {
+        let oracle_price = if let Some(band_ticker) = band_ticker {
             if let Ok(oracle_price) = self.get_oracle_price(band_ticker, "".to_string(), 0) {
-                return Ok(oracle_price.price.price);
+                Some(oracle_price.price.price)
+            } else {
+                None
             }
-        }
+        } else {
+            None
+        };
 
         // FIXME: convert first 1USDC to DENOM IN and use the result as input amount to convert DENOM IN to DENOM OUT
 
-        let spot_price = self
-            .get_amm_price_by_denom(coin(1000000, asset), Decimal::one())
-            .map_err(|e| {
-                StdError::generic_err(format!("get_asset_price: spot price not found:{:?}", e))
-            })?;
+        //discount is set to ONE because we need to keep at 100% so it does not apply the swap fee in the price calculation
+        let asset_usdc_price = match oracle_price {
+            Some(price) => price,
+            None => self
+                .get_amm_price_by_denom(coin(1000000, asset), Decimal::one())
+                .map_err(|e| {
+                    StdError::generic_err(format!("get_asset_price: spot price not found:{:?}", e))
+                })?,
+        };
 
-        Ok(spot_price)
+        //ATOM/USDC * USDC/USD_rate = ATOM/USD
+        let price = asset_usdc_price.checked_mul(usdc_usd_price)?;
+
+        Ok(price)
     }
 
     pub fn get_asset_price_from_denom_in_to_denom_out(

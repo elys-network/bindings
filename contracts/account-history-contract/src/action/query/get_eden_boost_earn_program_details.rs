@@ -1,6 +1,6 @@
 use super::*;
 use crate::msg::query_resp::earn::GetEdenBoostEarnProgramResp;
-use cosmwasm_std::{Decimal, Deps, Uint128};
+use cosmwasm_std::{Decimal, Deps};
 use elys_bindings::{
     account_history::types::{
         earn_program::EdenBoostEarnProgram, AprUsdc, BalanceReward, ElysDenom,
@@ -17,7 +17,6 @@ pub fn get_eden_boost_earn_program_details(
     usdc_denom: String,
     uusdc_usd_price: Decimal,
     uelys_price_in_uusdc: Decimal,
-    eden_decimal: u64,
     usdc_apr: QueryAprResponse,
     eden_apr: QueryAprResponse,
 ) -> Result<GetEdenBoostEarnProgramResp, ContractError> {
@@ -62,18 +61,8 @@ pub fn get_eden_boost_earn_program_details(
                         uusdc: usdc_apr.apr.to_owned(),
                         ueden: eden_apr.apr.to_owned(),
                     },
-                    available: Some(
-                        available
-                            .amount
-                            .checked_div(Uint128::new(eden_decimal as u128))
-                            .unwrap(),
-                    ),
-                    staked: Some(
-                        staked
-                            .amount
-                            .checked_div(Uint128::new(eden_decimal as u128))
-                            .unwrap(),
-                    ),
+                    available: Some(available.amount),
+                    staked: Some(staked.amount),
                     rewards: Some(vec![
                         BalanceReward {
                             asset: ElysDenom::Usdc.as_str().to_string(),

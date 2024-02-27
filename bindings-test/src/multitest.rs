@@ -445,6 +445,19 @@ impl Module for ElysModule {
                 Ok(to_json_binary(&resp)?)
             }
             ElysQuery::OraclePrice { asset, .. } => {
+                if asset.as_str() == "USDC" {
+                    let resp = QueryGetPriceResponse {
+                        price: Price {
+                            asset: asset.clone(),
+                            price: Decimal::one(),
+                            source: asset.clone(),
+                            provider: asset.clone(),
+                            timestamp: 0,
+                        },
+                    };
+                    return Ok(to_json_binary(&resp)?);
+                }
+
                 let prices = PRICES.load(storage).unwrap();
                 let info = ASSET_INFO.load(storage).unwrap();
 
