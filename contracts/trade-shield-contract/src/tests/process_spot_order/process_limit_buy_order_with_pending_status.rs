@@ -8,11 +8,13 @@ use cosmwasm_std::{
 };
 use cw_multi_test::BankSudo;
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
-use elys_bindings::query_resp::{AmmSwapEstimationByDenomResponse, Entry, QueryGetEntryResponse};
+use elys_bindings::query_resp::{
+    AmmSwapEstimationByDenomResponse, Entry, QueryGetEntryResponse, QueryGetPriceResponse,
+};
 use elys_bindings::trade_shield::msg::query_resp::GetSpotOrderResp;
 use elys_bindings::trade_shield::msg::{QueryMsg, SudoMsg};
 use elys_bindings::trade_shield::types::{OrderPrice, SpotOrder, SpotOrderType, Status};
-use elys_bindings::types::{SwapAmountInRoute, SwapAmountOutRoute};
+use elys_bindings::types::{Price, SwapAmountInRoute, SwapAmountOutRoute};
 use elys_bindings::{ElysMsg, ElysQuery};
 use elys_bindings_test::{
     ElysModule, ACCOUNT, ASSET_INFO, LAST_MODULE_USED, PERPETUAL_OPENED_POSITION, PRICES,
@@ -175,6 +177,18 @@ impl Module for ElysModuleWrapper {
 
                 Ok(to_json_binary(&spot_price)?)
             }
+            ElysQuery::OraclePrice { asset, .. } => match asset.as_str() {
+                "USDC" => Ok(to_json_binary(&QueryGetPriceResponse {
+                    price: Price {
+                        asset,
+                        price: Decimal::one(),
+                        source: "".to_string(),
+                        provider: "".to_string(),
+                        timestamp: 0,
+                    },
+                })?),
+                _ => panic!("price not found for {}", asset),
+            },
 
             _ => panic!("not implemented {:?}", request),
         }
