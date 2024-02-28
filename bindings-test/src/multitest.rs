@@ -886,6 +886,9 @@ impl Module for ElysModule {
                     data: Some(data),
                 })
             }
+            // TODO @josefleventon
+            ElysMsg::LeveragelpOpen { .. } => todo!("LeveragelpOpen"),
+            ElysMsg::LeveragelpClose { .. } => todo!("LeveragelpClose"),
         }
     }
 
