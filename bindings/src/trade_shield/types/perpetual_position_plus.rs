@@ -54,7 +54,7 @@ impl PerpetualPositionPlus {
         )
         .map_err(|e| StdError::generic_err(e.to_string()))?;
 
-        let liabilities_amount = SignedDecimal::from_atomics(
+        let _liabilities_amount = SignedDecimal::from_atomics(
             mtp.custody.i128(),
             collateral_info.asset_info.decimal as u32,
         )
@@ -62,12 +62,15 @@ impl PerpetualPositionPlus {
 
         let unrealized_pnl = Self::calc_unrealized_pnl(
             &mtp,
-            &custody_amount,
-            &collateral_amount,
-            &liabilities_amount,
-        )?;
+            // &custody_amount,
+            // &collateral_amount,
+            // &liabilities_amount,
+        )
+        .map_err(|e| StdError::generic_err(format!("unrealized_pnl: {:?}", e.to_string())))?;
         let liquidation_price =
-            Self::calc_liquidation_price(&mtp, &collateral_amount, &custody_amount)?;
+            Self::calc_liquidation_price(&mtp, &collateral_amount, &custody_amount).map_err(
+                |e| StdError::generic_err(format!("liquidation_price: {:?}", e.to_string())),
+            )?;
         let stop_loss_price = Self::get_stop_loss_price(&mtp, storage);
 
         Ok(Self {
@@ -78,12 +81,12 @@ impl PerpetualPositionPlus {
         })
     }
 
-    fn calc_unrealized_pnl(
-        mtp: &Mtp,
-        custody_amount: &SignedDecimal,
-        collateral_amount: &SignedDecimal,
-        liabilities_amount: &SignedDecimal,
-    ) -> StdResult<SignedDecimal> {
+    fn calc_unrealized_pnl(mtp: &Mtp) -> StdResult<SignedDecimal> {
+        let custody_amount: SignedDecimal = SignedDecimal::from_atomics(mtp.custody, 0).unwrap();
+        let collateral_amount: SignedDecimal =
+            SignedDecimal::from_atomics(mtp.collateral, 0).unwrap();
+        let liabilities_amount: SignedDecimal =
+            SignedDecimal::from_atomics(mtp.liabilities, 0).unwrap();
         let take_profit_price = SignedDecimal::try_from(mtp.take_profit_price.clone())
             .map_err(|e| StdError::generic_err(e.to_string()))?;
         let open_price = mtp.open_price.clone();
@@ -91,17 +94,32 @@ impl PerpetualPositionPlus {
         match PerpetualPosition::try_from_i32(mtp.position)? {
             //estimated_pnl = custody_amount - (liability_amount + collateral_amount) / take_profit_price
             PerpetualPosition::Long => custody_amount
-                .checked_sub(liabilities_amount.checked_add(collateral_amount.to_owned())?)?
-                .checked_div(take_profit_price)
+                .checked_sub(
+                    liabilities_amount
+                        .checked_add(collateral_amount.to_owned())?
+                        .checked_div(take_profit_price)
+                        .map_err(|e| StdError::generic_err(e.to_string()))?,
+                )
                 .map_err(|e| StdError::generic_err(e.to_string())),
 
             // if position is short then estimated pnl is custody_amount / open_price - (liability_amount + collateral_amount) / take_profit_price
-            PerpetualPosition::Short => custody_amount
-                .checked_div(open_price)
-                .map_err(|e| StdError::generic_err(e.to_string()))?
-                .checked_sub(liabilities_amount.checked_add(collateral_amount.to_owned())?)?
-                .checked_div(take_profit_price)
-                .map_err(|e| StdError::generic_err(e.to_string())),
+            PerpetualPosition::Short => {
+                liabilities_amount
+                    .clone()
+                    .checked_add(collateral_amount.checked_div(take_profit_price).map_err(
+                        |e| StdError::generic_err(format!("take_profit_price: {}", e.to_string())),
+                    )?)?
+                    .checked_sub(liabilities_amount.checked_div(open_price.clone()).map_err(
+                        |e| {
+                            StdError::generic_err(format!(
+                                "open_price: {:?}: {}",
+                                &open_price,
+                                e.to_string()
+                            ))
+                        },
+                    )?)
+                    .map_err(|e| StdError::generic_err(e.to_string()))
+            }
 
             PerpetualPosition::Unspecified => Err(StdError::generic_err("Position is Unspecified")),
         }
