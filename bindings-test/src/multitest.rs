@@ -106,6 +106,22 @@ impl Module for ElysModule {
         request: Self::QueryT,
     ) -> AnyResult<cosmwasm_std::Binary> {
         match request {
+            // TODO @josefleventon
+            ElysQuery::LeveragelpParams { .. } => todo!("LeveragelpParams"),
+            ElysQuery::LeveragelpQueryPositions { .. } => todo!("LeveragelpQueryPositions"),
+            ElysQuery::LeveragelpQueryPositionsByPool { .. } => {
+                todo!("LeveragelpQueryPositionsByPool")
+            }
+            ElysQuery::LeveragelpGetStatus { .. } => todo!("LeveragelpGetStatus"),
+            ElysQuery::LeveragelpQueryPositionsForAddress { .. } => {
+                todo!("LeveragelpQueryPositionsForAddress")
+            }
+            ElysQuery::LeveragelpGetWhitelist { .. } => todo!("LeveragelpGetWhitelist"),
+            ElysQuery::LeveragelpIsWhitelisted { .. } => todo!("LeveragelpIsWhitelisted"),
+            ElysQuery::LeveragelpPool { .. } => todo!("LeveragelpPool"),
+            ElysQuery::LeveragelpPools { .. } => todo!("LeveragelpPools"),
+            ElysQuery::LeveragelpPosition { .. } => todo!("LeveragelpPosition"),
+
             ElysQuery::AmmEarnMiningPoolAll { .. } => todo!("AmmEarnMiningPoolAll"),
             ElysQuery::CommitmentAllValidators { .. } => todo!("CommitmentAllValidators"),
             ElysQuery::CommitmentDelegations { .. } => todo!("CommitmentDelegations"),
