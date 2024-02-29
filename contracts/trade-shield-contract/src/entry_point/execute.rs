@@ -135,5 +135,25 @@ pub fn execute(
 
             Ok(Response::new().add_submessage(sub_msg))
         }
+
+        LeveragelpOpen {
+            amm_pool_id,
+            collateral_asset,
+            collateral_amount,
+            leverage,
+            stop_loss_price,
+        } => open_leveragelp_position_request(
+            info,
+            amm_pool_id,
+            collateral_asset,
+            collateral_amount,
+            leverage,
+            stop_loss_price,
+        ),
+
+        LeveragelpClose {
+            position_id,
+            amount,
+        } => close_leveragelp_position_request(info, position_id, amount),
     }
 }

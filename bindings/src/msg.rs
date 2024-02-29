@@ -103,8 +103,8 @@ pub enum ElysMsg {
         collateral_asset: String,
         collateral_amount: Int128,
         amm_pool_id: u64,
-        leverage: Decimal,
-        stop_loss_price: Decimal,
+        leverage: SignedDecimal,
+        stop_loss_price: SignedDecimal,
     },
     LeveragelpClose {
         creator: String,
@@ -306,11 +306,11 @@ impl ElysMsg {
 
     pub fn leveragelp_open_position(
         creator: String,
+        amm_pool_id: u64,
         collateral_asset: String,
         collateral_amount: Int128,
-        amm_pool_id: u64,
-        leverage: Decimal,
-        stop_loss_price: Decimal,
+        leverage: SignedDecimal,
+        stop_loss_price: SignedDecimal,
     ) -> Self {
         Self::LeveragelpOpen {
             creator: creator,

@@ -91,4 +91,16 @@ pub enum ExecuteMsg {
     AmmSwapExactAmountIn {
         routes: Vec<SwapAmountInRoute>,
     },
+
+    LeveragelpOpen {
+        amm_pool_id: u64,
+        collateral_asset: String,
+        collateral_amount: Int128,
+        leverage: SignedDecimal,
+        stop_loss_price: SignedDecimal,
+    },
+    LeveragelpClose {
+        position_id: u64,
+        amount: Int128,
+    },
 }
