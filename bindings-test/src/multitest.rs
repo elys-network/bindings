@@ -921,8 +921,26 @@ impl Module for ElysModule {
                 })
             }
             // TODO @josefleventon
-            ElysMsg::LeveragelpOpen { .. } => todo!("LeveragelpOpen"),
-            ElysMsg::LeveragelpClose { .. } => todo!("LeveragelpClose"),
+            ElysMsg::LeveragelpOpen { .. } => {
+                LAST_MODULE_USED.save(storage, &Some("LeveragelpOpen".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
+            ElysMsg::LeveragelpClose { .. } => {
+                LAST_MODULE_USED.save(storage, &Some("LeveragelpClose".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
         }
     }
 
