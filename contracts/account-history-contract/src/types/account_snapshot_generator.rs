@@ -200,6 +200,7 @@ impl AccountSnapshotGenerator {
                 |pool| pool.clone(),
             );
             pool_resp.push(UserPoolResp {
+                pool_id,
                 pool,
                 balance: user_pool.balance,
             });
