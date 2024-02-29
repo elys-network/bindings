@@ -13,9 +13,9 @@ use elys_bindings::{
             earn_program::{
                 EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram,
             },
-            BalanceReward,
-            AccountSnapshot, CoinValue, ElysDenom, LiquidAsset, Metadata, PerpetualAsset,
-            PerpetualAssets, PoolBalances, Portfolio, Reward, StakedAssets, TotalBalance,
+            AccountSnapshot, BalanceReward, CoinValue, ElysDenom, LiquidAsset, Metadata,
+            PerpetualAsset, PerpetualAssets, PoolBalances, Portfolio, Reward, StakedAssets,
+            TotalBalance,
         },
     },
     query_resp::{PoolFilterType, QueryUserPoolResponse, UserPoolResp},
@@ -180,6 +180,7 @@ impl AccountSnapshotGenerator {
             let pool = get_pools(*deps, Some(vec![pool_id]), PoolFilterType::FilterAll, None)?;
             let pool = pool.pools.unwrap().first().unwrap().clone();
             pool_resp.push(UserPoolResp {
+                pool_id,
                 pool,
                 balance: user_pool.balance,
             });
@@ -208,12 +209,10 @@ impl AccountSnapshotGenerator {
             self.metadata.usdc_apr_eden.to_owned(),
             self.metadata.eden_apr_eden.to_owned(),
             self.metadata.edenb_apr_eden.to_owned(),
-        ).unwrap();
+        )
+        .unwrap();
         let available = eden_program.data.available.unwrap();
-        let eden_coin = Coin::new(
-            u128::from(available.amount),
-            ElysDenom::Eden.as_str()
-        );
+        let eden_coin = Coin::new(u128::from(available.amount), ElysDenom::Eden.as_str());
         if available.amount > Uint128::zero() {
             account_balances.push(eden_coin);
         }
@@ -560,9 +559,9 @@ impl AccountSnapshotGenerator {
                         balance_rewards.push(BalanceReward {
                             asset: denom_usdc_entry.entry.base_denom.clone(),
                             amount: reward.amount,
-                            usd_amount: Some(rewards_in_usd)
+                            usd_amount: Some(rewards_in_usd),
                         });
-                        
+
                         rewards.usdc_usd = rewards_in_usd;
                         rewards.total_usd =
                             rewards.total_usd.checked_add(rewards.usdc_usd).unwrap();
@@ -603,7 +602,7 @@ impl AccountSnapshotGenerator {
                         balance_rewards.push(BalanceReward {
                             asset: denom_ueden.clone(),
                             amount: amount.amount,
-                            usd_amount: Some(rewards_in_usd)
+                            usd_amount: Some(rewards_in_usd),
                         });
 
                         rewards.eden_usd = rewards_in_usd;
@@ -617,7 +616,7 @@ impl AccountSnapshotGenerator {
                         balance_rewards.push(BalanceReward {
                             asset: denom_uedenb.clone(),
                             amount: reward.amount,
-                            usd_amount: None
+                            usd_amount: None,
                         });
                         rewards.eden_boost = reward.amount;
                         continue;
@@ -647,19 +646,22 @@ impl AccountSnapshotGenerator {
                     balance_rewards.push(BalanceReward {
                         asset: amount.denom,
                         amount: amount.amount,
-                        usd_amount: Some(rewards_in_usd)
+                        usd_amount: Some(rewards_in_usd),
                     });
                 }
             }
             None => {
                 return Ok(GetRewardsResp {
                     rewards_map: AccountSnapshot::zero(&denom_uusdc).reward,
-                    rewards: balance_rewards
+                    rewards: balance_rewards,
                 });
             }
         }
 
-        let resp = GetRewardsResp { rewards_map: rewards, rewards: balance_rewards };
+        let resp = GetRewardsResp {
+            rewards_map: rewards,
+            rewards: balance_rewards,
+        };
         Ok(resp)
     }
 }

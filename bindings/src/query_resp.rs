@@ -384,6 +384,7 @@ pub struct PoolResp {
 
 #[cw_serde]
 pub struct UserPoolResp {
+    pub pool_id: u64,
     pub pool: PoolResp,
     pub balance: Coin,
 }
