@@ -82,11 +82,12 @@ impl PerpetualPositionPlus {
     }
 
     fn calc_unrealized_pnl(mtp: &Mtp) -> StdResult<SignedDecimal> {
-        let custody_amount: SignedDecimal = SignedDecimal::from_atomics(mtp.custody, 0).unwrap();
-        let collateral_amount: SignedDecimal =
-            SignedDecimal::from_atomics(mtp.collateral, 0).unwrap();
-        let liabilities_amount: SignedDecimal =
-            SignedDecimal::from_atomics(mtp.liabilities, 0).unwrap();
+        let custody_amount: SignedDecimal = SignedDecimal::from_atomics(mtp.custody, 0)
+            .map_err(|e| StdError::generic_err(e.to_string()))?;
+        let collateral_amount: SignedDecimal = SignedDecimal::from_atomics(mtp.collateral, 0)
+            .map_err(|e| StdError::generic_err(e.to_string()))?;
+        let liabilities_amount: SignedDecimal = SignedDecimal::from_atomics(mtp.liabilities, 0)
+            .map_err(|e| StdError::generic_err(e.to_string()))?;
         let take_profit_price = SignedDecimal::try_from(mtp.take_profit_price.clone())
             .map_err(|e| StdError::generic_err(e.to_string()))?;
         let open_price = mtp.open_price.clone();
@@ -105,19 +106,14 @@ impl PerpetualPositionPlus {
             // if position is short then estimated pnl is custody_amount / open_price - (liability_amount + collateral_amount) / take_profit_price
             PerpetualPosition::Short => {
                 liabilities_amount
-                    .clone()
-                    .checked_add(collateral_amount.checked_div(take_profit_price).map_err(
-                        |e| StdError::generic_err(format!("take_profit_price: {}", e.to_string())),
-                    )?)?
-                    .checked_sub(liabilities_amount.checked_div(open_price.clone()).map_err(
-                        |e| {
-                            StdError::generic_err(format!(
-                                "open_price: {:?}: {}",
-                                &open_price,
-                                e.to_string()
-                            ))
-                        },
-                    )?)
+                    .checked_add(collateral_amount)?
+                    .checked_div(take_profit_price)
+                    .map_err(|e| {
+                        StdError::generic_err(format!("take_profit_price: {}", e.to_string()))
+                    })?
+                    .checked_sub((custody_amount).checked_div(open_price).map_err(|e| {
+                        StdError::generic_err(format!("open_price: {}", e.to_string()))
+                    })?)
                     .map_err(|e| StdError::generic_err(e.to_string()))
             }
 
@@ -143,10 +139,11 @@ impl PerpetualPositionPlus {
             // if position is short then liquidation price is open price + collateral amount / (custody amount / open price)
             PerpetualPosition::Short => open_price
                 .clone()
-                .checked_add(collateral_amount.to_owned())?
-                .checked_div(
-                    custody_amount
-                        .checked_div(open_price)
+                .checked_add(
+                    collateral_amount
+                        .checked_div(custody_amount.checked_div(open_price).map_err(|e| {
+                            StdError::generic_err(format!("open_price: {}", e.to_string()))
+                        })?)
                         .map_err(|e| StdError::generic_err(e.to_string()))?,
                 )
                 .map_err(|e| StdError::generic_err(e.to_string())),
