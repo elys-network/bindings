@@ -1,5 +1,5 @@
 use super::*;
-use cosmwasm_std::{Decimal, Int128, SignedDecimal};
+use cosmwasm_std::{Int128, SignedDecimal};
 
 pub fn open_leveragelp_position_request(
     info: MessageInfo,

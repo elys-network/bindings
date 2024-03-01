@@ -180,7 +180,6 @@ impl AccountSnapshotGenerator {
             let pool = get_pools(*deps, Some(vec![pool_id]), PoolFilterType::FilterAll, None)?;
             let pool = pool.pools.unwrap().first().unwrap().clone();
             pool_resp.push(UserPoolResp {
-                pool_id,
                 pool,
                 balance: user_pool.balance,
             });
