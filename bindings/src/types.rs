@@ -357,7 +357,7 @@ pub struct ValidatorDetail {
 pub struct PoolAsset {
     pub token: Coin,
     pub weight: Uint128,
-    pub usd_value: Option<Uint128>,
+    pub usd_value: Option<Decimal>,
 }
 
 pub fn default_take_profit_price() -> SignedDecimal256 {

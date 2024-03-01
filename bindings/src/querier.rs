@@ -477,7 +477,10 @@ impl<'a> ElysQuerier<'a> {
                                 PoolAsset {
                                     token: asset.token.clone(),
                                     weight: asset.weight,
-                                    usd_value: Some(asset.token.amount * price),
+                                    usd_value: Some(
+                                        Decimal::from_atomics(asset.token.amount, 6).unwrap()
+                                            * price,
+                                    ),
                                 }
                             })
                             .collect::<Vec<PoolAsset>>(),
