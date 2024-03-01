@@ -21,8 +21,9 @@ use elys_bindings::{
     },
     query_resp::{
         AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse,
-        BalanceBorrowed, Commitments, Entry, OracleAssetInfoResponse,
-        PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
+        BalanceBorrowed, Commitments, Entry, LeveragelpIsWhitelistedResponse, LeveragelpParams,
+        LeveragelpParamsResponse, LeveragelpStatusReponse, LeveragelpWhitelistResponse,
+        OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
         PerpetualOpenEstimationRawResponse, PerpetualQueryPositionsResponse, QueryAprResponse,
         QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse,
         QueryShowCommitmentsResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
@@ -106,6 +107,55 @@ impl Module for ElysModule {
         request: Self::QueryT,
     ) -> AnyResult<cosmwasm_std::Binary> {
         match request {
+            ElysQuery::LeveragelpParams { .. } => {
+                let resp = LeveragelpParamsResponse {
+                    params: Some(LeveragelpParams {
+                        leverage_max: Decimal::from_atomics(Uint128::new(10), 0).unwrap(),
+                        max_open_positions: 5,
+                        pool_open_threshold: Decimal::from_atomics(Uint128::new(100), 0).unwrap(),
+                        safety_factor: Decimal::from_atomics(Uint128::new(100), 0).unwrap(),
+                        whitelisting_enabled: true,
+                        epoch_length: 10,
+                    }),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+
+            ElysQuery::LeveragelpQueryPositions { .. } => todo!("LeveragelpQueryPositions"),
+            ElysQuery::LeveragelpQueryPositionsByPool { .. } => {
+                todo!("LeveragelpQueryPositionsByPool")
+            }
+
+            ElysQuery::LeveragelpGetStatus { .. } => {
+                let resp = LeveragelpStatusReponse {
+                    open_position_count: 10,
+                    lifetime_position_count: 100,
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+
+            ElysQuery::LeveragelpQueryPositionsForAddress { .. } => {
+                todo!("LeveragelpQueryPositionsForAddress")
+            }
+
+            ElysQuery::LeveragelpGetWhitelist { .. } => {
+                let resp = LeveragelpWhitelistResponse {
+                    whitelist: vec![],
+                    pagination: None,
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::LeveragelpIsWhitelisted { .. } => {
+                let resp = LeveragelpIsWhitelistedResponse {
+                    is_whitelisted: false,
+                    address: "".to_string(),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::LeveragelpPool { .. } => todo!("LeveragelpPool"),
+            ElysQuery::LeveragelpPools { .. } => todo!("LeveragelpPools"),
+            ElysQuery::LeveragelpPosition { .. } => todo!("LeveragelpPosition"),
+
             ElysQuery::AmmEarnMiningPoolAll { .. } => todo!("AmmEarnMiningPoolAll"),
             ElysQuery::CommitmentAllValidators { .. } => todo!("CommitmentAllValidators"),
             ElysQuery::CommitmentDelegations { .. } => todo!("CommitmentDelegations"),
@@ -862,6 +912,27 @@ impl Module for ElysModule {
             }
             ElysMsg::AmmExitPool { .. } => {
                 LAST_MODULE_USED.save(storage, &Some("AmmExit".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
+            // TODO @josefleventon
+            ElysMsg::LeveragelpOpen { .. } => {
+                LAST_MODULE_USED.save(storage, &Some("LeveragelpOpen".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
+            ElysMsg::LeveragelpClose { .. } => {
+                LAST_MODULE_USED.save(storage, &Some("LeveragelpClose".to_string()))?;
                 let data = to_json_binary(&MsgResponse {
                     result: "Ok".to_string(),
                 })?;

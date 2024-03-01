@@ -97,6 +97,20 @@ pub enum ElysMsg {
         share_amount_in: Uint128,
         token_out_denom: String,
     },
+
+    LeveragelpOpen {
+        creator: String,
+        collateral_asset: String,
+        collateral_amount: Int128,
+        amm_pool_id: u64,
+        leverage: SignedDecimal,
+        stop_loss_price: SignedDecimal,
+    },
+    LeveragelpClose {
+        creator: String,
+        position_id: u64,
+        amount: Int128,
+    },
 }
 
 impl ElysMsg {
@@ -287,6 +301,32 @@ impl ElysMsg {
             min_amounts_out: min_amounts_out,
             share_amount_in: share_amount_in,
             token_out_denom: token_out_denom,
+        }
+    }
+
+    pub fn leveragelp_open_position(
+        creator: String,
+        amm_pool_id: u64,
+        collateral_asset: String,
+        collateral_amount: Int128,
+        leverage: SignedDecimal,
+        stop_loss_price: SignedDecimal,
+    ) -> Self {
+        Self::LeveragelpOpen {
+            creator: creator,
+            collateral_asset: collateral_asset,
+            collateral_amount: collateral_amount,
+            amm_pool_id: amm_pool_id,
+            leverage: leverage,
+            stop_loss_price: stop_loss_price,
+        }
+    }
+
+    pub fn leveragelp_close_position(creator: String, position_id: u64, amount: Int128) -> Self {
+        Self::LeveragelpClose {
+            creator: creator,
+            position_id: position_id,
+            amount: amount,
         }
     }
 }
