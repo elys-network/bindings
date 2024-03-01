@@ -8,7 +8,7 @@ use cosmwasm_std::{
 use crate::{
     query::*,
     query_resp::*,
-    trade_shield::types::StakedPosition,
+    trade_shield::types::{PoolAsset, StakedPosition},
     types::{BalanceAvailable, PageRequest, PerpetualPosition, Price, SwapAmountInRoute},
 };
 
@@ -461,7 +461,35 @@ impl<'a> ElysQuerier<'a> {
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(pools_query);
 
         let resp: QueryEarnPoolResponse = self.querier.query(&request)?;
-        Ok(resp)
+
+        match resp.pools {
+            Some(pools) => {
+                let pools_with_usd_values = pools
+                    .iter()
+                    .map(|pool| PoolResp {
+                        assets: pool
+                            .assets
+                            .iter()
+                            .map(|asset| {
+                                let price = self
+                                    .get_asset_price(asset.token.denom.clone())
+                                    .unwrap_or(Decimal::from_str("0").unwrap());
+                                PoolAsset {
+                                    token: asset.token.clone(),
+                                    weight: asset.weight,
+                                    usd_value: Some(asset.token.amount * price),
+                                }
+                            })
+                            .collect::<Vec<PoolAsset>>(),
+                        ..pool.clone()
+                    })
+                    .collect::<Vec<PoolResp>>();
+                Ok(QueryEarnPoolResponse {
+                    pools: Some(pools_with_usd_values),
+                })
+            }
+            None => Ok(resp),
+        }
     }
 
     pub fn get_asset_price(&self, asset: impl Into<String>) -> StdResult<Decimal> {
