@@ -17,11 +17,13 @@ pub enum ElysMsg {
         trading_asset: String,
         leverage: SignedDecimal,
         take_profit_price: SignedDecimal256,
+        owner: String,
     },
     PerpetualClose {
         creator: String,
         id: u64,
         amount: Int128,
+        owner: String,
     },
     AmmSwapExactAmountIn {
         sender: String,
@@ -139,6 +141,7 @@ impl ElysMsg {
         position: PerpetualPosition,
         leverage: SignedDecimal,
         take_profit_price: Option<SignedDecimal256>,
+        owner: impl Into<String>,
     ) -> Self {
         let take_profit_price = match take_profit_price {
             Some(price) => price,
@@ -151,14 +154,21 @@ impl ElysMsg {
             leverage,
             take_profit_price,
             trading_asset: trading_asset.into(),
+            owner: owner.into(),
         }
     }
 
-    pub fn perpetual_close_position(creator: impl Into<String>, id: u64, amount: i128) -> Self {
+    pub fn perpetual_close_position(
+        creator: impl Into<String>,
+        id: u64,
+        amount: i128,
+        owner: impl Into<String>,
+    ) -> Self {
         Self::PerpetualClose {
             creator: creator.into(),
             id,
             amount: Int128::new(amount),
+            owner: owner.into(),
         }
     }
     pub fn swap_by_denom(

@@ -166,6 +166,7 @@ pub fn process_orders(
                 &mut reply_info_id,
                 deps.storage,
                 &querier,
+                env.contract.address.as_str(),
             )?;
         }
     }
@@ -183,16 +184,18 @@ fn process_perpetual_order(
     reply_info_id: &mut u64,
     storage: &mut dyn Storage,
     querier: &ElysQuerier<'_>,
+    creator: &str,
 ) -> StdResult<()> {
     let (msg, reply_type) = if order.order_type == PerpetualOrderType::LimitOpen {
         (
             ElysMsg::perpetual_open_position(
-                &order.owner,
+                creator,
                 order.collateral.clone(),
                 &order.trading_asset,
                 order.position.clone(),
                 order.leverage.clone(),
                 order.take_profit_price.clone(),
+                &order.owner,
             ),
             ReplyType::PerpetualBrokerOpen,
         )
@@ -213,7 +216,12 @@ fn process_perpetual_order(
 
         let amount = mtp.custody.i128();
         (
-            ElysMsg::perpetual_close_position(&order.owner, order.position_id.unwrap(), amount),
+            ElysMsg::perpetual_close_position(
+                creator,
+                order.position_id.unwrap(),
+                amount,
+                &order.owner,
+            ),
             ReplyType::PerpetualBrokerClose,
         )
     };

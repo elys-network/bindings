@@ -10,6 +10,7 @@ use elys_bindings::query_resp::{Entry, QueryGetEntryResponse};
 use PerpetualOrderType::*;
 
 pub fn create_perpetual_order(
+    env: Env,
     info: MessageInfo,
     deps: DepsMut<ElysQuery>,
     position: Option<PerpetualPosition>,
@@ -39,9 +40,17 @@ pub fn create_perpetual_order(
             leverage.unwrap(),
             take_profit_price,
             trigger_price,
+            env.contract.address.as_str(),
         )
     } else {
-        create_perpetual_close_order(info, deps, order_type, position_id.unwrap(), trigger_price)
+        create_perpetual_close_order(
+            env.contract.address.as_str(),
+            info,
+            deps,
+            order_type,
+            position_id.unwrap(),
+            trigger_price,
+        )
     }
 }
 
@@ -97,6 +106,7 @@ fn create_perpetual_open_order(
     leverage: SignedDecimal,
     take_profit_price: Option<SignedDecimal256>,
     trigger_price: Option<OrderPrice>,
+    creator: &str,
 ) -> Result<Response<ElysMsg>, ContractError> {
     let collateral = cw_utils::one_coin(&info)?;
 
@@ -180,12 +190,13 @@ fn create_perpetual_open_order(
     }
 
     let msg = ElysMsg::perpetual_open_position(
-        info.sender,
+        creator,
         collateral,
         trading_asset,
         position,
         leverage,
         take_profit_price,
+        info.sender,
     );
 
     let reply_info_max_id = MAX_REPLY_ID.load(deps.storage)?;
@@ -217,6 +228,7 @@ fn create_perpetual_open_order(
 }
 
 fn create_perpetual_close_order(
+    creator: &str,
     info: MessageInfo,
     deps: DepsMut<ElysQuery>,
     order_type: PerpetualOrderType,
@@ -319,7 +331,8 @@ fn create_perpetual_close_order(
         return Ok(resp);
     }
 
-    let msg = ElysMsg::perpetual_close_position(&info.sender, position_id, mtp.custody.i128());
+    let msg =
+        ElysMsg::perpetual_close_position(creator, position_id, mtp.custody.i128(), &info.sender);
 
     let reply_info_max_id = MAX_REPLY_ID.load(deps.storage)?;
 
