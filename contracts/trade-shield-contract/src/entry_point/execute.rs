@@ -44,6 +44,7 @@ pub fn execute(
             trigger_price,
             position_id,
         } => create_perpetual_order(
+            env,
             info,
             deps,
             position,
