@@ -167,6 +167,7 @@ pub struct Price {
     pub source: String,
     pub provider: String,
     pub timestamp: u64,
+    pub block_height: u64,
 }
 
 #[cfg(feature = "testing")]
@@ -178,6 +179,7 @@ impl Price {
             source: "".to_string(),
             provider: "".to_string(),
             timestamp: 0,
+            block_height: 0,
         }
     }
 }

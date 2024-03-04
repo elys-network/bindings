@@ -8,8 +8,8 @@ use crate::{
 };
 use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
-    coin, to_json_binary, Addr, BlockInfo, DecCoin, Uint128, Decimal, Decimal256, Empty, SignedDecimal256,
-    StdError, Timestamp,
+    coin, to_json_binary, Addr, BlockInfo, DecCoin, Decimal, Decimal256, Empty, SignedDecimal256,
+    StdError, Timestamp, Uint128,
 };
 use cw_multi_test::{AppResponse, BankSudo, BasicAppBuilder, ContractWrapper, Executor, Module};
 use cw_utils::Expiration;
@@ -17,7 +17,7 @@ use elys_bindings::account_history::types::{AccountSnapshot, Portfolio};
 use elys_bindings::query_resp::{
     Entry, OracleAssetInfoResponse, QueryGetEntryResponse, QueryGetPriceResponse,
 };
-use elys_bindings::types::{OracleAssetInfo, Price, BalanceAvailable};
+use elys_bindings::types::{BalanceAvailable, OracleAssetInfo, Price};
 use elys_bindings::{ElysMsg, ElysQuery};
 use elys_bindings_test::{
     ElysModule, ACCOUNT, ASSET_INFO, LAST_MODULE_USED, PERPETUAL_OPENED_POSITION, PRICES,
@@ -46,7 +46,7 @@ impl Module for ElysModuleWrapper {
             ElysQuery::AmmBalance { .. } => {
                 let resp = BalanceAvailable {
                     amount: Uint128::new(0),
-                    usd_amount: Decimal::zero()
+                    usd_amount: Decimal::zero(),
                 };
                 Ok(to_json_binary(&resp)?)
             }
@@ -148,6 +148,7 @@ impl Module for ElysModuleWrapper {
                             provider: "elys1wzm8dvpxpxxf26y4xn85w5adakcenprg4cq2uf".to_string(),
                             // set timestamp to now
                             timestamp: block.time.seconds(),
+                            block_height: block.height,
                         },
                     },
                     _ => return Err(Error::new(StdError::not_found(asset))),
