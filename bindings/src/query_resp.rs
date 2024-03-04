@@ -22,6 +22,7 @@ pub struct AmmSwapEstimationResponse {
     pub discount: Decimal,
     pub swap_fee: SignedDecimal,
     pub available_liquidity: Coin,
+    pub slippage: Decimal,
 }
 
 #[cw_serde]
@@ -62,6 +63,7 @@ pub struct AmmSwapEstimationByDenomResponse {
     pub available_liquidity: Coin,
     pub weight_balance_ratio: SignedDecimal,
     pub price_impact: SignedDecimal,
+    pub slippage: Decimal,
 }
 
 #[cw_serde]
