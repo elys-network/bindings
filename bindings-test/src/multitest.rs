@@ -233,6 +233,7 @@ impl Module for ElysModule {
                     discount,
                     swap_fee: SignedDecimal::from_str("0.1").unwrap(),
                     available_liquidity: coin(999999, &routes[0].token_out_denom),
+                    slippage: Decimal::zero()
                 })?)
             }
             ElysQuery::AmmSwapEstimationByDenom {
@@ -295,6 +296,7 @@ impl Module for ElysModule {
                     available_liquidity: coin(999999, denom_out),
                     weight_balance_ratio: SignedDecimal::zero(),
                     price_impact: SignedDecimal::zero(),
+                    slippage: Decimal::zero()
                 };
 
                 Ok(to_json_binary(&resp)?)
