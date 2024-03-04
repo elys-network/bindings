@@ -60,7 +60,7 @@ pub fn execute(
             order_ids,
             order_type,
         } => cancel_perpetual_orders(info, deps, order_ids, order_type),
-        ClosePerpetualPosition { id, amount } => close_perpetual_position(info, id, amount),
+        ClosePerpetualPosition { id, amount } => close_perpetual_position(info, env, id, amount),
 
         StakeRequest {
             amount,

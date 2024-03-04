@@ -166,7 +166,7 @@ pub fn process_orders(
                 &mut reply_info_id,
                 deps.storage,
                 &querier,
-                env.contract.address.as_str()
+                env.contract.address.as_str(),
             )?;
         }
     }
@@ -216,7 +216,12 @@ fn process_perpetual_order(
 
         let amount = mtp.custody.i128();
         (
-            ElysMsg::perpetual_close_position(&order.owner, order.position_id.unwrap(), amount),
+            ElysMsg::perpetual_close_position(
+                creator,
+                order.position_id.unwrap(),
+                amount,
+                &order.owner,
+            ),
             ReplyType::PerpetualBrokerClose,
         )
     };

@@ -609,7 +609,7 @@ impl Module for ElysModule {
         storage: &mut dyn cosmwasm_std::Storage,
         router: &dyn cw_multi_test::CosmosRouter<ExecC = ExecC, QueryC = QueryC>,
         block: &cosmwasm_std::BlockInfo,
-        sender: cosmwasm_std::Addr,
+        _sender: cosmwasm_std::Addr,
         msg: Self::ExecT,
     ) -> AnyResult<cw_multi_test::AppResponse>
     where
@@ -686,7 +686,8 @@ impl Module for ElysModule {
                 position,
                 leverage,
                 take_profit_price,
-                ..
+                trading_asset,
+                owner,
             } => {
                 LAST_MODULE_USED.save(storage, &Some("PerpetualOpen".to_string()))?;
                 let mut mtp_vec = PERPETUAL_OPENED_POSITION.load(storage)?;
@@ -696,9 +697,16 @@ impl Module for ElysModule {
                     None => 0,
                 };
                 let collaterals = vec![collateral.clone()];
-
+                let custody = (leverage.clone()
+                    * SignedDecimal::from_atomics(
+                        Int128::new(collateral.amount.u128() as i128),
+                        0,
+                    )
+                    .unwrap())
+                .floor()
+                .atomics();
                 let mtp: Mtp = Mtp {
-                    address: creator,
+                    address: owner,
                     liabilities: Int128::zero(),
                     take_profit_liabilities: Int128::zero(),
                     mtp_health: SignedDecimal::one(),
@@ -707,13 +715,13 @@ impl Module for ElysModule {
                     amm_pool_id: 0,
                     consolidate_leverage: SignedDecimal::zero(),
                     sum_collateral: Int128::zero(),
-                    take_profit_price: take_profit_price,
+                    take_profit_price,
                     borrow_interest_paid_collateral: Int128::zero(),
                     borrow_interest_paid_custody: Int128::zero(),
                     borrow_interest_unpaid_collateral: Int128::zero(),
                     collateral_asset: collateral.denom,
                     collateral: Int128::new((collateral.amount.u128()) as i128),
-                    custody: Int128::zero(),
+                    custody,
                     custody_asset: "".to_string(),
                     funding_fee_paid_collateral: Int128::zero(),
                     funding_fee_paid_custody: Int128::zero(),
@@ -724,7 +732,7 @@ impl Module for ElysModule {
                     open_price: SignedDecimal::zero(),
                     take_profit_borrow_rate: SignedDecimal::zero(),
                     take_profit_custody: Int128::zero(),
-                    trading_asset: "".to_string(),
+                    trading_asset,
                 };
 
                 let msg_resp = PerpetualOpenResponse { id: mtp.id };
@@ -735,32 +743,63 @@ impl Module for ElysModule {
                 };
 
                 mtp_vec.push(mtp);
+                PERPETUAL_OPENED_POSITION.save(storage, &mtp_vec).unwrap();
 
                 let burn_msg = BankMsg::Burn {
                     amount: collaterals,
                 };
                 router
-                    .execute(api, storage, block, sender, burn_msg.into())
+                    .execute(
+                        api,
+                        storage,
+                        block,
+                        Addr::unchecked(creator),
+                        burn_msg.into(),
+                    )
                     .unwrap();
 
                 Ok(resp)
             }
 
-            ElysMsg::PerpetualClose { id, amount, .. } => {
+            ElysMsg::PerpetualClose {
+                id, amount, owner, ..
+            } => {
                 LAST_MODULE_USED.save(storage, &Some("PerpetualClose".to_string()))?;
-                let orders: Vec<Mtp> = PERPETUAL_OPENED_POSITION.load(storage)?;
+                let mtps: Vec<Mtp> = PERPETUAL_OPENED_POSITION.load(storage)?;
 
-                let new_orders: Vec<Mtp> =
-                    orders.into_iter().filter(|order| order.id != id).collect();
+                let mut mtp = mtps
+                    .iter()
+                    .find(|mtp| mtp.address.as_str() == owner.as_str() && mtp.id == id)
+                    .cloned()
+                    .expect("mtp not found");
 
-                PERPETUAL_OPENED_POSITION.save(storage, &new_orders)?;
+                if mtp.custody < amount {
+                    panic!(
+                        "amount: [{}] > custody: [{}]",
+                        amount.i128(),
+                        mtp.custody.i128()
+                    );
+                }
 
                 let data = Some(to_json_binary(&PerpetualCloseResponse { id, amount })?);
-
-                Ok(AppResponse {
+                let resp = AppResponse {
                     events: vec![],
                     data,
-                })
+                };
+
+                let mut mtps: Vec<Mtp> = mtps
+                    .iter()
+                    .filter(|mtp| !(mtp.address.as_str() == owner.as_str() && mtp.id == id))
+                    .cloned()
+                    .collect();
+
+                if mtp.custody > amount {
+                    mtp.custody = mtp.custody.checked_sub(amount.clone())?;
+                    mtps.push(mtp);
+                }
+
+                PERPETUAL_OPENED_POSITION.save(storage, &mtps)?;
+                Ok(resp)
             }
             ElysMsg::AmmSwapByDenom {
                 sender,
