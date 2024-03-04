@@ -372,6 +372,7 @@ pub struct QueryUserPoolResponse {
 
 #[cw_serde]
 pub struct PoolResp {
+    pub pool_id: i64,
     pub assets: Vec<PoolAsset>, // eg : [{{"denom":"uatom", "amount":"1000"}, "weight":"10"}, {{"denom":"uusdc", "amount":"100"}, "weight":"1"}, ...]
     pub pool_ratio: String,
     pub rewards_apr: Decimal,
