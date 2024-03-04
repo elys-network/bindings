@@ -187,6 +187,7 @@ impl Module for ElysModuleWrapper {
                         source: "".to_string(),
                         provider: "".to_string(),
                         timestamp: 0,
+                        block_height: 0,
                     },
                 })?),
                 _ => panic!("price not found for {}", asset),

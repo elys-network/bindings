@@ -503,6 +503,7 @@ impl Module for ElysModule {
                             source: asset.clone(),
                             provider: asset.clone(),
                             timestamp: 0,
+                            block_height: 0,
                         },
                     };
                     return Ok(to_json_binary(&resp)?);
@@ -531,6 +532,7 @@ impl Module for ElysModule {
                         source: asset.clone(),
                         provider: asset.clone(),
                         timestamp: 0,
+                        block_height: 0,
                     },
                 };
                 Ok(to_json_binary(&resp)?)

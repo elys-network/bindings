@@ -137,6 +137,7 @@ impl Module for ElysModuleWrapper {
                             provider: "elys1wzm8dvpxpxxf26y4xn85w5adakcenprg4cq2uf".to_string(),
                             // set timestamp to now
                             timestamp: block.time.seconds(),
+                            block_height: block.height,
                         },
                     },
                     _ => return Err(Error::new(StdError::not_found(asset))),
