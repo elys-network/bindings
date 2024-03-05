@@ -147,6 +147,8 @@ impl<'a> ElysQuerier<'a> {
             estimated_pnl: raw_resp.estimated_pnl,
             estimated_pnl_denom: raw_resp.estimated_pnl_denom,
             available_liquidity: raw_resp.available_liquidity,
+            slippage: Decimal::from_str(&raw_resp.slippage)
+                .map_or(Decimal::zero(), |slippage| slippage),
             weight_balance_ratio: SignedDecimal::from_str(&raw_resp.weight_balance_ratio)
                 .map_or(SignedDecimal::zero(), |weight_balance_ratio| {
                     weight_balance_ratio
