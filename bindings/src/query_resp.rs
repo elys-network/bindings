@@ -19,10 +19,11 @@ pub struct OracleAllPriceResponse {
 pub struct AmmSwapEstimationResponse {
     pub spot_price: Decimal,
     pub token_out: Coin,
-    pub discount: Decimal,
     pub swap_fee: SignedDecimal,
+    pub discount: Decimal,
     pub available_liquidity: Coin,
     pub slippage: Decimal,
+    pub weight_balance_ratio: Decimal,
 }
 
 #[cw_serde]
@@ -83,6 +84,7 @@ pub struct PerpetualOpenEstimationRawResponse {
     pub estimated_pnl: Int128,
     pub estimated_pnl_denom: String,
     pub available_liquidity: Coin,
+    pub slippage: String,
     pub weight_balance_ratio: String,
     pub borrow_interest_rate: String,
     pub funding_rate: String,
@@ -106,6 +108,7 @@ pub struct PerpetualOpenEstimationResponse {
     pub estimated_pnl: Int128,
     pub estimated_pnl_denom: String,
     pub available_liquidity: Coin,
+    pub slippage: Decimal,
     pub weight_balance_ratio: SignedDecimal,
     pub borrow_interest_rate: SignedDecimal,
     pub funding_rate: SignedDecimal,
