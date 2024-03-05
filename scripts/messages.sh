@@ -184,15 +184,15 @@ function create_perpetual_order_as_market_open() {
         "$ts_contract_address" \
         '{
             "create_perpetual_order": {
-                "position": "long",
+                "position": "short",
                 "leverage": "5",
                 "trading_asset": "'"$atom_denom"'",
-                "take_profit_price": "100",
+                "take_profit_price": "30",
                 "order_type": "market_open"
             }
         }' \
         wasm-create_perpetual_order \
-        "100000000$usdc_denom"
+        "101000000$usdc_denom"
 }
 
 # Create perpetual order as market close
