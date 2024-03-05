@@ -154,7 +154,6 @@ impl Module for ElysModule {
                     price_impact: Decimal::from_atomics(Uint128::new(6_495_303_442_450), 18)
                         .unwrap()
                         .to_string(),
-                    slippage: Decimal::zero().to_string(),
                 };
 
                 return Ok(to_json_binary(&resp)?);
