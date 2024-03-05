@@ -44,6 +44,7 @@ pub fn execute(
             trigger_price,
             position_id,
         } => create_perpetual_order(
+            env,
             info,
             deps,
             position,
@@ -59,7 +60,7 @@ pub fn execute(
             order_ids,
             order_type,
         } => cancel_perpetual_orders(info, deps, order_ids, order_type),
-        ClosePerpetualPosition { id, amount } => close_perpetual_position(info, id, amount),
+        ClosePerpetualPosition { id, amount } => close_perpetual_position(info, env, id, amount),
 
         StakeRequest {
             amount,
@@ -135,5 +136,25 @@ pub fn execute(
 
             Ok(Response::new().add_submessage(sub_msg))
         }
+
+        LeveragelpOpen {
+            amm_pool_id,
+            collateral_asset,
+            collateral_amount,
+            leverage,
+            stop_loss_price,
+        } => open_leveragelp_position_request(
+            info,
+            amm_pool_id,
+            collateral_asset,
+            collateral_amount,
+            leverage,
+            stop_loss_price,
+        ),
+
+        LeveragelpClose {
+            position_id,
+            amount,
+        } => close_leveragelp_position_request(info, position_id, amount),
     }
 }

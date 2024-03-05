@@ -371,21 +371,22 @@ fn swap_error() {
 
 #[test]
 fn open_perpetual_position() {
-    let wallets: Vec<(&str, Vec<Coin>)> = vec![("user", coins(5, "btc"))];
+    let wallets: Vec<(&str, Vec<Coin>)> = vec![("contract_addr", coins(5, "btc"))];
     let mut app = ElysApp::new_with_wallets(wallets);
 
     let open_msg = ElysMsg::perpetual_open_position(
-        "user",
+        "contract_addr",
         coin(5, "btc"),
         "uusdc",
         PerpetualPosition::Short,
         SignedDecimal::from_atomics(Int64::new(25), 1).unwrap(),
         Some(SignedDecimal256::from_atomics(Uint128::new(11), 1).unwrap()),
+        "user",
     );
 
     assert_eq!(
         app.wrap()
-            .query_balance("user", "btc")
+            .query_balance("contract_addr", "btc")
             .unwrap()
             .amount
             .u128(),
@@ -397,7 +398,7 @@ fn open_perpetual_position() {
 
     assert_eq!(
         app.wrap()
-            .query_balance("user", "btc")
+            .query_balance("contract_addr", "btc")
             .unwrap()
             .amount
             .u128(),
@@ -414,21 +415,22 @@ fn open_perpetual_position() {
 
 #[test]
 fn perpetual_perpetual_close_position() {
-    let wallets: Vec<(&str, Vec<Coin>)> = vec![("user", coins(5, "btc"))];
+    let wallets: Vec<(&str, Vec<Coin>)> = vec![("contract_addr", coins(5, "btc"))];
     let mut app = ElysApp::new_with_wallets(wallets);
 
     let open_msg = ElysMsg::perpetual_open_position(
-        "user",
+        "contract_addr",
         coin(5, "btc"),
         "uusdc",
         PerpetualPosition::Short,
-        SignedDecimal::from_atomics(Int64::new(25), 1).unwrap(),
+        SignedDecimal::from_atomics(Int64::new(5), 0).unwrap(),
         Some(SignedDecimal256::from_atomics(Uint128::new(11), 1).unwrap()),
+        "user",
     );
 
     assert_eq!(
         app.wrap()
-            .query_balance("user", "btc")
+            .query_balance("contract_addr", "btc")
             .unwrap()
             .amount
             .u128(),
@@ -440,7 +442,7 @@ fn perpetual_perpetual_close_position() {
 
     assert_eq!(
         app.wrap()
-            .query_balance("user", "btc")
+            .query_balance("contract_addr", "btc")
             .unwrap()
             .amount
             .u128(),
@@ -454,7 +456,7 @@ fn perpetual_perpetual_close_position() {
 
     assert_eq!(last_module_used, "PerpetualOpen");
 
-    let close_msg = ElysMsg::perpetual_close_position("user", 0, 1);
+    let close_msg = ElysMsg::perpetual_close_position("contract_addr", 0, 25, "user");
 
     app.execute(Addr::unchecked("user"), close_msg.into())
         .unwrap();

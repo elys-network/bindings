@@ -141,6 +141,7 @@ impl Module for ElysModuleWrapper {
                             provider: "elys1wzm8dvpxpxxf26y4xn85w5adakcenprg4cq2uf".to_string(),
                             // set timestamp to now
                             timestamp: block.time.seconds(),
+                            block_height: block.height,
                         },
                     },
                     _ => return Err(Error::new(StdError::not_found(asset))),
@@ -216,7 +217,7 @@ impl Module for ElysModuleWrapper {
                                     .to_string(),
                                 name: "nirvana".to_string(),
                                 voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
-                                commission: Decimal::from_str("0.1").unwrap()
+                                commission: Decimal::from_str("0.1").unwrap(),
                             },
                             staked: BalanceAvailable {
                                 amount: Uint128::new(10000000),
@@ -239,7 +240,7 @@ impl Module for ElysModuleWrapper {
                                     .to_string(),
                                 name: "nirvana".to_string(),
                                 voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
-                                commission: Decimal::from_str("0.1").unwrap()
+                                commission: Decimal::from_str("0.1").unwrap(),
                             },
                             remaining_time: 1707328694,
                             unstaked: BalanceAvailable {
@@ -672,7 +673,7 @@ fn get_staked_assets() {
                         address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw".to_string(),
                         name: "nirvana".to_string(),
                         voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
-                        commission: Decimal::from_str("0.1").unwrap()
+                        commission: Decimal::from_str("0.1").unwrap(),
                     },
                     staked: BalanceAvailable {
                         amount: Uint128::new(10000000),
@@ -686,7 +687,7 @@ fn get_staked_assets() {
                         address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw".to_string(),
                         name: "nirvana".to_string(),
                         voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
-                        commission: Decimal::from_str("0.1").unwrap()
+                        commission: Decimal::from_str("0.1").unwrap(),
                     },
                     remaining_time: 1707328694000,
                     unstaked: BalanceAvailable {

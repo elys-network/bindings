@@ -22,6 +22,7 @@ pub struct AmmSwapEstimationResponse {
     pub discount: Decimal,
     pub swap_fee: SignedDecimal,
     pub available_liquidity: Coin,
+    pub slippage: Decimal,
 }
 
 #[cw_serde]
@@ -62,6 +63,7 @@ pub struct AmmSwapEstimationByDenomResponse {
     pub available_liquidity: Coin,
     pub weight_balance_ratio: SignedDecimal,
     pub price_impact: SignedDecimal,
+    pub slippage: Decimal,
 }
 
 #[cw_serde]
@@ -372,6 +374,7 @@ pub struct QueryUserPoolResponse {
 
 #[cw_serde]
 pub struct PoolResp {
+    pub pool_id: i64,
     pub assets: Vec<PoolAsset>, // eg : [{{"denom":"uatom", "amount":"1000"}, "weight":"10"}, {{"denom":"uusdc", "amount":"100"}, "weight":"1"}, ...]
     pub pool_ratio: String,
     pub rewards_apr: Decimal,
@@ -395,4 +398,83 @@ pub enum PoolFilterType {
     FilterFixedWeight = 2,
     FilterDynamicWeight = 3,
     FilterLeverage = 4,
+}
+
+#[cw_serde]
+pub struct LeveragelpParams {
+    pub leverage_max: Decimal,
+    pub max_open_positions: i64,
+    pub pool_open_threshold: Decimal,
+    pub safety_factor: Decimal,
+    pub whitelisting_enabled: bool,
+    pub epoch_length: i64,
+}
+
+#[cw_serde]
+pub struct LeveragelpParamsResponse {
+    pub params: Option<LeveragelpParams>,
+}
+
+#[cw_serde]
+pub struct LeveragelpPosition {
+    pub address: String,
+    pub collateral: Coin,
+    pub liabilities: i64,
+    pub interest_paid: i64,
+    pub leverage: Decimal,
+    pub leveraged_lp_amount: i64,
+    pub position_health: Decimal,
+    pub id: u64,
+    pub amm_pool_id: u64,
+    pub stop_loss_price: Decimal,
+}
+
+#[cw_serde]
+pub struct LeveragelpPositionResponse {
+    pub position: Option<LeveragelpPosition>,
+}
+
+#[cw_serde]
+pub struct LeveragelpPositionsResponse {
+    pub positions: Vec<LeveragelpPosition>,
+    pub pagination: Option<PageResponse>,
+}
+
+#[cw_serde]
+pub struct LeveragelpStatusReponse {
+    pub open_position_count: u64,
+    pub lifetime_position_count: u64,
+}
+
+#[cw_serde]
+pub struct LeveragelpWhitelistResponse {
+    pub whitelist: Vec<String>,
+    pub pagination: Option<PageResponse>,
+}
+
+#[cw_serde]
+pub struct LeveragelpIsWhitelistedResponse {
+    pub address: String,
+    pub is_whitelisted: bool,
+}
+
+#[cw_serde]
+pub struct LeveragelpPool {
+    pub amm_pool_id: u64,
+    pub health: Decimal,
+    pub enabled: bool,
+    pub closed: bool,
+    pub leveraged_lp_amount: i64,
+    pub leverage_max: Decimal,
+}
+
+#[cw_serde]
+pub struct LeveragelpPoolResponse {
+    pub pool: LeveragelpPool,
+}
+
+#[cw_serde]
+pub struct LeveragelpPoolsResponse {
+    pub pool: Vec<LeveragelpPool>,
+    pub pagination: Option<PageResponse>,
 }

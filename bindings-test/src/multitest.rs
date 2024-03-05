@@ -21,8 +21,9 @@ use elys_bindings::{
     },
     query_resp::{
         AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse,
-        BalanceBorrowed, Commitments, Entry, OracleAssetInfoResponse,
-        PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
+        BalanceBorrowed, Commitments, Entry, LeveragelpIsWhitelistedResponse, LeveragelpParams,
+        LeveragelpParamsResponse, LeveragelpStatusReponse, LeveragelpWhitelistResponse,
+        OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
         PerpetualOpenEstimationRawResponse, PerpetualQueryPositionsResponse, QueryAprResponse,
         QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse,
         QueryShowCommitmentsResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
@@ -106,6 +107,55 @@ impl Module for ElysModule {
         request: Self::QueryT,
     ) -> AnyResult<cosmwasm_std::Binary> {
         match request {
+            ElysQuery::LeveragelpParams { .. } => {
+                let resp = LeveragelpParamsResponse {
+                    params: Some(LeveragelpParams {
+                        leverage_max: Decimal::from_atomics(Uint128::new(10), 0).unwrap(),
+                        max_open_positions: 5,
+                        pool_open_threshold: Decimal::from_atomics(Uint128::new(100), 0).unwrap(),
+                        safety_factor: Decimal::from_atomics(Uint128::new(100), 0).unwrap(),
+                        whitelisting_enabled: true,
+                        epoch_length: 10,
+                    }),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+
+            ElysQuery::LeveragelpQueryPositions { .. } => todo!("LeveragelpQueryPositions"),
+            ElysQuery::LeveragelpQueryPositionsByPool { .. } => {
+                todo!("LeveragelpQueryPositionsByPool")
+            }
+
+            ElysQuery::LeveragelpGetStatus { .. } => {
+                let resp = LeveragelpStatusReponse {
+                    open_position_count: 10,
+                    lifetime_position_count: 100,
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+
+            ElysQuery::LeveragelpQueryPositionsForAddress { .. } => {
+                todo!("LeveragelpQueryPositionsForAddress")
+            }
+
+            ElysQuery::LeveragelpGetWhitelist { .. } => {
+                let resp = LeveragelpWhitelistResponse {
+                    whitelist: vec![],
+                    pagination: None,
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::LeveragelpIsWhitelisted { .. } => {
+                let resp = LeveragelpIsWhitelistedResponse {
+                    is_whitelisted: false,
+                    address: "".to_string(),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::LeveragelpPool { .. } => todo!("LeveragelpPool"),
+            ElysQuery::LeveragelpPools { .. } => todo!("LeveragelpPools"),
+            ElysQuery::LeveragelpPosition { .. } => todo!("LeveragelpPosition"),
+
             ElysQuery::AmmEarnMiningPoolAll { .. } => todo!("AmmEarnMiningPoolAll"),
             ElysQuery::CommitmentAllValidators { .. } => todo!("CommitmentAllValidators"),
             ElysQuery::CommitmentDelegations { .. } => todo!("CommitmentDelegations"),
@@ -183,6 +233,7 @@ impl Module for ElysModule {
                     discount,
                     swap_fee: SignedDecimal::from_str("0.1").unwrap(),
                     available_liquidity: coin(999999, &routes[0].token_out_denom),
+                    slippage: Decimal::zero()
                 })?)
             }
             ElysQuery::AmmSwapEstimationByDenom {
@@ -245,6 +296,7 @@ impl Module for ElysModule {
                     available_liquidity: coin(999999, denom_out),
                     weight_balance_ratio: SignedDecimal::zero(),
                     price_impact: SignedDecimal::zero(),
+                    slippage: Decimal::zero()
                 };
 
                 Ok(to_json_binary(&resp)?)
@@ -453,6 +505,7 @@ impl Module for ElysModule {
                             source: asset.clone(),
                             provider: asset.clone(),
                             timestamp: 0,
+                            block_height: 0,
                         },
                     };
                     return Ok(to_json_binary(&resp)?);
@@ -481,6 +534,7 @@ impl Module for ElysModule {
                         source: asset.clone(),
                         provider: asset.clone(),
                         timestamp: 0,
+                        block_height: 0,
                     },
                 };
                 Ok(to_json_binary(&resp)?)
@@ -559,7 +613,7 @@ impl Module for ElysModule {
         storage: &mut dyn cosmwasm_std::Storage,
         router: &dyn cw_multi_test::CosmosRouter<ExecC = ExecC, QueryC = QueryC>,
         block: &cosmwasm_std::BlockInfo,
-        sender: cosmwasm_std::Addr,
+        _sender: cosmwasm_std::Addr,
         msg: Self::ExecT,
     ) -> AnyResult<cw_multi_test::AppResponse>
     where
@@ -636,7 +690,8 @@ impl Module for ElysModule {
                 position,
                 leverage,
                 take_profit_price,
-                ..
+                trading_asset,
+                owner,
             } => {
                 LAST_MODULE_USED.save(storage, &Some("PerpetualOpen".to_string()))?;
                 let mut mtp_vec = PERPETUAL_OPENED_POSITION.load(storage)?;
@@ -646,9 +701,16 @@ impl Module for ElysModule {
                     None => 0,
                 };
                 let collaterals = vec![collateral.clone()];
-
+                let custody = (leverage.clone()
+                    * SignedDecimal::from_atomics(
+                        Int128::new(collateral.amount.u128() as i128),
+                        0,
+                    )
+                    .unwrap())
+                .floor()
+                .atomics();
                 let mtp: Mtp = Mtp {
-                    address: creator,
+                    address: owner,
                     liabilities: Int128::zero(),
                     take_profit_liabilities: Int128::zero(),
                     mtp_health: SignedDecimal::one(),
@@ -657,13 +719,13 @@ impl Module for ElysModule {
                     amm_pool_id: 0,
                     consolidate_leverage: SignedDecimal::zero(),
                     sum_collateral: Int128::zero(),
-                    take_profit_price: take_profit_price,
+                    take_profit_price,
                     borrow_interest_paid_collateral: Int128::zero(),
                     borrow_interest_paid_custody: Int128::zero(),
                     borrow_interest_unpaid_collateral: Int128::zero(),
                     collateral_asset: collateral.denom,
                     collateral: Int128::new((collateral.amount.u128()) as i128),
-                    custody: Int128::zero(),
+                    custody,
                     custody_asset: "".to_string(),
                     funding_fee_paid_collateral: Int128::zero(),
                     funding_fee_paid_custody: Int128::zero(),
@@ -674,7 +736,7 @@ impl Module for ElysModule {
                     open_price: SignedDecimal::zero(),
                     take_profit_borrow_rate: SignedDecimal::zero(),
                     take_profit_custody: Int128::zero(),
-                    trading_asset: "".to_string(),
+                    trading_asset,
                 };
 
                 let msg_resp = PerpetualOpenResponse { id: mtp.id };
@@ -685,32 +747,63 @@ impl Module for ElysModule {
                 };
 
                 mtp_vec.push(mtp);
+                PERPETUAL_OPENED_POSITION.save(storage, &mtp_vec).unwrap();
 
                 let burn_msg = BankMsg::Burn {
                     amount: collaterals,
                 };
                 router
-                    .execute(api, storage, block, sender, burn_msg.into())
+                    .execute(
+                        api,
+                        storage,
+                        block,
+                        Addr::unchecked(creator),
+                        burn_msg.into(),
+                    )
                     .unwrap();
 
                 Ok(resp)
             }
 
-            ElysMsg::PerpetualClose { id, amount, .. } => {
+            ElysMsg::PerpetualClose {
+                id, amount, owner, ..
+            } => {
                 LAST_MODULE_USED.save(storage, &Some("PerpetualClose".to_string()))?;
-                let orders: Vec<Mtp> = PERPETUAL_OPENED_POSITION.load(storage)?;
+                let mtps: Vec<Mtp> = PERPETUAL_OPENED_POSITION.load(storage)?;
 
-                let new_orders: Vec<Mtp> =
-                    orders.into_iter().filter(|order| order.id != id).collect();
+                let mut mtp = mtps
+                    .iter()
+                    .find(|mtp| mtp.address.as_str() == owner.as_str() && mtp.id == id)
+                    .cloned()
+                    .expect("mtp not found");
 
-                PERPETUAL_OPENED_POSITION.save(storage, &new_orders)?;
+                if mtp.custody < amount {
+                    panic!(
+                        "amount: [{}] > custody: [{}]",
+                        amount.i128(),
+                        mtp.custody.i128()
+                    );
+                }
 
                 let data = Some(to_json_binary(&PerpetualCloseResponse { id, amount })?);
-
-                Ok(AppResponse {
+                let resp = AppResponse {
                     events: vec![],
                     data,
-                })
+                };
+
+                let mut mtps: Vec<Mtp> = mtps
+                    .iter()
+                    .filter(|mtp| !(mtp.address.as_str() == owner.as_str() && mtp.id == id))
+                    .cloned()
+                    .collect();
+
+                if mtp.custody > amount {
+                    mtp.custody = mtp.custody.checked_sub(amount.clone())?;
+                    mtps.push(mtp);
+                }
+
+                PERPETUAL_OPENED_POSITION.save(storage, &mtps)?;
+                Ok(resp)
             }
             ElysMsg::AmmSwapByDenom {
                 sender,
@@ -862,6 +955,27 @@ impl Module for ElysModule {
             }
             ElysMsg::AmmExitPool { .. } => {
                 LAST_MODULE_USED.save(storage, &Some("AmmExit".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
+            // TODO @josefleventon
+            ElysMsg::LeveragelpOpen { .. } => {
+                LAST_MODULE_USED.save(storage, &Some("LeveragelpOpen".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
+            ElysMsg::LeveragelpClose { .. } => {
+                LAST_MODULE_USED.save(storage, &Some("LeveragelpClose".to_string()))?;
                 let data = to_json_binary(&MsgResponse {
                     result: "Ok".to_string(),
                 })?;

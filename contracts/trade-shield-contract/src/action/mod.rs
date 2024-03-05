@@ -56,6 +56,9 @@ pub mod execute {
     mod exit_amm_pool_request;
     mod join_amm_pool_request;
 
+    mod close_leveragelp_position_request;
+    mod open_leveragelp_position_request;
+
     use super::*;
 
     pub use cancel_perpetual_order::cancel_perpetual_order;
@@ -68,12 +71,14 @@ pub mod execute {
 
     pub use claim_rewards_request::claim_rewards_request;
     pub use claim_validator_commission_request::claim_validator_commission_request;
+    pub use close_leveragelp_position_request::close_leveragelp_position_request;
     pub use eden_cancel_vest_request::eden_cancel_vest_request;
     pub use eden_vest_request::eden_vest_request;
     pub use elys_cancel_unstake_request::elys_cancel_unstake_request;
     pub use elys_redelegation_request::elys_redelegation_request;
     pub use exit_amm_pool_request::exit_amm_pool_request;
     pub use join_amm_pool_request::join_amm_pool_request;
+    pub use open_leveragelp_position_request::open_leveragelp_position_request;
     pub use stake_request::stake_request;
     pub use unstake_request::unstake_request;
 }

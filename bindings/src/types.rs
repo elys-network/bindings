@@ -167,6 +167,7 @@ pub struct Price {
     pub source: String,
     pub provider: String,
     pub timestamp: u64,
+    pub block_height: u64,
 }
 
 #[cfg(feature = "testing")]
@@ -178,6 +179,7 @@ impl Price {
             source: "".to_string(),
             provider: "".to_string(),
             timestamp: 0,
+            block_height: 0,
         }
     }
 }
@@ -311,7 +313,7 @@ pub struct StakingValidator {
     // Voting power percentage for this validator.
     pub voting_power: Decimal,
     // commission percentage for the validator.
-    pub commission: Decimal
+    pub commission: Decimal,
 }
 
 #[cw_serde]
@@ -357,6 +359,7 @@ pub struct ValidatorDetail {
 pub struct PoolAsset {
     pub token: Coin,
     pub weight: Uint128,
+    pub usd_value: Option<Decimal>,
 }
 
 pub fn default_take_profit_price() -> SignedDecimal256 {

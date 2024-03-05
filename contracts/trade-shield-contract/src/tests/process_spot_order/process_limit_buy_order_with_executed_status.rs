@@ -161,6 +161,7 @@ impl Module for ElysModuleWrapper {
                     available_liquidity: coin(95841644452, &denom_in),
                     weight_balance_ratio: SignedDecimal::zero(),
                     price_impact: SignedDecimal::zero(),
+                    slippage: Decimal::zero()
                 };
 
                 Ok(to_json_binary(&resp)?)
@@ -185,6 +186,7 @@ impl Module for ElysModuleWrapper {
                         source: "".to_string(),
                         provider: "".to_string(),
                         timestamp: 0,
+                        block_height: 0,
                     },
                 })?),
                 _ => panic!("price not found for {}", asset),

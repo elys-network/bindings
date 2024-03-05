@@ -17,11 +17,13 @@ pub enum ElysMsg {
         trading_asset: String,
         leverage: SignedDecimal,
         take_profit_price: SignedDecimal256,
+        owner: String,
     },
     PerpetualClose {
         creator: String,
         id: u64,
         amount: Int128,
+        owner: String,
     },
     AmmSwapExactAmountIn {
         sender: String,
@@ -97,6 +99,20 @@ pub enum ElysMsg {
         share_amount_in: Uint128,
         token_out_denom: String,
     },
+
+    LeveragelpOpen {
+        creator: String,
+        collateral_asset: String,
+        collateral_amount: Int128,
+        amm_pool_id: u64,
+        leverage: SignedDecimal,
+        stop_loss_price: SignedDecimal,
+    },
+    LeveragelpClose {
+        creator: String,
+        position_id: u64,
+        amount: Int128,
+    },
 }
 
 impl ElysMsg {
@@ -125,6 +141,7 @@ impl ElysMsg {
         position: PerpetualPosition,
         leverage: SignedDecimal,
         take_profit_price: Option<SignedDecimal256>,
+        owner: impl Into<String>,
     ) -> Self {
         let take_profit_price = match take_profit_price {
             Some(price) => price,
@@ -137,14 +154,21 @@ impl ElysMsg {
             leverage,
             take_profit_price,
             trading_asset: trading_asset.into(),
+            owner: owner.into(),
         }
     }
 
-    pub fn perpetual_close_position(creator: impl Into<String>, id: u64, amount: i128) -> Self {
+    pub fn perpetual_close_position(
+        creator: impl Into<String>,
+        id: u64,
+        amount: i128,
+        owner: impl Into<String>,
+    ) -> Self {
         Self::PerpetualClose {
             creator: creator.into(),
             id,
             amount: Int128::new(amount),
+            owner: owner.into(),
         }
     }
     pub fn swap_by_denom(
@@ -287,6 +311,32 @@ impl ElysMsg {
             min_amounts_out: min_amounts_out,
             share_amount_in: share_amount_in,
             token_out_denom: token_out_denom,
+        }
+    }
+
+    pub fn leveragelp_open_position(
+        creator: String,
+        amm_pool_id: u64,
+        collateral_asset: String,
+        collateral_amount: Int128,
+        leverage: SignedDecimal,
+        stop_loss_price: SignedDecimal,
+    ) -> Self {
+        Self::LeveragelpOpen {
+            creator: creator,
+            collateral_asset: collateral_asset,
+            collateral_amount: collateral_amount,
+            amm_pool_id: amm_pool_id,
+            leverage: leverage,
+            stop_loss_price: stop_loss_price,
+        }
+    }
+
+    pub fn leveragelp_close_position(creator: String, position_id: u64, amount: Int128) -> Self {
+        Self::LeveragelpClose {
+            creator: creator,
+            position_id: position_id,
+            amount: amount,
         }
     }
 }
