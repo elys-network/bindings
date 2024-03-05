@@ -306,10 +306,10 @@ function perpetual_open_estimation() {
     printf "\n# Perpetual open estimation\n"
     query_contract "$ts_contract_address" '{
         "perpetual_open_estimation": {
-            "position": "short",
+            "position": "long",
             "leverage": "5",
             "trading_asset": "'"$atom_denom"'",
-            "collateral": {"denom": "'"$usdc_denom"'", "amount": "101000000"},
+            "collateral": {"denom": "'"$usdc_denom"'", "amount": "100000000"},
             "take_profit_price": "30",
             "user_address": "'"$user_address"'"
         }
