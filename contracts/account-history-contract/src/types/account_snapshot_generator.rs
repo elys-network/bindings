@@ -24,7 +24,7 @@ use elys_bindings::{
             TotalBalance,
         },
     },
-    query_resp::{PoolFilterType, PoolResp, QueryUserPoolResponse, UserPoolResp},
+    query_resp::{PoolFilterType, PoolResp, QueryUserPoolResponse, UserPoolResp, CommittedTokens},
     trade_shield::{
         msg::{
             query_resp::{
@@ -149,15 +149,17 @@ impl AccountSnapshotGenerator {
         deps: &Deps<ElysQuery>,
         address: &String,
     ) -> StdResult<QueryUserPoolResponse> {
-        let account_balances = deps.querier.query_all_balances(address)?;
+        let querier = ElysQuerier::new(&deps.querier);
+        let commitments = querier.get_commitments(address.clone())?.commitments;
 
         struct IdSortedPoolBalance {
             pub id: u64,
-            pub balance: Coin,
+            pub balance: CommittedTokens,
         }
 
-        // Get all balances with denoms starting in "amm/pool/"
-        let pool_balances: Vec<Coin> = account_balances
+        let pool_balances: Vec<CommittedTokens> = commitments
+            .committed_tokens
+            .unwrap()
             .iter()
             .filter(|coin| coin.denom.starts_with("amm/pool/"))
             .cloned()
