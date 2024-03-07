@@ -19,7 +19,7 @@ pub fn get_usdc_price(deps: Deps<ElysQuery>) -> Result<GetUsdcPriceResp, Contrac
         .price
         .price
         .checked_div(Decimal::from_atomics(Uint128::new(1000000), 0).unwrap())
-        .unwrap();
+        .map_or(Decimal::zero(), |res| res);
     let resp = GetUsdcPriceResp {
         price: usdc_usd_price,
     };

@@ -334,7 +334,7 @@ impl<'a> ElysQuerier<'a> {
 
         let stacks: Vec<StakedPosition> = resp
             .staked_position
-            .unwrap()
+            .map_or(vec![], |stacks| stacks)
             .iter()
             .filter(|stack| !(stack.staked.amount.is_zero()))
             .cloned()
@@ -480,7 +480,8 @@ impl<'a> ElysQuerier<'a> {
                                     token: asset.token.clone(),
                                     weight: asset.weight,
                                     usd_value: Some(
-                                        Decimal::from_atomics(asset.token.amount, 6).unwrap()
+                                        Decimal::from_atomics(asset.token.amount, 6)
+                                            .map_or(Decimal::zero(), |res| res)
                                             * price,
                                     ),
                                 }

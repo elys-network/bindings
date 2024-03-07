@@ -35,11 +35,11 @@ pub fn get_all_validators(
         for validator in validators.iter_mut() {
             if let Some(staked) = &mut validator.staked {
                 staked.usd_amount = Decimal::from_atomics(staked.amount, 6)
-                    .unwrap()
+                    .map_or(Decimal::zero(), |res| res)
                     .checked_mul(uelys_price_in_uusdc)
-                    .unwrap()
+                    .map_or(Decimal::zero(), |res| res)
                     .checked_mul(uusdc_usd_price)
-                    .unwrap();
+                    .map_or(Decimal::zero(), |res| res);
             }
         }
     }

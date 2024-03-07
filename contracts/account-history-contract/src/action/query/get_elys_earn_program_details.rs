@@ -52,25 +52,39 @@ pub fn get_elys_earn_program_details(
                 let uusdc_rewards_in_usd = uusdc_rewards
                     .usd_amount
                     .checked_mul(uusdc_usd_price)
-                    .unwrap();
+                    .map_or(Decimal::zero(), |res| res);
 
                 // have value in usd
                 let mut ueden_rewards_in_usd = uelys_price_in_uusdc
-                    .checked_mul(Decimal::from_atomics(ueden_rewards.amount, 0).unwrap())
-                    .unwrap();
-                ueden_rewards_in_usd = ueden_rewards_in_usd.checked_mul(uusdc_usd_price).unwrap();
+                    .checked_mul(
+                        Decimal::from_atomics(ueden_rewards.amount, 0)
+                            .map_or(Decimal::zero(), |res| res),
+                    )
+                    .map_or(Decimal::zero(), |res| res);
+                ueden_rewards_in_usd = ueden_rewards_in_usd
+                    .checked_mul(uusdc_usd_price)
+                    .map_or(Decimal::zero(), |res| res);
 
                 // have value in usd
                 let mut available_in_usd = uelys_price_in_uusdc
-                    .checked_mul(Decimal::from_atomics(available.amount, 0).unwrap())
-                    .unwrap();
-                available_in_usd = available_in_usd.checked_mul(uusdc_usd_price).unwrap();
+                    .checked_mul(
+                        Decimal::from_atomics(available.amount, 0)
+                            .map_or(Decimal::zero(), |res| res),
+                    )
+                    .map_or(Decimal::zero(), |res| res);
+                available_in_usd = available_in_usd
+                    .checked_mul(uusdc_usd_price)
+                    .map_or(Decimal::zero(), |res| res);
                 available.usd_amount = available_in_usd;
 
                 let mut staked_in_usd = uelys_price_in_uusdc
-                    .checked_mul(Decimal::from_atomics(staked.amount, 0).unwrap())
-                    .unwrap();
-                staked_in_usd = staked_in_usd.checked_mul(uusdc_usd_price).unwrap();
+                    .checked_mul(
+                        Decimal::from_atomics(staked.amount, 0).map_or(Decimal::zero(), |res| res),
+                    )
+                    .map_or(Decimal::zero(), |res| res);
+                staked_in_usd = staked_in_usd
+                    .checked_mul(uusdc_usd_price)
+                    .map_or(Decimal::zero(), |res| res);
                 staked.usd_amount = staked_in_usd;
 
                 let new_staked_position = match staked_positions.staked_position {
@@ -81,9 +95,12 @@ pub fn get_elys_earn_program_details(
                                 .staked
                                 .usd_amount
                                 .checked_mul(uelys_price_in_uusdc)
-                                .unwrap();
-                            s.staked.usd_amount =
-                                s.staked.usd_amount.checked_mul(uusdc_usd_price).unwrap();
+                                .map_or(Decimal::zero(), |res| res);
+                            s.staked.usd_amount = s
+                                .staked
+                                .usd_amount
+                                .checked_mul(uusdc_usd_price)
+                                .map_or(Decimal::zero(), |res| res);
                             new_staked_positions.push(s)
                         }
 
@@ -102,9 +119,12 @@ pub fn get_elys_earn_program_details(
                                 .unstaked
                                 .usd_amount
                                 .checked_mul(uelys_price_in_uusdc)
-                                .unwrap();
-                            s.unstaked.usd_amount =
-                                s.unstaked.usd_amount.checked_mul(uusdc_usd_price).unwrap();
+                                .map_or(Decimal::zero(), |res| res);
+                            s.unstaked.usd_amount = s
+                                .unstaked
+                                .usd_amount
+                                .checked_mul(uusdc_usd_price)
+                                .map_or(Decimal::zero(), |res| res);
 
                             s.remaining_time = s.remaining_time * 1000;
                             new_unstaked_positions.push(s)

@@ -38,8 +38,11 @@ impl Metadata {
         let uusdc_usd_price = usdc_oracle_price
             .price
             .price
-            .checked_div(Decimal::from_atomics(Uint128::new(self.usdc_decimal as u128), 0).unwrap())
-            .unwrap();
+            .checked_div(
+                Decimal::from_atomics(Uint128::new(self.usdc_decimal as u128), 0)
+                    .map_or(Decimal::zero(), |res| res),
+            )
+            .map_or(Decimal::zero(), |res| res);
         let uelys_price_in_uusdc = querier.get_asset_price(ElysDenom::Elys.as_str())?;
 
         Ok(Self {
@@ -56,7 +59,8 @@ impl Metadata {
         let usdc_denom = usdc_denom_entry.entry.denom;
         let usdc_base_denom = usdc_denom_entry.entry.base_denom;
         let usdc_display_denom = usdc_denom_entry.entry.display_name;
-        let usdc_decimal = u64::checked_pow(10, usdc_denom_entry.entry.decimals as u32).unwrap();
+        let usdc_decimal =
+            u64::checked_pow(10, usdc_denom_entry.entry.decimals as u32).map_or(0, |res| res);
 
         let eden_denom_entry = querier
             .get_asset_profile(ElysDenom::Eden.as_str().to_string())
@@ -67,7 +71,8 @@ impl Metadata {
             usdc_base_denom,
             usdc_display_denom,
             usdc_decimal,
-            eden_decimal: u64::checked_pow(10, eden_denom_entry.entry.decimals as u32).unwrap(),
+            eden_decimal: u64::checked_pow(10, eden_denom_entry.entry.decimals as u32)
+                .map_or(0, |res| res),
 
             // APR section
             usdc_apr_usdc: querier
