@@ -37,7 +37,7 @@ impl PerpetualAsset {
 
         Ok(PerpetualAsset {
             denom: mtp.mtp.collateral_asset.clone(),
-            position: PerpetualPosition::try_from_i32(mtp.mtp.position).unwrap(),
+            position: PerpetualPosition::try_from_i32(mtp.mtp.position)?,
             pnl: mtp.unrealized_pnl,
             collateral: DecCoin {
                 denom: mtp.mtp.collateral_asset.clone(),

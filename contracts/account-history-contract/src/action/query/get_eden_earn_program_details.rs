@@ -47,34 +47,48 @@ pub fn get_eden_earn_program_details(
                 let mut vesting_info = querier.get_vesting_info(addr.clone())?;
 
                 let mut staked_in_usd = uelys_price_in_uusdc
-                    .checked_mul(Decimal::from_atomics(staked.amount, 0).unwrap())
-                    .unwrap();
-                staked_in_usd = staked_in_usd.checked_mul(uusdc_usd_price).unwrap();
+                    .checked_mul(
+                        Decimal::from_atomics(staked.amount, 0).map_or(Decimal::zero(), |res| res),
+                    )
+                    .map_or(Decimal::zero(), |res| res);
+                staked_in_usd = staked_in_usd
+                    .checked_mul(uusdc_usd_price)
+                    .map_or(Decimal::zero(), |res| res);
                 staked.usd_amount = staked_in_usd;
 
                 // have value in usd
                 let mut available_in_usd = uelys_price_in_uusdc
-                    .checked_mul(Decimal::from_atomics(available.amount, 0).unwrap())
-                    .unwrap();
-                available_in_usd = available_in_usd.checked_mul(uusdc_usd_price).unwrap();
+                    .checked_mul(
+                        Decimal::from_atomics(available.amount, 0)
+                            .map_or(Decimal::zero(), |res| res),
+                    )
+                    .map_or(Decimal::zero(), |res| res);
+                available_in_usd = available_in_usd
+                    .checked_mul(uusdc_usd_price)
+                    .map_or(Decimal::zero(), |res| res);
                 available.usd_amount = available_in_usd;
 
                 // have value in usd
                 let mut ueden_rewards_in_usd = uelys_price_in_uusdc
-                    .checked_mul(Decimal::from_atomics(ueden_rewards.amount, 0).unwrap())
-                    .unwrap();
-                ueden_rewards_in_usd = ueden_rewards_in_usd.checked_mul(uusdc_usd_price).unwrap();
+                    .checked_mul(
+                        Decimal::from_atomics(ueden_rewards.amount, 0)
+                            .map_or(Decimal::zero(), |res| res),
+                    )
+                    .map_or(Decimal::zero(), |res| res);
+                ueden_rewards_in_usd = ueden_rewards_in_usd
+                    .checked_mul(uusdc_usd_price)
+                    .map_or(Decimal::zero(), |res| res);
 
                 let uusdc_rewards_in_usd = uusdc_rewards
                     .usd_amount
                     .checked_mul(uusdc_usd_price)
-                    .unwrap();
+                    .map_or(Decimal::zero(), |res| res);
 
                 let total_vesting_in_usd = vesting_info
                     .vesting
                     .usd_amount
                     .checked_mul(uusdc_usd_price)
-                    .unwrap();
+                    .map_or(Decimal::zero(), |res| res);
                 vesting_info.vesting.usd_amount = total_vesting_in_usd;
 
                 let new_vesting_details = match vesting_info.vesting_details {
@@ -86,28 +100,28 @@ pub fn get_eden_earn_program_details(
                                 .balance_vested
                                 .usd_amount
                                 .checked_mul(uusdc_usd_price)
-                                .unwrap();
+                                .map_or(Decimal::zero(), |res| res);
                             v.remaining_vest.usd_amount = v
                                 .remaining_vest
                                 .usd_amount
                                 .checked_mul(uelys_price_in_uusdc)
-                                .unwrap();
+                                .map_or(Decimal::zero(), |res| res);
                             v.remaining_vest.usd_amount = v
                                 .remaining_vest
                                 .usd_amount
                                 .checked_mul(uusdc_usd_price)
-                                .unwrap();
+                                .map_or(Decimal::zero(), |res| res);
 
                             v.total_vest.usd_amount = v
                                 .total_vest
                                 .usd_amount
                                 .checked_mul(uelys_price_in_uusdc)
-                                .unwrap();
+                                .map_or(Decimal::zero(), |res| res);
                             v.total_vest.usd_amount = v
                                 .total_vest
                                 .usd_amount
                                 .checked_mul(uusdc_usd_price)
-                                .unwrap();
+                                .map_or(Decimal::zero(), |res| res);
 
                             new_vesting_details.push(v)
                         }
