@@ -391,7 +391,7 @@ pub struct PoolResp {
 #[cw_serde]
 pub struct UserPoolResp {
     pub pool: PoolResp,
-    pub balance: Coin,
+    pub balance: CommittedTokens,
 }
 
 #[cw_serde]
