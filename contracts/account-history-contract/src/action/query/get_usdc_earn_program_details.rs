@@ -41,25 +41,39 @@ pub fn get_usdc_earn_program_details(
                 )?;
 
                 let mut available = querier.get_balance(addr.clone(), usdc_denom.clone())?;
-                available.usd_amount = available.usd_amount.checked_mul(uusdc_usd_price).unwrap();
+                available.usd_amount = available
+                    .usd_amount
+                    .checked_mul(uusdc_usd_price)
+                    .map_or(Decimal::zero(), |res| res);
 
                 let mut staked =
                     querier.get_staked_balance(addr.clone(), usdc_base_denom.clone())?;
-                staked.usd_amount = staked.usd_amount.checked_mul(uusdc_usd_price).unwrap();
+                staked.usd_amount = staked
+                    .usd_amount
+                    .checked_mul(uusdc_usd_price)
+                    .map_or(Decimal::zero(), |res| res);
 
                 let mut borrowed = querier.get_borrowed_balance()?;
-                borrowed.usd_amount = borrowed.usd_amount.checked_mul(uusdc_usd_price).unwrap();
+                borrowed.usd_amount = borrowed
+                    .usd_amount
+                    .checked_mul(uusdc_usd_price)
+                    .map_or(Decimal::zero(), |res| res);
 
                 // have value in usd
                 let mut ueden_rewards_in_usd = uelys_price_in_uusdc
-                    .checked_mul(Decimal::from_atomics(ueden_rewards.amount, 0).unwrap())
-                    .unwrap();
-                ueden_rewards_in_usd = ueden_rewards_in_usd.checked_mul(uusdc_usd_price).unwrap();
+                    .checked_mul(
+                        Decimal::from_atomics(ueden_rewards.amount, 0)
+                            .map_or(Decimal::zero(), |res| res),
+                    )
+                    .map_or(Decimal::zero(), |res| res);
+                ueden_rewards_in_usd = ueden_rewards_in_usd
+                    .checked_mul(uusdc_usd_price)
+                    .map_or(Decimal::zero(), |res| res);
 
                 let uusdc_rewards_in_usd = uusdc_rewards
                     .usd_amount
                     .checked_mul(uusdc_usd_price)
-                    .unwrap();
+                    .map_or(Decimal::zero(), |res| res);
                 staked.lockups = None;
 
                 UsdcEarnProgram {

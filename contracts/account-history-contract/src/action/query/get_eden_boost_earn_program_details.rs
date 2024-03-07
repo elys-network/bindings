@@ -46,14 +46,19 @@ pub fn get_eden_boost_earn_program_details(
 
                 // have value in usd
                 let mut ueden_rewards_in_usd = uelys_price_in_uusdc
-                    .checked_mul(Decimal::from_atomics(ueden_rewards.amount, 0).unwrap())
-                    .unwrap();
-                ueden_rewards_in_usd = ueden_rewards_in_usd.checked_mul(uusdc_usd_price).unwrap();
+                    .checked_mul(
+                        Decimal::from_atomics(ueden_rewards.amount, 0)
+                            .map_or(Decimal::zero(), |res| res),
+                    )
+                    .map_or(Decimal::zero(), |res| res);
+                ueden_rewards_in_usd = ueden_rewards_in_usd
+                    .checked_mul(uusdc_usd_price)
+                    .map_or(Decimal::zero(), |res| res);
 
                 let uusdc_rewards_in_usd = uusdc_rewards
                     .usd_amount
                     .checked_mul(uusdc_usd_price)
-                    .unwrap();
+                    .map_or(Decimal::zero(), |res| res);
 
                 EdenBoostEarnProgram {
                     bonding_period: 0,

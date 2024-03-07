@@ -8,7 +8,13 @@ use cosmwasm_std::{
 use cw_utils::Expiration;
 use elys_bindings::{
     account_history::{
-        msg::query_resp::{GetRewardsResp, StakedAssetsResponse},
+        msg::query_resp::{
+            earn::{
+                GetEdenBoostEarnProgramResp, GetEdenEarnProgramResp, GetElysEarnProgramResp,
+                GetUsdcEarnProgramResp,
+            },
+            GetRewardsResp, StakedAssetsResponse,
+        },
         types::{
             earn_program::{
                 EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram,
@@ -18,7 +24,7 @@ use elys_bindings::{
             TotalBalance,
         },
     },
-    query_resp::{CommittedTokens, PoolFilterType, QueryUserPoolResponse, UserPoolResp},
+    query_resp::{PoolFilterType, PoolResp, QueryUserPoolResponse, UserPoolResp, CommittedTokens},
     trade_shield::{
         msg::{
             query_resp::{
@@ -28,6 +34,7 @@ use elys_bindings::{
         },
         types::{PerpetualOrder, PerpetualOrderType, SpotOrder, Status},
     },
+    types::BalanceAvailable,
     ElysQuerier, ElysQuery,
 };
 
@@ -165,9 +172,9 @@ impl AccountSnapshotGenerator {
                     .denom
                     .split("/")
                     .last()
-                    .unwrap()
+                    .map_or("0", |str| str)
                     .parse::<u64>()
-                    .unwrap();
+                    .map_or(0, |id| id);
                 IdSortedPoolBalance {
                     id,
                     balance: coin.clone(),
@@ -180,7 +187,20 @@ impl AccountSnapshotGenerator {
         for user_pool in pool_data {
             let pool_id = user_pool.id;
             let pool = get_pools(*deps, Some(vec![pool_id]), PoolFilterType::FilterAll, None)?;
-            let pool = pool.pools.unwrap().first().unwrap().clone();
+            let pool = pool.pools.map_or(vec![], |pools| pools).first().map_or(
+                PoolResp {
+                    pool_id: 0,
+                    assets: vec![],
+                    pool_ratio: "".to_string(),
+                    rewards_apr: Decimal::zero(),
+                    borrow_apr: Decimal::zero(),
+                    leverage_lp: Decimal::zero(),
+                    perpetual: Decimal::zero(),
+                    tvl: Decimal::zero(),
+                    rewards: Decimal::zero(),
+                },
+                |pool| pool.clone(),
+            );
             pool_resp.push(UserPoolResp {
                 pool,
                 balance: user_pool.balance,
@@ -211,8 +231,19 @@ impl AccountSnapshotGenerator {
             self.metadata.eden_apr_eden.to_owned(),
             self.metadata.edenb_apr_eden.to_owned(),
         )
-        .unwrap();
-        let available = eden_program.data.available.unwrap();
+        .map_or(
+            GetEdenEarnProgramResp {
+                data: EdenEarnProgram::default(),
+            },
+            |program| program,
+        );
+        let available = eden_program.data.available.map_or(
+            BalanceAvailable {
+                amount: Uint128::zero(),
+                usd_amount: Decimal::zero(),
+            },
+            |avaible| avaible,
+        );
         let eden_coin = Coin::new(u128::from(available.amount), ElysDenom::Eden.as_str());
         if available.amount > Uint128::zero() {
             account_balances.push(eden_coin);
@@ -309,7 +340,7 @@ impl AccountSnapshotGenerator {
         let mut staked_assets = StakedAssets::default();
         let mut total_balance = Decimal::zero();
 
-        let usdc_details = get_usdc_earn_program_details(
+        let usdc_details = match get_usdc_earn_program_details(
             deps,
             Some(address.to_owned()),
             ElysDenom::Usdc.as_str().to_string(),
@@ -319,22 +350,27 @@ impl AccountSnapshotGenerator {
             self.metadata.uelys_price_in_uusdc,
             self.metadata.usdc_apr_usdc.to_owned(),
             self.metadata.eden_apr_usdc.to_owned(),
-        )
-        .unwrap();
+        ) {
+            Ok(details) => details,
+            Err(_) => GetUsdcEarnProgramResp {
+                data: UsdcEarnProgram::default(),
+            },
+        };
         // usdc program
         let staked_asset_usdc = usdc_details.data.clone();
-        total_balance = total_balance
-            .checked_add(match staked_asset_usdc.clone() {
-                UsdcEarnProgram {
-                    staked: Some(r), ..
-                } => r.usd_amount,
-                _ => Decimal::zero(),
-            })
-            .unwrap();
+        total_balance = match total_balance.checked_add(match staked_asset_usdc.clone() {
+            UsdcEarnProgram {
+                staked: Some(r), ..
+            } => r.usd_amount,
+            _ => Decimal::zero(),
+        }) {
+            Ok(res) => res,
+            Err(_) => Decimal::zero(),
+        };
         staked_assets.usdc_earn_program = staked_asset_usdc;
 
         // elys program
-        let elys_details = get_elys_earn_program_details(
+        let elys_details = match get_elys_earn_program_details(
             deps,
             Some(address.to_owned()),
             ElysDenom::Elys.as_str().to_string(),
@@ -344,21 +380,26 @@ impl AccountSnapshotGenerator {
             self.metadata.usdc_apr_elys.to_owned(),
             self.metadata.eden_apr_elys.to_owned(),
             self.metadata.edenb_apr_elys.to_owned(),
-        )
-        .unwrap();
+        ) {
+            Ok(details) => details,
+            Err(_) => GetElysEarnProgramResp {
+                data: ElysEarnProgram::default(),
+            },
+        };
         let staked_asset_elys = elys_details.data;
-        total_balance = total_balance
-            .checked_add(match staked_asset_elys.clone() {
-                ElysEarnProgram {
-                    staked: Some(r), ..
-                } => r.usd_amount,
-                _ => Decimal::zero(),
-            })
-            .unwrap();
+        total_balance = match total_balance.checked_add(match staked_asset_elys.clone() {
+            ElysEarnProgram {
+                staked: Some(r), ..
+            } => r.usd_amount,
+            _ => Decimal::zero(),
+        }) {
+            Ok(res) => res,
+            Err(_) => Decimal::zero(),
+        };
         staked_assets.elys_earn_program = staked_asset_elys;
 
         // eden program
-        let eden_details = get_eden_earn_program_details(
+        let eden_details = match get_eden_earn_program_details(
             deps,
             Some(address.to_owned()),
             ElysDenom::Eden.as_str().to_string(),
@@ -368,17 +409,22 @@ impl AccountSnapshotGenerator {
             self.metadata.usdc_apr_eden.to_owned(),
             self.metadata.eden_apr_eden.to_owned(),
             self.metadata.edenb_apr_eden.to_owned(),
-        )
-        .unwrap();
+        ) {
+            Ok(details) => details,
+            Err(_) => GetEdenEarnProgramResp {
+                data: EdenEarnProgram::default(),
+            },
+        };
         let staked_asset_eden = eden_details.data;
-        total_balance = total_balance
-            .checked_add(match staked_asset_eden.clone() {
-                EdenEarnProgram {
-                    staked: Some(r), ..
-                } => r.usd_amount,
-                _ => Decimal::zero(),
-            })
-            .unwrap();
+        total_balance = match total_balance.checked_add(match staked_asset_eden.clone() {
+            EdenEarnProgram {
+                staked: Some(r), ..
+            } => r.usd_amount,
+            _ => Decimal::zero(),
+        }) {
+            Ok(res) => res,
+            Err(_) => Decimal::zero(),
+        };
         staked_assets.eden_earn_program = staked_asset_eden;
 
         let edenb_details = get_eden_boost_earn_program_details(
@@ -391,18 +437,24 @@ impl AccountSnapshotGenerator {
             self.metadata.usdc_apr_edenb.to_owned(),
             self.metadata.eden_apr_edenb.to_owned(),
         )
-        .unwrap();
+        .map_or(
+            GetEdenBoostEarnProgramResp {
+                data: EdenBoostEarnProgram::default(),
+            },
+            |details| details,
+        );
         let staked_asset_edenb = edenb_details.data;
         total_balance = total_balance
             .checked_add(match staked_asset_edenb.clone() {
                 EdenBoostEarnProgram {
                     rewards: Some(r), ..
                 } => r.iter().fold(Decimal::zero(), |acc, item| {
-                    acc.checked_add(item.usd_amount.unwrap()).unwrap()
+                    acc.checked_add(item.usd_amount.map_or(Decimal::zero(), |amount| amount))
+                        .map_or(Decimal::zero(), |res| res)
                 }),
                 _ => Decimal::zero(),
             })
-            .unwrap();
+            .map_or(Decimal::zero(), |res| res);
         staked_assets.eden_boost_earn_program = staked_asset_edenb;
 
         Ok(StakedAssetsResponse {
@@ -538,7 +590,7 @@ impl AccountSnapshotGenerator {
             .price
             .price
             .checked_div(Decimal::from_atomics(Uint128::new(1000000), 0).unwrap())
-            .unwrap();
+            .map_or(Decimal::zero(), |res| res);
 
         let mut balance_rewards: Vec<BalanceReward> = vec![];
         let mut rewards = Reward {
@@ -554,7 +606,8 @@ impl AccountSnapshotGenerator {
                 for reward in rewards_unclaimed {
                     // uusdc
                     if reward.denom == denom_uusdc {
-                        let usdc_rewards = Decimal::from_atomics(reward.amount, 0).unwrap();
+                        let usdc_rewards = Decimal::from_atomics(reward.amount, 0)
+                            .map_or(Decimal::zero(), |res| res);
                         let rewards_in_usd = usdc_rewards.checked_mul(usdc_price)?;
 
                         balance_rewards.push(BalanceReward {
@@ -564,8 +617,10 @@ impl AccountSnapshotGenerator {
                         });
 
                         rewards.usdc_usd = rewards_in_usd;
-                        rewards.total_usd =
-                            rewards.total_usd.checked_add(rewards.usdc_usd).unwrap();
+                        rewards.total_usd = rewards
+                            .total_usd
+                            .checked_add(rewards.usdc_usd)
+                            .map_or(Decimal::zero(), |res| res);
 
                         continue;
                     }
@@ -597,8 +652,11 @@ impl AccountSnapshotGenerator {
                             .u128(),
                             &denom_uusdc,
                         );
-                        let rewards_in_usdc = Decimal::from_atomics(amount.amount, 0).unwrap();
-                        let rewards_in_usd = rewards_in_usdc.checked_mul(usdc_price).unwrap();
+                        let rewards_in_usdc = Decimal::from_atomics(amount.amount, 0)
+                            .map_or(Decimal::zero(), |res| res);
+                        let rewards_in_usd = rewards_in_usdc
+                            .checked_mul(usdc_price)
+                            .map_or(Decimal::zero(), |res| res);
 
                         balance_rewards.push(BalanceReward {
                             asset: denom_ueden.clone(),
@@ -607,8 +665,10 @@ impl AccountSnapshotGenerator {
                         });
 
                         rewards.eden_usd = rewards_in_usd;
-                        rewards.total_usd =
-                            rewards.total_usd.checked_add(rewards.eden_usd).unwrap();
+                        rewards.total_usd = rewards
+                            .total_usd
+                            .checked_add(rewards.eden_usd)
+                            .map_or(Decimal::zero(), |res| res);
                         continue;
                     }
 
@@ -638,11 +698,20 @@ impl AccountSnapshotGenerator {
                         .u128(),
                         &denom_uusdc,
                     );
-                    let rewards_in_usdc = Decimal::from_atomics(amount.amount, 0).unwrap();
-                    let rewards_in_usd = rewards_in_usdc.checked_mul(usdc_price).unwrap();
+                    let rewards_in_usdc =
+                        Decimal::from_atomics(amount.amount, 0).map_or(Decimal::zero(), |res| res);
+                    let rewards_in_usd = rewards_in_usdc
+                        .checked_mul(usdc_price)
+                        .map_or(Decimal::zero(), |res| res);
 
-                    rewards.other_usd = rewards.other_usd.checked_add(rewards_in_usd).unwrap();
-                    rewards.total_usd = rewards.total_usd.checked_add(rewards_in_usd).unwrap();
+                    rewards.other_usd = rewards
+                        .other_usd
+                        .checked_add(rewards_in_usd)
+                        .map_or(Decimal::zero(), |res| res);
+                    rewards.total_usd = rewards
+                        .total_usd
+                        .checked_add(rewards_in_usd)
+                        .map_or(Decimal::zero(), |res| res);
 
                     balance_rewards.push(BalanceReward {
                         asset: amount.denom,
