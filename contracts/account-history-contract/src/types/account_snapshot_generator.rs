@@ -24,7 +24,7 @@ use elys_bindings::{
             TotalBalance,
         },
     },
-    query_resp::{PoolFilterType, PoolResp, QueryUserPoolResponse, UserPoolResp, CommittedTokens},
+    query_resp::{CommittedTokens, PoolFilterType, PoolResp, QueryUserPoolResponse, UserPoolResp},
     trade_shield::{
         msg::{
             query_resp::{
@@ -157,13 +157,14 @@ impl AccountSnapshotGenerator {
             pub balance: CommittedTokens,
         }
 
-        let pool_balances: Vec<CommittedTokens> = commitments
-            .committed_tokens
-            .unwrap()
-            .iter()
-            .filter(|coin| coin.denom.starts_with("amm/pool/"))
-            .cloned()
-            .collect();
+        let pool_balances: Vec<CommittedTokens> = match commitments.committed_tokens {
+            Some(res) => res
+                .iter()
+                .filter(|coin| coin.denom.starts_with("amm/pool/"))
+                .cloned()
+                .collect(),
+            None => vec![],
+        };
 
         let pool_data: Vec<IdSortedPoolBalance> = pool_balances
             .iter()

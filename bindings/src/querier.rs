@@ -8,7 +8,7 @@ use cosmwasm_std::{
 use crate::{
     query::*,
     query_resp::*,
-    trade_shield::types::{PoolAsset, StakedPosition},
+    trade_shield::types::{PoolAsset, StakedPosition, StakedPositionRaw, StakingValidator},
     types::{BalanceAvailable, PageRequest, PerpetualPosition, Price, SwapAmountInRoute},
 };
 
@@ -327,17 +327,46 @@ impl<'a> ElysQuerier<'a> {
             delegator_address: address.to_owned(),
         };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(staked_position_query);
-        let resp: QueryStakedPositionResponse = self.querier.query(&request)?;
+
+        let resp: QueryStakedPositionResponseRaw = self.querier.query(&request)?;
         if resp.staked_position.is_none() {
-            return Ok(resp);
+            return Ok(QueryStakedPositionResponse {
+                staked_position: None,
+            });
         }
 
-        let stacks: Vec<StakedPosition> = resp
-            .staked_position
-            .map_or(vec![], |stacks| stacks)
+        let stacks: Vec<StakedPositionRaw> = resp.staked_position.unwrap();
+
+        let stacks: Vec<StakedPosition> = stacks
             .iter()
+            .map(|stack| StakedPosition {
+                id: stack.id.clone(),
+                validator: StakingValidator {
+                    id: stack.validator.id.clone().map_or("".to_string(), |id| id),
+                    address: stack
+                        .validator
+                        .address
+                        .clone()
+                        .map_or("".to_string(), |address| address),
+                    name: stack
+                        .validator
+                        .name
+                        .clone()
+                        .map_or("".to_string(), |name| name),
+                    voting_power: stack
+                        .validator
+                        .voting_power
+                        .clone()
+                        .map_or(Decimal::zero(), |voting_power| voting_power),
+                    commission: stack
+                        .validator
+                        .commission
+                        .clone()
+                        .map_or(Decimal::zero(), |commission| commission),
+                },
+                staked: stack.staked.clone(),
+            })
             .filter(|stack| !(stack.staked.amount.is_zero()))
-            .cloned()
             .collect();
 
         let resp = QueryStakedPositionResponse {

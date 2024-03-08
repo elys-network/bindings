@@ -303,6 +303,20 @@ pub struct AmmExitPool {
 }
 
 #[cw_serde]
+pub struct StakingValidatorRaw {
+    // The validator Identity.
+    pub id: Option<String>,
+    // The validator address.
+    pub address: Option<String>,
+    // The validator name.
+    pub name: Option<String>,
+    // Voting power percentage for this validator.
+    pub voting_power: Option<Decimal>,
+    // commission percentage for the validator.
+    pub commission: Option<Decimal>,
+}
+
+#[cw_serde]
 pub struct StakingValidator {
     // The validator Identity.
     pub id: String,
@@ -314,6 +328,16 @@ pub struct StakingValidator {
     pub voting_power: Decimal,
     // commission percentage for the validator.
     pub commission: Decimal,
+}
+
+#[cw_serde]
+pub struct StakedPositionRaw {
+    // The position ID.
+    pub id: String,
+    // The validator that's being unstaked from.
+    pub validator: StakingValidatorRaw,
+    // The amount that's being staked.
+    pub staked: BalanceAvailable,
 }
 
 #[cw_serde]
