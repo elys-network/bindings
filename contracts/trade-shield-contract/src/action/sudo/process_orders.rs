@@ -121,8 +121,8 @@ pub fn process_orders(
         }
 
         let market_price = match querier.get_asset_price_from_denom_in_to_denom_out(
-            &perpetual_order.collateral.denom,
             &perpetual_order.trading_asset,
+            &perpetual_order.collateral.denom,
         ) {
             Ok(market_price) => market_price,
             Err(_) => {

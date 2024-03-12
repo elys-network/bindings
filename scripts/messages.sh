@@ -225,12 +225,12 @@ function create_perpetual_order() {
                 "trigger_price": {
                     "base_denom": "'"$usdc_denom"'",
                     "quote_denom": "'"$atom_denom"'",
-                    "rate": "100"
+                    "rate": "16"
                 }
             }
         }' \
         wasm-create_perpetual_order \
-        "100000000$usdc_denom"
+        "120000000$usdc_denom"
 }
 
 # Perpetual Close Position
