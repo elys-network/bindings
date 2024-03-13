@@ -82,7 +82,7 @@ fn check_order_type(
             not_found.push("leverage");
         }
         if trading_asset.is_none() {
-            not_found.push("borrow asset");
+            not_found.push("trading asset");
         }
     }
 
@@ -138,7 +138,11 @@ fn create_perpetual_open_order(
     )?;
 
     if !open_estimation.valid_collateral {
-        return Err(StdError::generic_err(format!("not valid collateral: min collateral: {}", open_estimation.min_collateral.amount)).into());
+        return Err(StdError::generic_err(format!(
+            "not valid collateral: min collateral: {}",
+            open_estimation.min_collateral.amount
+        ))
+        .into());
     }
 
     if let Some(price) = &trigger_price {
