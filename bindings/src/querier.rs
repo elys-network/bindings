@@ -598,6 +598,90 @@ impl<'a> ElysQuerier<'a> {
             ))
         })
     }
+    pub fn leveragelp_params(&self) -> StdResult<LeveragelpParamsResponse> {
+        let req = QueryRequest::Custom(ElysQuery::leveragelp_params());
+        let raw_resp: LeveragelpParamsResponseRaw = self.querier.query(&req)?;
+        let params = match raw_resp.params {
+            Some(raw_params) => Some(LeveragelpParams {
+                leverage_max: raw_params.leverage_max.unwrap_or(Decimal::zero()),
+                max_open_positions: raw_params.max_open_positions.unwrap_or(0),
+                pool_open_threshold: raw_params.pool_open_threshold.unwrap_or(Decimal::zero()),
+                safety_factor: raw_params.safety_factor.unwrap_or(Decimal::zero()),
+                whitelisting_enabled: raw_params.whitelisting_enabled.unwrap_or(false),
+                epoch_length: raw_params.epoch_length.unwrap_or(0),
+            }),
+            None => None,
+        };
+        Ok(LeveragelpParamsResponse { params })
+    }
+    pub fn leveragelp_query_positions(
+        &self,
+        pagination: Option<PageRequest>,
+    ) -> StdResult<LeveragelpPositionsResponse> {
+        let req = QueryRequest::Custom(ElysQuery::leveragelp_query_positions(pagination));
+        self.querier.query(&req)
+    }
+    pub fn leveragelp_query_positions_by_pool(
+        &self,
+        amm_pool_id: u64,
+        pagination: Option<PageRequest>,
+    ) -> StdResult<LeveragelpPositionsResponse> {
+        let req = QueryRequest::Custom(ElysQuery::leveragelp_query_positions_by_pool(
+            amm_pool_id,
+            pagination,
+        ));
+        let raw_resp: LeveragelpPositionsResponseRaw = self.querier.query(&req)?;
+        let positions = raw_resp.positions.unwrap_or(vec![]);
+        Ok(LeveragelpPositionsResponse {
+            positions,
+            pagination: raw_resp.pagination,
+        })
+    }
+    pub fn leveragelp_get_status(&self) -> StdResult<LeveragelpStatusReponse> {
+        let req = QueryRequest::Custom(ElysQuery::leveragelp_get_status());
+        self.querier.query(&req)
+    }
+    pub fn leveragelp_query_positions_for_address(
+        &self,
+        address: impl Into<String>,
+        pagination: Option<PageRequest>,
+    ) -> StdResult<LeveragelpPositionsResponse> {
+        let req = QueryRequest::Custom(ElysQuery::leveragelp_query_positions_for_address(
+            address.into(),
+            pagination,
+        ));
+        self.querier.query(&req)
+    }
+    pub fn leveragelp_get_whitelist(&self) -> StdResult<LeveragelpWhitelistResponse> {
+        let req = QueryRequest::Custom(ElysQuery::leveragelp_get_whitelist());
+        self.querier.query(&req)
+    }
+    pub fn leveragelp_is_whitelisted(
+        &self,
+        pagination: Option<PageRequest>,
+    ) -> StdResult<LeveragelpIsWhitelistedResponse> {
+        let req = QueryRequest::Custom(ElysQuery::leveragelp_is_whitelisted(pagination));
+        self.querier.query(&req)
+    }
+    pub fn leveragelp_pool(&self, index: u64) -> StdResult<LeveragelpPoolResponse> {
+        let req = QueryRequest::Custom(ElysQuery::leveragelp_pool(index));
+        self.querier.query(&req)
+    }
+    pub fn leveragelp_pools(
+        &self,
+        pagination: Option<PageRequest>,
+    ) -> StdResult<LeveragelpPoolsResponse> {
+        let req = QueryRequest::Custom(ElysQuery::leveragelp_pools(pagination));
+        self.querier.query(&req)
+    }
+    pub fn leveragelp_position(
+        &self,
+        address: impl Into<String>,
+        id: u64,
+    ) -> StdResult<LeveragelpPositionResponse> {
+        let req = QueryRequest::Custom(ElysQuery::leveragelp_position(address.into(), id));
+        self.querier.query(&req)
+    }
     #[allow(dead_code)]
     #[cfg(feature = "debug")]
     fn query_binary(&self, request: &QueryRequest<ElysQuery>) -> StdResult<Binary> {

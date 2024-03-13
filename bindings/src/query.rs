@@ -302,4 +302,46 @@ impl ElysQuery {
             pagination,
         }
     }
+    pub fn leveragelp_params() -> Self {
+        Self::LeveragelpParams {}
+    }
+    pub fn leveragelp_query_positions(pagination: Option<PageRequest>) -> Self {
+        Self::LeveragelpQueryPositions { pagination }
+    }
+    pub fn leveragelp_query_positions_by_pool(
+        amm_pool_id: u64,
+        pagination: Option<PageRequest>,
+    ) -> Self {
+        Self::LeveragelpQueryPositionsByPool {
+            amm_pool_id,
+            pagination,
+        }
+    }
+    pub fn leveragelp_get_status() -> Self {
+        Self::LeveragelpGetStatus {}
+    }
+    pub fn leveragelp_query_positions_for_address(
+        address: String,
+        pagination: Option<PageRequest>,
+    ) -> Self {
+        Self::LeveragelpQueryPositionsForAddress {
+            address,
+            pagination,
+        }
+    }
+    pub fn leveragelp_get_whitelist() -> Self {
+        Self::LeveragelpGetWhitelist {}
+    }
+    pub fn leveragelp_is_whitelisted(pagination: Option<PageRequest>) -> Self {
+        Self::LeveragelpIsWhitelisted { pagination }
+    }
+    pub fn leveragelp_pool(index: u64) -> Self {
+        Self::LeveragelpPool { index }
+    }
+    pub fn leveragelp_pools(pagination: Option<PageRequest>) -> Self {
+        Self::LeveragelpPools { pagination }
+    }
+    pub fn leveragelp_position(address: String, id: u64) -> Self {
+        Self::LeveragelpPosition { address, id }
+    }
 }

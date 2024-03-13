@@ -409,6 +409,16 @@ pub enum PoolFilterType {
 }
 
 #[cw_serde]
+pub struct LeveragelpParamsRaw {
+    pub leverage_max: Option<Decimal>,
+    pub max_open_positions: Option<i64>,
+    pub pool_open_threshold: Option<Decimal>,
+    pub safety_factor: Option<Decimal>,
+    pub whitelisting_enabled: Option<bool>,
+    pub epoch_length: Option<i64>,
+}
+
+#[cw_serde]
 pub struct LeveragelpParams {
     pub leverage_max: Decimal,
     pub max_open_positions: i64,
@@ -416,6 +426,11 @@ pub struct LeveragelpParams {
     pub safety_factor: Decimal,
     pub whitelisting_enabled: bool,
     pub epoch_length: i64,
+}
+
+#[cw_serde]
+pub struct LeveragelpParamsResponseRaw {
+    pub params: Option<LeveragelpParamsRaw>,
 }
 
 #[cw_serde]
@@ -440,6 +455,12 @@ pub struct LeveragelpPosition {
 #[cw_serde]
 pub struct LeveragelpPositionResponse {
     pub position: Option<LeveragelpPosition>,
+}
+
+#[cw_serde]
+pub struct LeveragelpPositionsResponseRaw {
+    pub positions: Option<Vec<LeveragelpPosition>>,
+    pub pagination: Option<PageResponse>,
 }
 
 #[cw_serde]
