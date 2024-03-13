@@ -12,6 +12,7 @@ pub struct PerpetualAssets {
 
 #[cw_serde]
 pub struct PerpetualAsset {
+    pub id: u64,
     pub denom: String,
     pub position: PerpetualPosition,
     pub pnl: SignedDecimal,
@@ -36,6 +37,7 @@ impl PerpetualAsset {
         let trading_asset_info = querier.asset_info(mtp.mtp.trading_asset.clone())?;
 
         Ok(PerpetualAsset {
+            id: mtp.mtp.id,
             denom: mtp.mtp.collateral_asset.clone(),
             position: PerpetualPosition::try_from_i32(mtp.mtp.position)?,
             pnl: mtp.unrealized_pnl,
