@@ -157,6 +157,7 @@ impl Module for ElysModule {
             ElysQuery::LeveragelpPosition { .. } => todo!("LeveragelpPosition"),
 
             ElysQuery::AmmEarnMiningPoolAll { .. } => todo!("AmmEarnMiningPoolAll"),
+            ElysQuery::IncentivePoolAprs { .. } => todo!("IncentivePoolAprs"),
             ElysQuery::CommitmentAllValidators { .. } => todo!("CommitmentAllValidators"),
             ElysQuery::CommitmentDelegations { .. } => todo!("CommitmentDelegations"),
             ElysQuery::CommitmentDelegatorValidators { .. } => {
