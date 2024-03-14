@@ -105,7 +105,10 @@ pub enum ElysQuery {
         filter_type: i32,
         pagination: Option<PageRequest>,
     },
-
+    #[returns(QueryIncentivePoolAprsResponse)]
+    IncentivePoolAprs {
+        pool_ids: Option<Vec<u64>>
+    },
     #[returns(LeveragelpParamsResponse)]
     LeveragelpParams {},
     #[returns(LeveragelpPositionsResponse)]
@@ -300,6 +303,11 @@ impl ElysQuery {
             pool_ids,
             filter_type,
             pagination,
+        }
+    }
+    pub fn get_pools_apr(pool_ids: Option<Vec<u64>>) -> Self {
+        ElysQuery::IncentivePoolAprs {
+            pool_ids
         }
     }
 }

@@ -1,8 +1,9 @@
 use std::str::FromStr;
+use std::collections::HashMap;
 
 use cosmwasm_std::{
     coin, to_json_vec, Binary, Coin, ContractResult, Decimal, QuerierWrapper, QueryRequest,
-    SignedDecimal, SignedDecimal256, StdError, StdResult, SystemResult,
+    SignedDecimal, SignedDecimal256, StdError, StdResult, SystemResult
 };
 
 use crate::{
@@ -482,25 +483,46 @@ impl<'a> ElysQuerier<'a> {
         Ok(resp)
     }
 
+    pub fn get_pools_apr(&self, pool_ids: Option<Vec<u64>>) -> StdResult<QueryIncentivePoolAprsResponse> {
+        let query = ElysQuery::get_pools_apr(pool_ids);
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
+        let response: QueryIncentivePoolAprsResponse = self.querier.query(&request)?;
+        Ok(response)
+    }
+
     pub fn get_all_pools(
         &self,
         pool_ids: Option<Vec<u64>>,
         filter_type: i32,
         pagination: Option<PageRequest>,
     ) -> StdResult<QueryEarnPoolResponse> {
-        let pools_query = ElysQuery::get_all_pools(pool_ids, filter_type, pagination);
-        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(pools_query);
-
-        let resp: QueryEarnPoolResponse = self.querier.query(&request)?;
-
-        match resp.pools {
-            Some(pools) => {
+        let pools_query = ElysQuery::get_all_pools(pool_ids.clone(), filter_type, pagination);
+        let pools_request: QueryRequest<ElysQuery> = QueryRequest::Custom(pools_query);
+    
+        let pools_response: QueryEarnPoolResponse = self.querier.query(&pools_request)?;
+        let aprs_response = self.get_pools_apr(pool_ids)?;
+    
+        match (pools_response.pools, aprs_response.data) {
+            (Some(pools), Some(aprs)) => {
+                // Create a map from pool_id to APR for efficient lookup
+                let aprs_map: HashMap<String, Decimal> = aprs
+                    .into_iter()
+                    .map(|apr_response| (apr_response.pool_id.to_string(), apr_response.apr))
+                    .collect();
+    
+                // Update the APR field for each pool and add asset usd value
                 let pools_with_usd_values = pools
-                    .iter()
-                    .map(|pool| PoolResp {
-                        assets: pool
+                    .into_iter()
+                    .map(|pool| {
+                        let mut updated_pool = pool.clone();
+                        if let Some(apr) = aprs_map.get(&pool.pool_id.to_string()) {
+                            updated_pool.apr = Some(*apr);
+                        } else {
+                            updated_pool.apr = Some(Decimal::zero());
+                        }
+                        updated_pool.assets = pool
                             .assets
-                            .iter()
+                            .into_iter()
                             .map(|asset| {
                                 let price = self
                                     .get_asset_price(asset.token.denom.clone())
@@ -515,15 +537,21 @@ impl<'a> ElysQuerier<'a> {
                                     ),
                                 }
                             })
-                            .collect::<Vec<PoolAsset>>(),
-                        ..pool.clone()
+                            .collect::<Vec<PoolAsset>>();
+                        updated_pool
                     })
                     .collect::<Vec<PoolResp>>();
+    
                 Ok(QueryEarnPoolResponse {
                     pools: Some(pools_with_usd_values),
                 })
             }
-            None => Ok(resp),
+            (None, _) | (_, None) => {
+                // Return default response if either pools or APR data is missing
+                Ok(QueryEarnPoolResponse {
+                    pools: Some(Vec::new()), // or None, depending on how you define default
+                })
+            }
         }
     }
 

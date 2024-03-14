@@ -376,6 +376,11 @@ pub struct QueryEarnPoolResponse {
 }
 
 #[cw_serde]
+pub struct QueryIncentivePoolAprsResponse {
+    pub data: Option<Vec<IncentivePoolApr>>
+}
+
+#[cw_serde]
 pub struct QueryUserPoolResponse {
     pub pools: Vec<UserPoolResp>,
 }
@@ -383,6 +388,7 @@ pub struct QueryUserPoolResponse {
 #[cw_serde]
 pub struct PoolResp {
     pub pool_id: i64,
+    pub apr: Option<Decimal>,
     pub assets: Vec<PoolAsset>, // eg : [{{"denom":"uatom", "amount":"1000"}, "weight":"10"}, {{"denom":"uusdc", "amount":"100"}, "weight":"1"}, ...]
     pub pool_ratio: String,
     pub rewards_apr: Decimal,
@@ -391,6 +397,12 @@ pub struct PoolResp {
     pub perpetual: Decimal,
     pub tvl: Decimal,
     pub rewards: Decimal,
+}
+
+#[cw_serde]
+pub struct IncentivePoolApr {
+    pub apr: Decimal,
+    pub pool_id: i64
 }
 
 #[cw_serde]
