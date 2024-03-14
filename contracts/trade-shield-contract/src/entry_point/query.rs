@@ -93,9 +93,11 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
         } => Ok(to_json_binary(
             &querier.leveragelp_query_positions_for_address(address, pagination)?,
         )?),
-        LeveragelpGetWhitelist {} => Ok(to_json_binary(&querier.leveragelp_get_whitelist()?)?),
-        LeveragelpIsWhitelisted { pagination } => Ok(to_json_binary(
-            &querier.leveragelp_is_whitelisted(pagination)?,
+        LeveragelpGetWhitelist { pagination } => Ok(to_json_binary(
+            &querier.leveragelp_get_whitelist(pagination)?,
+        )?),
+        LeveragelpIsWhitelisted { address } => Ok(to_json_binary(
+            &querier.leveragelp_is_whitelisted(address)?,
         )?),
         LeveragelpPool { index } => Ok(to_json_binary(&querier.leveragelp_pool(index)?)?),
         LeveragelpPools { pagination } => {

@@ -652,18 +652,21 @@ impl<'a> ElysQuerier<'a> {
         ));
         self.querier.query(&req)
     }
-    pub fn leveragelp_get_whitelist(&self) -> StdResult<LeveragelpWhitelistResponse> {
-        let req = QueryRequest::Custom(ElysQuery::leveragelp_get_whitelist());
+    pub fn leveragelp_get_whitelist(
+        &self,
+        pagination: Option<PageRequest>,
+    ) -> StdResult<LeveragelpWhitelistResponse> {
+        let req = QueryRequest::Custom(ElysQuery::leveragelp_get_whitelist(pagination));
         self.querier.query(&req)
     }
     pub fn leveragelp_is_whitelisted(
         &self,
-        pagination: Option<PageRequest>,
+        address: impl Into<String>,
     ) -> StdResult<LeveragelpIsWhitelistedResponse> {
-        let req = QueryRequest::Custom(ElysQuery::leveragelp_is_whitelisted(pagination));
+        let req = QueryRequest::Custom(ElysQuery::leveragelp_is_whitelisted(address.into()));
         let raw_resp: LeveragelpIsWhitelistedResponseRaw = self.querier.query(&req)?;
         let resp = LeveragelpIsWhitelistedResponse {
-            address: raw_resp.address.unwrap_or("".to_string()),
+            address: raw_resp.address,
             is_whitelisted: raw_resp.is_whitelisted.unwrap_or(false),
         };
         Ok(resp)

@@ -123,9 +123,9 @@ pub enum ElysQuery {
         pagination: Option<PageRequest>,
     },
     #[returns(LeveragelpWhitelistResponse)]
-    LeveragelpGetWhitelist {},
+    LeveragelpGetWhitelist { pagination: Option<PageRequest> },
     #[returns(LeveragelpIsWhitelistedResponse)]
-    LeveragelpIsWhitelisted { pagination: Option<PageRequest> },
+    LeveragelpIsWhitelisted { address: String },
     #[returns(LeveragelpPoolResponse)]
     LeveragelpPool { index: u64 },
     #[returns(LeveragelpPoolsResponse)]
@@ -329,11 +329,11 @@ impl ElysQuery {
             pagination,
         }
     }
-    pub fn leveragelp_get_whitelist() -> Self {
-        Self::LeveragelpGetWhitelist {}
+    pub fn leveragelp_get_whitelist(pagination: Option<PageRequest>) -> Self {
+        Self::LeveragelpGetWhitelist { pagination }
     }
-    pub fn leveragelp_is_whitelisted(pagination: Option<PageRequest>) -> Self {
-        Self::LeveragelpIsWhitelisted { pagination }
+    pub fn leveragelp_is_whitelisted(address: String) -> Self {
+        Self::LeveragelpIsWhitelisted { address }
     }
     pub fn leveragelp_pool(index: u64) -> Self {
         Self::LeveragelpPool { index }

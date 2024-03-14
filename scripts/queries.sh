@@ -508,7 +508,9 @@ function leveragelp_get_whitelist() {
 function leveragelp_is_whitelisted() {
     printf "\n# Get stable stake params\n"
     query_contract "$ts_contract_address" '{
-        "leveragelp_is_whitelisted": {}
+        "leveragelp_is_whitelisted": {
+           "address" : "'"$user_address"'"
+        }
     }'
 }
 

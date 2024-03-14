@@ -483,7 +483,7 @@ pub struct LeveragelpWhitelistResponse {
 
 #[cw_serde]
 pub struct LeveragelpIsWhitelistedResponseRaw {
-    pub address: Option<String>,
+    pub address: String,
     pub is_whitelisted: Option<bool>,
 }
 

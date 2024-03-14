@@ -74,9 +74,9 @@ pub enum QueryMsg {
         pagination: Option<PageRequest>,
     },
     #[returns(LeveragelpWhitelistResponse)]
-    LeveragelpGetWhitelist {},
+    LeveragelpGetWhitelist { pagination: Option<PageRequest> },
     #[returns(LeveragelpIsWhitelistedResponse)]
-    LeveragelpIsWhitelisted { pagination: Option<PageRequest> },
+    LeveragelpIsWhitelisted { address: String },
     #[returns(LeveragelpPoolResponse)]
     LeveragelpPool { index: u64 },
     #[returns(LeveragelpPoolsResponse)]
