@@ -482,9 +482,25 @@ pub struct LeveragelpWhitelistResponse {
 }
 
 #[cw_serde]
+pub struct LeveragelpIsWhitelistedResponseRaw {
+    pub address: Option<String>,
+    pub is_whitelisted: Option<bool>,
+}
+
+#[cw_serde]
 pub struct LeveragelpIsWhitelistedResponse {
     pub address: String,
     pub is_whitelisted: bool,
+}
+
+#[cw_serde]
+pub struct LeveragelpPoolRaw {
+    pub amm_pool_id: u64,
+    pub health: Decimal,
+    pub enabled: Option<bool>,
+    pub closed: Option<bool>,
+    pub leveraged_lp_amount: Int128,
+    pub leverage_max: Decimal,
 }
 
 #[cw_serde]
@@ -493,13 +509,24 @@ pub struct LeveragelpPool {
     pub health: Decimal,
     pub enabled: bool,
     pub closed: bool,
-    pub leveraged_lp_amount: i64,
+    pub leveraged_lp_amount: Int128,
     pub leverage_max: Decimal,
+}
+
+#[cw_serde]
+pub struct LeveragelpPoolResponseRaw {
+    pub pool: LeveragelpPoolRaw,
 }
 
 #[cw_serde]
 pub struct LeveragelpPoolResponse {
     pub pool: LeveragelpPool,
+}
+
+#[cw_serde]
+pub struct LeveragelpPoolsResponseRaw {
+    pub pool: Vec<LeveragelpPoolRaw>,
+    pub pagination: Option<PageResponse>,
 }
 
 #[cw_serde]

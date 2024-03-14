@@ -661,18 +661,51 @@ impl<'a> ElysQuerier<'a> {
         pagination: Option<PageRequest>,
     ) -> StdResult<LeveragelpIsWhitelistedResponse> {
         let req = QueryRequest::Custom(ElysQuery::leveragelp_is_whitelisted(pagination));
-        self.querier.query(&req)
+        let raw_resp: LeveragelpIsWhitelistedResponseRaw = self.querier.query(&req)?;
+        let resp = LeveragelpIsWhitelistedResponse {
+            address: raw_resp.address.unwrap_or("".to_string()),
+            is_whitelisted: raw_resp.is_whitelisted.unwrap_or(false),
+        };
+        Ok(resp)
     }
     pub fn leveragelp_pool(&self, index: u64) -> StdResult<LeveragelpPoolResponse> {
         let req = QueryRequest::Custom(ElysQuery::leveragelp_pool(index));
-        self.querier.query(&req)
+        let raw_resp: LeveragelpPoolResponseRaw = self.querier.query(&req)?;
+        let resp = LeveragelpPoolResponse {
+            pool: LeveragelpPool {
+                amm_pool_id: raw_resp.pool.amm_pool_id,
+                health: raw_resp.pool.health,
+                enabled: raw_resp.pool.enabled.unwrap_or(false),
+                closed: raw_resp.pool.closed.unwrap_or(false),
+                leveraged_lp_amount: raw_resp.pool.leveraged_lp_amount,
+                leverage_max: raw_resp.pool.leverage_max,
+            },
+        };
+        Ok(resp)
     }
     pub fn leveragelp_pools(
         &self,
         pagination: Option<PageRequest>,
     ) -> StdResult<LeveragelpPoolsResponse> {
         let req = QueryRequest::Custom(ElysQuery::leveragelp_pools(pagination));
-        self.querier.query(&req)
+        let raw_resp: LeveragelpPoolsResponseRaw = self.querier.query(&req)?;
+        let pool: Vec<LeveragelpPool> = raw_resp
+            .pool
+            .into_iter()
+            .map(|pool| LeveragelpPool {
+                amm_pool_id: pool.amm_pool_id,
+                health: pool.health,
+                enabled: pool.enabled.unwrap_or(false),
+                closed: pool.closed.unwrap_or(false),
+                leveraged_lp_amount: pool.leveraged_lp_amount,
+                leverage_max: pool.leverage_max,
+            })
+            .collect();
+        let resp = LeveragelpPoolsResponse {
+            pool,
+            pagination: raw_resp.pagination,
+        };
+        Ok(resp)
     }
     pub fn leveragelp_position(
         &self,

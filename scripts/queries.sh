@@ -517,7 +517,7 @@ function leveragelp_pool() {
     printf "\n# Get stable stake params\n"
     query_contract "$ts_contract_address" '{
         "leveragelp_pool": {
-            "index": 1
+            "index": 2
         }
     }'
 }
