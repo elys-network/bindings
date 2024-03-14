@@ -109,6 +109,11 @@ pub enum ElysQuery {
     IncentivePoolAprs {
         pool_ids: Option<Vec<u64>>
     },
+    #[returns(QueryJoinPoolEstimationResponse)]
+    AmmJoinPoolEstimation {
+        pool_id: u64,
+        amounts_in: Vec<Coin>
+    },
     #[returns(LeveragelpParamsResponse)]
     LeveragelpParams {},
     #[returns(LeveragelpPositionsResponse)]
@@ -308,6 +313,12 @@ impl ElysQuery {
     pub fn get_pools_apr(pool_ids: Option<Vec<u64>>) -> Self {
         ElysQuery::IncentivePoolAprs {
             pool_ids
+        }
+    }
+    pub fn join_pool_estimation(pool_id: u64, amounts_in: Vec<Coin>) -> Self {
+        ElysQuery::AmmJoinPoolEstimation {
+            pool_id,
+            amounts_in
         }
     }
 }

@@ -490,6 +490,13 @@ impl<'a> ElysQuerier<'a> {
         Ok(response)
     }
 
+    pub fn join_pool_estimation(&self, pool_id: u64, amounts_in: Vec<Coin>) -> StdResult<QueryJoinPoolEstimationResponse> {
+        let query = ElysQuery::join_pool_estimation(pool_id, amounts_in);
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
+        let response: QueryJoinPoolEstimationResponse = self.querier.query(&request)?;
+        Ok(response)
+    }
+
     pub fn get_all_pools(
         &self,
         pool_ids: Option<Vec<u64>>,
