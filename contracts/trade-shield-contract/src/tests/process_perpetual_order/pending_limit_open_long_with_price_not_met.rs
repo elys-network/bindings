@@ -15,7 +15,7 @@ use elys_bindings::query_resp::{
 };
 use elys_bindings::trade_shield::msg::query_resp::GetPerpetualOrderResp;
 use elys_bindings::trade_shield::msg::{ExecuteMsg, QueryMsg, SudoMsg};
-use elys_bindings::trade_shield::types::{OrderPrice, PerpetualOrderType, Status};
+use elys_bindings::trade_shield::types::{OrderPrice, PerpetualOrder, PerpetualOrderType, Status};
 use elys_bindings::types::{Mtp, OracleAssetInfo, PageResponse, PerpetualPosition, Price};
 use elys_bindings::{ElysMsg, ElysQuery};
 use elys_bindings_test::{
@@ -353,6 +353,31 @@ fn pending_limit_open_long_order_with_price_not_met() {
         .unwrap();
 
     assert_eq!(order.status, Status::Pending);
+
+    // assert the whole order object
+    assert_eq!(
+        order,
+        PerpetualOrder {
+            order_id: 0,
+            owner: "user".to_string(),
+            order_type: PerpetualOrderType::LimitOpen,
+            position: PerpetualPosition::Long,
+            trigger_price: Some(OrderPrice {
+                base_denom: USDC_DENOM.to_string(),
+                quote_denom: ATOM_DENOM.to_string(),
+                rate: Decimal::from_str("10.0").unwrap(),
+            }),
+            order_price: Decimal::from_str("10.0").unwrap(),
+            collateral: coin(110_000000, USDC_DENOM),
+            trading_asset: ATOM_DENOM.to_string(),
+            leverage: SignedDecimal::from_str("5.0").unwrap(),
+            take_profit_price: Some(SignedDecimal256::from_str("30.0").unwrap()),
+            position_id: None,
+            status: Status::Pending,
+            // custody = collateral * leverage / trigger_price
+            custody: coin(55_000000, ATOM_DENOM),
+        }
+    );
 
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();

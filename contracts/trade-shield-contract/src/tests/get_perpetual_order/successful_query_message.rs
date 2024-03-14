@@ -13,7 +13,7 @@ fn successful_query_message() {
         &PerpetualPosition::Long,
         &PerpetualOrderType::MarketOpen,
         &coin(255, "usdc"),
-        "btc",
+        &"btc".to_string(),
         &SignedDecimal::one(),
         &Some(SignedDecimal256::one()),
         &Some(OrderPrice {

@@ -17,7 +17,7 @@ fn succesful_cancel_an_order() {
             &PerpetualPosition::Long,
             &PerpetualOrderType::LimitOpen,
             &coin(255, "usdc"),
-            "btc",
+            &"btc".to_string(),
             &SignedDecimal::from_str("1.2").unwrap(),
             &Some(SignedDecimal256::from_str("1.2").unwrap()),
             &Some(OrderPrice {
