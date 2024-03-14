@@ -85,8 +85,10 @@ mod cancel_perpetual_order {
 
 mod process_perpetual_order {
     use super::*;
-    mod process_limit_open;
-    mod process_order_close;
+    mod pending_limit_open_long_with_price_met;
+    mod pending_limit_open_long_with_price_not_met;
+    mod pending_limit_open_short_with_price_met;
+    mod pending_limit_open_short_with_price_not_met;
 }
 
 mod get_perpetual_order {
