@@ -51,6 +51,7 @@ execute_message() {
     command="elysd tx wasm exec $options \"$contract_address\" '$message'"
     echo "$ $command"
     txhash=$(eval $command | extract_txhash)
+    echo "txhash: $txhash"
     # check if txhash is empty
     if [ -z "$txhash" ]; then
         echo "Failed to execute the message. Please check the error message above."
