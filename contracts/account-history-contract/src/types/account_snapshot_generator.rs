@@ -81,8 +81,8 @@ impl AccountSnapshotGenerator {
 
         Ok(Some(PortfolioBalanceSnapshot {
             date: snapshot.date,
-            portfolio_balance_usd: snapshot.portfolio.balance_usd.clone(),
-            total_balance_usd: snapshot.total_balance.total_balance.clone(),
+            portfolio_balance_usd: snapshot.portfolio.balance_usd.amount.clone(),
+            total_balance_usd: snapshot.total_balance.total_balance.amount.clone(),
         }))
     }
 

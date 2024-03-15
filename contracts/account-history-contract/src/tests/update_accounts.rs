@@ -3,7 +3,7 @@ use std::str::FromStr;
 use crate::msg::query_resp::UserValueResponse;
 use crate::msg::{InstantiateMsg, QueryMsg};
 use crate::{entry_point::*, msg::SudoMsg};
-use cosmwasm_std::{coins, Addr, BlockInfo, Coin, DecCoin, Decimal, Decimal256, Timestamp};
+use cosmwasm_std::{coins, Addr, BlockInfo, Coin, Decimal, Decimal256, Timestamp};
 use cw_multi_test::{BankSudo, ContractWrapper, Executor, SudoMsg as AppSudo};
 use cw_utils::Expiration;
 use elys_bindings::types::{OracleAssetInfo, Price};
@@ -118,10 +118,7 @@ fn history() {
 
     assert_eq!(
         res.value.portfolio_balance_usd,
-        DecCoin::new(
-            Decimal256::from_str("6.00065").unwrap(),
-            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-        )
+        Decimal256::from_str("6.00065").unwrap(),
     );
 
     app.sudo(AppSudo::Bank(BankSudo::Mint {
@@ -143,9 +140,6 @@ fn history() {
 
     assert_eq!(
         res.value.portfolio_balance_usd,
-        DecCoin::new(
-            Decimal256::from_str("6.00065").unwrap(),
-            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-        )
+        Decimal256::from_str("6.00065").unwrap(),
     ); // The previous value wasn't removed yet but wasn't read either since it's expired.
 }

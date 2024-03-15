@@ -14,7 +14,7 @@ pub fn user_value(deps: Deps<ElysQuery>, user_address: String) -> StdResult<User
 
     match user_history
         .iter()
-        .min_by_key(|account| account.total_balance_usd.amount)
+        .min_by_key(|snapshot| snapshot.total_balance_usd)
     {
         Some(lowest_value) => Ok(UserValueResponse {
             value: lowest_value.to_owned(),

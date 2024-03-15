@@ -17,11 +17,9 @@ pub fn get_membership_tier(
 
     match user_history
         .iter()
-        .min_by_key(|snapshot| snapshot.total_balance_usd.amount)
+        .min_by_key(|snapshot| snapshot.total_balance_usd)
     {
-        Some(snapshot) => Ok(MembershipTierResponse::calc(
-            snapshot.total_balance_usd.amount,
-        )),
+        Some(snapshot) => Ok(MembershipTierResponse::calc(snapshot.total_balance_usd)),
         None => return Ok(MembershipTierResponse::zero()),
     }
 }

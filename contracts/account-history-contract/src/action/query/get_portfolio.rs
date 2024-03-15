@@ -56,11 +56,11 @@ pub fn get_portfolio(
             Err(_) => SignedDecimal256::zero(),
         };
 
-    let old_portfolio_balance =
-        match SignedDecimal256::try_from(old_snapshot.portfolio_balance_usd.amount) {
-            Ok(balance) => balance,
-            Err(_) => SignedDecimal256::zero(),
-        };
+    let old_portfolio_balance = match SignedDecimal256::try_from(old_snapshot.portfolio_balance_usd)
+    {
+        Ok(balance) => balance,
+        Err(_) => SignedDecimal256::zero(),
+    };
 
     let balance_24h_change = match actual_portfolio_balance
         .clone()

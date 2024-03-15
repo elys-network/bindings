@@ -114,7 +114,7 @@ fn clean_up_history(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use cosmwasm_std::{DecCoin, Decimal256, Timestamp};
+    use cosmwasm_std::{Decimal256, Timestamp};
 
     #[test]
     fn test_clean_up_history() {
@@ -122,14 +122,14 @@ mod tests {
 
         let snapshot = PortfolioBalanceSnapshot {
             date: Expiration::AtTime(Timestamp::from_seconds(1707306681)),
-            total_balance_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-            portfolio_balance_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            total_balance_usd: Decimal256::zero(),
+            portfolio_balance_usd: Decimal256::zero(),
         };
 
         let old_snapshot = PortfolioBalanceSnapshot {
             date: Expiration::AtTime(Timestamp::from_seconds(1706701881)),
-            total_balance_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-            portfolio_balance_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            total_balance_usd: Decimal256::zero(),
+            portfolio_balance_usd: Decimal256::zero(),
         };
 
         let block_info = BlockInfo {
