@@ -383,7 +383,9 @@ pub struct QueryIncentivePoolAprsResponse {
 #[cw_serde]
 pub struct QueryJoinPoolEstimationResponse {
     amounts_in: Vec<Coin>,
-    share_amount_out: Decimal
+    share_amount_out: Coin,
+    slippage: Decimal,
+    weight_balance_ratio: Decimal
 }
 
 #[cw_serde]
