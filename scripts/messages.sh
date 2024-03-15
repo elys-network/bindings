@@ -299,8 +299,8 @@ function leveragelp_open() {
         '{
             "leveragelp_open": {
                 "amm_pool_id": 2,
-                "collateral_asset": "uelys" ,
-                "collateral_amount": "200000",
+                "collateral_asset": "'"$usdc_denom"'",
+                "collateral_amount": "10000000",
                 "leverage": "5.0",
                 "stop_loss_price": "1.0"
             }
