@@ -1,5 +1,5 @@
 #[allow(unused_imports)]
-use super::super::types::{AccountSnapshot, PerpetualAssets};
+use super::super::types::{PerpetualAssets, PortfolioBalanceSnapshot};
 #[allow(unused_imports)]
 use super::query_resp::*;
 #[allow(unused_imports)]
@@ -53,7 +53,7 @@ pub enum QueryMsg {
     Params {},
 
     #[cfg(feature = "debug")]
-    #[returns(AccountSnapshot)]
+    #[returns(PortfolioBalanceSnapshot)]
     LastSnapshot { user_address: String },
 
     #[cfg(feature = "debug")]
@@ -61,11 +61,11 @@ pub enum QueryMsg {
     UserValue { user_address: String },
 
     #[cfg(feature = "debug")]
-    #[returns(Vec<(String, Vec<AccountSnapshot>)>)]
+    #[returns(Vec<(String, Vec<PortfolioBalanceSnapshot>)>)]
     All { pagination: Option<PageRequest> },
 
     #[cfg(feature = "debug")]
-    #[returns(Vec<AccountSnapshot>)]
+    #[returns(Vec<PortfolioBalanceSnapshot>)]
     UserSnapshots { user_address: String },
 
     #[cfg(feature = "debug")]
