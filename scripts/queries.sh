@@ -473,7 +473,7 @@ function leveragelp_query_positions_by_pool() {
     printf "\n# Get stable stake params\n"
     query_contract "$ts_contract_address" '{
         "leveragelp_query_positions_by_pool": {
-           "amm_pool_id" : 1 
+           "amm_pool_id" : 2
         }
     }'
 }
@@ -538,7 +538,7 @@ function leveragelp_position() {
     query_contract "$ts_contract_address" '{
         "leveragelp_position": {
             "address" : "'"$user_address"'",
-            "id": 1
+            "id": 2
         }
     }'
 }

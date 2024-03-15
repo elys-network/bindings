@@ -323,12 +323,12 @@ impl ElysMsg {
         stop_loss_price: SignedDecimal,
     ) -> Self {
         Self::LeveragelpOpen {
-            creator: creator,
-            collateral_asset: collateral_asset,
-            collateral_amount: collateral_amount,
-            amm_pool_id: amm_pool_id,
-            leverage: leverage,
-            stop_loss_price: stop_loss_price,
+            creator,
+            collateral_asset,
+            collateral_amount,
+            amm_pool_id,
+            leverage,
+            stop_loss_price,
         }
     }
 

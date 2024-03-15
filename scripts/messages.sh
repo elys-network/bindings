@@ -308,6 +308,20 @@ function leveragelp_open() {
         wasm-cancel_perpetual_order
 }
 
+# Close a leverage lp position
+function leveragelp_close() {
+    execute_message \
+        "$ts_contract_address" \
+        '{
+            "leveragelp_close": {
+                "position_id" : 2,
+                "amount" : "5000000"
+            }
+        }' \
+        wasm-cancel_perpetual_order
+}
+
+
 # Get all spot orders
 function all_spot_orders() {
     printf "\n# Get all spot orders\n"
@@ -389,7 +403,9 @@ case "$1" in
     "leveragelp_open")
         leveragelp_open
         ;;
-
+    "leveragelp_close")
+        leveragelp_close
+        ;;
     *)
         # Default case: run all functions
         all_spot_orders

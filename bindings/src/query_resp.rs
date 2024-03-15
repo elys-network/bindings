@@ -442,10 +442,10 @@ pub struct LeveragelpParamsResponse {
 pub struct LeveragelpPosition {
     pub address: String,
     pub collateral: Coin,
-    pub liabilities: i64,
-    pub interest_paid: i64,
+    pub liabilities: Int128,
+    pub interest_paid: Int128,
     pub leverage: Decimal,
-    pub leveraged_lp_amount: i64,
+    pub leveraged_lp_amount: Int128,
     pub position_health: Decimal,
     pub id: u64,
     pub amm_pool_id: u64,
