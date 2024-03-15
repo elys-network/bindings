@@ -387,5 +387,7 @@ pub struct PoolAsset {
 }
 
 pub fn default_take_profit_price() -> SignedDecimal256 {
-    SignedDecimal256::new(Int256::from_str("10000000000000000000000000000000000000000").unwrap())
+    SignedDecimal256::new(
+        Int256::from_str("10000000000000000000000000000000000000000000000000000000000").unwrap(),
+    )
 }
