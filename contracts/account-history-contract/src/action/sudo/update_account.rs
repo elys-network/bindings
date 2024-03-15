@@ -8,7 +8,9 @@ use crate::{
     types::AccountSnapshotGenerator,
     utils::get_today,
 };
-use elys_bindings::{account_history::types::AccountSnapshot, ElysMsg, ElysQuerier, ElysQuery};
+use elys_bindings::{
+    account_history::types::PortfolioBalanceSnapshot, ElysMsg, ElysQuerier, ElysQuery,
+};
 
 pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<ElysMsg>> {
     let querier = ElysQuerier::new(&deps.querier);
@@ -47,14 +49,14 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     let generator = AccountSnapshotGenerator::new(&deps.as_ref())?;
 
     for address in addresses_to_process.iter() {
-        let mut history: HashMap<String, AccountSnapshot> =
+        let mut history: HashMap<String, PortfolioBalanceSnapshot> =
             if let Some(histories) = HISTORY.may_load(deps.storage, &address)? {
                 clean_up_history(histories, &env.block, &generator.expiration)
             } else {
                 HashMap::new()
             };
 
-        let new_part = generator.generate_account_snapshot_for_address(
+        let new_part = generator.generate_portfolio_balance_snapshot_for_address(
             &querier,
             &deps.as_ref(),
             &env,
@@ -75,10 +77,10 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
 }
 
 fn clean_up_history(
-    history: HashMap<String, AccountSnapshot>,
+    history: HashMap<String, PortfolioBalanceSnapshot>,
     block_info: &BlockInfo,
     expiration: &Expiration,
-) -> HashMap<String, AccountSnapshot> {
+) -> HashMap<String, PortfolioBalanceSnapshot> {
     let mut history = history;
 
     let expiration = match expiration {
@@ -92,7 +94,8 @@ fn clean_up_history(
     }
 
     let expired_date = block_info.time.minus_seconds(expiration.seconds());
-    let history_vec: Vec<(String, AccountSnapshot)> = history.clone().into_iter().collect();
+    let history_vec: Vec<(String, PortfolioBalanceSnapshot)> =
+        history.clone().into_iter().collect();
 
     for (date, snapshot) in history_vec {
         let timestamp = match snapshot.date {
@@ -111,93 +114,22 @@ fn clean_up_history(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use cosmwasm_std::{DecCoin, Decimal, Decimal256, Timestamp, Uint128};
-    use elys_bindings::account_history::types::{
-        LiquidAsset, PerpetualAssets, PoolBalances, Portfolio, Reward, StakedAssets, TotalBalance,
-    };
+    use cosmwasm_std::{DecCoin, Decimal256, Timestamp};
 
     #[test]
     fn test_clean_up_history() {
-        let mut history: HashMap<String, AccountSnapshot> = HashMap::new();
+        let mut history: HashMap<String, PortfolioBalanceSnapshot> = HashMap::new();
 
-        let snapshot = AccountSnapshot {
+        let snapshot = PortfolioBalanceSnapshot {
             date: Expiration::AtTime(Timestamp::from_seconds(1707306681)),
-            total_balance: TotalBalance {
-                total_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                portfolio_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                reward_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-            },
-            portfolio: Portfolio {
-                balance_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                liquid_assets_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                staked_committed_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                liquidity_positions_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                leverage_lp_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                perpetual_assets_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                usdc_earn_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                borrows_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-            },
-            reward: Reward {
-                usdc_usd: Decimal::zero(),
-                eden_usd: Decimal::zero(),
-                eden_boost: Uint128::zero(),
-                other_usd: Decimal::zero(),
-                total_usd: Decimal::zero(),
-            },
-            liquid_asset: LiquidAsset {
-                total_liquid_asset_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                total_available_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                total_in_orders_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                available_asset_balance: vec![],
-                in_orders_asset_balance: vec![],
-                total_value_per_asset: vec![],
-            },
-            pool_balances: PoolBalances::default(),
-            staked_assets: StakedAssets::default(),
-            perpetual_assets: PerpetualAssets {
-                total_perpetual_asset_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                perpetual_asset: vec![],
-            },
+            total_balance_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            portfolio_balance_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
         };
 
-        let old_snapshot = AccountSnapshot {
+        let old_snapshot = PortfolioBalanceSnapshot {
             date: Expiration::AtTime(Timestamp::from_seconds(1706701881)),
-            total_balance: TotalBalance {
-                total_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                portfolio_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                reward_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-            },
-            portfolio: Portfolio {
-                balance_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                liquid_assets_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                staked_committed_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                liquidity_positions_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                leverage_lp_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                perpetual_assets_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                usdc_earn_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                borrows_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-            },
-            reward: Reward {
-                usdc_usd: Decimal::zero(),
-                eden_usd: Decimal::zero(),
-                eden_boost: Uint128::zero(),
-                other_usd: Decimal::zero(),
-                total_usd: Decimal::zero(),
-            },
-            liquid_asset: LiquidAsset {
-                total_liquid_asset_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                total_available_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                total_in_orders_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                available_asset_balance: vec![],
-                in_orders_asset_balance: vec![],
-                total_value_per_asset: vec![],
-            },
-            pool_balances: PoolBalances::default(),
-            staked_assets: StakedAssets::default(),
-            perpetual_assets: PerpetualAssets {
-                total_perpetual_asset_balance: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
-                perpetual_asset: vec![],
-            },
+            total_balance_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
+            portfolio_balance_usd: DecCoin::new(Decimal256::zero(), "usdc".to_string()),
         };
 
         let block_info = BlockInfo {

@@ -6,7 +6,10 @@ use crate::{
 };
 use chrono::Days;
 use cosmwasm_std::{Deps, Env, SignedDecimal256, StdResult};
-use elys_bindings::{account_history::types::AccountSnapshot, ElysQuerier, ElysQuery};
+use elys_bindings::{
+    account_history::types::{AccountSnapshot, PortfolioBalanceSnapshot},
+    ElysQuerier, ElysQuery,
+};
 
 pub fn get_portfolio(
     deps: Deps<ElysQuery>,
@@ -42,9 +45,9 @@ pub fn get_portfolio(
     let old_snapshot = match HISTORY.may_load(deps.storage, &user_address)? {
         Some(snapshots) => match snapshots.get(&twenty_four_hours_ago) {
             Some(snapshot) => snapshot.clone(),
-            None => AccountSnapshot::default(),
+            None => PortfolioBalanceSnapshot::default(),
         },
-        None => AccountSnapshot::default(),
+        None => PortfolioBalanceSnapshot::default(),
     };
 
     let actual_portfolio_balance =
@@ -54,7 +57,7 @@ pub fn get_portfolio(
         };
 
     let old_portfolio_balance =
-        match SignedDecimal256::try_from(old_snapshot.portfolio.balance_usd.amount) {
+        match SignedDecimal256::try_from(old_snapshot.portfolio_balance_usd.amount) {
             Ok(balance) => balance,
             Err(_) => SignedDecimal256::zero(),
         };

@@ -117,9 +117,9 @@ fn history() {
     let res: UserValueResponse = app.wrap().query_wasm_smart(&addr, &query_msg).unwrap();
 
     assert_eq!(
-        res.value.liquid_asset.total_liquid_asset_balance,
+        res.value.portfolio_balance_usd,
         DecCoin::new(
-            Decimal256::from_str("6").unwrap(),
+            Decimal256::from_str("6.00065").unwrap(),
             "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
         )
     );
@@ -142,9 +142,9 @@ fn history() {
     let res: UserValueResponse = app.wrap().query_wasm_smart(&addr, &query_msg).unwrap();
 
     assert_eq!(
-        res.value.liquid_asset.total_liquid_asset_balance,
+        res.value.portfolio_balance_usd,
         DecCoin::new(
-            Decimal256::from_str("6").unwrap(),
+            Decimal256::from_str("6.00065").unwrap(),
             "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
         )
     ); // The previous value wasn't removed yet but wasn't read either since it's expired.

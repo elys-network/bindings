@@ -1,15 +1,15 @@
 use std::cmp::Ordering;
 
 use cosmwasm_std::{Deps, StdResult};
-use elys_bindings::{account_history::types::AccountSnapshot, ElysQuery};
+use elys_bindings::{account_history::types::PortfolioBalanceSnapshot, ElysQuery};
 
 use crate::states::HISTORY;
 
 pub fn user_snapshots(
     deps: Deps<ElysQuery>,
     user_address: String,
-) -> StdResult<Vec<AccountSnapshot>> {
-    let mut snapshots: Vec<AccountSnapshot> = HISTORY
+) -> StdResult<Vec<PortfolioBalanceSnapshot>> {
+    let mut snapshots: Vec<PortfolioBalanceSnapshot> = HISTORY
         .load(deps.storage, &user_address)?
         .values()
         .cloned()
