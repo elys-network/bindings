@@ -1,3 +1,5 @@
+use cosmwasm_std::StdError;
+
 use super::*;
 
 pub fn get_perpetual_orders(
@@ -23,7 +25,7 @@ pub fn get_perpetual_orders(
         });
     };
 
-    let orders: Vec<PerpetualOrder> = orders
+    let orders: Vec<PerpetualOrderPlus> = orders
         .iter()
         .filter(|order| {
             order_owner
@@ -36,8 +38,8 @@ pub fn get_perpetual_orders(
                     .as_ref()
                     .map_or(true, |status| &order.status == status)
         })
-        .cloned()
-        .collect();
+        .map(|order| PerpetualOrderPlus::new(order.to_owned()))
+        .collect::<Result<Vec<PerpetualOrderPlus>, StdError>>()?;
 
     let (orders, page_response) = match pagination {
         Some(pagination) => {

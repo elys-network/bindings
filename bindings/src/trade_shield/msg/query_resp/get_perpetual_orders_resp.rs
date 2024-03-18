@@ -1,12 +1,10 @@
-use crate::types::PageResponse;
+use crate::{trade_shield::types::PerpetualOrderPlus, types::PageResponse};
 use cosmwasm_schema::cw_serde;
-
-use crate::trade_shield::types::PerpetualOrder;
 
 #[cw_serde]
 pub struct GetPerpetualOrdersResp {
     pub page_response: Option<PageResponse>,
-    pub orders: Vec<PerpetualOrder>,
+    pub orders: Vec<PerpetualOrderPlus>,
 }
 
 impl GetPerpetualOrdersResp {
