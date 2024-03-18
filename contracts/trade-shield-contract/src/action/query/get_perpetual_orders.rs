@@ -21,7 +21,7 @@ pub fn get_perpetual_orders(
             } else {
                 None
             },
-            orders,
+            orders: vec![],
         });
     };
 
