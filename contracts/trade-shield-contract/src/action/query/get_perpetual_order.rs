@@ -6,8 +6,11 @@ pub fn get_perpetual_order(
 ) -> Result<GetPerpetualOrderResp, ContractError> {
     let order = PERPETUAL_ORDER.may_load(deps.storage, id)?;
 
-    match order {
-        Some(order) => Ok(GetPerpetualOrderResp { order }),
-        None => Err(ContractError::OrderNotFound { order_id: id }),
-    }
+    let order = match order {
+        Some(order) => order,
+        None => return Err(ContractError::OrderNotFound { order_id: id }),
+    };
+
+    let order = PerpetualOrderPlus::new(order)?;
+    Ok(GetPerpetualOrderResp { order })
 }
