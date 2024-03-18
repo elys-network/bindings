@@ -7,10 +7,11 @@ pub fn get_spot_orders(
     order_type: Option<SpotOrderType>,
     order_status: Option<Status>,
 ) -> Result<GetSpotOrdersResp, ContractError> {
-    let orders: Vec<SpotOrder> = SPOT_ORDER
-        .prefix_range(deps.storage, None, None, Order::Ascending)
-        .filter_map(|res| res.ok().map(|r| r.1))
-        .collect();
+    let orders: Vec<SpotOrder> = vec![];
+    // SPOT_ORDER
+    //     .prefix_range(deps.storage, None, None, Order::Ascending)
+    //     .filter_map(|res| res.ok().map(|r| r.1))
+    //     .collect();
 
     if orders.is_empty() {
         return Ok(GetSpotOrdersResp {

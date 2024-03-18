@@ -9,10 +9,11 @@ pub fn get_perpetual_orders(
     order_type: Option<PerpetualOrderType>,
     order_status: Option<Status>,
 ) -> Result<GetPerpetualOrdersResp, ContractError> {
-    let orders: Vec<PerpetualOrder> = PERPETUAL_ORDER
-        .prefix_range(deps.storage, None, None, Order::Ascending)
-        .filter_map(|res| res.ok().map(|r| r.1))
-        .collect();
+    let orders: Vec<PerpetualOrder> = vec![];
+    // PERPETUAL_ORDER
+    //     .prefix_range(deps.storage, None, None, Order::Ascending)
+    //     .filter_map(|res| res.ok().map(|r| r.1))
+    //     .collect();
 
     if orders.is_empty() {
         return Ok(GetPerpetualOrdersResp {

@@ -110,10 +110,11 @@ fn create_perpetual_open_order(
 ) -> Result<Response<ElysMsg>, ContractError> {
     let collateral = cw_utils::one_coin(&info)?;
 
-    let orders: Vec<PerpetualOrder> = PERPETUAL_ORDER
-        .prefix_range(deps.storage, None, None, Order::Ascending)
-        .filter_map(|res| res.ok().map(|r| r.1))
-        .collect();
+    let orders: Vec<PerpetualOrder> = vec![];
+    // PERPETUAL_ORDER
+    //     .prefix_range(deps.storage, None, None, Order::Ascending)
+    //     .filter_map(|res| res.ok().map(|r| r.1))
+    //     .collect();
 
     if position == PerpetualPosition::Unspecified {
         return Err(
@@ -251,10 +252,11 @@ fn create_perpetual_close_order(
         return Err(StdError::not_found("perpetual trading position").into());
     };
 
-    let orders: Vec<PerpetualOrder> = PERPETUAL_ORDER
-        .prefix_range(deps.storage, None, None, Order::Ascending)
-        .filter_map(|res| res.ok().map(|r| r.1))
-        .collect();
+    let orders: Vec<PerpetualOrder> = vec![];
+    // PERPETUAL_ORDER
+    //     .prefix_range(deps.storage, None, None, Order::Ascending)
+    //     .filter_map(|res| res.ok().map(|r| r.1))
+    //     .collect();
 
     let QueryGetEntryResponse {
         entry: Entry {
