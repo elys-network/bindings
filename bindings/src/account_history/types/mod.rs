@@ -5,6 +5,7 @@ mod metadata;
 mod perpetual_assets;
 mod pool_balances;
 mod portfolio;
+mod portfolio_balance_snapshot;
 mod reward;
 mod staked_assets;
 mod total_balance;
@@ -12,6 +13,7 @@ mod total_balance;
 pub use account_snapshot::AccountSnapshot;
 pub use coin_value::CoinValue;
 pub use metadata::Metadata;
+pub use portfolio_balance_snapshot::PortfolioBalanceSnapshot;
 
 pub mod earn_detail {
     pub mod earn_detail;
