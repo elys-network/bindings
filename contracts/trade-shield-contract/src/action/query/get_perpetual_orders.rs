@@ -14,17 +14,13 @@ pub fn get_perpetual_orders(
         .filter_map(|res| res.ok().map(|r| r.1))
         .collect();
 
-    let (orders, page_response) = match pagination {
-        Some(pagination) => {
-            let (orders, page_resp) = pagination.filter(orders)?;
-            (orders, Some(page_resp))
-        }
-        None => (orders, None),
-    };
-
     if orders.is_empty() {
         return Ok(GetPerpetualOrdersResp {
-            page_response,
+            page_response: if let Some(page) = pagination {
+                Some(PageResponse::empty(page.count_total))
+            } else {
+                None
+            },
             orders: vec![],
         });
     };
@@ -44,6 +40,14 @@ pub fn get_perpetual_orders(
         })
         .map(|order| PerpetualOrderPlus::new(order.to_owned()))
         .collect::<Result<Vec<PerpetualOrderPlus>, StdError>>()?;
+
+    let (orders, page_response) = match pagination {
+        Some(pagination) => {
+            let (orders, page_resp) = pagination.filter(orders)?;
+            (orders, Some(page_resp))
+        }
+        None => (orders, None),
+    };
 
     let page_response = if let Some(page_response) = page_response {
         match page_response.total {
