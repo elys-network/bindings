@@ -7,9 +7,42 @@ pub fn get_spot_orders(
     order_type: Option<SpotOrderType>,
     order_status: Option<Status>,
 ) -> Result<GetSpotOrdersResp, ContractError> {
-    let orders: Vec<SpotOrder> = SPOT_ORDER
-        .prefix_range(deps.storage, None, None, Order::Ascending)
-        .filter_map(|res| res.ok().map(|r| r.1))
+    let orders: Vec<SpotOrder> = match order_owner {
+        Some(addr) => match USER_SPOT_ORDER.may_load(deps.storage, &addr)? {
+            Some(v) => v
+                .iter()
+                .filter_map(|id| SPOT_ORDER.load(deps.storage, *id).ok())
+                .collect(),
+            None => vec![],
+        },
+        None => SPOT_ORDER
+            .prefix_range(deps.storage, None, None, Order::Ascending)
+            .filter_map(|res| res.ok().map(|r| r.1))
+            .collect(),
+    };
+
+    if orders.is_empty() {
+        return Ok(GetSpotOrdersResp {
+            page_response: if let Some(page) = pagination {
+                Some(PageResponse::empty(page.count_total))
+            } else {
+                None
+            },
+            orders,
+        });
+    };
+
+    let orders: Vec<SpotOrder> = orders
+        .iter()
+        .filter(|order| {
+            order_type
+                .as_ref()
+                .map_or(true, |order_type| order_type == &order.order_type)
+                && order_status
+                    .as_ref()
+                    .map_or(true, |status| &order.status == status)
+        })
+        .cloned()
         .collect();
 
     let (orders, page_response) = match pagination {
@@ -19,29 +52,6 @@ pub fn get_spot_orders(
         }
         None => (orders, None),
     };
-
-    if orders.is_empty() {
-        return Ok(GetSpotOrdersResp {
-            page_response,
-            orders,
-        });
-    };
-
-    let orders: Vec<SpotOrder> = orders
-        .iter()
-        .filter(|order| {
-            order_owner
-                .as_ref()
-                .map_or(true, |owner| owner == order.owner_address.as_str())
-                && order_type
-                    .as_ref()
-                    .map_or(true, |order_type| order_type == &order.order_type)
-                && order_status
-                    .as_ref()
-                    .map_or(true, |status| &order.status == status)
-        })
-        .cloned()
-        .collect();
 
     let page_response = if let Some(page_response) = page_response {
         match page_response.total {

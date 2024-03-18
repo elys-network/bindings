@@ -42,7 +42,7 @@ elysd config chain-id elystestnet-1
 elysd config broadcast-mode sync
 
 # environment variables
-OPTIONS="--from $NAME --gas auto --gas-adjustment=1.3 --fees 300000uelys -y"
+OPTIONS="--from $NAME --gas auto --gas-adjustment=1.3 --fees 400000uelys -y"
 
 # Ensure elysd is installed
 if ! command_exists elysd; then
@@ -65,46 +65,54 @@ fi
 
 # store and init/migrate financial snapshot contract
 txhash=$(elysd tx wasm store $OPTIONS artifacts/financial_snapshot_contract.wasm | extract_txhash)
-sleep 10
+echo "fs store txhash: $txhash"
+sleep 20
 codeid=$(elysd q tx $txhash --node $NODE | extract_code_id)
 echo "fs code id: $codeid"
 if [ -n "$FS_CONTRACT_ADDRESS" ]; then
     txhash=$(elysd tx wasm migrate $OPTIONS $FS_CONTRACT_ADDRESS $codeid '{}' | extract_txhash)
+    echo "fs migrate txhash: $txhash"
 else
     txhash=$(elysd tx wasm init $OPTIONS --label "fs" --admin $NAME $codeid '{}' | extract_txhash)
+    echo "fs init txhash: $txhash"
 fi
-sleep 10
+sleep 20
 export fs_contract_address=$(elysd q tx $txhash --node $NODE | extract_contract_address)
 echo "fs_contract_address: $fs_contract_address"
 
 # store and init/migrate trade shield contract
 txhash=$(elysd tx wasm store $OPTIONS artifacts/trade_shield_contract.wasm | extract_txhash)
-sleep 10
+echo "ts store txhash: $txhash"
+sleep 20
 codeid=$(elysd q tx $txhash --node $NODE | extract_code_id)
 echo "ts code id: $codeid"
 if [ -n "$TS_CONTRACT_ADDRESS" ]; then
     txhash=$(elysd tx wasm migrate $OPTIONS $TS_CONTRACT_ADDRESS $codeid '{
         "account_history_address": "'"$AH_CONTRACT_ADDRESS"'"
     }' | extract_txhash)
+    echo "ts migrate txhash: $txhash"
 else
     # set localnet AH deterministic address as param
     txhash=$(elysd tx wasm init $OPTIONS --label "ts" --admin $NAME $codeid '{
         "account_history_address": "elys17p9rzwnnfxcjp32un9ug7yhhzgtkhvl9jfksztgw5uh69wac2pgs98tvuy"
     }' | extract_txhash)
+    echo "ts init txhash: $txhash"
 fi
-sleep 10
+sleep 20
 export ts_contract_address=$(elysd q tx $txhash --node $NODE | extract_contract_address)
 echo "ts_contract_address: $ts_contract_address"
 
 # store and init/migrate account history contract
 txhash=$(elysd tx wasm store artifacts/account_history_contract.wasm $OPTIONS | extract_txhash)
-sleep 10
+echo "ah store txhash: $txhash"
+sleep 20
 codeid=$(elysd q tx $txhash --node $NODE | extract_code_id)
 echo "ah code id: $codeid"
 if [ -n "$AH_CONTRACT_ADDRESS" ]; then
     txhash=$(elysd tx wasm migrate $OPTIONS $AH_CONTRACT_ADDRESS $codeid '{
         "trade_shield_address": "'"$TS_CONTRACT_ADDRESS"'"
     }' | extract_txhash)
+    echo "ah migrate txhash: $txhash"
 else
     txhash=$(elysd tx wasm init $OPTIONS --label "ah" --admin $NAME $codeid '{
         "limit": 300,
@@ -113,8 +121,9 @@ else
         },
         "trade_shield_address": "'"$ts_contract_address"'"
     }' | extract_txhash)
+    echo "ah init txhash: $txhash"
 fi
-sleep 10
+sleep 20
 ah_contract_address=$(elysd q tx $txhash --node $NODE | extract_contract_address)
 echo "ah_contract_address: $ah_contract_address"
 

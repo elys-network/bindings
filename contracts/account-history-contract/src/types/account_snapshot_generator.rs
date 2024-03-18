@@ -20,8 +20,8 @@ use elys_bindings::{
                 EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram,
             },
             AccountSnapshot, BalanceReward, CoinValue, ElysDenom, LiquidAsset, Metadata,
-            PerpetualAsset, PerpetualAssets, PoolBalances, Portfolio, Reward, StakedAssets,
-            TotalBalance,
+            PerpetualAsset, PerpetualAssets, PoolBalances, Portfolio, PortfolioBalanceSnapshot,
+            Reward, StakedAssets, TotalBalance,
         },
     },
     query_resp::{CommittedTokens, PoolFilterType, PoolResp, QueryUserPoolResponse, UserPoolResp},
@@ -32,7 +32,7 @@ use elys_bindings::{
             },
             QueryMsg::{GetPerpetualOrders, GetSpotOrders, PerpetualGetPositionsForAddress},
         },
-        types::{PerpetualOrder, PerpetualOrderType, SpotOrder, Status},
+        types::{PerpetualOrder, PerpetualOrderPlus, PerpetualOrderType, SpotOrder, Status},
     },
     types::BalanceAvailable,
     ElysQuerier, ElysQuery,
@@ -64,6 +64,26 @@ impl AccountSnapshotGenerator {
             expiration,
             metadata,
         })
+    }
+
+    pub fn generate_portfolio_balance_snapshot_for_address(
+        &self,
+        querier: &ElysQuerier,
+        deps: &Deps<ElysQuery>,
+        env: &Env,
+        address: &String,
+    ) -> StdResult<Option<PortfolioBalanceSnapshot>> {
+        let snapshot =
+            match self.generate_account_snapshot_for_address(querier, deps, env, address)? {
+                Some(snapshot) => snapshot,
+                None => return Ok(None),
+            };
+
+        Ok(Some(PortfolioBalanceSnapshot {
+            date: snapshot.date,
+            portfolio_balance_usd: snapshot.portfolio.balance_usd.amount.clone(),
+            total_balance_usd: snapshot.total_balance.total_balance.amount.clone(),
+        }))
     }
 
     pub fn generate_account_snapshot_for_address(
@@ -508,8 +528,11 @@ impl AccountSnapshotGenerator {
                 .and_modify(|e| *e += order_amount.amount)
                 .or_insert(order_amount.amount);
         }
-
-        for PerpetualOrder { collateral, .. } in perpetual_order.orders {
+        for PerpetualOrderPlus {
+            order: PerpetualOrder { collateral, .. },
+            ..
+        } in perpetual_order.orders
+        {
             map.entry(collateral.denom)
                 .and_modify(|e| *e += collateral.amount)
                 .or_insert(collateral.amount);
