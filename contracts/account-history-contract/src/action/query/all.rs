@@ -1,6 +1,6 @@
 use cosmwasm_std::{Deps, Order, StdResult};
 use elys_bindings::{
-    account_history::{msg::query_resp::GetAllResp, types::AccountSnapshot},
+    account_history::{msg::query_resp::GetAllResp, types::PortfolioBalanceSnapshot},
     types::PageRequest,
     ElysQuery,
 };
@@ -8,11 +8,12 @@ use elys_bindings::{
 use crate::states::HISTORY;
 
 pub fn all(deps: Deps<ElysQuery>, pagination: Option<PageRequest>) -> StdResult<GetAllResp> {
-    let snapshot_list: Vec<(String, Vec<(String, AccountSnapshot)>)> = HISTORY
+    let snapshot_list: Vec<(String, Vec<(String, PortfolioBalanceSnapshot)>)> = HISTORY
         .prefix_range(deps.storage, None, None, Order::Ascending)
         .filter_map(|res| res.ok())
         .map(|(key, value)| {
-            let account_snapshots: Vec<(String, AccountSnapshot)> = value.into_iter().collect();
+            let account_snapshots: Vec<(String, PortfolioBalanceSnapshot)> =
+                value.into_iter().collect();
 
             (key, account_snapshots)
         })

@@ -9,7 +9,7 @@ use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{coin, to_json_binary, Addr, BlockInfo, Decimal, Empty, StdError, Timestamp};
 use cw_multi_test::{AppResponse, BankSudo, BasicAppBuilder, ContractWrapper, Executor, Module};
 use cw_utils::Expiration;
-use elys_bindings::account_history::types::AccountSnapshot;
+use elys_bindings::account_history::types::PortfolioBalanceSnapshot;
 use elys_bindings::query_resp::{
     Entry, OracleAssetInfoResponse, QueryGetEntryResponse, QueryGetPriceResponse,
 };
@@ -402,7 +402,7 @@ fn get_portfolio() {
         .unwrap();
 
     // Query the contract for the existing order.
-    let last_snapshot: AccountSnapshot = app
+    let last_snapshot: PortfolioBalanceSnapshot = app
         .wrap()
         .query_wasm_smart(
             &addr,
@@ -428,7 +428,7 @@ fn get_portfolio() {
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();
 
-    let last_snapshot: AccountSnapshot = app
+    let last_snapshot: PortfolioBalanceSnapshot = app
         .wrap()
         .query_wasm_smart(
             &addr,
@@ -485,7 +485,7 @@ fn get_portfolio() {
         .unwrap();
 
     // check the all the snapshots recorded
-    let snapshots: Vec<AccountSnapshot> = app
+    let snapshots: Vec<PortfolioBalanceSnapshot> = app
         .wrap()
         .query_wasm_smart(
             &addr,
@@ -508,7 +508,7 @@ fn get_portfolio() {
         .unwrap();
 
     // check the all the snapshots recorded
-    let snapshots: Vec<AccountSnapshot> = app
+    let snapshots: Vec<PortfolioBalanceSnapshot> = app
         .wrap()
         .query_wasm_smart(
             &addr,
