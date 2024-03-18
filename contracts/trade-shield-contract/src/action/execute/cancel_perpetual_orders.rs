@@ -37,19 +37,20 @@ pub fn cancel_perpetual_orders(
 
         orders
     } else {
-        let orders: Vec<PerpetualOrder> = PERPETUAL_ORDER
-            .prefix_range(deps.storage, None, None, Order::Ascending)
-            .filter_map(|res| {
-                if let Some(r) = res.ok() {
-                    Some(r.1)
-                } else {
-                    None
-                }
-            })
-            .filter(|order| {
-                order.owner.as_str() == info.sender.as_str() && order.status == Status::Pending
-            })
-            .collect();
+        let orders: Vec<PerpetualOrder> = vec![];
+        // PERPETUAL_ORDER
+        //     .prefix_range(deps.storage, None, None, Order::Ascending)
+        //     .filter_map(|res| {
+        //         if let Some(r) = res.ok() {
+        //             Some(r.1)
+        //         } else {
+        //             None
+        //         }
+        //     })
+        //     .filter(|order| {
+        //         order.owner.as_str() == info.sender.as_str() && order.status == Status::Pending
+        //     })
+        //     .collect();
 
         if orders.is_empty() {
             return Err(ContractError::StdError(StdError::not_found(

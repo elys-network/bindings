@@ -10,15 +10,17 @@ pub fn process_orders(
     deps: DepsMut<ElysQuery>,
     env: Env,
 ) -> Result<Response<ElysMsg>, ContractError> {
-    let spot_orders: Vec<SpotOrder> = PENDING_SPOT_ORDER
-        .prefix_range(deps.storage, None, None, Order::Ascending)
-        .filter_map(|res| res.ok().map(|r| r.1))
-        .collect();
+    let spot_orders: Vec<SpotOrder> = vec![];
+    // PENDING_SPOT_ORDER
+    //     .prefix_range(deps.storage, None, None, Order::Ascending)
+    //     .filter_map(|res| res.ok().map(|r| r.1))
+    //     .collect();
 
-    let perpetual_orders: Vec<PerpetualOrder> = PENDING_PERPETUAL_ORDER
-        .prefix_range(deps.storage, None, None, Order::Ascending)
-        .filter_map(|res| res.ok().map(|r| r.1))
-        .collect();
+    let perpetual_orders: Vec<PerpetualOrder> = vec![]; 
+    // PENDING_PERPETUAL_ORDER
+    //     .prefix_range(deps.storage, None, None, Order::Ascending)
+    //     .filter_map(|res| res.ok().map(|r| r.1))
+    //     .collect();
 
     let mut reply_info_id = MAX_REPLY_ID.load(deps.storage)?;
 
