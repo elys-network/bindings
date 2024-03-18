@@ -78,7 +78,11 @@ pub fn create_spot_order(
     if new_order.order_type != SpotOrderType::MarketBuy {
         PENDING_SPOT_ORDER.save(deps.storage, new_order.order_id, &new_order)?;
     }
-
+    let mut ids = USER_SPOT_ORDER
+        .may_load(deps.storage, new_order.owner_address.as_str())?
+        .unwrap_or(vec![]);
+    ids.push(new_order.order_id);
+    USER_SPOT_ORDER.save(deps.storage, new_order.owner_address.as_str(), &ids)?;
     Ok(resp)
 }
 

@@ -20,11 +20,11 @@ use elys_bindings::{
                 EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram,
             },
             AccountSnapshot, BalanceReward, CoinValue, ElysDenom, LiquidAsset, Metadata,
-            PerpetualAsset, PerpetualAssets, PoolBalances, Portfolio, Reward, StakedAssets,
-            TotalBalance,
+            PerpetualAsset, PerpetualAssets, PoolBalances, Portfolio, PortfolioBalanceSnapshot,
+            Reward, StakedAssets, TotalBalance,
         },
     },
-    query_resp::{PoolFilterType, PoolResp, QueryUserPoolResponse, UserPoolResp},
+    query_resp::{CommittedTokens, PoolFilterType, PoolResp, QueryUserPoolResponse, UserPoolResp},
     trade_shield::{
         msg::{
             query_resp::{
@@ -32,7 +32,7 @@ use elys_bindings::{
             },
             QueryMsg::{GetPerpetualOrders, GetSpotOrders, PerpetualGetPositionsForAddress},
         },
-        types::{PerpetualOrder, PerpetualOrderType, SpotOrder, Status},
+        types::{PerpetualOrder, PerpetualOrderPlus, PerpetualOrderType, SpotOrder, Status},
     },
     types::BalanceAvailable,
     ElysQuerier, ElysQuery,
@@ -64,6 +64,26 @@ impl AccountSnapshotGenerator {
             expiration,
             metadata,
         })
+    }
+
+    pub fn generate_portfolio_balance_snapshot_for_address(
+        &self,
+        querier: &ElysQuerier,
+        deps: &Deps<ElysQuery>,
+        env: &Env,
+        address: &String,
+    ) -> StdResult<Option<PortfolioBalanceSnapshot>> {
+        let snapshot =
+            match self.generate_account_snapshot_for_address(querier, deps, env, address)? {
+                Some(snapshot) => snapshot,
+                None => return Ok(None),
+            };
+
+        Ok(Some(PortfolioBalanceSnapshot {
+            date: snapshot.date,
+            portfolio_balance_usd: snapshot.portfolio.balance_usd.amount.clone(),
+            total_balance_usd: snapshot.total_balance.total_balance.amount.clone(),
+        }))
     }
 
     pub fn generate_account_snapshot_for_address(
@@ -149,19 +169,22 @@ impl AccountSnapshotGenerator {
         deps: &Deps<ElysQuery>,
         address: &String,
     ) -> StdResult<QueryUserPoolResponse> {
-        let account_balances = deps.querier.query_all_balances(address)?;
+        let querier = ElysQuerier::new(&deps.querier);
+        let commitments = querier.get_commitments(address.clone())?.commitments;
 
         struct IdSortedPoolBalance {
             pub id: u64,
-            pub balance: Coin,
+            pub balance: CommittedTokens,
         }
 
-        // Get all balances with denoms starting in "amm/pool/"
-        let pool_balances: Vec<Coin> = account_balances
-            .iter()
-            .filter(|coin| coin.denom.starts_with("amm/pool/"))
-            .cloned()
-            .collect();
+        let pool_balances: Vec<CommittedTokens> = match commitments.committed_tokens {
+            Some(res) => res
+                .iter()
+                .filter(|coin| coin.denom.starts_with("amm/pool/"))
+                .cloned()
+                .collect(),
+            None => vec![],
+        };
 
         let pool_data: Vec<IdSortedPoolBalance> = pool_balances
             .iter()
@@ -504,8 +527,11 @@ impl AccountSnapshotGenerator {
                 .and_modify(|e| *e += order_amount.amount)
                 .or_insert(order_amount.amount);
         }
-
-        for PerpetualOrder { collateral, .. } in perpetual_order.orders {
+        for PerpetualOrderPlus {
+            order: PerpetualOrder { collateral, .. },
+            ..
+        } in perpetual_order.orders
+        {
             map.entry(collateral.denom)
                 .and_modify(|e| *e += collateral.amount)
                 .or_insert(collateral.amount);

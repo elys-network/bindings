@@ -13,7 +13,7 @@ use cosmwasm_std::{
 };
 use cw_multi_test::{AppResponse, BankSudo, BasicAppBuilder, ContractWrapper, Executor, Module};
 use cw_utils::Expiration;
-use elys_bindings::account_history::types::{AccountSnapshot, Portfolio};
+use elys_bindings::account_history::types::{Portfolio, PortfolioBalanceSnapshot};
 use elys_bindings::query_resp::{
     Entry, OracleAssetInfoResponse, QueryGetEntryResponse, QueryGetPriceResponse,
 };
@@ -500,7 +500,7 @@ fn get_portfolio() {
         .unwrap();
 
     // Query the contract for the existing order.
-    let last_snapshot: AccountSnapshot = app
+    let last_snapshot: PortfolioBalanceSnapshot = app
         .wrap()
         .query_wasm_smart(
             &addr,

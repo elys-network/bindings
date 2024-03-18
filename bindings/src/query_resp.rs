@@ -2,7 +2,7 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal, Int128, SignedDecimal, SignedDecimal256, Uint128};
 
 use crate::{
-    trade_shield::types::PerpetualPosition,
+    trade_shield::types::{PerpetualPosition, StakedPositionRaw},
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, PoolAsset, Price, StakedPosition,
         SwapAmountInRoute, SwapAmountOutRoute, UnstakedPosition, ValidatorDetail, VestingDetail,
@@ -235,6 +235,11 @@ pub struct QueryGetPriceResponse {
 }
 
 #[cw_serde]
+pub struct QueryStakedPositionResponseRaw {
+    pub staked_position: Option<Vec<StakedPositionRaw>>,
+}
+
+#[cw_serde]
 pub struct QueryStakedPositionResponse {
     pub staked_position: Option<Vec<StakedPosition>>,
 }
@@ -391,7 +396,7 @@ pub struct PoolResp {
 #[cw_serde]
 pub struct UserPoolResp {
     pub pool: PoolResp,
-    pub balance: Coin,
+    pub balance: CommittedTokens,
 }
 
 #[cw_serde]

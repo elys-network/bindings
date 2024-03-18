@@ -51,6 +51,7 @@ execute_message() {
     command="elysd tx wasm exec $options \"$contract_address\" '$message'"
     echo "$ $command"
     txhash=$(eval $command | extract_txhash)
+    echo "txhash: $txhash"
     # check if txhash is empty
     if [ -z "$txhash" ]; then
         echo "Failed to execute the message. Please check the error message above."
@@ -225,12 +226,12 @@ function create_perpetual_order() {
                 "trigger_price": {
                     "base_denom": "'"$usdc_denom"'",
                     "quote_denom": "'"$atom_denom"'",
-                    "rate": "100"
+                    "rate": "16"
                 }
             }
         }' \
         wasm-create_perpetual_order \
-        "100000000$usdc_denom"
+        "120000000$usdc_denom"
 }
 
 # Perpetual Close Position
