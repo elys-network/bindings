@@ -9,6 +9,7 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
     match msg {
         GetSpotOrder { order_id } => Ok(to_json_binary(&query::get_spot_order(deps, order_id)?)?),
         GetAllPrices { limit } => Ok(to_json_binary(&query::get_all_prices(deps, limit)?)?),
+        GetAssetPrice { denom } => Ok(to_json_binary(&query::get_asset_price(deps, denom)?)?),
         AssetInfo { denom } => Ok(to_json_binary(&query::asset_info(deps, denom)?)?),
         GetPerpetualPosition { address, id } => Ok(to_json_binary(
             &query::get_perpetual_position(deps, address, id)?,

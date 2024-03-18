@@ -6,6 +6,7 @@ use elys_bindings::*;
 pub mod query {
     mod asset_info;
     mod get_all_price;
+    mod get_asset_price;
     mod get_perpetual_order;
     mod get_perpetual_orders;
     mod get_perpetual_position;
@@ -24,6 +25,7 @@ pub mod query {
 
     pub use asset_info::asset_info;
     pub use get_all_price::get_all_prices;
+    pub use get_asset_price::get_asset_price;
     pub use get_perpetual_order::get_perpetual_order;
     pub use get_perpetual_orders::get_perpetual_orders;
     pub use get_perpetual_position::get_perpetual_position;
