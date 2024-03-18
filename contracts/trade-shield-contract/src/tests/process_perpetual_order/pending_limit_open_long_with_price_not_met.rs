@@ -15,7 +15,9 @@ use elys_bindings::query_resp::{
 };
 use elys_bindings::trade_shield::msg::query_resp::GetPerpetualOrderResp;
 use elys_bindings::trade_shield::msg::{ExecuteMsg, QueryMsg, SudoMsg};
-use elys_bindings::trade_shield::types::{OrderPrice, PerpetualOrderType, Status};
+use elys_bindings::trade_shield::types::{
+    OrderPrice, PerpetualOrderPlus, PerpetualOrderType, Status,
+};
 use elys_bindings::types::{Mtp, OracleAssetInfo, PageResponse, PerpetualPosition, Price};
 use elys_bindings::{ElysMsg, ElysQuery};
 use elys_bindings_test::{
@@ -342,7 +344,9 @@ fn pending_limit_open_long_order_with_price_not_met() {
 
     let order_id = get_attr_from_events(&resp.events, "perpetual_order_id").unwrap();
 
-    let GetPerpetualOrderResp { order } = app
+    let GetPerpetualOrderResp {
+        order: PerpetualOrderPlus { order, .. },
+    } = app
         .wrap()
         .query_wasm_smart(
             addr.clone(),
@@ -357,12 +361,14 @@ fn pending_limit_open_long_order_with_price_not_met() {
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();
 
-    let order_res: GetPerpetualOrderResp = app
+    let GetPerpetualOrderResp {
+        order: PerpetualOrderPlus { order, .. },
+    } = app
         .wrap()
         .query_wasm_smart(addr.clone(), &QueryMsg::GetPerpetualOrder { id: 0 })
         .unwrap();
 
-    assert_eq!(order_res.order.status, Status::Pending);
+    assert_eq!(order.status, Status::Pending);
 
     assert_eq!(
         app.wrap()

@@ -14,12 +14,12 @@ fn successful_query_message() {
         &PerpetualOrderType::MarketOpen,
         &coin(255, "usdc"),
         "btc",
-        &SignedDecimal::one(),
+        &SignedDecimal::from_str("5").unwrap(),
         &Some(SignedDecimal256::one()),
         &Some(OrderPrice {
             base_denom: "btc".to_string(),
             quote_denom: "usdc".to_string(),
-            rate: Decimal::one(),
+            rate: Decimal::from_str("35").unwrap(),
         }),
         &vec![],
     )
@@ -57,6 +57,11 @@ fn successful_query_message() {
         .query_wasm_smart(&addr, &QueryMsg::GetPerpetualOrder { id })
         .unwrap();
 
+    // custody = collateral * leverage / trigger_price
+    // custody = 255 * 5 / 35 = 36...
+    let custody = coin(36, &order.trading_asset);
+
     // Verify that the response matches the expected order (the initial dummy order).
-    assert_eq!(resp, GetPerpetualOrderResp { order });
+    assert_eq!(resp.order.order, order);
+    assert_eq!(resp.order.custody, custody);
 }

@@ -180,6 +180,11 @@ fn create_perpetual_open_order(
     let order_id = order.order_id;
 
     PERPETUAL_ORDER.save(deps.storage, order_id, &order)?;
+    let mut ids = USER_PERPETUAL_ORDER
+        .may_load(deps.storage, order.owner.as_str())?
+        .unwrap_or(vec![]);
+    ids.push(order.order_id);
+    USER_PERPETUAL_ORDER.save(deps.storage, order.owner.as_str(), &ids)?;
     if order.order_type != PerpetualOrderType::MarketOpen {
         PENDING_PERPETUAL_ORDER.save(deps.storage, order_id, &order)?;
     }
@@ -322,6 +327,11 @@ fn create_perpetual_close_order(
     let order_id = order.order_id;
 
     PERPETUAL_ORDER.save(deps.storage, order_id, &order)?;
+    let mut ids = USER_PERPETUAL_ORDER
+        .may_load(deps.storage, order.owner.as_str())?
+        .unwrap_or(vec![]);
+    ids.push(order.order_id);
+    USER_PERPETUAL_ORDER.save(deps.storage, order.owner.as_str(), &ids)?;
     if order.order_type != PerpetualOrderType::MarketClose {
         PENDING_PERPETUAL_ORDER.save(deps.storage, order_id, &order)?;
     }

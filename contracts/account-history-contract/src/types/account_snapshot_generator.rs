@@ -32,7 +32,7 @@ use elys_bindings::{
             },
             QueryMsg::{GetPerpetualOrders, GetSpotOrders, PerpetualGetPositionsForAddress},
         },
-        types::{PerpetualOrder, PerpetualOrderType, SpotOrder, Status},
+        types::{PerpetualOrder, PerpetualOrderPlus, PerpetualOrderType, SpotOrder, Status},
     },
     types::BalanceAvailable,
     ElysQuerier, ElysQuery,
@@ -527,8 +527,11 @@ impl AccountSnapshotGenerator {
                 .and_modify(|e| *e += order_amount.amount)
                 .or_insert(order_amount.amount);
         }
-
-        for PerpetualOrder { collateral, .. } in perpetual_order.orders {
+        for PerpetualOrderPlus {
+            order: PerpetualOrder { collateral, .. },
+            ..
+        } in perpetual_order.orders
+        {
             map.entry(collateral.denom)
                 .and_modify(|e| *e += collateral.amount)
                 .or_insert(collateral.amount);
