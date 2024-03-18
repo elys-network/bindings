@@ -7,11 +7,22 @@ pub fn get_spot_orders(
     order_type: Option<SpotOrderType>,
     order_status: Option<Status>,
 ) -> Result<GetSpotOrdersResp, ContractError> {
-    let orders: Vec<SpotOrder> = vec![];
-    // SPOT_ORDER
-    //     .prefix_range(deps.storage, None, None, Order::Ascending)
-    //     .filter_map(|res| res.ok().map(|r| r.1))
-    //     .collect();
+    let orders: Vec<SpotOrder> = match order_owner {
+        Some(addr) => match USER_SPOT_ORDER.may_load(deps.storage, &addr)? {
+            Some(v) => v
+                .iter()
+                .filter_map(|id| match SPOT_ORDER.load(deps.storage, *id) {
+                    Ok(order) if order.status == Status::Pending => Some(order),
+                    _ => None,
+                })
+                .collect(),
+            None => vec![],
+        },
+        None => SPOT_ORDER
+            .prefix_range(deps.storage, None, None, Order::Ascending)
+            .filter_map(|res| res.ok().map(|r| r.1))
+            .collect(),
+    };
 
     if orders.is_empty() {
         return Ok(GetSpotOrdersResp {
@@ -27,12 +38,9 @@ pub fn get_spot_orders(
     let orders: Vec<SpotOrder> = orders
         .iter()
         .filter(|order| {
-            order_owner
+            order_type
                 .as_ref()
-                .map_or(true, |owner| owner == order.owner_address.as_str())
-                && order_type
-                    .as_ref()
-                    .map_or(true, |order_type| order_type == &order.order_type)
+                .map_or(true, |order_type| order_type == &order.order_type)
                 && order_status
                     .as_ref()
                     .map_or(true, |status| &order.status == status)

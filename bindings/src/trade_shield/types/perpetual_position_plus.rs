@@ -153,14 +153,13 @@ impl PerpetualPositionPlus {
     }
 
     fn get_stop_loss_price(mtp: &Mtp, storage: &dyn Storage) -> Option<OrderPrice> {
-        let perpetual_order: Option<PerpetualOrder> = None;
-        // PENDING_PERPETUAL_ORDER
-        //     .prefix_range(storage, None, None, Order::Ascending)
-        //     .filter_map(|res| res.ok().map(|r| r.1))
-        //     .find(|order| {
-        //         order.position_id == Some(mtp.id)
-        //             && order.order_type == PerpetualOrderType::StopLoss
-        //     });
+        let perpetual_order: Option<PerpetualOrder> = PENDING_PERPETUAL_ORDER
+            .prefix_range(storage, None, None, Order::Ascending)
+            .filter_map(|res| res.ok().map(|r| r.1))
+            .find(|order| {
+                order.position_id == Some(mtp.id)
+                    && order.order_type == PerpetualOrderType::StopLoss
+            });
 
         match perpetual_order {
             Some(order) => order.trigger_price,
@@ -169,11 +168,10 @@ impl PerpetualPositionPlus {
     }
 
     fn get_stop_loss_prices(mtps: &Vec<Mtp>, storage: &dyn Storage) -> Vec<Option<OrderPrice>> {
-        let perpetual_orders: Vec<PerpetualOrder> = vec![];
-        // PENDING_PERPETUAL_ORDER
-        //     .prefix_range(storage, None, None, Order::Ascending)
-        //     .filter_map(|res| res.ok().map(|r| r.1))
-        //     .collect();
+        let perpetual_orders: Vec<PerpetualOrder> = PENDING_PERPETUAL_ORDER
+            .prefix_range(storage, None, None, Order::Ascending)
+            .filter_map(|res| res.ok().map(|r| r.1))
+            .collect();
 
         let mut stop_loss_prices: Vec<Option<OrderPrice>> = Vec::new();
 
