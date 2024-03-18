@@ -12,17 +12,13 @@ pub fn get_spot_orders(
         .filter_map(|res| res.ok().map(|r| r.1))
         .collect();
 
-    let (orders, page_response) = match pagination {
-        Some(pagination) => {
-            let (orders, page_resp) = pagination.filter(orders)?;
-            (orders, Some(page_resp))
-        }
-        None => (orders, None),
-    };
-
     if orders.is_empty() {
         return Ok(GetSpotOrdersResp {
-            page_response,
+            page_response: if let Some(page) = pagination {
+                Some(PageResponse::empty(page.count_total))
+            } else {
+                None
+            },
             orders,
         });
     };
@@ -42,6 +38,14 @@ pub fn get_spot_orders(
         })
         .cloned()
         .collect();
+
+    let (orders, page_response) = match pagination {
+        Some(pagination) => {
+            let (orders, page_resp) = pagination.filter(orders)?;
+            (orders, Some(page_resp))
+        }
+        None => (orders, None),
+    };
 
     let page_response = if let Some(page_response) = page_response {
         match page_response.total {
