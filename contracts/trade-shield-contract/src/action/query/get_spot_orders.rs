@@ -11,10 +11,7 @@ pub fn get_spot_orders(
         Some(addr) => match USER_SPOT_ORDER.may_load(deps.storage, &addr)? {
             Some(v) => v
                 .iter()
-                .filter_map(|id| match SPOT_ORDER.load(deps.storage, *id) {
-                    Ok(order) if order.status == Status::Pending => Some(order),
-                    _ => None,
-                })
+                .filter_map(|id| SPOT_ORDER.load(deps.storage, *id).ok())
                 .collect(),
             None => vec![],
         },

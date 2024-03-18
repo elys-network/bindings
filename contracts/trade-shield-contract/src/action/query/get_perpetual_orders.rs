@@ -13,10 +13,7 @@ pub fn get_perpetual_orders(
         Some(addr) => match USER_PERPETUAL_ORDER.may_load(deps.storage, &addr)? {
             Some(v) => v
                 .iter()
-                .filter_map(|id| match PERPETUAL_ORDER.load(deps.storage, *id) {
-                    Ok(order) if order.status == Status::Pending => Some(order),
-                    _ => None,
-                })
+                .filter_map(|id| PERPETUAL_ORDER.load(deps.storage, *id).ok())
                 .collect(), // Collect the filtered orders into a vector
             None => vec![], // Provide an empty vector for the None case
         },
