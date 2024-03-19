@@ -33,10 +33,10 @@ pub fn process_orders(
     } = querier.get_asset_profile("uusdc".to_string())?;
 
     for spot_order in spot_orders.iter() {
+        let mut order = spot_order.to_owned();
         if spot_order.order_price.base_denom != spot_order.order_amount.denom
             || spot_order.order_price.quote_denom != spot_order.order_target_denom
         {
-            let mut order = spot_order.to_owned();
             order.status = Status::Canceled;
             bank_msgs.push(BankMsg::Send {
                 to_address: order.owner_address.to_string(),
@@ -57,7 +57,6 @@ pub fn process_orders(
         ) {
             Ok(market_price) => market_price,
             Err(_) => {
-                let mut order = spot_order.to_owned();
                 order.status = Status::Canceled;
                 bank_msgs.push(BankMsg::Send {
                     to_address: order.owner_address.to_string(),
@@ -75,7 +74,6 @@ pub fn process_orders(
         ) {
             Ok(market_price) => market_price,
             Err(_) => {
-                let mut order = spot_order.to_owned();
                 order.status = Status::Canceled;
                 bank_msgs.push(BankMsg::Send {
                     to_address: order.owner_address.to_string(),
@@ -107,7 +105,6 @@ pub fn process_orders(
             || perpetual_order.trigger_price.as_ref().unwrap().quote_denom
                 != perpetual_order.trading_asset
         {
-            let mut order = perpetual_order.to_owned();
             order.status = Status::Canceled;
             if perpetual_order.order_type == PerpetualOrderType::LimitOpen {
                 bank_msgs.push(BankMsg::Send {
