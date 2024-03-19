@@ -66,7 +66,7 @@ pub fn instantiate(
         .collect::<Result<Vec<()>, StdError>>()?;
 
     let state = true;
-    STAKE_ENDPOINT.save(deps.storage, &state)?;
+    STAKE_ENABLED.save(deps.storage, &state)?;
     MARKET_ORDER_ENABLED.save(deps.storage, &state)?;
     Ok(Response::new())
 }
