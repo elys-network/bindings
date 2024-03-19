@@ -13,5 +13,9 @@ pub fn instantiate(
     SPOT_ORDER_MAX_ID.save(deps.storage, &0)?;
     ACCOUNT_HISTORY_ADDRESS.save(deps.storage, &msg.account_history_address)?;
 
+    let state = false;
+    MARKET_ORDER_ENABLED.save(deps.storage, &state)?;
+    STAKE_ENABLED.save(deps.storage, &state)?;
+
     Ok(Response::new())
 }

@@ -57,4 +57,6 @@ pub enum QueryMsg {
         address: String,
         pagination: Option<PageRequest>,
     },
+    #[returns(TradeShieldParamsResponse)]
+    GetParams {},
 }

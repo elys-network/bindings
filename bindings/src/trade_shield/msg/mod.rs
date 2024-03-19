@@ -21,6 +21,7 @@ pub mod query_resp {
     mod get_perpetual_positions_resp;
     mod get_spot_order_resp;
     mod get_spot_orders_resp;
+    mod params_resp;
 
     pub use get_all_prices_resp::GetAllPricesResponse;
     pub use get_perpetual_order_resp::GetPerpetualOrderResp;
@@ -30,4 +31,5 @@ pub mod query_resp {
     pub use get_perpetual_positions_resp::GetPerpetualPositionsResp;
     pub use get_spot_order_resp::GetSpotOrderResp;
     pub use get_spot_orders_resp::GetSpotOrdersResp;
+    pub use params_resp::TradeShieldParamsResponse;
 }
