@@ -67,6 +67,6 @@ pub fn instantiate(
 
     let state = true;
     STAKE_ENDPOINT.save(deps.storage, &state)?;
-    MARKET_ORDER.save(deps.storage, &state)?;
+    MARKET_ORDER_ENABLED.save(deps.storage, &state)?;
     Ok(Response::new())
 }

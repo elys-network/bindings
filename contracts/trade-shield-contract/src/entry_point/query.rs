@@ -1,5 +1,8 @@
 use super::*;
-use elys_bindings::trade_shield::{msg::query_resp::TradeShieldParamsResponse, states::{MARKET_ORDER, STAKE_ENDPOINT}};
+use elys_bindings::trade_shield::{
+    msg::query_resp::TradeShieldParamsResponse,
+    states::{MARKET_ORDER_ENABLED, STAKE_ENABLED},
+};
 use msg::QueryMsg;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -77,9 +80,12 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
             deps, address, pagination,
         )?)?),
         GetParams {} => Ok(to_json_binary(&{
-            let market_order = MARKET_ORDER.load(deps.storage)?;
-            let stake_request = STAKE_ENDPOINT.load(deps.storage)?;
-            TradeShieldParamsResponse{ market_order, stake_request }
-        })?)
+            let market_order = MARKET_ORDER_ENABLED.load(deps.storage)?;
+            let stake_request = STAKE_ENABLED.load(deps.storage)?;
+            TradeShieldParamsResponse {
+                market_order,
+                stake_request,
+            }
+        })?),
     }
 }

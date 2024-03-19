@@ -2,7 +2,7 @@ use crate::helper::get_discount;
 
 use super::*;
 use cosmwasm_std::{Int128, SubMsg};
-use elys_bindings::trade_shield::states::{MARKET_ORDER, STAKE_ENDPOINT};
+use elys_bindings::trade_shield::states::{MARKET_ORDER_ENABLED, STAKE_ENABLED};
 use msg::ExecuteMsg;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -158,12 +158,15 @@ pub fn execute(
             amount,
         } => close_leveragelp_position_request(info, position_id, amount),
 
-        SetParams { market_order, stake_request } => {
+        SetParams {
+            market_order,
+            stake_request,
+        } => {
             if let Some(market_order) = market_order {
-                MARKET_ORDER.save(deps.storage, &market_order)?;
+                MARKET_ORDER_ENABLED.save(deps.storage, &market_order)?;
             }
             if let Some(stake_request) = stake_request {
-                STAKE_ENDPOINT.save(deps.storage, &stake_request)?;                
+                STAKE_ENABLED.save(deps.storage, &stake_request)?;
             }
             Ok(Response::new())
         }

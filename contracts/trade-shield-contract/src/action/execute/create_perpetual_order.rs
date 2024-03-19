@@ -30,7 +30,7 @@ pub fn create_perpetual_order(
         &position_id,
     )?;
 
-    if MARKET_ORDER.load(deps.storage)? == false
+    if MARKET_ORDER_ENABLED.load(deps.storage)? == false
         && (order_type == PerpetualOrderType::MarketClose
             || order_type == PerpetualOrderType::MarketOpen)
     {

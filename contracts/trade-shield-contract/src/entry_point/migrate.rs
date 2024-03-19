@@ -1,6 +1,6 @@
 use elys_bindings::trade_shield::{
     msg::MigrateMsg,
-    states::{ACCOUNT_HISTORY_ADDRESS, MARKET_ORDER, STAKE_ENDPOINT},
+    states::{ACCOUNT_HISTORY_ADDRESS, MARKET_ORDER_ENABLED, STAKE_ENABLED},
 };
 
 use super::*;
@@ -16,8 +16,8 @@ pub fn migrate(
     }
 
     let state = false;
-    MARKET_ORDER.save(deps.storage, &state)?;
-    STAKE_ENDPOINT.save(deps.storage, &state)?;
+    MARKET_ORDER_ENABLED.save(deps.storage, &state)?;
+    STAKE_ENABLED.save(deps.storage, &state)?;
 
     Ok(Response::new())
 }

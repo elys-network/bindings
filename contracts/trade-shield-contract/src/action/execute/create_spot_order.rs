@@ -20,7 +20,7 @@ pub fn create_spot_order(
 
     let querier = ElysQuerier::new(&deps.querier);
 
-    if MARKET_ORDER.load(deps.storage)? == false && order_type == SpotOrderType::MarketBuy {
+    if MARKET_ORDER_ENABLED.load(deps.storage)? == false && order_type == SpotOrderType::MarketBuy {
         return Err(StdError::generic_err("market order is disable").into());
     }
 

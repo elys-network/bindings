@@ -14,8 +14,8 @@ pub fn instantiate(
     ACCOUNT_HISTORY_ADDRESS.save(deps.storage, &msg.account_history_address)?;
 
     let state = false;
-    MARKET_ORDER.save(deps.storage, &state)?;
-    STAKE_ENDPOINT.save(deps.storage, &state)?;
+    MARKET_ORDER_ENABLED.save(deps.storage, &state)?;
+    STAKE_ENABLED.save(deps.storage, &state)?;
 
     Ok(Response::new())
 }
