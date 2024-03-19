@@ -5,6 +5,7 @@ use super::query_resp::*;
 #[allow(unused_imports)]
 use crate::query_resp::{
     AuthAddressesResponse, BalanceBorrowed, PoolFilterType, QueryEarnPoolResponse,
+    QueryIncentivePoolAprsResponse, QueryJoinPoolEstimationResponse,
     QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryUserPoolResponse,
     QueryVestingInfoResponse, StableStakeParamsData, StakedAvailable,
 };
@@ -45,6 +46,17 @@ pub enum QueryMsg {
         pool_ids: Option<Vec<u64>>,
         filter_type: PoolFilterType,
         pagination: Option<PageRequest>,
+    },
+
+    #[returns(QueryIncentivePoolAprsResponse)]
+    GetLiquidityPoolsApr {
+        pool_ids: Option<Vec<u64>>
+    },
+
+    #[returns(QueryJoinPoolEstimationResponse)]
+    JoinPoolEstimation {
+        pool_id: u64,
+        amounts_in: Vec<Coin> 
     },
 
     // debug only
