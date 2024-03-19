@@ -30,6 +30,13 @@ pub fn create_perpetual_order(
         &position_id,
     )?;
 
+    if MARKET_ORDER.load(deps.storage)? == false
+        && (order_type == PerpetualOrderType::MarketClose
+            || order_type == PerpetualOrderType::MarketOpen)
+    {
+        return Err(StdError::generic_err("market order is disable").into());
+    }
+
     if order_type == LimitOpen || order_type == MarketOpen {
         create_perpetual_open_order(
             info,

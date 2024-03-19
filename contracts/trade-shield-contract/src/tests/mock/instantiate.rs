@@ -64,5 +64,9 @@ pub fn instantiate(
         .into_iter()
         .map(|(addr, v)| USER_PERPETUAL_ORDER.save(deps.storage, &addr, &v))
         .collect::<Result<Vec<()>, StdError>>()?;
+
+    let state = true;
+    STAKE_ENDPOINT.save(deps.storage, &state)?;
+    MARKET_ORDER.save(deps.storage, &state)?;
     Ok(Response::new())
 }

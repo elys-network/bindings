@@ -12,6 +12,10 @@ pub fn stake_request(
     // uelys.
     validator_address: Option<String>,
 ) -> Result<Response<ElysMsg>, ContractError> {
+    if STAKE_ENDPOINT.load(deps.storage)? == false {
+        return Err(StdError::generic_err("stake endpoint is disable").into());
+    }
+
     let querier = ElysQuerier::new(&deps.querier);
     let address = info.sender.into_string();
     let uelys_denom = "uelys".to_string();

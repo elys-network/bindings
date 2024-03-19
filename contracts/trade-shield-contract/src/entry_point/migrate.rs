@@ -1,4 +1,7 @@
-use elys_bindings::trade_shield::{msg::MigrateMsg, states::ACCOUNT_HISTORY_ADDRESS};
+use elys_bindings::trade_shield::{
+    msg::MigrateMsg,
+    states::{ACCOUNT_HISTORY_ADDRESS, MARKET_ORDER, STAKE_ENDPOINT},
+};
 
 use super::*;
 
@@ -11,6 +14,10 @@ pub fn migrate(
     if msg.account_history_address.is_some() {
         ACCOUNT_HISTORY_ADDRESS.save(deps.storage, &msg.account_history_address)?;
     }
+
+    let state = false;
+    MARKET_ORDER.save(deps.storage, &state)?;
+    STAKE_ENDPOINT.save(deps.storage, &state)?;
 
     Ok(Response::new())
 }

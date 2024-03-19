@@ -103,4 +103,9 @@ pub enum ExecuteMsg {
         position_id: u64,
         amount: Int128,
     },
+
+    SetParams {
+        market_order: Option<bool>,
+        stake_request: Option<bool>
+    }
 }

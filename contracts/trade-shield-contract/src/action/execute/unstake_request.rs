@@ -12,6 +12,10 @@ pub fn unstake_request(
     // uelys.
     validator_address: Option<String>,
 ) -> Result<Response<ElysMsg>, ContractError> {
+    if STAKE_ENDPOINT.load(deps.storage)? == false {
+        return Err(StdError::generic_err("stake endpoint is disable").into());
+    }
+
     let querier = ElysQuerier::new(&deps.querier);
     let denom_entry = querier.get_asset_profile(asset.clone())?;
     let real_denom = denom_entry.entry.denom;

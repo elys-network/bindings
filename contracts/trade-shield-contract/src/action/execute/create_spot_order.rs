@@ -20,6 +20,10 @@ pub fn create_spot_order(
 
     let querier = ElysQuerier::new(&deps.querier);
 
+    if MARKET_ORDER.load(deps.storage)? == false && order_type == SpotOrderType::MarketBuy {
+        return Err(StdError::generic_err("market order is disable").into());
+    }
+
     if let Some(price) = &order_price {
         if price.rate.is_zero() {
             return Err(StdError::generic_err("order_price: The rate cannot be zero").into());
