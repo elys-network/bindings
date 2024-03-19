@@ -31,10 +31,13 @@ if [ -n "$CI" ]; then
     wget $URL -O $ELYSD
     chmod +x $ELYSD
     export PATH=/tmp:$PATH
+
+    SLEEP_TIME=60
 else
     # set environment variables
     NODE=tcp://localhost:26657
     NAME=validator
+    SLEEP_TIME=10
 fi
 
 # set elysd config
@@ -76,7 +79,7 @@ OPTIONS="--from $NAME --gas auto --gas-adjustment 1.3 --fees 400000uelys -y --ac
 # store and init/migrate financial snapshot contract
 txhash=$(elysd tx wasm store $OPTIONS --sequence $(($sequence + 1)) artifacts/financial_snapshot_contract.wasm | extract_txhash)
 echo "fs store txhash: $txhash"
-sleep 10
+sleep $SLEEP_TIME
 codeid=$(elysd q tx $txhash --node $NODE | extract_code_id)
 echo "fs code id: $codeid"
 if [ -n "$FS_CONTRACT_ADDRESS" ]; then
@@ -86,14 +89,14 @@ else
     txhash=$(elysd tx wasm init $OPTIONS --sequence $(($sequence + 2)) --label "fs" --admin $NAME $codeid '{}' | extract_txhash)
     echo "fs init txhash: $txhash"
 fi
-sleep 10
+sleep $SLEEP_TIME
 export fs_contract_address=$(elysd q tx $txhash --node $NODE | extract_contract_address)
 echo "fs_contract_address: $fs_contract_address"
 
 # store and init/migrate trade shield contract
 txhash=$(elysd tx wasm store $OPTIONS --sequence $(($sequence + 3)) artifacts/trade_shield_contract.wasm | extract_txhash)
 echo "ts store txhash: $txhash"
-sleep 10
+sleep $SLEEP_TIME
 codeid=$(elysd q tx $txhash --node $NODE | extract_code_id)
 echo "ts code id: $codeid"
 if [ -n "$TS_CONTRACT_ADDRESS" ]; then
@@ -108,14 +111,14 @@ else
     }' | extract_txhash)
     echo "ts init txhash: $txhash"
 fi
-sleep 10
+sleep $SLEEP_TIME
 export ts_contract_address=$(elysd q tx $txhash --node $NODE | extract_contract_address)
 echo "ts_contract_address: $ts_contract_address"
 
 # store and init/migrate account history contract
 txhash=$(elysd tx wasm store artifacts/account_history_contract.wasm $OPTIONS --sequence $(($sequence + 5)) | extract_txhash)
 echo "ah store txhash: $txhash"
-sleep 10
+sleep $SLEEP_TIME
 codeid=$(elysd q tx $txhash --node $NODE | extract_code_id)
 echo "ah code id: $codeid"
 if [ -n "$AH_CONTRACT_ADDRESS" ]; then
@@ -133,7 +136,7 @@ else
     }' | extract_txhash)
     echo "ah init txhash: $txhash"
 fi
-sleep 10
+sleep $SLEEP_TIME
 ah_contract_address=$(elysd q tx $txhash --node $NODE | extract_contract_address)
 echo "ah_contract_address: $ah_contract_address"
 
