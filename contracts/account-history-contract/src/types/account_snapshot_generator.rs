@@ -211,6 +211,7 @@ impl AccountSnapshotGenerator {
             let pool = pool.pools.map_or(vec![], |pools| pools).first().map_or(
                 PoolResp {
                     pool_id: 0,
+                    apr: Some(Decimal::zero()),
                     assets: vec![],
                     pool_ratio: "".to_string(),
                     rewards_apr: Decimal::zero(),
