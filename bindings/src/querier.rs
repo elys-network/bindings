@@ -486,8 +486,22 @@ impl<'a> ElysQuerier<'a> {
     pub fn get_pools_apr(&self, pool_ids: Option<Vec<u64>>) -> StdResult<QueryIncentivePoolAprsResponse> {
         let query = ElysQuery::get_pools_apr(pool_ids);
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
-        let response: QueryIncentivePoolAprsResponse = self.querier.query(&request)?;
-        Ok(response)
+        let response: StdResult<QueryIncentivePoolAprsResponse> = self.querier.query(&request);
+        
+        match response {
+            Ok(mut response) => {
+                if let Some(ref mut data) = response.data {
+                    for pool_apr in data.iter_mut() {
+                        pool_apr.apr *= Decimal::from_str("100").unwrap();
+                    }
+                }
+                Ok(response)
+            }
+            Err(_) => {
+                let response = QueryIncentivePoolAprsResponse { data: Some(vec![]) };
+                Ok(response)
+            }
+        }
     }
 
     pub fn join_pool_estimation(&self, pool_id: u64, amounts_in: Vec<Coin>) -> StdResult<QueryJoinPoolEstimationResponse> {
