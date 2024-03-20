@@ -20,10 +20,11 @@ pub fn create_spot_order(
 
     let querier = ElysQuerier::new(&deps.querier);
 
-    if (MARKET_ORDER_ENABLED.load(deps.storage)? == false
-        || SWAP_ENABLED.load(deps.storage)? == false)
-        && order_type == SpotOrderType::MarketBuy
-    {
+    if SWAP_ENABLED.load(deps.storage)? == false {
+        return Err(StdError::generic_err("swap is disable").into());
+    }
+
+    if MARKET_ORDER_ENABLED.load(deps.storage)? == false && order_type == SpotOrderType::MarketBuy {
         return Err(StdError::generic_err("market order is disable").into());
     }
 
