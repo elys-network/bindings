@@ -1,7 +1,10 @@
 use super::*;
 use elys_bindings::trade_shield::{
     msg::query_resp::TradeShieldParamsResponse,
-    states::{MARKET_ORDER_ENABLED, STAKE_ENABLED},
+    states::{
+        LEVERAGE_ENABLE, MARKET_ORDER_ENABLED, PARAMS_ADMIN, PERPETUAL_ENABLED,
+        PROCESS_ORDERS_ENABLED, REWARD_ENABLE, STAKE_ENABLED, SWAP_ENABLED,
+    },
 };
 use msg::QueryMsg;
 
@@ -80,11 +83,25 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
             deps, address, pagination,
         )?)?),
         GetParams {} => Ok(to_json_binary(&{
+            let params_admis = PARAMS_ADMIN.load(deps.storage)?;
+
             let market_order = MARKET_ORDER_ENABLED.load(deps.storage)?;
-            let stake_request = STAKE_ENABLED.load(deps.storage)?;
+            let stake_endpoint = STAKE_ENABLED.load(deps.storage)?;
+            let swap_endpoint = SWAP_ENABLED.load(deps.storage)?;
+            let process_order = PROCESS_ORDERS_ENABLED.load(deps.storage)?;
+            let perpetual_endpoint = PERPETUAL_ENABLED.load(deps.storage)?;
+            let reward_endpoint = REWARD_ENABLE.load(deps.storage)?;
+            let leverage_endpoint = LEVERAGE_ENABLE.load(deps.storage)?;
+
             TradeShieldParamsResponse {
+                params_admis,
                 market_order,
-                stake_request,
+                stake_endpoint,
+                swap_endpoint,
+                process_order,
+                perpetual_endpoint,
+                reward_endpoint,
+                leverage_endpoint,
             }
         })?),
     }

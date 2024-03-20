@@ -21,6 +21,9 @@ pub fn create_perpetual_order(
     trigger_price: Option<OrderPrice>,
     position_id: Option<u64>,
 ) -> Result<Response<ElysMsg>, ContractError> {
+    if PERPETUAL_ENABLED.load(deps.storage)? == false {
+        return Err(StdError::generic_err("perpetual endpoint are disable").into());
+    }
     check_order_type(
         &position,
         &leverage,

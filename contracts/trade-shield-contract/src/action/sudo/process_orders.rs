@@ -10,15 +10,27 @@ pub fn process_orders(
     deps: DepsMut<ElysQuery>,
     env: Env,
 ) -> Result<Response<ElysMsg>, ContractError> {
-    let spot_orders: Vec<SpotOrder> = PENDING_SPOT_ORDER
-        .prefix_range(deps.storage, None, None, Order::Ascending)
-        .filter_map(|res| res.ok().map(|r| r.1))
-        .collect();
+    if PROCESS_ORDERS_ENABLED.load(deps.storage)? == false {
+        return Err(StdError::generic_err("process order is disable").into());
+    }
 
-    let perpetual_orders: Vec<PerpetualOrder> = PENDING_PERPETUAL_ORDER
-        .prefix_range(deps.storage, None, None, Order::Ascending)
-        .filter_map(|res| res.ok().map(|r| r.1))
-        .collect();
+    let spot_orders: Vec<SpotOrder> = if SWAP_ENABLED.load(deps.storage)? {
+        PENDING_SPOT_ORDER
+            .prefix_range(deps.storage, None, None, Order::Ascending)
+            .filter_map(|res| res.ok().map(|r| r.1))
+            .collect()
+    } else {
+        vec![]
+    };
+
+    let perpetual_orders: Vec<PerpetualOrder> = if PERPETUAL_ENABLED.load(deps.storage)? {
+        PENDING_PERPETUAL_ORDER
+            .prefix_range(deps.storage, None, None, Order::Ascending)
+            .filter_map(|res| res.ok().map(|r| r.1))
+            .collect()
+    } else {
+        vec![]
+    };
 
     let mut reply_info_id = MAX_REPLY_ID.load(deps.storage)?;
 

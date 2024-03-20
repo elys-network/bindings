@@ -106,6 +106,11 @@ pub enum ExecuteMsg {
 
     SetParams {
         market_order: Option<bool>,
-        stake_request: Option<bool>
-    }
+        stake_endpoint: Option<bool>,
+        process_order: Option<bool>,
+        swap_endpoint: Option<bool>,
+        perpetual_endpoint: Option<bool>,
+        reward_endpoint: Option<bool>,
+        leverage_endpoint: Option<bool>,
+    },
 }

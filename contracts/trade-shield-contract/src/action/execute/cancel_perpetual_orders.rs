@@ -10,6 +10,9 @@ pub fn cancel_perpetual_orders(
     order_ids: Option<Vec<u64>>,
     order_type: Option<PerpetualOrderType>,
 ) -> Result<Response<ElysMsg>, ContractError> {
+    if PERPETUAL_ENABLED.load(deps.storage)? == false {
+        return Err(StdError::generic_err("perpetual endpoint are disable").into());
+    }
     let orders: Vec<PerpetualOrder> = if let Some(ids) = &order_ids {
         if ids.is_empty() {
             return Err(StdError::generic_err("order_ids is defined empty").into());

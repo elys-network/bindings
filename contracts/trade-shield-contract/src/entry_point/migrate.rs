@@ -1,6 +1,9 @@
 use elys_bindings::trade_shield::{
     msg::MigrateMsg,
-    states::{ACCOUNT_HISTORY_ADDRESS, MARKET_ORDER_ENABLED, STAKE_ENABLED},
+    states::{
+        ACCOUNT_HISTORY_ADDRESS, LEVERAGE_ENABLE, MARKET_ORDER_ENABLED, PARAMS_ADMIN,
+        PERPETUAL_ENABLED, PROCESS_ORDERS_ENABLED, REWARD_ENABLE, STAKE_ENABLED, SWAP_ENABLED,
+    },
 };
 
 use super::*;
@@ -15,9 +18,17 @@ pub fn migrate(
         ACCOUNT_HISTORY_ADDRESS.save(deps.storage, &msg.account_history_address)?;
     }
 
+    let admin = "elys16xffmfa6k45j340cx5zyp66lqvuw62a0neaa7w".to_string();
+    PARAMS_ADMIN.save(deps.storage, &admin)?;
+
     let state = false;
-    MARKET_ORDER_ENABLED.save(deps.storage, &state)?;
     STAKE_ENABLED.save(deps.storage, &state)?;
+    MARKET_ORDER_ENABLED.save(deps.storage, &state)?;
+    SWAP_ENABLED.save(deps.storage, &state)?;
+    PROCESS_ORDERS_ENABLED.save(deps.storage, &state)?;
+    PERPETUAL_ENABLED.save(deps.storage, &state)?;
+    REWARD_ENABLE.save(deps.storage, &state)?;
+    LEVERAGE_ENABLE.save(deps.storage, &state)?;
 
     Ok(Response::new())
 }

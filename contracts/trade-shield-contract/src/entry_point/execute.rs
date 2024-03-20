@@ -1,8 +1,11 @@
 use crate::helper::get_discount;
 
 use super::*;
-use cosmwasm_std::{Int128, SubMsg};
-use elys_bindings::trade_shield::states::{MARKET_ORDER_ENABLED, STAKE_ENABLED};
+use cosmwasm_std::{Int128, StdError, SubMsg};
+use elys_bindings::trade_shield::states::{
+    LEVERAGE_ENABLE, MARKET_ORDER_ENABLED, PARAMS_ADMIN, PERPETUAL_ENABLED, PROCESS_ORDERS_ENABLED,
+    REWARD_ENABLE, STAKE_ENABLED, SWAP_ENABLED,
+};
 use msg::ExecuteMsg;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -61,7 +64,9 @@ pub fn execute(
             order_ids,
             order_type,
         } => cancel_perpetual_orders(info, deps, order_ids, order_type),
-        ClosePerpetualPosition { id, amount } => close_perpetual_position(info, env, id, amount),
+        ClosePerpetualPosition { id, amount } => {
+            close_perpetual_position(info, deps, env, id, amount)
+        }
 
         StakeRequest {
             amount,
@@ -146,6 +151,7 @@ pub fn execute(
             stop_loss_price,
         } => open_leveragelp_position_request(
             info,
+            deps,
             amm_pool_id,
             collateral_asset,
             collateral_amount,
@@ -156,17 +162,42 @@ pub fn execute(
         LeveragelpClose {
             position_id,
             amount,
-        } => close_leveragelp_position_request(info, position_id, amount),
+        } => close_leveragelp_position_request(info, deps, position_id, amount),
 
         SetParams {
             market_order,
-            stake_request,
+            stake_endpoint,
+            swap_endpoint,
+            process_order,
+            perpetual_endpoint,
+            reward_endpoint,
+            leverage_endpoint,
         } => {
+            let admin = PARAMS_ADMIN.load(deps.storage)?;
+
+            if admin.as_str() != info.sender.as_str() {
+                return Err(StdError::generic_err("Unauthorize: wrong sender").into());
+            }
             if let Some(market_order) = market_order {
                 MARKET_ORDER_ENABLED.save(deps.storage, &market_order)?;
             }
-            if let Some(stake_request) = stake_request {
-                STAKE_ENABLED.save(deps.storage, &stake_request)?;
+            if let Some(stake_endpoint) = stake_endpoint {
+                STAKE_ENABLED.save(deps.storage, &stake_endpoint)?;
+            }
+            if let Some(swap_endpoint) = swap_endpoint {
+                SWAP_ENABLED.save(deps.storage, &swap_endpoint)?;
+            }
+            if let Some(process_order) = process_order {
+                PROCESS_ORDERS_ENABLED.save(deps.storage, &process_order)?;
+            }
+            if let Some(perpetual_endpoint) = perpetual_endpoint {
+                PERPETUAL_ENABLED.save(deps.storage, &perpetual_endpoint)?;
+            }
+            if let Some(reward_endpoint) = reward_endpoint {
+                REWARD_ENABLE.save(deps.storage, &reward_endpoint)?;
+            }
+            if let Some(leverage_endpoint) = leverage_endpoint {
+                LEVERAGE_ENABLE.save(deps.storage, &leverage_endpoint)?;
             }
             Ok(Response::new())
         }

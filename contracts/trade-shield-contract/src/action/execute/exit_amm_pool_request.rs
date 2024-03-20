@@ -1,17 +1,21 @@
 use super::*;
-use cosmwasm_std::{Uint128, Coin};
+use cosmwasm_std::{Coin, StdError, Uint128};
 
 pub fn exit_amm_pool_request(
     info: MessageInfo,
     deps: DepsMut<ElysQuery>,
     pool_id: u64,
-	min_amounts_out: Vec<Coin>,
-	share_amount_in: Uint128,
+    min_amounts_out: Vec<Coin>,
+    share_amount_in: Uint128,
     token_out_denom: String,
 ) -> Result<Response<ElysMsg>, ContractError> {
+    if SWAP_ENABLED.load(deps.storage)? == false {
+        return Err(StdError::generic_err("swap is disable").into());
+    }
+
     let querier = ElysQuerier::new(&deps.querier);
     let mut min_amounts_out_real_denom = vec![];
-    
+
     // Re-initiate the coin input with the real denom
     for coin in min_amounts_out {
         let denom_entry = querier.get_asset_profile(coin.denom.clone())?;
