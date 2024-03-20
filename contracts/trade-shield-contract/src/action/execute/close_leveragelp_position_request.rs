@@ -7,7 +7,7 @@ pub fn close_leveragelp_position_request(
     position_id: u64,
     amount: Int128,
 ) -> Result<Response<ElysMsg>, ContractError> {
-    if LEVERAGE_ENABLE.load(deps.storage)? == false {
+    if LEVERAGE_ENABLED.load(deps.storage)? == false {
         return Err(StdError::generic_err("leverage endpoint are disable").into());
     }
 

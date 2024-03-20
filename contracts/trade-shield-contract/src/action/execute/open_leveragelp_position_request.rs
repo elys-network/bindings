@@ -10,7 +10,7 @@ pub fn open_leveragelp_position_request(
     leverage: SignedDecimal,
     stop_loss_price: SignedDecimal,
 ) -> Result<Response<ElysMsg>, ContractError> {
-    if LEVERAGE_ENABLE.load(deps.storage)? == false {
+    if LEVERAGE_ENABLED.load(deps.storage)? == false {
         return Err(StdError::generic_err("leverage endpoint are disable").into());
     }
 

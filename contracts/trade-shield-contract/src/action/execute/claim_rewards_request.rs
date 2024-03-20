@@ -7,7 +7,7 @@ pub fn claim_rewards_request(
     deps: DepsMut<ElysQuery>,
     withdraw_type: EarnType,
 ) -> Result<Response<ElysMsg>, ContractError> {
-    if REWARD_ENABLE.load(deps.storage)? == false {
+    if REWARD_ENABLED.load(deps.storage)? == false {
         return Err(StdError::generic_err("reward endpoint are disable").into());
     }
 

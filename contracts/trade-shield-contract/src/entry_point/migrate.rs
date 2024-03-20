@@ -1,8 +1,8 @@
 use elys_bindings::trade_shield::{
     msg::MigrateMsg,
     states::{
-        ACCOUNT_HISTORY_ADDRESS, LEVERAGE_ENABLE, MARKET_ORDER_ENABLED, PARAMS_ADMIN,
-        PERPETUAL_ENABLED, PROCESS_ORDERS_ENABLED, REWARD_ENABLE, STAKE_ENABLED, SWAP_ENABLED,
+        ACCOUNT_HISTORY_ADDRESS, LEVERAGE_ENABLED, MARKET_ORDER_ENABLED, PARAMS_ADMIN,
+        PERPETUAL_ENABLED, PROCESS_ORDERS_ENABLED, REWARD_ENABLED, STAKE_ENABLED, SWAP_ENABLED,
     },
 };
 
@@ -27,8 +27,8 @@ pub fn migrate(
     SWAP_ENABLED.save(deps.storage, &state)?;
     PROCESS_ORDERS_ENABLED.save(deps.storage, &state)?;
     PERPETUAL_ENABLED.save(deps.storage, &state)?;
-    REWARD_ENABLE.save(deps.storage, &state)?;
-    LEVERAGE_ENABLE.save(deps.storage, &state)?;
+    REWARD_ENABLED.save(deps.storage, &state)?;
+    LEVERAGE_ENABLED.save(deps.storage, &state)?;
 
     Ok(Response::new())
 }

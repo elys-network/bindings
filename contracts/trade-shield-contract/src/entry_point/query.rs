@@ -2,8 +2,8 @@ use super::*;
 use elys_bindings::trade_shield::{
     msg::query_resp::TradeShieldParamsResponse,
     states::{
-        LEVERAGE_ENABLE, MARKET_ORDER_ENABLED, PARAMS_ADMIN, PERPETUAL_ENABLED,
-        PROCESS_ORDERS_ENABLED, REWARD_ENABLE, STAKE_ENABLED, SWAP_ENABLED,
+        LEVERAGE_ENABLED, MARKET_ORDER_ENABLED, PARAMS_ADMIN, PERPETUAL_ENABLED,
+        PROCESS_ORDERS_ENABLED, REWARD_ENABLED, STAKE_ENABLED, SWAP_ENABLED,
     },
 };
 use msg::QueryMsg;
@@ -90,8 +90,8 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
             let process_order_enabled = PROCESS_ORDERS_ENABLED.load(deps.storage)?;
             let swap_enabled = SWAP_ENABLED.load(deps.storage)?;
             let perpetual_enabled = PERPETUAL_ENABLED.load(deps.storage)?;
-            let reward_enabled = REWARD_ENABLE.load(deps.storage)?;
-            let leverage_enabled = LEVERAGE_ENABLE.load(deps.storage)?;
+            let reward_enabled = REWARD_ENABLED.load(deps.storage)?;
+            let leverage_enabled = LEVERAGE_ENABLED.load(deps.storage)?;
 
             TradeShieldParamsResponse {
                 params_admin,

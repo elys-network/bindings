@@ -74,7 +74,7 @@ pub fn instantiate(
     SWAP_ENABLED.save(deps.storage, &state)?;
     PROCESS_ORDERS_ENABLED.save(deps.storage, &state)?;
     PERPETUAL_ENABLED.save(deps.storage, &state)?;
-    REWARD_ENABLE.save(deps.storage, &state)?;
-    LEVERAGE_ENABLE.save(deps.storage, &state)?;
+    REWARD_ENABLED.save(deps.storage, &state)?;
+    LEVERAGE_ENABLED.save(deps.storage, &state)?;
     Ok(Response::new())
 }

@@ -3,8 +3,8 @@ use crate::helper::get_discount;
 use super::*;
 use cosmwasm_std::{Int128, StdError, SubMsg};
 use elys_bindings::trade_shield::states::{
-    LEVERAGE_ENABLE, MARKET_ORDER_ENABLED, PARAMS_ADMIN, PERPETUAL_ENABLED, PROCESS_ORDERS_ENABLED,
-    REWARD_ENABLE, STAKE_ENABLED, SWAP_ENABLED,
+    LEVERAGE_ENABLED, MARKET_ORDER_ENABLED, PARAMS_ADMIN, PERPETUAL_ENABLED,
+    PROCESS_ORDERS_ENABLED, REWARD_ENABLED, STAKE_ENABLED, SWAP_ENABLED,
 };
 use msg::ExecuteMsg;
 
@@ -194,10 +194,10 @@ pub fn execute(
                 PERPETUAL_ENABLED.save(deps.storage, &perpetual_enabled)?;
             }
             if let Some(reward_enabled) = reward_enabled {
-                REWARD_ENABLE.save(deps.storage, &reward_enabled)?;
+                REWARD_ENABLED.save(deps.storage, &reward_enabled)?;
             }
             if let Some(leverage_enabled) = leverage_enabled {
-                LEVERAGE_ENABLE.save(deps.storage, &leverage_enabled)?;
+                LEVERAGE_ENABLED.save(deps.storage, &leverage_enabled)?;
             }
             Ok(Response::new())
         }

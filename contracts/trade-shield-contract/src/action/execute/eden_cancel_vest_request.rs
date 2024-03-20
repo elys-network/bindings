@@ -6,7 +6,7 @@ pub fn eden_cancel_vest_request(
     deps: DepsMut<ElysQuery>,
     amount: u64,
 ) -> Result<Response<ElysMsg>, ContractError> {
-    if REWARD_ENABLE.load(deps.storage)? == false {
+    if REWARD_ENABLED.load(deps.storage)? == false {
         return Err(StdError::generic_err("reward endpoint are disable").into());
     }
     if amount == 0 {

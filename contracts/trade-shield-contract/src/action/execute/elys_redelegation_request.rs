@@ -12,7 +12,7 @@ pub fn elys_redelegation_request(
     // uelys.
     amount: Coin,
 ) -> Result<Response<ElysMsg>, ContractError> {
-    if REWARD_ENABLE.load(deps.storage)? == false {
+    if REWARD_ENABLED.load(deps.storage)? == false {
         return Err(StdError::generic_err("reward endpoint are disable").into());
     }
     let uelys_denom = "uelys".to_string();
