@@ -452,6 +452,17 @@ function get_liquidity_pools() {
     }'
 }
 
+
+function get_param() {
+    printf "\n# Get Params\n"
+    query_contract \
+    "$ts_contract_address" \
+    '{
+        "get_params": {
+
+        }
+    }'
+}
 # function(s) to run based on the provided argument
 case "$2" in
     "ah_params")
@@ -594,6 +605,9 @@ case "$2" in
         ;;
     "get_asset_price_from_denom_in_to_denom_out")
         get_asset_price_from_denom_in_to_denom_out $3 $4
+        ;;
+    "get_param")
+        get_param
         ;;
 
     *)
