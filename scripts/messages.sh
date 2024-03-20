@@ -316,7 +316,7 @@ function spot_order() {
 # Get all perpetual orders
 function all_perpetual_orders() {
     printf "\n# Get all perpetual orders\n"
-    execute_message "$ts_contract_address" '{
+    query_contract "$ts_contract_address" '{
         "get_perpetual_orders": {
             "order_owner": "'"$user_address"'"
         }
