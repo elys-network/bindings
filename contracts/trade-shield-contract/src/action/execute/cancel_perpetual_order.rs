@@ -1,3 +1,5 @@
+use cosmwasm_std::StdError;
+
 use super::*;
 
 pub fn cancel_perpetual_order(
@@ -5,6 +7,9 @@ pub fn cancel_perpetual_order(
     deps: DepsMut<ElysQuery>,
     order_id: u64,
 ) -> Result<Response<ElysMsg>, ContractError> {
+    if PERPETUAL_ENABLED.load(deps.storage)? == false {
+        return Err(StdError::generic_err("perpetual endpoint are disable").into());
+    }
     let mut order = match PERPETUAL_ORDER.may_load(deps.storage, order_id)? {
         Some(order) => order,
         None => return Err(ContractError::OrderNotFound { order_id }),

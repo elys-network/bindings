@@ -65,8 +65,16 @@ pub fn instantiate(
         .map(|(addr, v)| USER_PERPETUAL_ORDER.save(deps.storage, &addr, &v))
         .collect::<Result<Vec<()>, StdError>>()?;
 
+    let admin = "elys16xffmfa6k45j340cx5zyp66lqvuw62a0neaa7w".to_string();
+    PARAMS_ADMIN.save(deps.storage, &admin)?;
+
     let state = true;
     STAKE_ENABLED.save(deps.storage, &state)?;
     MARKET_ORDER_ENABLED.save(deps.storage, &state)?;
+    SWAP_ENABLED.save(deps.storage, &state)?;
+    PROCESS_ORDERS_ENABLED.save(deps.storage, &state)?;
+    PERPETUAL_ENABLED.save(deps.storage, &state)?;
+    REWARD_ENABLED.save(deps.storage, &state)?;
+    LEVERAGE_ENABLED.save(deps.storage, &state)?;
     Ok(Response::new())
 }

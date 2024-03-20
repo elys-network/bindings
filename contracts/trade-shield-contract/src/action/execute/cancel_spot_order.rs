@@ -1,3 +1,5 @@
+use cosmwasm_std::StdError;
+
 use super::*;
 
 pub fn cancel_spot_order(
@@ -5,6 +7,9 @@ pub fn cancel_spot_order(
     deps: DepsMut<ElysQuery>,
     order_id: u64,
 ) -> Result<Response<ElysMsg>, ContractError> {
+    if SWAP_ENABLED.load(deps.storage)? == false {
+        return Err(StdError::generic_err("swap is disable").into());
+    }
     let mut order: SpotOrder = match SPOT_ORDER.may_load(deps.storage, order_id)? {
         Some(order) => order,
         None => return Err(ContractError::OrderNotFound { order_id }),

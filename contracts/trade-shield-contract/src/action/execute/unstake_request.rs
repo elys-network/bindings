@@ -12,6 +12,9 @@ pub fn unstake_request(
     // uelys.
     validator_address: Option<String>,
 ) -> Result<Response<ElysMsg>, ContractError> {
+    if REWARD_ENABLED.load(deps.storage)? == false {
+        return Err(StdError::generic_err("reward endpoint are disable").into());
+    }
     if STAKE_ENABLED.load(deps.storage)? == false {
         return Err(StdError::generic_err("stake endpoint is disable").into());
     }

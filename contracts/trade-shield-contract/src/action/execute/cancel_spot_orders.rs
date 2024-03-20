@@ -10,6 +10,9 @@ pub fn cancel_spot_orders(
     order_ids: Option<Vec<u64>>,
     order_type: Option<SpotOrderType>,
 ) -> Result<Response<ElysMsg>, ContractError> {
+    if SWAP_ENABLED.load(deps.storage)? == false {
+        return Err(StdError::generic_err("swap is disable").into());
+    }
     let orders: Vec<SpotOrder> = if let Some(ids) = &order_ids {
         if ids.is_empty() {
             return Err(StdError::generic_err("order_ids is defined empty").into());

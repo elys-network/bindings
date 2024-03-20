@@ -1,8 +1,11 @@
 use crate::helper::get_discount;
 
 use super::*;
-use cosmwasm_std::{Int128, SubMsg};
-use elys_bindings::trade_shield::states::{MARKET_ORDER_ENABLED, STAKE_ENABLED};
+use cosmwasm_std::{Int128, StdError, SubMsg};
+use elys_bindings::trade_shield::states::{
+    LEVERAGE_ENABLED, MARKET_ORDER_ENABLED, PARAMS_ADMIN, PERPETUAL_ENABLED,
+    PROCESS_ORDERS_ENABLED, REWARD_ENABLED, STAKE_ENABLED, SWAP_ENABLED,
+};
 use msg::ExecuteMsg;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -61,7 +64,9 @@ pub fn execute(
             order_ids,
             order_type,
         } => cancel_perpetual_orders(info, deps, order_ids, order_type),
-        ClosePerpetualPosition { id, amount } => close_perpetual_position(info, env, id, amount),
+        ClosePerpetualPosition { id, amount } => {
+            close_perpetual_position(info, deps, env, id, amount)
+        }
 
         StakeRequest {
             amount,
@@ -146,6 +151,7 @@ pub fn execute(
             stop_loss_price,
         } => open_leveragelp_position_request(
             info,
+            deps,
             amm_pool_id,
             collateral_asset,
             collateral_amount,
@@ -156,17 +162,42 @@ pub fn execute(
         LeveragelpClose {
             position_id,
             amount,
-        } => close_leveragelp_position_request(info, position_id, amount),
+        } => close_leveragelp_position_request(info, deps, position_id, amount),
 
         SetParams {
-            market_order,
-            stake_request,
+            market_order_enabled,
+            stake_enabled,
+            process_order_enabled,
+            swap_enabled,
+            perpetual_enabled,
+            reward_enabled,
+            leverage_enabled,
         } => {
-            if let Some(market_order) = market_order {
-                MARKET_ORDER_ENABLED.save(deps.storage, &market_order)?;
+            let admin = PARAMS_ADMIN.load(deps.storage)?;
+
+            if admin.as_str() != info.sender.as_str() {
+                return Err(StdError::generic_err("Unauthorize: wrong sender").into());
             }
-            if let Some(stake_request) = stake_request {
-                STAKE_ENABLED.save(deps.storage, &stake_request)?;
+            if let Some(market_order_enabled) = market_order_enabled {
+                MARKET_ORDER_ENABLED.save(deps.storage, &market_order_enabled)?;
+            }
+            if let Some(stake_enabled) = stake_enabled {
+                STAKE_ENABLED.save(deps.storage, &stake_enabled)?;
+            }
+            if let Some(swap_enabled) = swap_enabled {
+                SWAP_ENABLED.save(deps.storage, &swap_enabled)?;
+            }
+            if let Some(process_order_enabled) = process_order_enabled {
+                PROCESS_ORDERS_ENABLED.save(deps.storage, &process_order_enabled)?;
+            }
+            if let Some(perpetual_enabled) = perpetual_enabled {
+                PERPETUAL_ENABLED.save(deps.storage, &perpetual_enabled)?;
+            }
+            if let Some(reward_enabled) = reward_enabled {
+                REWARD_ENABLED.save(deps.storage, &reward_enabled)?;
+            }
+            if let Some(leverage_enabled) = leverage_enabled {
+                LEVERAGE_ENABLED.save(deps.storage, &leverage_enabled)?;
             }
             Ok(Response::new())
         }
