@@ -85,23 +85,23 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
         GetParams {} => Ok(to_json_binary(&{
             let params_admis = PARAMS_ADMIN.load(deps.storage)?;
 
-            let market_order = MARKET_ORDER_ENABLED.load(deps.storage)?;
-            let stake_endpoint = STAKE_ENABLED.load(deps.storage)?;
-            let swap_endpoint = SWAP_ENABLED.load(deps.storage)?;
-            let process_order = PROCESS_ORDERS_ENABLED.load(deps.storage)?;
-            let perpetual_endpoint = PERPETUAL_ENABLED.load(deps.storage)?;
-            let reward_endpoint = REWARD_ENABLE.load(deps.storage)?;
-            let leverage_endpoint = LEVERAGE_ENABLE.load(deps.storage)?;
+            let market_order_enabled = MARKET_ORDER_ENABLED.load(deps.storage)?;
+            let stake_enabled = STAKE_ENABLED.load(deps.storage)?;
+            let process_order_enabled = PROCESS_ORDERS_ENABLED.load(deps.storage)?;
+            let swap_enabled = SWAP_ENABLED.load(deps.storage)?;
+            let perpetual_enabled = PERPETUAL_ENABLED.load(deps.storage)?;
+            let reward_enabled = REWARD_ENABLE.load(deps.storage)?;
+            let leverage_enabled = LEVERAGE_ENABLE.load(deps.storage)?;
 
             TradeShieldParamsResponse {
                 params_admis,
-                market_order,
-                stake_endpoint,
-                swap_endpoint,
-                process_order,
-                perpetual_endpoint,
-                reward_endpoint,
-                leverage_endpoint,
+                market_order_enabled,
+                stake_enabled,
+                process_order_enabled,
+                swap_enabled,
+                perpetual_enabled,
+                reward_enabled,
+                leverage_enabled,
             }
         })?),
     }

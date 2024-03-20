@@ -165,39 +165,39 @@ pub fn execute(
         } => close_leveragelp_position_request(info, deps, position_id, amount),
 
         SetParams {
-            market_order,
-            stake_endpoint,
-            swap_endpoint,
-            process_order,
-            perpetual_endpoint,
-            reward_endpoint,
-            leverage_endpoint,
+            market_order_enabled,
+            stake_enabled,
+            process_order_enabled,
+            swap_enabled,
+            perpetual_enabled,
+            reward_enabled,
+            leverage_enabled,
         } => {
             let admin = PARAMS_ADMIN.load(deps.storage)?;
 
             if admin.as_str() != info.sender.as_str() {
                 return Err(StdError::generic_err("Unauthorize: wrong sender").into());
             }
-            if let Some(market_order) = market_order {
-                MARKET_ORDER_ENABLED.save(deps.storage, &market_order)?;
+            if let Some(market_order_enabled) = market_order_enabled {
+                MARKET_ORDER_ENABLED.save(deps.storage, &market_order_enabled)?;
             }
-            if let Some(stake_endpoint) = stake_endpoint {
-                STAKE_ENABLED.save(deps.storage, &stake_endpoint)?;
+            if let Some(stake_enabled) = stake_enabled {
+                STAKE_ENABLED.save(deps.storage, &stake_enabled)?;
             }
-            if let Some(swap_endpoint) = swap_endpoint {
-                SWAP_ENABLED.save(deps.storage, &swap_endpoint)?;
+            if let Some(swap_enabled) = swap_enabled {
+                SWAP_ENABLED.save(deps.storage, &swap_enabled)?;
             }
-            if let Some(process_order) = process_order {
-                PROCESS_ORDERS_ENABLED.save(deps.storage, &process_order)?;
+            if let Some(process_order_enabled) = process_order_enabled {
+                PROCESS_ORDERS_ENABLED.save(deps.storage, &process_order_enabled)?;
             }
-            if let Some(perpetual_endpoint) = perpetual_endpoint {
-                PERPETUAL_ENABLED.save(deps.storage, &perpetual_endpoint)?;
+            if let Some(perpetual_enabled) = perpetual_enabled {
+                PERPETUAL_ENABLED.save(deps.storage, &perpetual_enabled)?;
             }
-            if let Some(reward_endpoint) = reward_endpoint {
-                REWARD_ENABLE.save(deps.storage, &reward_endpoint)?;
+            if let Some(reward_enabled) = reward_enabled {
+                REWARD_ENABLE.save(deps.storage, &reward_enabled)?;
             }
-            if let Some(leverage_endpoint) = leverage_endpoint {
-                LEVERAGE_ENABLE.save(deps.storage, &leverage_endpoint)?;
+            if let Some(leverage_enabled) = leverage_enabled {
+                LEVERAGE_ENABLE.save(deps.storage, &leverage_enabled)?;
             }
             Ok(Response::new())
         }
