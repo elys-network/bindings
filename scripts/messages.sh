@@ -335,7 +335,7 @@ function enable_all_params() {
             "swap_enabled": true,
             "perpetual_enabled": true,
             "reward_enabled": true,
-            "leverage_enabled": true,
+            "leverage_enabled": true
         }
     }'\
     wasm-cancel_perpetual_order
@@ -353,7 +353,7 @@ function disable_all_params() {
             "swap_enabled": false,
             "perpetual_enabled": false,
             "reward_enabled": false,
-            "leverage_enabled": false,
+            "leverage_enabled": false
         }
     }'\
     wasm-cancel_perpetual_order
