@@ -21,7 +21,7 @@ pub fn migrate(
     let admin = "elys16xffmfa6k45j340cx5zyp66lqvuw62a0neaa7w".to_string();
     PARAMS_ADMIN.save(deps.storage, &admin)?;
 
-    let state = false;
+    let state = true;
     STAKE_ENABLED.save(deps.storage, &state)?;
     MARKET_ORDER_ENABLED.save(deps.storage, &state)?;
     SWAP_ENABLED.save(deps.storage, &state)?;
