@@ -83,7 +83,7 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
             deps, address, pagination,
         )?)?),
         GetParams {} => Ok(to_json_binary(&{
-            let params_admis = PARAMS_ADMIN.load(deps.storage)?;
+            let params_admin = PARAMS_ADMIN.load(deps.storage)?;
 
             let market_order_enabled = MARKET_ORDER_ENABLED.load(deps.storage)?;
             let stake_enabled = STAKE_ENABLED.load(deps.storage)?;
@@ -94,7 +94,7 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
             let leverage_enabled = LEVERAGE_ENABLE.load(deps.storage)?;
 
             TradeShieldParamsResponse {
-                params_admis,
+                params_admin,
                 market_order_enabled,
                 stake_enabled,
                 process_order_enabled,
