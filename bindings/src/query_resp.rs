@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal, Int128, SignedDecimal, SignedDecimal256, Uint128};
 
@@ -398,7 +400,10 @@ pub struct PoolResp {
     pub pool_id: i64,
     pub apr: Option<Decimal>,
     pub assets: Vec<PoolAsset>, // eg : [{{"denom":"uatom", "amount":"1000"}, "weight":"10"}, {{"denom":"uusdc", "amount":"100"}, "weight":"1"}, ...]
+    // Expected pool ratio
     pub pool_ratio: String,
+    // Current pool ratio
+    pub current_pool_ratio: Option<HashMap<String, Decimal>>,
     pub rewards_apr: Decimal,
     pub borrow_apr: Decimal,
     pub leverage_lp: Decimal,

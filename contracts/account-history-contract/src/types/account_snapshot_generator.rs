@@ -214,6 +214,7 @@ impl AccountSnapshotGenerator {
                     apr: Some(Decimal::zero()),
                     assets: vec![],
                     pool_ratio: "".to_string(),
+                    current_pool_ratio: Some(HashMap::new()),
                     rewards_apr: Decimal::zero(),
                     borrow_apr: Decimal::zero(),
                     leverage_lp: Decimal::zero(),
