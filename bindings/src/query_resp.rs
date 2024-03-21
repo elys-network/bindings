@@ -410,7 +410,8 @@ pub struct PoolResp {
     pub perpetual: Decimal,
     pub tvl: Decimal,
     pub rewards: Decimal,
-    pub total_shares: Coin
+    pub total_shares: Coin,
+    pub share_usd_price: Option<Decimal>
 }
 
 #[cw_serde]

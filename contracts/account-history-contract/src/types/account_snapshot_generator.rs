@@ -221,13 +221,14 @@ impl AccountSnapshotGenerator {
                     perpetual: Decimal::zero(),
                     tvl: Decimal::zero(),
                     rewards: Decimal::zero(),
-                    total_shares: Coin::new(0 as u128, "".to_string())
+                    total_shares: Coin::new(0 as u128, "".to_string()),
+                    share_usd_price: Some(Decimal::zero())
                 },
                 |pool| pool.clone(),
             );
 
             let balance_uint = Uint128::new(user_pool.balance.amount.i128() as u128);
-            let share_price = pool.tvl / Decimal::from_atomics(pool.total_shares.amount, 18).unwrap();
+            let share_price = pool.share_usd_price.or(Some(Decimal::zero())).unwrap();
 
             pool_resp.push(UserPoolResp {
                 pool,

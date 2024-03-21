@@ -556,16 +556,19 @@ impl<'a> ElysQuerier<'a> {
                     .map(|apr_response| (apr_response.pool_id.to_string(), apr_response.apr))
                     .collect();
     
-                // Update the APR field for each pool, add asset usd value and current Pool ratio
+                // Update the APR field for each pool, pool share price, add asset usd value
+                // and current Pool ratio
                 let pools_with_usd_values = pools
                     .into_iter()
                     .map(|pool| {
                         let mut updated_pool = pool.clone();
+
                         if let Some(apr) = aprs_map.get(&pool.pool_id.to_string()) {
                             updated_pool.apr = Some(*apr);
                         } else {
                             updated_pool.apr = Some(Decimal::zero());
                         }
+
                         updated_pool.assets = pool
                             .assets
                             .into_iter()
@@ -584,7 +587,10 @@ impl<'a> ElysQuerier<'a> {
                                 }
                             })
                             .collect::<Vec<PoolAsset>>();
+
                         updated_pool.current_pool_ratio = Some(self.get_current_pool_ratio(&updated_pool));
+
+                        updated_pool.share_usd_price = Some(pool.tvl / Decimal::from_atomics(pool.total_shares.amount, 18).unwrap());
                         
                         updated_pool
                     })
