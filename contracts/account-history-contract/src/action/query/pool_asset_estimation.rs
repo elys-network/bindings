@@ -3,6 +3,11 @@ use cosmwasm_std::{Deps, StdResult, StdError, Decimal, DecCoin, Decimal256};
 use elys_bindings::{ElysQuerier, ElysQuery};
 use elys_bindings::query_resp::{PoolFilterType, QueryPoolAssetEstimationResponse};
 
+/**
+ * Given an asset and a pool, determine the quantity of every other asset in the pool
+ * needed to keep the pool balanced.
+ * Useful to use in FE forms before calling join pool.
+ */
 pub fn pool_asset_estimation(
     deps: Deps<ElysQuery>,
     pool_id: u64,
