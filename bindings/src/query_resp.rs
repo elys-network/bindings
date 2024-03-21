@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, Decimal, Int128, SignedDecimal, SignedDecimal256, Uint128};
+use cosmwasm_std::{Coin, Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, Uint128};
 
 use crate::{
     trade_shield::types::{PerpetualPosition, StakedPositionRaw},
@@ -388,6 +388,11 @@ pub struct QueryJoinPoolEstimationResponse {
     share_amount_out: Coin,
     slippage: Decimal,
     weight_balance_ratio: Decimal
+}
+
+#[cw_serde]
+pub struct QueryPoolAssetEstimationResponse {
+    pub amounts: HashMap<String, Decimal256>
 }
 
 #[cw_serde]

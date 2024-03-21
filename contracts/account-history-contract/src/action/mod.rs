@@ -12,6 +12,7 @@ pub mod query {
     mod get_pools;
     mod get_pools_apr;
     mod join_pool_estimation;
+    mod pool_asset_estimation;
     mod get_portfolio;
     mod get_rewards;
     mod get_total_balance;
@@ -42,6 +43,7 @@ pub mod query {
     pub use get_pools::get_pools;
     pub use get_pools_apr::get_pools_apr;
     pub use join_pool_estimation::join_pool_estimation;
+    pub use pool_asset_estimation::pool_asset_estimation;
     mod get_eden_boost_earn_program_details;
     pub use get_eden_boost_earn_program_details::get_eden_boost_earn_program_details;
     pub use get_liquid_assets::get_liquid_assets;
