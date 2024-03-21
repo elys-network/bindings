@@ -353,6 +353,42 @@ function all_perpetual_orders() {
     }'
 }
 
+function enable_all_params() {
+    printf "\n# Set Params\n"
+    execute_message \
+    "$ts_contract_address" \
+    '{
+        "set_params": {
+            "market_order_enabled": true,
+            "stake_enabled": true,
+            "process_order_enabled": true,
+            "swap_enabled": true,
+            "perpetual_enabled": true,
+            "reward_enabled": true,
+            "leverage_enabled": true
+        }
+    }'\
+    wasm-cancel_perpetual_order
+}
+
+function disable_all_params() {
+    printf "\n# Set Params\n"
+    execute_message \
+    "$ts_contract_address" \
+    '{
+        "set_params": {
+            "market_order_enabled": false,
+            "stake_enabled": false,
+            "process_order_enabled": false,
+            "swap_enabled": false,
+            "perpetual_enabled": false,
+            "reward_enabled": false,
+            "leverage_enabled": false
+        }
+    }'\
+    wasm-cancel_perpetual_order
+}
+
 # function(s) to run based on the provided argument
 case "$1" in
     "amm_swap_exact_amount_in")
@@ -406,6 +442,13 @@ case "$1" in
     "leveragelp_close")
         leveragelp_close
         ;;
+    "enable_all_params")
+        enable_all_params
+        ;;
+    "disable_all_params")
+        disable_all_params
+        ;;
+
     *)
         # Default case: run all functions
         all_spot_orders

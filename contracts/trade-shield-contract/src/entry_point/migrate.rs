@@ -1,15 +1,34 @@
-use elys_bindings::trade_shield::{msg::MigrateMsg, states::ACCOUNT_HISTORY_ADDRESS};
+use elys_bindings::trade_shield::{
+    msg::MigrateMsg,
+    states::{
+        ACCOUNT_HISTORY_ADDRESS, LEVERAGE_ENABLED, MARKET_ORDER_ENABLED, PARAMS_ADMIN,
+        PERPETUAL_ENABLED, PROCESS_ORDERS_ENABLED, REWARD_ENABLED, STAKE_ENABLED, SWAP_ENABLED,
+    },
+};
 
 use super::*;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(
-    _deps: DepsMut<ElysQuery>,
+    deps: DepsMut<ElysQuery>,
     _env: Env,
     msg: MigrateMsg,
 ) -> StdResult<Response<ElysMsg>> {
     if msg.account_history_address.is_some() {
-        ACCOUNT_HISTORY_ADDRESS.save(_deps.storage, &msg.account_history_address)?;
+        ACCOUNT_HISTORY_ADDRESS.save(deps.storage, &msg.account_history_address)?;
     }
+
+    let admin = "elys16xffmfa6k45j340cx5zyp66lqvuw62a0neaa7w".to_string();
+    PARAMS_ADMIN.save(deps.storage, &admin)?;
+
+    let state = true;
+    STAKE_ENABLED.save(deps.storage, &state)?;
+    MARKET_ORDER_ENABLED.save(deps.storage, &state)?;
+    SWAP_ENABLED.save(deps.storage, &state)?;
+    PROCESS_ORDERS_ENABLED.save(deps.storage, &state)?;
+    PERPETUAL_ENABLED.save(deps.storage, &state)?;
+    REWARD_ENABLED.save(deps.storage, &state)?;
+    LEVERAGE_ENABLED.save(deps.storage, &state)?;
+
     Ok(Response::new())
 }

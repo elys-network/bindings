@@ -20,6 +20,14 @@ pub fn create_spot_order(
 
     let querier = ElysQuerier::new(&deps.querier);
 
+    if SWAP_ENABLED.load(deps.storage)? == false {
+        return Err(StdError::generic_err("swap is disable").into());
+    }
+
+    if MARKET_ORDER_ENABLED.load(deps.storage)? == false && order_type == SpotOrderType::MarketBuy {
+        return Err(StdError::generic_err("market order is disable").into());
+    }
+
     if let Some(price) = &order_price {
         if price.rate.is_zero() {
             return Err(StdError::generic_err("order_price: The rate cannot be zero").into());
@@ -78,7 +86,11 @@ pub fn create_spot_order(
     if new_order.order_type != SpotOrderType::MarketBuy {
         PENDING_SPOT_ORDER.save(deps.storage, new_order.order_id, &new_order)?;
     }
-
+    let mut ids = USER_SPOT_ORDER
+        .may_load(deps.storage, new_order.owner_address.as_str())?
+        .unwrap_or(vec![]);
+    ids.push(new_order.order_id);
+    USER_SPOT_ORDER.save(deps.storage, new_order.owner_address.as_str(), &ids)?;
     Ok(resp)
 }
 

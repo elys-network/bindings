@@ -543,6 +543,14 @@ function leveragelp_position() {
     }'
 }
 
+function ts_params() {
+    printf "\n# Get TS Params\n"
+    query_contract \
+    "$ts_contract_address" \
+    '{
+        "get_params": {}
+    }'
+}
 # function(s) to run based on the provided argument
 case "$2" in
     "ah_params")
@@ -716,9 +724,14 @@ case "$2" in
     "leveragelp_position")
         leveragelp_position
         ;;
+    "ts_params")
+        ts_params
+        ;;
+
     *)
         # Default case: run all functions
         ah_params
+        ts_params
         total_balance
         membership_tier
         portfolio_balance

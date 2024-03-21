@@ -153,7 +153,7 @@ impl PerpetualPositionPlus {
     }
 
     fn get_stop_loss_price(mtp: &Mtp, storage: &dyn Storage) -> Option<OrderPrice> {
-        let perpetual_order = PENDING_PERPETUAL_ORDER
+        let perpetual_order: Option<PerpetualOrder> = PENDING_PERPETUAL_ORDER
             .prefix_range(storage, None, None, Order::Ascending)
             .filter_map(|res| res.ok().map(|r| r.1))
             .find(|order| {

@@ -21,6 +21,9 @@ pub fn create_perpetual_order(
     trigger_price: Option<OrderPrice>,
     position_id: Option<u64>,
 ) -> Result<Response<ElysMsg>, ContractError> {
+    if PERPETUAL_ENABLED.load(deps.storage)? == false {
+        return Err(StdError::generic_err("perpetual endpoint are disable").into());
+    }
     check_order_type(
         &position,
         &leverage,
@@ -29,6 +32,13 @@ pub fn create_perpetual_order(
         &trigger_price,
         &position_id,
     )?;
+
+    if MARKET_ORDER_ENABLED.load(deps.storage)? == false
+        && (order_type == PerpetualOrderType::MarketClose
+            || order_type == PerpetualOrderType::MarketOpen)
+    {
+        return Err(StdError::generic_err("market order is disable").into());
+    }
 
     if order_type == LimitOpen || order_type == MarketOpen {
         create_perpetual_open_order(
@@ -180,6 +190,11 @@ fn create_perpetual_open_order(
     let order_id = order.order_id;
 
     PERPETUAL_ORDER.save(deps.storage, order_id, &order)?;
+    let mut ids = USER_PERPETUAL_ORDER
+        .may_load(deps.storage, order.owner.as_str())?
+        .unwrap_or(vec![]);
+    ids.push(order.order_id);
+    USER_PERPETUAL_ORDER.save(deps.storage, order.owner.as_str(), &ids)?;
     if order.order_type != PerpetualOrderType::MarketOpen {
         PENDING_PERPETUAL_ORDER.save(deps.storage, order_id, &order)?;
     }
@@ -322,6 +337,11 @@ fn create_perpetual_close_order(
     let order_id = order.order_id;
 
     PERPETUAL_ORDER.save(deps.storage, order_id, &order)?;
+    let mut ids = USER_PERPETUAL_ORDER
+        .may_load(deps.storage, order.owner.as_str())?
+        .unwrap_or(vec![]);
+    ids.push(order.order_id);
+    USER_PERPETUAL_ORDER.save(deps.storage, order.owner.as_str(), &ids)?;
     if order.order_type != PerpetualOrderType::MarketClose {
         PENDING_PERPETUAL_ORDER.save(deps.storage, order_id, &order)?;
     }

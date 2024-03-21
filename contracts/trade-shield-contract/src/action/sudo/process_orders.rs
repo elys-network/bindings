@@ -10,15 +10,27 @@ pub fn process_orders(
     deps: DepsMut<ElysQuery>,
     env: Env,
 ) -> Result<Response<ElysMsg>, ContractError> {
-    let spot_orders: Vec<SpotOrder> = PENDING_SPOT_ORDER
-        .prefix_range(deps.storage, None, None, Order::Ascending)
-        .filter_map(|res| res.ok().map(|r| r.1))
-        .collect();
+    if PROCESS_ORDERS_ENABLED.load(deps.storage)? == false {
+        return Err(StdError::generic_err("process order is disable").into());
+    }
 
-    let perpetual_orders: Vec<PerpetualOrder> = PENDING_PERPETUAL_ORDER
-        .prefix_range(deps.storage, None, None, Order::Ascending)
-        .filter_map(|res| res.ok().map(|r| r.1))
-        .collect();
+    let spot_orders: Vec<SpotOrder> = if SWAP_ENABLED.load(deps.storage)? {
+        PENDING_SPOT_ORDER
+            .prefix_range(deps.storage, None, None, Order::Ascending)
+            .filter_map(|res| res.ok().map(|r| r.1))
+            .collect()
+    } else {
+        vec![]
+    };
+
+    let perpetual_orders: Vec<PerpetualOrder> = if PERPETUAL_ENABLED.load(deps.storage)? {
+        PENDING_PERPETUAL_ORDER
+            .prefix_range(deps.storage, None, None, Order::Ascending)
+            .filter_map(|res| res.ok().map(|r| r.1))
+            .collect()
+    } else {
+        vec![]
+    };
 
     let mut reply_info_id = MAX_REPLY_ID.load(deps.storage)?;
 
@@ -33,10 +45,10 @@ pub fn process_orders(
     } = querier.get_asset_profile("uusdc".to_string())?;
 
     for spot_order in spot_orders.iter() {
+        let mut order = spot_order.to_owned();
         if spot_order.order_price.base_denom != spot_order.order_amount.denom
             || spot_order.order_price.quote_denom != spot_order.order_target_denom
         {
-            let mut order = spot_order.to_owned();
             order.status = Status::Canceled;
             bank_msgs.push(BankMsg::Send {
                 to_address: order.owner_address.to_string(),
@@ -57,7 +69,6 @@ pub fn process_orders(
         ) {
             Ok(market_price) => market_price,
             Err(_) => {
-                let mut order = spot_order.to_owned();
                 order.status = Status::Canceled;
                 bank_msgs.push(BankMsg::Send {
                     to_address: order.owner_address.to_string(),
@@ -75,7 +86,6 @@ pub fn process_orders(
         ) {
             Ok(market_price) => market_price,
             Err(_) => {
-                let mut order = spot_order.to_owned();
                 order.status = Status::Canceled;
                 bank_msgs.push(BankMsg::Send {
                     to_address: order.owner_address.to_string(),
@@ -107,7 +117,6 @@ pub fn process_orders(
             || perpetual_order.trigger_price.as_ref().unwrap().quote_denom
                 != perpetual_order.trading_asset
         {
-            let mut order = perpetual_order.to_owned();
             order.status = Status::Canceled;
             if perpetual_order.order_type == PerpetualOrderType::LimitOpen {
                 bank_msgs.push(BankMsg::Send {

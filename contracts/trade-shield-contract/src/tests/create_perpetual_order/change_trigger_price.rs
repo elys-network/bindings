@@ -106,7 +106,9 @@ fn successful_create_perpetual_order() {
         .parse()
         .unwrap();
 
-    let GetPerpetualOrderResp { order }: GetPerpetualOrderResp = app
+    let GetPerpetualOrderResp {
+        order: PerpetualOrderPlus { order, .. },
+    }: GetPerpetualOrderResp = app
         .wrap()
         .query_wasm_smart(addr.as_str(), &QueryMsg::GetPerpetualOrder { id: order_id })
         .unwrap();
@@ -145,7 +147,9 @@ fn successful_create_perpetual_order() {
 
     assert_eq!(same_order_id, order_id);
 
-    let GetPerpetualOrderResp { order }: GetPerpetualOrderResp = app
+    let GetPerpetualOrderResp {
+        order: PerpetualOrderPlus { order, .. },
+    }: GetPerpetualOrderResp = app
         .wrap()
         .query_wasm_smart(addr.as_str(), &QueryMsg::GetPerpetualOrder { id: order_id })
         .unwrap();

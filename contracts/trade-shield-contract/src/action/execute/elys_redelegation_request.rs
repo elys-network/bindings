@@ -3,7 +3,7 @@ use cosmwasm_std::{Coin, StdError};
 
 pub fn elys_redelegation_request(
     info: MessageInfo,
-    _deps: DepsMut<ElysQuery>,
+    deps: DepsMut<ElysQuery>,
     // the amount to be staked in base denomination.
     validator_src_address: String,
     // The asset to be staked
@@ -12,6 +12,9 @@ pub fn elys_redelegation_request(
     // uelys.
     amount: Coin,
 ) -> Result<Response<ElysMsg>, ContractError> {
+    if REWARD_ENABLED.load(deps.storage)? == false {
+        return Err(StdError::generic_err("reward endpoint are disable").into());
+    }
     let uelys_denom = "uelys".to_string();
 
     if amount.amount.is_zero() {

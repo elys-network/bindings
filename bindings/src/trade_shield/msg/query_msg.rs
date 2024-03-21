@@ -83,4 +83,6 @@ pub enum QueryMsg {
     LeveragelpPools { pagination: Option<PageRequest> },
     #[returns(LeveragelpPositionResponse)]
     LeveragelpPosition { address: String, id: u64 },
+    #[returns(TradeShieldParamsResponse)]
+    GetParams {},
 }

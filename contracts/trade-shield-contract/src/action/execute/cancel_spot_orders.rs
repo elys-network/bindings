@@ -10,6 +10,9 @@ pub fn cancel_spot_orders(
     order_ids: Option<Vec<u64>>,
     order_type: Option<SpotOrderType>,
 ) -> Result<Response<ElysMsg>, ContractError> {
+    if SWAP_ENABLED.load(deps.storage)? == false {
+        return Err(StdError::generic_err("swap is disable").into());
+    }
     let orders: Vec<SpotOrder> = if let Some(ids) = &order_ids {
         if ids.is_empty() {
             return Err(StdError::generic_err("order_ids is defined empty").into());
@@ -37,20 +40,17 @@ pub fn cancel_spot_orders(
 
         orders
     } else {
-        let orders: Vec<SpotOrder> = SPOT_ORDER
-            .prefix_range(deps.storage, None, None, Order::Ascending)
-            .filter_map(|res| {
-                if let Some(r) = res.ok() {
-                    Some(r.1)
-                } else {
-                    None
-                }
-            })
-            .filter(|order| {
-                order.owner_address.as_str() == info.sender.as_str()
-                    && order.status == Status::Pending
-            })
-            .collect();
+        let orders: Vec<SpotOrder> =
+            match USER_SPOT_ORDER.may_load(deps.storage, info.sender.as_str())? {
+                Some(v) => v
+                    .iter()
+                    .filter_map(|id| match SPOT_ORDER.load(deps.storage, *id) {
+                        Ok(order) if order.status == Status::Pending => Some(order),
+                        _ => None,
+                    })
+                    .collect(),
+                None => vec![],
+            };
 
         if orders.is_empty() {
             return Err(ContractError::StdError(StdError::not_found(
