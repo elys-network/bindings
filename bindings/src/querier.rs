@@ -1,9 +1,9 @@
-use std::str::FromStr;
 use std::collections::HashMap;
+use std::str::FromStr;
 
 use cosmwasm_std::{
     coin, to_json_vec, Binary, Coin, ContractResult, Decimal, QuerierWrapper, QueryRequest,
-    SignedDecimal, SignedDecimal256, StdError, StdResult, SystemResult
+    SignedDecimal, SignedDecimal256, StdError, StdResult, SystemResult,
 };
 
 use crate::{
@@ -483,11 +483,14 @@ impl<'a> ElysQuerier<'a> {
         Ok(resp)
     }
 
-    pub fn get_pools_apr(&self, pool_ids: Option<Vec<u64>>) -> StdResult<QueryIncentivePoolAprsResponse> {
+    pub fn get_pools_apr(
+        &self,
+        pool_ids: Option<Vec<u64>>,
+    ) -> StdResult<QueryIncentivePoolAprsResponse> {
         let query = ElysQuery::get_pools_apr(pool_ids);
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
         let response: StdResult<QueryIncentivePoolAprsResponse> = self.querier.query(&request);
-        
+
         match response {
             Ok(mut response) => {
                 if let Some(ref mut data) = response.data {
@@ -504,7 +507,11 @@ impl<'a> ElysQuerier<'a> {
         }
     }
 
-    pub fn join_pool_estimation(&self, pool_id: u64, amounts_in: Vec<Coin>) -> StdResult<QueryJoinPoolEstimationResponse> {
+    pub fn join_pool_estimation(
+        &self,
+        pool_id: u64,
+        amounts_in: Vec<Coin>,
+    ) -> StdResult<QueryJoinPoolEstimationResponse> {
         let query = ElysQuery::join_pool_estimation(pool_id, amounts_in);
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
         let response: QueryJoinPoolEstimationResponse = self.querier.query(&request)?;
@@ -519,10 +526,10 @@ impl<'a> ElysQuerier<'a> {
     ) -> StdResult<QueryEarnPoolResponse> {
         let pools_query = ElysQuery::get_all_pools(pool_ids.clone(), filter_type, pagination);
         let pools_request: QueryRequest<ElysQuery> = QueryRequest::Custom(pools_query);
-    
+
         let pools_response: QueryEarnPoolResponse = self.querier.query(&pools_request)?;
         let aprs_response = self.get_pools_apr(pool_ids)?;
-    
+
         match (pools_response.pools, aprs_response.data) {
             (Some(pools), Some(aprs)) => {
                 // Create a map from pool_id to APR for efficient lookup
@@ -530,7 +537,7 @@ impl<'a> ElysQuerier<'a> {
                     .into_iter()
                     .map(|apr_response| (apr_response.pool_id.to_string(), apr_response.apr))
                     .collect();
-    
+
                 // Update the APR field for each pool and add asset usd value
                 let pools_with_usd_values = pools
                     .into_iter()
@@ -562,7 +569,7 @@ impl<'a> ElysQuerier<'a> {
                         updated_pool
                     })
                     .collect::<Vec<PoolResp>>();
-    
+
                 Ok(QueryEarnPoolResponse {
                     pools: Some(pools_with_usd_values),
                 })
@@ -706,7 +713,12 @@ impl<'a> ElysQuerier<'a> {
         pagination: Option<PageRequest>,
     ) -> StdResult<LeveragelpWhitelistResponse> {
         let req = QueryRequest::Custom(ElysQuery::leveragelp_get_whitelist(pagination));
-        self.querier.query(&req)
+        let raw_resp: LeveragelpWhitelistResponseRaw = self.querier.query(&req)?;
+        let resp = LeveragelpWhitelistResponse {
+            whitelist: raw_resp.whitelist.unwrap_or(vec![]),
+            pagination: raw_resp.pagination,
+        };
+        Ok(resp)
     }
     pub fn leveragelp_is_whitelisted(
         &self,

@@ -496,6 +496,13 @@ pub struct LeveragelpStatusReponse {
 }
 
 #[cw_serde]
+pub struct LeveragelpWhitelistResponseRaw {
+    pub whitelist: Option<Vec<String>>,
+    pub pagination: Option<PageResponse>,
+}
+
+
+#[cw_serde]
 pub struct LeveragelpWhitelistResponse {
     pub whitelist: Vec<String>,
     pub pagination: Option<PageResponse>,
