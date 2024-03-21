@@ -410,6 +410,7 @@ pub struct PoolResp {
     pub perpetual: Decimal,
     pub tvl: Decimal,
     pub rewards: Decimal,
+    pub total_shares: Coin
 }
 
 #[cw_serde]
@@ -421,7 +422,10 @@ pub struct IncentivePoolApr {
 #[cw_serde]
 pub struct UserPoolResp {
     pub pool: PoolResp,
+    // User shares in pool
     pub balance: CommittedTokens,
+    // User balance in pool in terms of USD
+    pub available: Decimal
 }
 
 #[cw_serde]

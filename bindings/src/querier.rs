@@ -515,7 +515,7 @@ impl<'a> ElysQuerier<'a> {
         let mut current_ratio: HashMap<String, Decimal> = HashMap::new();
         let mut total_value: Decimal = Decimal::zero();
     
-        // Calculate total value locked (TVL)
+        // Calculate total value locked (TVL) based on USD valuation
         for asset in &pool.assets {
             if let Some(usd_value) = asset.usd_value {
                 total_value += usd_value;
