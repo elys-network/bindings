@@ -23,6 +23,9 @@ pub fn process_orders(
         vec![]
     };
 
+    let mut n_spot_order = LIMIT_PROCESS_ORDER.load(deps.storage)?;
+    let mut n_perpetual_order = n_spot_order.clone();
+
     let perpetual_orders: Vec<PerpetualOrder> = if PERPETUAL_ENABLED.load(deps.storage)? {
         PENDING_PERPETUAL_ORDER
             .prefix_range(deps.storage, None, None, Order::Ascending)
@@ -45,6 +48,12 @@ pub fn process_orders(
     } = querier.get_asset_profile("uusdc".to_string())?;
 
     for spot_order in spot_orders.iter() {
+        if let Some(n) = n_spot_order {
+            if n == 0 {
+                break;
+            }
+            n_spot_order = Some(n - 1);
+        }
         let mut order = spot_order.to_owned();
         if spot_order.order_price.base_denom != spot_order.order_amount.denom
             || spot_order.order_price.quote_denom != spot_order.order_target_denom
@@ -111,6 +120,12 @@ pub fn process_orders(
     }
 
     for perpetual_order in perpetual_orders.iter() {
+        if let Some(n) = n_perpetual_order {
+            if n == 0 {
+                break;
+            }
+            n_perpetual_order = Some(n - 1);
+        }
         let mut order = perpetual_order.to_owned();
 
         if perpetual_order.trigger_price.as_ref().unwrap().base_denom != usdc_denom

@@ -10,4 +10,5 @@ pub struct TradeShieldParamsResponse {
     pub perpetual_enabled: bool,
     pub reward_enabled: bool,
     pub leverage_enabled: bool,
+    pub limit_process_order: Option<u128>,
 }
