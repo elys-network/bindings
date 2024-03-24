@@ -31,7 +31,9 @@ pub fn cancel_spot_orders(
             });
         }
 
-        if let Some(order) = orders.iter().find(|order| order.status != Status::Pending) {
+        if let Some(order) = orders.iter().find(|order| {
+            order.status != Status::Pending || order.order_type == SpotOrderType::MarketBuy
+        }) {
             return Err(ContractError::CancelStatusError {
                 order_id: order.order_id,
                 status: order.status.clone(),
@@ -45,7 +47,12 @@ pub fn cancel_spot_orders(
                 Some(v) => v
                     .iter()
                     .filter_map(|id| match SPOT_ORDER.load(deps.storage, *id) {
-                        Ok(order) if order.status == Status::Pending => Some(order),
+                        Ok(order)
+                            if order.status == Status::Pending
+                                && order.order_type != SpotOrderType::MarketBuy =>
+                        {
+                            Some(order)
+                        }
                         _ => None,
                     })
                     .collect(),
@@ -64,6 +71,14 @@ pub fn cancel_spot_orders(
     let mut orders = filter_order_by_type(orders, order_type)?;
 
     for order in orders.iter_mut() {
+        let key = order.gen_key()?;
+        let mut v = SORTED_PENDING_SPOT_ORDER.load(deps.storage, key.as_str())?;
+        let index = v
+            .binary_search(&order.order_id)
+            .map_err(|id| StdError::not_found(format!("order: {id}")))?;
+        v.remove(index);
+        SORTED_PENDING_SPOT_ORDER.save(deps.storage, key.as_str(), &v)?;
+
         order.status = Status::Canceled;
         SPOT_ORDER.save(deps.storage, order.order_id, &order)?;
         PENDING_SPOT_ORDER.remove(deps.storage, order.order_id);

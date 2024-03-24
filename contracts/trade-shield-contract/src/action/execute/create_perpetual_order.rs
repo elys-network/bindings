@@ -197,6 +197,17 @@ fn create_perpetual_open_order(
     USER_PERPETUAL_ORDER.save(deps.storage, order.owner.as_str(), &ids)?;
     if order.order_type != PerpetualOrderType::MarketOpen {
         PENDING_PERPETUAL_ORDER.save(deps.storage, order_id, &order)?;
+        let key = order.gen_key()?;
+        let mut vec = SORTED_PENDING_PERPETUAL_ORDER
+            .may_load(deps.storage, key.as_str())?
+            .unwrap_or(vec![]);
+        let index = order.binary_search(deps.storage, &vec)?;
+        if vec.len() <= index {
+            vec.push(order.order_id)
+        } else {
+            vec.insert(index, order.order_id);
+        }
+        SORTED_PENDING_PERPETUAL_ORDER.save(deps.storage, key.as_str(), &vec)?;
     }
 
     let resp = Response::new().add_event(
@@ -311,6 +322,17 @@ fn create_perpetual_close_order(
 
         if order.order_type != PerpetualOrderType::MarketClose {
             PENDING_PERPETUAL_ORDER.save(deps.storage, order.order_id, &order)?;
+            let key = order.gen_key()?;
+            let mut vec = SORTED_PENDING_PERPETUAL_ORDER
+                .may_load(deps.storage, key.as_str())?
+                .unwrap_or(vec![]);
+            let index = order.binary_search(deps.storage, &vec)?;
+            if vec.len() <= index {
+                vec.push(order.order_id)
+            } else {
+                vec.insert(index, order.order_id);
+            }
+            SORTED_PENDING_PERPETUAL_ORDER.save(deps.storage, key.as_str(), &vec)?;
         }
 
         let resp = Response::new().add_event(

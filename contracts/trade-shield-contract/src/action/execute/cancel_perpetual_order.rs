@@ -44,10 +44,16 @@ pub fn cancel_perpetual_order(
 
     PERPETUAL_ORDER.save(deps.storage, order_id, &order)?;
     PENDING_PERPETUAL_ORDER.remove(deps.storage, order.order_id);
+    let key = order.gen_key()?;
+    let mut vec = SORTED_PENDING_PERPETUAL_ORDER.load(deps.storage, key.as_str())?;
+    let index = vec.binary_search(&order.order_id).map_err(|_| StdError::not_found("order id not found"))?;
+    vec.remove(index);
+    SORTED_PENDING_PERPETUAL_ORDER.save(deps.storage, key.as_str(), &vec)?;
 
     if order_type == PerpetualOrderType::LimitOpen {
         Ok(resp.add_message(CosmosMsg::Bank(refund_msg)))
     } else {
         Ok(resp)
     }
+
 }

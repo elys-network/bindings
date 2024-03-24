@@ -14,10 +14,10 @@ pub fn process_orders(
         return Err(StdError::generic_err("process order is disable").into());
     }
 
-    let spot_orders: Vec<SpotOrder> = if SWAP_ENABLED.load(deps.storage)? {
-        PENDING_SPOT_ORDER
+    let spot_orders: Vec<(String, Vec<u64>)> = if SWAP_ENABLED.load(deps.storage)? {
+        SORTED_PENDING_SPOT_ORDER
             .prefix_range(deps.storage, None, None, Order::Ascending)
-            .filter_map(|res| res.ok().map(|r| r.1))
+            .filter_map(|res| res.ok())
             .collect()
     } else {
         vec![]
@@ -47,76 +47,48 @@ pub fn process_orders(
         },
     } = querier.get_asset_profile("uusdc".to_string())?;
 
-    for spot_order in spot_orders.iter() {
-        if let Some(n) = n_spot_order {
-            if n == 0 {
-                break;
-            }
-            n_spot_order = Some(n - 1);
-        }
-        let mut order = spot_order.to_owned();
-        if spot_order.order_price.base_denom != spot_order.order_amount.denom
-            || spot_order.order_price.quote_denom != spot_order.order_target_denom
-        {
-            order.status = Status::Canceled;
-            bank_msgs.push(BankMsg::Send {
-                to_address: order.owner_address.to_string(),
-                amount: vec![order.order_amount.clone()],
-            });
-            PENDING_SPOT_ORDER.remove(deps.storage, order.order_id);
-            SPOT_ORDER.save(deps.storage, order.order_id, &order)?;
-            continue;
-        }
+    for (key, order_ids) in spot_orders.iter() {
+        //     if let Some(n) = n_spot_order {
+        //         if n == 0 {
+        //             break;
+        //         }
+        //         n_spot_order = Some(n - 1);
+        //     }
+        let mut removed_ids = vec![];
+        let (order_type, base_denom, quote_denom) = SpotOrder::from_key(key.as_str())?;
 
-        let discount = get_discount(&deps.as_ref(), spot_order.owner_address.to_string())?;
+        let market_price =
+            match querier.get_asset_price_from_denom_in_to_denom_out(&base_denom, &quote_denom) {
+                Ok(market_price) => market_price,
+                Err(_) => {
+                    cancel_spot_orders(deps.storage, key, order_ids, None)?;
+                    continue;
+                }
+            };
 
-        let amm_swap_estimation = match querier.amm_swap_estimation_by_denom(
-            &spot_order.order_amount,
-            &spot_order.order_amount.denom,
-            &spot_order.order_target_denom,
-            &discount,
-        ) {
-            Ok(market_price) => market_price,
-            Err(_) => {
-                order.status = Status::Canceled;
-                bank_msgs.push(BankMsg::Send {
-                    to_address: order.owner_address.to_string(),
-                    amount: vec![order.order_amount.clone()],
-                });
-                PENDING_SPOT_ORDER.remove(deps.storage, order.order_id);
-                SPOT_ORDER.save(deps.storage, order.order_id, &order)?;
+        for i in 0..order_ids.len() {
+            let spot_order = PENDING_SPOT_ORDER.load(deps.storage, order_ids[i])?;
+
+            if spot_order.order_price.base_denom != spot_order.order_amount.denom
+                || spot_order.order_price.quote_denom != spot_order.order_target_denom
+            {
+                removed_ids.push(i);
                 continue;
             }
-        };
-
-        let market_price = match querier.get_asset_price_from_denom_in_to_denom_out(
-            &spot_order.order_amount.denom,
-            &spot_order.order_target_denom,
-        ) {
-            Ok(market_price) => market_price,
-            Err(_) => {
-                order.status = Status::Canceled;
-                bank_msgs.push(BankMsg::Send {
-                    to_address: order.owner_address.to_string(),
-                    amount: vec![order.order_amount.clone()],
-                });
-                PENDING_SPOT_ORDER.remove(deps.storage, order.order_id);
-                SPOT_ORDER.save(deps.storage, order.order_id, &order)?;
-                continue;
-            }
-        };
-
-        if check_spot_order(&spot_order, market_price) {
-            process_spot_order(
-                spot_order,
-                &mut submsgs,
-                env.contract.address.as_str(),
-                &mut reply_info_id,
-                amm_swap_estimation,
-                deps.storage,
-                discount,
-            )?;
+            let discount = get_discount(&deps.as_ref(), spot_order.owner_address.to_string())?;
         }
+
+        //     if check_spot_order(&spot_order, market_price) {
+        //         process_spot_order(
+        //             spot_order,
+        //             &mut submsgs,
+        //             env.contract.address.as_str(),
+        //             &mut reply_info_id,
+        //             amm_swap_estimation,
+        //             deps.storage,
+        //             discount,
+        //         )?;
+        //     }
     }
 
     for perpetual_order in perpetual_orders.iter() {
@@ -366,6 +338,74 @@ fn process_spot_order(
     REPLY_INFO.save(storage, *reply_info_id, &reply_info)?;
 
     Ok(())
+}
+
+fn cancel_spot_orders(
+    storage: &mut dyn Storage,
+    key: &str,
+    ids: &Vec<u64>,
+    to_remove: Option<Vec<usize>>,
+) -> StdResult<Vec<BankMsg>> {
+    let mut bank_msg: Vec<BankMsg> = vec![];
+
+    let order_to_remove: Vec<u64> = if let Some(indexs) = to_remove {
+        let mut ids_clone = ids.clone();
+        for i in indexs.iter().rev() {
+            ids_clone.remove(*i);
+        }
+        SORTED_PENDING_SPOT_ORDER.save(storage, key, &ids_clone)?;
+        indexs.iter().map(|index| ids[*index]).collect()
+    } else {
+        SORTED_PENDING_SPOT_ORDER.save(storage, key, &vec![])?;
+        ids.clone()
+    };
+    for id in order_to_remove {
+        let mut spot_order = SPOT_ORDER.load(storage, id)?;
+        spot_order.status = Status::Canceled;
+        PENDING_SPOT_ORDER.remove(storage, id);
+        SPOT_ORDER.save(storage, id, &spot_order)?;
+        bank_msg.push(BankMsg::Send {
+            to_address: spot_order.owner_address.to_string(),
+            amount: vec![spot_order.order_amount],
+        })
+    }
+
+    Ok(bank_msg)
+}
+
+fn cancel_perpetual_orders(
+    storage: &mut dyn Storage,
+    key: &str,
+    ids: &Vec<u64>,
+    to_remove: Option<Vec<usize>>,
+) -> StdResult<Vec<BankMsg>> {
+    let mut bank_msg: Vec<BankMsg> = vec![];
+
+    let order_to_remove: Vec<u64> = if let Some(indexs) = to_remove {
+        let mut ids_clone = ids.clone();
+        for i in indexs.iter().rev() {
+            ids_clone.remove(*i);
+        }
+        SORTED_PENDING_PERPETUAL_ORDER.save(storage, key, &ids_clone)?;
+        indexs.iter().map(|index| ids[*index]).collect()
+    } else {
+        SORTED_PENDING_PERPETUAL_ORDER.save(storage, key, &vec![])?;
+        ids.clone()
+    };
+    for id in order_to_remove {
+        let mut perpetual_order = PERPETUAL_ORDER.load(storage, id)?;
+        perpetual_order.status = Status::Canceled;
+        PENDING_PERPETUAL_ORDER.remove(storage, id);
+        PERPETUAL_ORDER.save(storage, id, &perpetual_order)?;
+        if perpetual_order.order_type == PerpetualOrderType::LimitOpen {
+            bank_msg.push(BankMsg::Send {
+                to_address: perpetual_order.owner,
+                amount: vec![perpetual_order.collateral],
+            })
+        }
+    }
+
+    Ok(bank_msg)
 }
 
 fn calculate_token_out_min_amount(_order: &SpotOrder) -> Int128 {
