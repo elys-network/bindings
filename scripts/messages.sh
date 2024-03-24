@@ -359,6 +359,20 @@ function disable_all_params() {
     wasm-cancel_perpetual_order
 }
 
+function set_limit_to_process_orders() {
+    #set limit to process orders: set to zero for the limit to be NONE
+    limit_number=$1
+    printf "\n# Set Params\n"
+    execute_message \
+    "$ts_contract_address" \
+    '{
+        "set_params": {
+            "limit_process_order": '"$limit_number"'
+        }
+    }'\
+    wasm-cancel_perpetual_order
+}
+
 # function(s) to run based on the provided argument
 case "$1" in
     "amm_swap_exact_amount_in")
@@ -412,7 +426,9 @@ case "$1" in
     "disable_all_params")
         disable_all_params
         ;;
-
+    "set_limit_to_process_orders")
+        set_limit_to_process_orders $2
+        ;;
     *)
         # Default case: run all functions
         all_spot_orders

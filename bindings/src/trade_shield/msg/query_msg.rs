@@ -59,4 +59,6 @@ pub enum QueryMsg {
     },
     #[returns(TradeShieldParamsResponse)]
     GetParams {},
+    #[returns(NumberOfPendingOrderResp)]
+    NumberOfPendingOrder {},
 }
