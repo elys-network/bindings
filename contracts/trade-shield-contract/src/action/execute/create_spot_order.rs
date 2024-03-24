@@ -89,7 +89,7 @@ pub fn create_spot_order(
         let mut vec = SORTED_PENDING_SPOT_ORDER
             .may_load(deps.storage, key.as_str())?
             .unwrap_or(vec![]);
-        let index = new_order.binary_search(deps.storage, &vec)?;
+        let index = SpotOrder::binary_search(&new_order.order_price.rate, deps.storage, &vec)?;
         if vec.len() <= index {
             vec.push(new_order.order_id)
         } else {

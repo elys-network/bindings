@@ -1,6 +1,7 @@
 use crate::{helper::get_discount, msg::ReplyType};
 use cosmwasm_std::{
-    to_json_binary, Decimal, Int128, OverflowError, StdError, StdResult, Storage, SubMsg,
+    coin, to_json_binary, Decimal, Deps, Int128, OverflowError, QuerierWrapper, StdError,
+    StdResult, Storage, SubMsg,
 };
 use elys_bindings::query_resp::{AmmSwapEstimationByDenomResponse, Entry, QueryGetEntryResponse};
 
@@ -54,41 +55,60 @@ pub fn process_orders(
         //         }
         //         n_spot_order = Some(n - 1);
         //     }
-        let mut removed_ids = vec![];
         let (order_type, base_denom, quote_denom) = SpotOrder::from_key(key.as_str())?;
-
+        if order_type == SpotOrderType::MarketBuy {
+            bank_msgs.extend(cancel_spot_orders(deps.storage, key, order_ids, None)?);
+            continue;
+        }
         let market_price =
             match querier.get_asset_price_from_denom_in_to_denom_out(&base_denom, &quote_denom) {
-                Ok(market_price) => market_price,
+                Ok(market_price) => {
+                    if order_type == SpotOrderType::LimitBuy {
+                        match Decimal::one().checked_div(market_price.clone()) {
+                            Ok(market_price) => market_price,
+                            Err(_) => {
+                                continue;
+                            }
+                        }
+                    } else {
+                        market_price
+                    }
+                }
                 Err(_) => {
-                    cancel_spot_orders(deps.storage, key, order_ids, None)?;
+                    bank_msgs.extend(cancel_spot_orders(deps.storage, key, order_ids, None)?);
                     continue;
                 }
             };
+        let closest_spot_price = SpotOrder::binary_search(&market_price, deps.storage, &order_ids)?;
 
-        for i in 0..order_ids.len() {
-            let spot_order = PENDING_SPOT_ORDER.load(deps.storage, order_ids[i])?;
+        // for i in 0..order_ids.len() {
+        //     let spot_order = PENDING_SPOT_ORDER.load(deps.storage, order_ids[i])?;
 
-            if spot_order.order_price.base_denom != spot_order.order_amount.denom
-                || spot_order.order_price.quote_denom != spot_order.order_target_denom
-            {
-                removed_ids.push(i);
-                continue;
-            }
-            let discount = get_discount(&deps.as_ref(), spot_order.owner_address.to_string())?;
-        }
+        //     if spot_order.order_price.base_denom != spot_order.order_amount.denom
+        //         || spot_order.order_price.quote_denom != spot_order.order_target_denom
+        //     {
+        //         removed_ids.push(i);
+        //         continue;
+        //     }
+        // }
+
+        let orders_to_process: Vec<u64> = split_spot_order(
+            closest_spot_price,
+            order_type,
+            market_price,
+            order_ids.to_owned(),
+            deps.storage,
+        )?;
 
         //     if check_spot_order(&spot_order, market_price) {
-        //         process_spot_order(
-        //             spot_order,
-        //             &mut submsgs,
-        //             env.contract.address.as_str(),
-        //             &mut reply_info_id,
-        //             amm_swap_estimation,
-        //             deps.storage,
-        //             discount,
-        //         )?;
-        //     }
+        process_spot_order(
+            orders_to_process,
+            &mut submsgs,
+            env.contract.address.as_str(),
+            &mut reply_info_id,
+            deps.storage,
+            deps.querier,
+        )?;
     }
 
     for perpetual_order in perpetual_orders.iter() {
@@ -266,76 +286,103 @@ fn check_perpetual_order(order: &PerpetualOrder, market_price: Decimal) -> bool 
     }
 }
 
-fn check_spot_order(order: &SpotOrder, market_price: Decimal) -> bool {
-    if order.order_type == SpotOrderType::MarketBuy {
-        return false;
-    }
+fn split_spot_order(
+    closest_index: usize,
+    order_type: SpotOrderType,
+    market_price: Decimal,
+    ids: Vec<u64>,
+    storage: &mut dyn Storage,
+) -> StdResult<Vec<u64>> {
+    // let order_price = order.order_price.rate;
 
-    let order_price = order.order_price.rate;
-
-    let market_price = if order.order_type == SpotOrderType::LimitBuy {
-        match Decimal::one().checked_div(market_price.clone()) {
-            Ok(market_price) => market_price,
-            Err(_) => return false,
-        }
+    let order = if closest_index >= ids.len() {
+        None
     } else {
-        market_price
+        Some(
+            PENDING_SPOT_ORDER
+                .load(storage, ids[closest_index])?
+                .order_price
+                .rate,
+        )
     };
 
-    match order.order_type {
-        SpotOrderType::LimitBuy => market_price <= order_price,
-        SpotOrderType::LimitSell => market_price >= order_price,
-        SpotOrderType::StopLoss => market_price <= order_price,
-        _ => false,
-    }
+    let res: Vec<u64> = match (order_type, order) {
+        (SpotOrderType::StopLoss, Some(order_price)) => {
+            if market_price <= order_price {
+                ids[closest_index + 1..].to_vec()
+            } else {
+                ids[closest_index..].to_vec()
+            }
+        }
+        (SpotOrderType::StopLoss, None) => vec![],
+        (SpotOrderType::LimitSell, Some(order_price)) => {
+            if market_price >= order_price {
+                ids[..=closest_index].to_vec()
+            } else {
+                ids[..closest_index].to_vec()
+            }
+        }
+        (SpotOrderType::LimitSell, None) => ids,
+        (SpotOrderType::LimitBuy, Some(order_price)) => {
+            if market_price <= order_price {
+                ids[closest_index + 1..].to_vec()
+            } else {
+                ids[closest_index..].to_vec()
+            }
+        }
+        (SpotOrderType::LimitBuy, None) => vec![],
+
+        // SpotOrderType::StopLoss => market_price <= order_price,
+        // SpotOrderType::LimitSell => market_price >= order_price,
+        // SpotOrderType::LimitBuy => market_price <= order_price,
+        _ => return Err(StdError::generic_err("Market Order")),
+    };
+    Ok(res)
 }
 
 fn process_spot_order(
-    order: &SpotOrder,
+    orders_ids: Vec<u64>,
     submsgs: &mut Vec<SubMsg<ElysMsg>>,
     sender: &str,
     reply_info_id: &mut u64,
-    amm_swap_estimation: AmmSwapEstimationByDenomResponse,
     storage: &mut dyn Storage,
-    discount: Decimal,
+    querier: QuerierWrapper<'_, ElysQuery>,
 ) -> StdResult<()> {
-    let token_out_min_amount: Int128 = match order.order_type {
-        SpotOrderType::LimitBuy => calculate_token_out_min_amount(order),
-        SpotOrderType::LimitSell => calculate_token_out_min_amount(order),
-        SpotOrderType::StopLoss => Int128::zero(),
-        _ => Int128::zero(),
-    };
+    for id in orders_ids {
+        let order = PENDING_SPOT_ORDER.load(storage, id)?;
 
-    let msg = ElysMsg::amm_swap_exact_amount_in(
-        sender,
-        &order.order_amount,
-        &amm_swap_estimation.in_route.unwrap(),
-        token_out_min_amount,
-        discount,
-        &order.owner_address,
-    );
+        let reply_info = ReplyInfo {
+            id: *reply_info_id,
+            reply_type: ReplyType::SpotOrder,
+            data: Some(to_json_binary(&order.order_id)?),
+        };
+        REPLY_INFO.save(storage, *reply_info_id, &reply_info)?;
 
-    *reply_info_id = match reply_info_id.checked_add(1) {
-        Some(id) => id,
-        None => {
-            return Err(StdError::overflow(OverflowError::new(
-                cosmwasm_std::OverflowOperation::Add,
-                "reply_info_max_id",
-                "increment one",
-            ))
-            .into())
-        }
-    };
+        let discount = get_discount(storage, querier, order.owner_address.to_string())?;
 
-    let reply_info = ReplyInfo {
-        id: *reply_info_id,
-        reply_type: ReplyType::SpotOrder,
-        data: Some(to_json_binary(&order.order_id)?),
-    };
-
-    submsgs.push(SubMsg::reply_always(msg, *reply_info_id));
-
-    REPLY_INFO.save(storage, *reply_info_id, &reply_info)?;
+        let msg = ElysMsg::swap_by_denom(
+            sender,
+            order.order_amount,
+            coin(0, &order.order_target_denom),
+            coin(0, &order.order_target_denom),
+            &order.order_amount.denom,
+            &order.order_target_denom,
+            discount,
+            order.owner_address.as_str(),
+        );
+        *reply_info_id = match reply_info_id.checked_add(1) {
+            Some(id) => id,
+            None => {
+                return Err(StdError::overflow(OverflowError::new(
+                    cosmwasm_std::OverflowOperation::Add,
+                    "reply_info_max_id",
+                    "increment one",
+                ))
+                .into())
+            }
+        };
+        submsgs.push(SubMsg::reply_always(msg, *reply_info_id));
+    }
 
     Ok(())
 }
