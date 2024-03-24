@@ -1,9 +1,12 @@
-use crate::{helper::get_discount, msg::ReplyType};
-use cosmwasm_std::{
-    coin, to_json_binary, Decimal, Deps, Int128, OverflowError, QuerierWrapper, StdError,
-    StdResult, Storage, SubMsg,
+use crate::{
+    helper::{get_discount, get_mut_discount},
+    msg::ReplyType,
 };
-use elys_bindings::query_resp::{AmmSwapEstimationByDenomResponse, Entry, QueryGetEntryResponse};
+use cosmwasm_std::{
+    coin, to_json_binary, Decimal, Int128, OverflowError, QuerierWrapper, StdError, StdResult,
+    Storage, SubMsg,
+};
+use elys_bindings::query_resp::{Entry, QueryGetEntryResponse};
 
 use super::*;
 
@@ -112,12 +115,12 @@ pub fn process_orders(
     }
 
     for perpetual_order in perpetual_orders.iter() {
-        if let Some(n) = n_perpetual_order {
-            if n == 0 {
-                break;
-            }
-            n_perpetual_order = Some(n - 1);
-        }
+        // if let Some(n) = n_perpetual_order {
+        //     if n == 0 {
+        //         break;
+        //     }
+        //     n_perpetual_order = Some(n - 1);
+        // }
         let mut order = perpetual_order.to_owned();
 
         if perpetual_order.trigger_price.as_ref().unwrap().base_denom != usdc_denom
@@ -358,11 +361,11 @@ fn process_spot_order(
         };
         REPLY_INFO.save(storage, *reply_info_id, &reply_info)?;
 
-        let discount = get_discount(storage, querier, order.owner_address.to_string())?;
+        let discount = get_mut_discount(storage, querier, order.owner_address.to_string())?;
 
         let msg = ElysMsg::swap_by_denom(
             sender,
-            order.order_amount,
+            order.order_amount.clone(),
             coin(0, &order.order_target_denom),
             coin(0, &order.order_target_denom),
             &order.order_amount.denom,

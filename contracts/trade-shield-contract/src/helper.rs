@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-    from_json, Decimal, QuerierWrapper, Response, StdResult, Storage, SubMsgResult,
+    from_json, Decimal, Deps, QuerierWrapper, Response, StdResult, Storage, SubMsgResult,
 };
 use elys_bindings::account_history::msg::query_resp::MembershipTierResponse;
 use elys_bindings::account_history::msg::QueryMsg as AccountHistoryQueryMsg;
@@ -27,7 +27,7 @@ pub fn get_response_from_reply<T: DeserializeOwned>(
     }
 }
 
-pub fn get_discount(
+pub fn get_mut_discount(
     storage: &mut dyn Storage,
     querier: QuerierWrapper<'_, ElysQuery>,
     user_address: String,
@@ -38,6 +38,23 @@ pub fn get_discount(
     };
 
     let discount = match querier.query_wasm_smart::<MembershipTierResponse>(
+        &account_history_address,
+        &AccountHistoryQueryMsg::GetMembershipTier { user_address },
+    ) {
+        Ok(resp) => resp.discount,
+        Err(_) => Decimal::zero(),
+    };
+
+    Ok(discount)
+}
+
+pub fn get_discount(deps: &Deps<ElysQuery>, user_address: String) -> StdResult<Decimal> {
+    let account_history_address = match ACCOUNT_HISTORY_ADDRESS.load(deps.storage)? {
+        Some(account_history_address) => account_history_address,
+        None => return Ok(Decimal::zero()),
+    };
+
+    let discount = match deps.querier.query_wasm_smart::<MembershipTierResponse>(
         &account_history_address,
         &AccountHistoryQueryMsg::GetMembershipTier { user_address },
     ) {
