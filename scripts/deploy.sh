@@ -15,7 +15,7 @@ command_exists() {
 # check if CI variable is set
 if [ -n "$CI" ]; then
     # set environment variables
-    NODE=http://nirvana.elys.network:26657
+    NODE=https://rpc.testnet.elys.network:443
     NAME=contract-initiator
 
     # contract addresses
@@ -25,7 +25,7 @@ if [ -n "$CI" ]; then
 
     # set elysd path
     ELYSD=/tmp/elysd
-    URL=https://github.com/elys-network/elys/releases/download/v0.26.0/elysd-v0.26.0-linux-amd64
+    URL=https://github.com/elys-network/elys/releases/download/v0.29.26/elysd-v0.29.26-linux-amd64
 
     # download elysd and binary to path
     wget $URL -O $ELYSD
@@ -71,7 +71,7 @@ echo "account_number: $account_number"
 echo "sequence: $sequence"
 
 # environment variables
-OPTIONS="--from $NAME --gas auto --gas-adjustment 1.3 --fees 1500000uelys -y --account-number $account_number -b async"
+OPTIONS="--from $NAME --gas auto --gas-adjustment 1.3 --fees 300000uelys -y --account-number $account_number -b async"
 
 wait_for_tx() {
     local txhash=$1
