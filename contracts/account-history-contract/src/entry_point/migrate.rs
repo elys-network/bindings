@@ -1,11 +1,11 @@
 use cosmwasm_std::{entry_point, DepsMut, Env, Response, StdResult, Timestamp};
 use cw_utils::Expiration;
 use elys_bindings::account_history::msg::MigrationMsg;
-use elys_bindings::account_history::types::Metadata;
+// use elys_bindings::account_history::types::Metadata;
 use elys_bindings::types::PageRequest;
-use elys_bindings::{ElysMsg, ElysQuerier, ElysQuery};
+use elys_bindings::{ElysMsg, /*ElysQuerier,*/ ElysQuery};
 
-use crate::states::{EXPIRATION, METADATA, PAGINATION, TRADE_SHIELD_ADDRESS};
+use crate::states::{EXPIRATION, /*METADATA,*/ PAGINATION, TRADE_SHIELD_ADDRESS};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(
@@ -42,11 +42,11 @@ pub fn migrate(
     )?;
 
     // METADATA
-    let querier = ElysQuerier::new(&deps.querier);
+    // let querier = ElysQuerier::new(&deps.querier);
 
-    let metadata = Metadata::collect(&querier)?;
+    // let metadata = Metadata::collect(&querier)?;
 
-    METADATA.save(deps.storage, &metadata)?;
+    // METADATA.save(deps.storage, &metadata)?;
 
     // RESPONSE
     Ok(Response::new())
