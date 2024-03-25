@@ -39,6 +39,7 @@ query_contract() {
 
 # Define a function to execute a contract message
 execute_message() {
+    local start_time=$SECONDS
     local contract_address=$1
     local message=$2
     local response_key=$3
@@ -57,8 +58,19 @@ execute_message() {
         echo "Failed to execute the message. Please check the error message above."
         exit 1
     fi
-    sleep 5
+    
+    # loop until query tx cli does not fail
+    while ! elysd q tx $txhash --node "$NODE" &> /dev/null; do
+        echo "Waiting for the transaction to be included in a block..."
+        sleep 0.5
+    done
+
+    local end_time=$SECONDS
+
     elysd q tx $txhash --node "$NODE" --output json | jq | awk '/"type": "'$response_key'"/{print "{"; flag=1;next}/]/{if(flag){print $0 "\n}"; exit}flag=0}flag' | jq
+
+    local duration=$((end_time - start_time))
+    echo "Total execution time: $duration seconds."
 }
 
 # Environment variables
@@ -359,6 +371,20 @@ function disable_all_params() {
     wasm-cancel_perpetual_order
 }
 
+function set_limit_to_process_orders() {
+    #set limit to process orders: set to zero for the limit to be NONE
+    limit_number=$1
+    printf "\n# Set Params\n"
+    execute_message \
+    "$ts_contract_address" \
+    '{
+        "set_params": {
+            "limit_process_order": "'"$limit_number"'"
+        }
+    }'\
+    wasm-cancel_perpetual_order
+}
+
 # function(s) to run based on the provided argument
 case "$1" in
     "amm_swap_exact_amount_in")
@@ -412,7 +438,9 @@ case "$1" in
     "disable_all_params")
         disable_all_params
         ;;
-
+    "set_limit_to_process_orders")
+        set_limit_to_process_orders $2
+        ;;
     *)
         # Default case: run all functions
         all_spot_orders

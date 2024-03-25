@@ -346,6 +346,7 @@ pub struct VestingTokens {
     epoch_identifier: String,
     num_epochs: i64,
     current_epoch: i64,
+    vest_started_timestamp: i64,
 }
 
 #[cw_serde]
@@ -379,7 +380,7 @@ pub struct QueryEarnPoolResponse {
 
 #[cw_serde]
 pub struct QueryIncentivePoolAprsResponse {
-    pub data: Option<Vec<IncentivePoolApr>>
+    pub data: Option<Vec<IncentivePoolApr>>,
 }
 
 #[cw_serde]
@@ -387,7 +388,7 @@ pub struct QueryJoinPoolEstimationResponse {
     amounts_in: Vec<Coin>,
     share_amount_out: Coin,
     slippage: Decimal,
-    weight_balance_ratio: Decimal
+    weight_balance_ratio: Decimal,
 }
 
 #[cw_serde]
@@ -422,7 +423,7 @@ pub struct PoolResp {
 #[cw_serde]
 pub struct IncentivePoolApr {
     pub apr: Decimal,
-    pub pool_id: i64
+    pub pool_id: i64,
 }
 
 #[cw_serde]
