@@ -511,6 +511,31 @@ impl<'a> ElysQuerier<'a> {
         Ok(response)
     }
 
+    pub fn get_current_pool_ratio(&self, pool: &PoolResp) -> HashMap<String, Decimal> {
+        let mut current_ratio: HashMap<String, Decimal> = HashMap::new();
+        let mut total_value: Decimal = Decimal::zero();
+    
+        // Calculate total value locked (TVL) based on USD valuation
+        for asset in &pool.assets {
+            if let Some(usd_value) = asset.usd_value {
+                total_value += usd_value;
+            }
+        }
+    
+        // Calculate ratio for each asset in the pool
+        for asset in &pool.assets {
+            let ratio = if let Some(usd_value) = asset.usd_value {
+                usd_value / total_value
+            } else {
+                Decimal::zero()
+            };
+    
+            current_ratio.insert(asset.token.denom.clone(), ratio);
+        }
+    
+        current_ratio
+    }
+
     pub fn get_all_pools(
         &self,
         pool_ids: Option<Vec<u64>>,
@@ -531,16 +556,19 @@ impl<'a> ElysQuerier<'a> {
                     .map(|apr_response| (apr_response.pool_id.to_string(), apr_response.apr))
                     .collect();
     
-                // Update the APR field for each pool and add asset usd value
+                // Update the APR field for each pool, pool share price, add asset usd value
+                // and current Pool ratio
                 let pools_with_usd_values = pools
                     .into_iter()
                     .map(|pool| {
                         let mut updated_pool = pool.clone();
+
                         if let Some(apr) = aprs_map.get(&pool.pool_id.to_string()) {
                             updated_pool.apr = Some(*apr);
                         } else {
                             updated_pool.apr = Some(Decimal::zero());
                         }
+
                         updated_pool.assets = pool
                             .assets
                             .into_iter()
@@ -559,6 +587,11 @@ impl<'a> ElysQuerier<'a> {
                                 }
                             })
                             .collect::<Vec<PoolAsset>>();
+
+                        updated_pool.current_pool_ratio = Some(self.get_current_pool_ratio(&updated_pool));
+
+                        updated_pool.share_usd_price = Some(pool.tvl / Decimal::from_atomics(pool.total_shares.amount, 18).unwrap());
+                        
                         updated_pool
                     })
                     .collect::<Vec<PoolResp>>();
