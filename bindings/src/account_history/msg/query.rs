@@ -7,13 +7,13 @@ use crate::query_resp::{
     AuthAddressesResponse, BalanceBorrowed, PoolFilterType, QueryEarnPoolResponse,
     QueryIncentivePoolAprsResponse, QueryJoinPoolEstimationResponse,
     QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryUserPoolResponse,
-    QueryVestingInfoResponse, StableStakeParamsData, StakedAvailable,
+    QueryVestingInfoResponse, StableStakeParamsData, StakedAvailable, QueryPoolAssetEstimationResponse
 };
 #[allow(unused_imports)]
 use crate::types::{BalanceAvailable, PageRequest};
 use cosmwasm_schema::{cw_serde, QueryResponses};
 #[cfg(feature = "debug")]
-use cosmwasm_std::{Coin, Decimal};
+use cosmwasm_std::{Coin, DecCoin, Decimal};
 
 #[cw_serde]
 #[derive(QueryResponses)]
@@ -57,6 +57,12 @@ pub enum QueryMsg {
     JoinPoolEstimation {
         pool_id: u64,
         amounts_in: Vec<Coin> 
+    },
+
+    #[returns(QueryPoolAssetEstimationResponse)]
+    PoolAssetEstimation {
+        pool_id: u64,
+        amount: DecCoin
     },
 
     // debug only

@@ -1,5 +1,7 @@
+use std::collections::HashMap;
+
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, Decimal, Int128, SignedDecimal, SignedDecimal256, Uint128};
+use cosmwasm_std::{Coin, Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, Uint128};
 
 use crate::{
     trade_shield::types::{PerpetualPosition, StakedPositionRaw},
@@ -390,6 +392,11 @@ pub struct QueryJoinPoolEstimationResponse {
 }
 
 #[cw_serde]
+pub struct QueryPoolAssetEstimationResponse {
+    pub amounts: HashMap<String, Decimal256>
+}
+
+#[cw_serde]
 pub struct QueryUserPoolResponse {
     pub pools: Vec<UserPoolResp>,
 }
@@ -399,13 +406,18 @@ pub struct PoolResp {
     pub pool_id: i64,
     pub apr: Option<Decimal>,
     pub assets: Vec<PoolAsset>, // eg : [{{"denom":"uatom", "amount":"1000"}, "weight":"10"}, {{"denom":"uusdc", "amount":"100"}, "weight":"1"}, ...]
+    // Expected pool ratio
     pub pool_ratio: String,
+    // Current pool ratio
+    pub current_pool_ratio: Option<HashMap<String, Decimal>>,
     pub rewards_apr: Decimal,
     pub borrow_apr: Decimal,
     pub leverage_lp: Decimal,
     pub perpetual: Decimal,
     pub tvl: Decimal,
     pub rewards: Decimal,
+    pub total_shares: Coin,
+    pub share_usd_price: Option<Decimal>
 }
 
 #[cw_serde]
@@ -417,7 +429,10 @@ pub struct IncentivePoolApr {
 #[cw_serde]
 pub struct UserPoolResp {
     pub pool: PoolResp,
+    // User shares in pool
     pub balance: CommittedTokens,
+    // User balance in pool in terms of USD
+    pub available: Decimal
 }
 
 #[cw_serde]

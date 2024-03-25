@@ -4,7 +4,10 @@ use crate::action::query::{
 };
 
 #[cfg(feature = "debug")]
-use crate::action::query::{all, get_pools, get_pools_apr, join_pool_estimation, last_snapshot, params, user_snapshots, user_value};
+use crate::action::query::{
+    all, get_pools, get_pools_apr, join_pool_estimation, last_snapshot, params, user_snapshots, user_value,
+    pool_asset_estimation
+};
 
 use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult};
 use elys_bindings::{ElysQuerier, ElysQuery};
@@ -63,6 +66,11 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
             pool_id,
             amounts_in
         } => to_json_binary(&join_pool_estimation(deps, pool_id, amounts_in)?),
+
+        PoolAssetEstimation {
+            pool_id,
+            amount
+        } => to_json_binary(&pool_asset_estimation(deps, pool_id, amount)?),
 
         GetAssetPriceFromDenomInToDenomOut {
             denom_in,
