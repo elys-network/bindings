@@ -72,14 +72,11 @@ pub fn cancel_spot_orders(
 
     for order in orders.iter_mut() {
         let key = order.gen_key()?;
-        let v: Vec<u64> = SORTED_PENDING_SPOT_ORDER
-            .load(deps.storage, key.as_str())?
-            .iter()
-            .into_iter()
-            .filter(|id| **id != order.order_id)
-            .cloned()
-            .collect();
-        SORTED_PENDING_SPOT_ORDER.save(deps.storage, key.as_str(), &v)?;
+        let mut vec: Vec<u64> = SORTED_PENDING_SPOT_ORDER.load(deps.storage, key.as_str())?;
+        if let Ok(index) = vec.binary_search(&order.order_id) {
+            vec.remove(index);
+        }
+        SORTED_PENDING_SPOT_ORDER.save(deps.storage, key.as_str(), &vec)?;
 
         order.status = Status::Canceled;
         SPOT_ORDER.save(deps.storage, order.order_id, &order)?;
