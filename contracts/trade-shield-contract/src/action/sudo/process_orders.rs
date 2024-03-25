@@ -318,52 +318,52 @@ fn split_spot_order(
     ids: Vec<u64>,
     storage: &mut dyn Storage,
 ) -> StdResult<Vec<u64>> {
-    // let order_price = order.order_price.rate;
+    if ids.is_empty() {
+        return Ok(vec![]);
+    }
 
-    let order = if closest_index >= ids.len() {
-        None
-    } else {
+    let order_price = if closest_index < ids.len() {
         Some(
             PENDING_SPOT_ORDER
                 .load(storage, ids[closest_index])?
                 .order_price
                 .rate,
         )
+    } else {
+        None
     };
 
-    let res: Vec<u64> = match (order_type, order) {
+    match (order_type, order_price) {
         (SpotOrderType::StopLoss, Some(order_price)) => {
             if market_price <= order_price {
-                ids[closest_index + 1..].to_vec()
+                Ok(ids.get(closest_index..).unwrap_or(&[]).to_vec())
             } else {
-                ids[closest_index..].to_vec()
+                Ok(ids.get(closest_index + 1..).unwrap_or(&[]).to_vec())
             }
         }
-        (SpotOrderType::StopLoss, None) => vec![],
+        (SpotOrderType::StopLoss, _) => Ok(vec![]),
         (SpotOrderType::LimitSell, Some(order_price)) => {
             if market_price >= order_price {
-                ids[..=closest_index].to_vec()
+                Ok(ids.get(..=closest_index).unwrap_or(&[]).to_vec())
             } else {
-                ids[..closest_index].to_vec()
+                Ok(ids.get(..closest_index).unwrap_or(&[]).to_vec())
             }
         }
-        (SpotOrderType::LimitSell, None) => ids,
+        (SpotOrderType::LimitSell, _) => Ok(ids),
         (SpotOrderType::LimitBuy, Some(order_price)) => {
             if market_price <= order_price {
-                ids[closest_index + 1..].to_vec()
+                Ok(ids.get(closest_index..).unwrap_or(&[]).to_vec())
             } else {
-                ids[closest_index..].to_vec()
+                Ok(ids.get(closest_index + 1..).unwrap_or(&[]).to_vec())
             }
         }
-        (SpotOrderType::LimitBuy, None) => vec![],
+        (SpotOrderType::LimitBuy, _) => Ok(vec![]),
+        _ => Err(StdError::generic_err("Unsupported market order type")),
+    }
 
-        // SpotOrderType::StopLoss => market_price <= order_price,
-        // SpotOrderType::LimitSell => market_price >= order_price,
-        // SpotOrderType::LimitBuy => market_price <= order_price,
-        _ => return Err(StdError::generic_err("Market Order")),
-    };
-
-    Ok(res)
+    // SpotOrderType::StopLoss => market_price <= order_price,
+    // SpotOrderType::LimitSell => market_price >= order_price,
+    // SpotOrderType::LimitBuy => market_price <= order_price,
 }
 
 fn process_spot_order(
@@ -377,7 +377,17 @@ fn process_spot_order(
 ) -> StdResult<()> {
     for id in orders_ids {
         let order = PENDING_SPOT_ORDER.load(storage, id)?;
-
+        *reply_info_id = match reply_info_id.checked_add(1) {
+            Some(id) => id,
+            None => {
+                return Err(StdError::overflow(OverflowError::new(
+                    cosmwasm_std::OverflowOperation::Add,
+                    "reply_info_max_id",
+                    "increment one",
+                ))
+                .into())
+            }
+        };
         let reply_info = ReplyInfo {
             id: *reply_info_id,
             reply_type: ReplyType::SpotOrder,
@@ -395,17 +405,7 @@ fn process_spot_order(
             discount,
             order.owner_address.as_str(),
         );
-        *reply_info_id = match reply_info_id.checked_add(1) {
-            Some(id) => id,
-            None => {
-                return Err(StdError::overflow(OverflowError::new(
-                    cosmwasm_std::OverflowOperation::Add,
-                    "reply_info_max_id",
-                    "increment one",
-                ))
-                .into())
-            }
-        };
+
         submsgs.push(SubMsg::reply_always(msg, *reply_info_id));
     }
 

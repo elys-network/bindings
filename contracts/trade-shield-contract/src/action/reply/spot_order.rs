@@ -13,13 +13,21 @@ pub fn reply_to_spot_order(
 
     let mut order = SPOT_ORDER.load(deps.storage, order_id)?;
 
+    let key = order.gen_key()?;
+    let vec: Vec<u64> = SORTED_PENDING_SPOT_ORDER
+        .load(deps.storage, key.as_str())?
+        .iter()
+        .filter(|id| **id != order.order_id)
+        .cloned()
+        .collect();
+    SORTED_PENDING_SPOT_ORDER.save(deps.storage, key.as_str(), &vec)?;
+
     let _: AmmSwapExactAmountInResp = match get_response_from_reply(module_resp) {
         Ok(expr) => expr,
         Err(err) => {
             order.status = Status::Canceled;
             SPOT_ORDER.save(deps.storage, order_id, &order)?;
             PENDING_SPOT_ORDER.remove(deps.storage, order.order_id);
-
             return Ok(err.add_message(BankMsg::Send {
                 to_address: order.owner_address.to_string(),
                 amount: vec![order.order_amount],
