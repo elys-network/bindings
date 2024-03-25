@@ -201,7 +201,7 @@ fn create_perpetual_open_order(
         let mut vec = SORTED_PENDING_PERPETUAL_ORDER
             .may_load(deps.storage, key.as_str())?
             .unwrap_or(vec![]);
-        let index = order.binary_search(deps.storage, &vec)?;
+        let index = PerpetualOrder::binary_search(&order.trigger_price, deps.storage, &vec)?;
         if vec.len() <= index {
             vec.push(order.order_id)
         } else {
@@ -326,7 +326,7 @@ fn create_perpetual_close_order(
             let mut vec = SORTED_PENDING_PERPETUAL_ORDER
                 .may_load(deps.storage, key.as_str())?
                 .unwrap_or(vec![]);
-            let index = order.binary_search(deps.storage, &vec)?;
+            let index = PerpetualOrder::binary_search(&order.trigger_price, deps.storage, &vec)?;
             if vec.len() <= index {
                 vec.push(order.order_id)
             } else {

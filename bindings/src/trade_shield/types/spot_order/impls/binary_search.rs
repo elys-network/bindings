@@ -18,13 +18,10 @@ impl SpotOrder {
                 ..
             } = SPOT_ORDER.load(storage, list[mid])?;
 
-            if mid_rate == *rate {
-                return Ok(mid);
-            }
             if mid_rate < *rate {
-                low = mid
+                low = mid + 1;
             } else {
-                high = mid
+                high = mid;
             }
         }
         Ok(low)

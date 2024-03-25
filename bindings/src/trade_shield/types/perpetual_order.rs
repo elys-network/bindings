@@ -98,10 +98,14 @@ impl PerpetualOrder {
         Ok(order)
     }
 
-    pub fn binary_search(&self, storage: &dyn Storage, list: &Vec<u64>) -> StdResult<usize> {
+    pub fn binary_search(
+        trigger_price: &Option<OrderPrice>,
+        storage: &dyn Storage,
+        list: &Vec<u64>,
+    ) -> StdResult<usize> {
         let mut low = 0;
         let mut high = list.len();
-        let rate = match &self.trigger_price {
+        let rate = match trigger_price {
             Some(price) => &price.rate,
             None => return Err(StdError::generic_err("price not found")),
         };
@@ -115,15 +119,15 @@ impl PerpetualOrder {
             };
 
             if mid_rate == *rate {
-                return Ok(mid + 1);
+                return Ok(mid);
             }
             if mid_rate < *rate {
-                low = mid + 1
+                low = mid
             } else {
                 high = mid
             }
         }
-        Ok(low + 1)
+        Ok(low)
     }
 
     pub fn gen_key(&self) -> StdResult<String> {
