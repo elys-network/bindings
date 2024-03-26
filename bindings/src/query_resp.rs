@@ -411,13 +411,12 @@ pub struct PoolResp {
     // Current pool ratio
     pub current_pool_ratio: Option<HashMap<String, Decimal>>,
     pub rewards_apr: Decimal,
-    pub rewards_usd: Decimal,
-    pub reward_coins: Coin,
+    pub rewards_usd: Option<Decimal>,
+    pub reward_coins: Option<Vec<Coin>>,
     pub borrow_apr: Decimal,
     pub leverage_lp: Decimal,
     pub perpetual: Decimal,
     pub tvl: Decimal,
-    pub rewards: Decimal,
     pub total_shares: Coin,
     pub share_usd_price: Option<Decimal>
 }

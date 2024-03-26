@@ -220,9 +220,8 @@ impl AccountSnapshotGenerator {
                     leverage_lp: Decimal::zero(),
                     perpetual: Decimal::zero(),
                     tvl: Decimal::zero(),
-                    rewards: Decimal::zero(),
-                    rewards_usd: Decimal::zero(),
-                    reward_coins: Coin::new(0 as u128, "".to_string()),
+                    rewards_usd: Some(Decimal::zero()),
+                    reward_coins: Some([Coin::new(0 as u128, "".to_string())].to_vec()),
                     total_shares: Coin::new(0 as u128, "".to_string()),
                     share_usd_price: Some(Decimal::zero())
                 },
