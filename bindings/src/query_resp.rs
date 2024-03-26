@@ -401,6 +401,7 @@ pub struct QueryUserPoolResponse {
     pub pools: Vec<UserPoolResp>,
 }
 
+#[allow(non_snake_case)]
 #[cw_serde]
 pub struct PoolResp {
     pub pool_id: i64,
@@ -411,6 +412,7 @@ pub struct PoolResp {
     // Current pool ratio
     pub current_pool_ratio: Option<HashMap<String, Decimal>>,
     pub rewards_apr: Decimal,
+    pub rewardsUsd: Option<Decimal>,
     pub rewards_usd: Option<Decimal>,
     pub reward_coins: Option<Vec<Coin>>,
     pub borrow_apr: Decimal,
