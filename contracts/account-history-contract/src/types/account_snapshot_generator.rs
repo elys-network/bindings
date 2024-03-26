@@ -221,6 +221,8 @@ impl AccountSnapshotGenerator {
                     perpetual: Decimal::zero(),
                     tvl: Decimal::zero(),
                     rewards: Decimal::zero(),
+                    rewards_usd: Decimal::zero(),
+                    reward_coins: Coin::new(0 as u128, "".to_string()),
                     total_shares: Coin::new(0 as u128, "".to_string()),
                     share_usd_price: Some(Decimal::zero())
                 },
