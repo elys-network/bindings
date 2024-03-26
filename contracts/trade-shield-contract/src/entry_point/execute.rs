@@ -1,4 +1,4 @@
-use crate::helper::get_discount;
+use crate::helper::get_mut_discount;
 
 use super::*;
 use cosmwasm_std::{Int128, StdError, SubMsg};
@@ -134,7 +134,7 @@ pub fn execute(
                 routes,
                 token_in: info.funds[0].clone(),
                 token_out_min_amount: Int128::zero(),
-                discount: get_discount(&deps.as_ref(), info.sender.to_string())?,
+                discount: get_mut_discount(deps.storage, deps.querier, info.sender.to_string())?,
                 recipient: info.sender.into_string(),
             };
 

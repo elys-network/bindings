@@ -41,6 +41,11 @@ pub fn cancel_spot_order(
 
     SPOT_ORDER.save(deps.storage, order_id, &order)?;
     PENDING_SPOT_ORDER.remove(deps.storage, order_id);
+    let key = order.gen_key()?;
+    let mut vec = SORTED_PENDING_SPOT_ORDER.load(deps.storage, key.as_str())?;
+    let index = vec.binary_search(&order.order_id).map_err(|_| StdError::not_found("order id not found"))?;
+    vec.remove(index);
+    SORTED_PENDING_SPOT_ORDER.save(deps.storage, key.as_str(), &vec)?;
 
     Ok(resp)
 }

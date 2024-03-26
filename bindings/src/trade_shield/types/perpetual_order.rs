@@ -1,6 +1,10 @@
-use crate::types::PerpetualPosition;
+use std::str::FromStr;
+
+use crate::{trade_shield::states::PERPETUAL_ORDER, types::PerpetualPosition};
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, OverflowError, SignedDecimal, SignedDecimal256, StdError, StdResult};
+use cosmwasm_std::{
+    Coin, OverflowError, SignedDecimal, SignedDecimal256, StdError, StdResult, Storage,
+};
 
 use super::{OrderPrice, PerpetualOrderType, Status};
 
@@ -31,7 +35,11 @@ impl PerpetualOrder {
         trigger_price: &Option<OrderPrice>,
         order_vec: &Vec<PerpetualOrder>,
     ) -> StdResult<Self> {
-        let status = Status::Pending;
+        let status = if order_type == &PerpetualOrderType::MarketOpen {
+            Status::Executed
+        } else {
+            Status::Pending
+        };
 
         let order_id = get_new_id(&order_vec)?;
 
@@ -65,7 +73,11 @@ impl PerpetualOrder {
     ) -> StdResult<Self> {
         let order_id: u64 = get_new_id(&order_vec)?;
 
-        let status = Status::Pending;
+        let status = if order_type == &PerpetualOrderType::MarketClose {
+            Status::Executed
+        } else {
+            Status::Pending
+        };
 
         let position = PerpetualPosition::try_from_i32(position)?;
 
@@ -84,6 +96,67 @@ impl PerpetualOrder {
         };
 
         Ok(order)
+    }
+
+    pub fn binary_search(
+        trigger_price: &Option<OrderPrice>,
+        storage: &dyn Storage,
+        list: &Vec<u64>,
+    ) -> StdResult<usize> {
+        let mut low = 0;
+        let mut high = list.len();
+        let rate = match trigger_price {
+            Some(price) => &price.rate,
+            None => return Err(StdError::generic_err("price not found")),
+        };
+
+        while low < high {
+            let mid = low + (high - low) / 2;
+            let PerpetualOrder { trigger_price, .. } = PERPETUAL_ORDER.load(storage, list[mid])?;
+            let mid_rate = match trigger_price {
+                Some(price) => price.rate,
+                None => return Err(StdError::generic_err("price not found")),
+            };
+
+            if mid_rate == *rate {
+                return Ok(mid);
+            }
+            if mid_rate < *rate {
+                low = mid
+            } else {
+                high = mid
+            }
+        }
+        Ok(low)
+    }
+
+    pub fn gen_key(&self) -> StdResult<String> {
+        if self.order_type == PerpetualOrderType::MarketClose
+            || self.order_type == PerpetualOrderType::MarketOpen
+        {
+            return Err(StdError::generic_err("gen a key on a market order"));
+        }
+        if let Some(price) = &self.trigger_price {
+            Ok(self.order_type.to_string() + "\n" + &price.base_denom + "\n" + &price.quote_denom)
+        } else {
+            Err(StdError::not_found("trigger price not found"))
+        }
+    }
+
+    pub fn from_key(key: &str) -> StdResult<(PerpetualOrderType, String, String)> {
+        let vec: Vec<&str> = key.split('\n').collect();
+        if vec.len() != 3 {
+            return Err(StdError::generic_err("Wrong Key"));
+        }
+
+        let order_type = PerpetualOrderType::from_str(vec[0])?;
+        if order_type == PerpetualOrderType::MarketClose
+            || order_type == PerpetualOrderType::MarketOpen
+        {
+            return Err(StdError::generic_err("Market Order"));
+        }
+
+        Ok((order_type, vec[1].to_string(), vec[2].to_string()))
     }
 }
 

@@ -3,6 +3,8 @@ mod spot_order_type;
 mod spot_order {
     pub mod spot_order;
     mod impls {
+        mod binary_search;
+        mod gen_key;
         mod new;
         #[cfg(feature = "testing")]
         mod new_dummy;

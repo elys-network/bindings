@@ -20,7 +20,11 @@ impl SpotOrder {
             },
         };
 
-        let status = Status::Pending;
+        let status = if order_type == SpotOrderType::MarketBuy {
+            Status::Executed
+        } else {
+            Status::Pending
+        };
 
         SpotOrder {
             order_type,
