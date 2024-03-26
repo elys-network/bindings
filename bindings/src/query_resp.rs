@@ -420,7 +420,10 @@ pub struct PoolResp {
     pub perpetual: Decimal,
     pub tvl: Decimal,
     pub total_shares: Coin,
-    pub share_usd_price: Option<Decimal>
+    pub share_usd_price: Option<Decimal>,
+    pub swap_fee: Decimal,
+    pub fee_denom: String,
+    pub use_oracle: Option<bool>
 }
 
 #[cw_serde]

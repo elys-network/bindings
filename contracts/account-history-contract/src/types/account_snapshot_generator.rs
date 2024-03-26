@@ -224,7 +224,10 @@ impl AccountSnapshotGenerator {
                     rewardsUsd: Some(Decimal::zero()),
                     reward_coins: Some([Coin::new(0 as u128, "".to_string())].to_vec()),
                     total_shares: Coin::new(0 as u128, "".to_string()),
-                    share_usd_price: Some(Decimal::zero())
+                    share_usd_price: Some(Decimal::zero()),
+                    fee_denom: "".to_string(),
+                    swap_fee: Decimal::zero(),
+                    use_oracle: Some(false),
                 },
                 |pool| pool.clone(),
             );
