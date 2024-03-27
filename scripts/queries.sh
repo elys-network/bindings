@@ -551,6 +551,15 @@ function ts_params() {
         "get_params": {}
     }'
 }
+
+function number_of_pending_orders() {
+    printf "\n# number_of_pending_orders\n"
+    query_contract \
+    "$ts_contract_address" \
+    '{
+        "number_of_pending_order": {}
+    }'
+}
 # function(s) to run based on the provided argument
 case "$2" in
     "ah_params")
@@ -727,7 +736,9 @@ case "$2" in
     "ts_params")
         ts_params
         ;;
-
+    "number_of_pending_orders")
+        number_of_pending_orders
+        ;;
     *)
         # Default case: run all functions
         ah_params

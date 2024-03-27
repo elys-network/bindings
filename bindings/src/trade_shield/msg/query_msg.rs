@@ -85,4 +85,6 @@ pub enum QueryMsg {
     LeveragelpPosition { address: String, id: u64 },
     #[returns(TradeShieldParamsResponse)]
     GetParams {},
+    #[returns(NumberOfPendingOrderResp)]
+    NumberOfPendingOrder {},
 }

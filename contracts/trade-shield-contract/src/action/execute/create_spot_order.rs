@@ -85,6 +85,17 @@ pub fn create_spot_order(
     SPOT_ORDER.save(deps.storage, new_order.order_id, &new_order)?;
     if new_order.order_type != SpotOrderType::MarketBuy {
         PENDING_SPOT_ORDER.save(deps.storage, new_order.order_id, &new_order)?;
+        let key = new_order.gen_key()?;
+        let mut vec = SORTED_PENDING_SPOT_ORDER
+            .may_load(deps.storage, key.as_str())?
+            .unwrap_or(vec![]);
+        let index = SpotOrder::binary_search(&new_order.order_price.rate, deps.storage, &vec)?;
+        if vec.len() <= index {
+            vec.push(new_order.order_id)
+        } else {
+            vec.insert(index, new_order.order_id);
+        }
+        SORTED_PENDING_SPOT_ORDER.save(deps.storage, key.as_str(), &vec)?;
     }
     let mut ids = USER_SPOT_ORDER
         .may_load(deps.storage, new_order.owner_address.as_str())?

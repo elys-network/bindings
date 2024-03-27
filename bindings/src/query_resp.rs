@@ -1,5 +1,7 @@
+use std::collections::HashMap;
+
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, Decimal, Int128, SignedDecimal, SignedDecimal256, Uint128};
+use cosmwasm_std::{Coin, Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, Uint128};
 
 use crate::{
     trade_shield::types::{PerpetualPosition, StakedPositionRaw},
@@ -344,6 +346,7 @@ pub struct VestingTokens {
     epoch_identifier: String,
     num_epochs: i64,
     current_epoch: i64,
+    vest_started_timestamp: i64,
 }
 
 #[cw_serde]
@@ -377,7 +380,7 @@ pub struct QueryEarnPoolResponse {
 
 #[cw_serde]
 pub struct QueryIncentivePoolAprsResponse {
-    pub data: Option<Vec<IncentivePoolApr>>
+    pub data: Option<Vec<IncentivePoolApr>>,
 }
 
 #[cw_serde]
@@ -385,7 +388,12 @@ pub struct QueryJoinPoolEstimationResponse {
     amounts_in: Vec<Coin>,
     share_amount_out: Coin,
     slippage: Decimal,
-    weight_balance_ratio: Decimal
+    weight_balance_ratio: Decimal,
+}
+
+#[cw_serde]
+pub struct QueryPoolAssetEstimationResponse {
+    pub amounts: HashMap<String, Decimal256>
 }
 
 #[cw_serde]
@@ -393,30 +401,41 @@ pub struct QueryUserPoolResponse {
     pub pools: Vec<UserPoolResp>,
 }
 
+#[allow(non_snake_case)]
 #[cw_serde]
 pub struct PoolResp {
     pub pool_id: i64,
     pub apr: Option<Decimal>,
     pub assets: Vec<PoolAsset>, // eg : [{{"denom":"uatom", "amount":"1000"}, "weight":"10"}, {{"denom":"uusdc", "amount":"100"}, "weight":"1"}, ...]
+    // Expected pool ratio
     pub pool_ratio: String,
+    // Current pool ratio
+    pub current_pool_ratio: Option<HashMap<String, Decimal>>,
     pub rewards_apr: Decimal,
+    pub rewardsUsd: Option<Decimal>,
+    pub rewards_usd: Option<Decimal>,
+    pub reward_coins: Option<Vec<Coin>>,
     pub borrow_apr: Decimal,
     pub leverage_lp: Decimal,
     pub perpetual: Decimal,
     pub tvl: Decimal,
-    pub rewards: Decimal,
+    pub total_shares: Coin,
+    pub share_usd_price: Option<Decimal>
 }
 
 #[cw_serde]
 pub struct IncentivePoolApr {
     pub apr: Decimal,
-    pub pool_id: i64
+    pub pool_id: i64,
 }
 
 #[cw_serde]
 pub struct UserPoolResp {
     pub pool: PoolResp,
+    // User shares in pool
     pub balance: CommittedTokens,
+    // User balance in pool in terms of USD
+    pub available: Decimal
 }
 
 #[cw_serde]

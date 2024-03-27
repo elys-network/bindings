@@ -30,6 +30,18 @@ pub fn instantiate(
         SPOT_ORDER.save(deps.storage, order.order_id, order)?;
         if order.status == Status::Pending {
             PENDING_SPOT_ORDER.save(deps.storage, order.order_id, order)?;
+
+            let key = order.gen_key()?;
+            let mut vec = SORTED_PENDING_SPOT_ORDER
+                .may_load(deps.storage, key.as_str())?
+                .unwrap_or(vec![]);
+            let index = SpotOrder::binary_search(&order.order_price.rate, deps.storage, &vec)?;
+            if vec.len() <= index {
+                vec.push(order.order_id)
+            } else {
+                vec.insert(index, order.order_id);
+            }
+            SORTED_PENDING_SPOT_ORDER.save(deps.storage, key.as_str(), &vec)?;
         }
         let mut ids = match user_spot_orders.get(&owner) {
             Some(ids) => ids.to_owned(),
@@ -44,6 +56,19 @@ pub fn instantiate(
         PERPETUAL_ORDER.save(deps.storage, order.order_id, order)?;
         if order.status == Status::Pending {
             PENDING_PERPETUAL_ORDER.save(deps.storage, order.order_id, order)?;
+
+            PENDING_PERPETUAL_ORDER.save(deps.storage, order.order_id, &order)?;
+            let key = order.gen_key()?;
+            let mut vec = SORTED_PENDING_PERPETUAL_ORDER
+                .may_load(deps.storage, key.as_str())?
+                .unwrap_or(vec![]);
+            let index = PerpetualOrder::binary_search(&order.trigger_price, deps.storage, &vec)?;
+            if vec.len() <= index {
+                vec.push(order.order_id)
+            } else {
+                vec.insert(index, order.order_id);
+            }
+            SORTED_PENDING_PERPETUAL_ORDER.save(deps.storage, key.as_str(), &vec)?;
         }
         let mut ids = match user_perpetual_orders.get(&owner) {
             Some(ids) => ids.to_owned(),
@@ -76,5 +101,7 @@ pub fn instantiate(
     PERPETUAL_ENABLED.save(deps.storage, &state)?;
     REWARD_ENABLED.save(deps.storage, &state)?;
     LEVERAGE_ENABLED.save(deps.storage, &state)?;
+    LIMIT_PROCESS_ORDER.save(deps.storage, &None)?;
+
     Ok(Response::new())
 }

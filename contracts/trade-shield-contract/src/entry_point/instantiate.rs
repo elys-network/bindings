@@ -24,5 +24,6 @@ pub fn instantiate(
     PERPETUAL_ENABLED.save(deps.storage, &state)?;
     REWARD_ENABLED.save(deps.storage, &state)?;
     LEVERAGE_ENABLED.save(deps.storage, &state)?;
+    LIMIT_PROCESS_ORDER.save(deps.storage, &None)?;
     Ok(Response::new())
 }

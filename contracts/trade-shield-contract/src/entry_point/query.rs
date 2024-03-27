@@ -1,10 +1,13 @@
 use super::*;
+use cosmwasm_std::Order;
 use elys_bindings::trade_shield::{
-    msg::query_resp::TradeShieldParamsResponse,
+    msg::query_resp::{NumberOfPendingOrderResp, TradeShieldParamsResponse},
     states::{
-        LEVERAGE_ENABLED, MARKET_ORDER_ENABLED, PARAMS_ADMIN, PERPETUAL_ENABLED,
-        PROCESS_ORDERS_ENABLED, REWARD_ENABLED, STAKE_ENABLED, SWAP_ENABLED,
+        LEVERAGE_ENABLED, LIMIT_PROCESS_ORDER, MARKET_ORDER_ENABLED, PARAMS_ADMIN,
+        PENDING_PERPETUAL_ORDER, PENDING_SPOT_ORDER, PERPETUAL_ENABLED, PROCESS_ORDERS_ENABLED,
+        REWARD_ENABLED, STAKE_ENABLED, SWAP_ENABLED,
     },
+    types::{PerpetualOrder, SpotOrder},
 };
 use msg::QueryMsg;
 
@@ -83,6 +86,21 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
         } => Ok(to_json_binary(&query::perpetual_get_position_for_address(
             deps, address, pagination,
         )?)?),
+        NumberOfPendingOrder {} => {
+            let spot_orders: Vec<SpotOrder> = PENDING_SPOT_ORDER
+                .prefix_range(deps.storage, None, None, Order::Ascending)
+                .filter_map(|res| res.ok().map(|r| r.1))
+                .collect();
+            let perpetual_orders: Vec<PerpetualOrder> = PENDING_PERPETUAL_ORDER
+                .prefix_range(deps.storage, None, None, Order::Ascending)
+                .filter_map(|res| res.ok().map(|r| r.1))
+                .collect();
+
+            Ok(to_json_binary(&NumberOfPendingOrderResp {
+                spot_orders: spot_orders.len() as u128,
+                perpetual_orders: perpetual_orders.len() as u128,
+            })?)
+        }
         LeveragelpParams {} => Ok(to_json_binary(&querier.leveragelp_params()?)?),
         LeveragelpQueryPositions { pagination } => Ok(to_json_binary(
             &querier.leveragelp_query_positions(pagination)?,
@@ -123,6 +141,7 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
             let perpetual_enabled = PERPETUAL_ENABLED.load(deps.storage)?;
             let reward_enabled = REWARD_ENABLED.load(deps.storage)?;
             let leverage_enabled = LEVERAGE_ENABLED.load(deps.storage)?;
+            let limit_process_order = LIMIT_PROCESS_ORDER.load(deps.storage)?;
 
             TradeShieldParamsResponse {
                 params_admin,
@@ -133,6 +152,7 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
                 perpetual_enabled,
                 reward_enabled,
                 leverage_enabled,
+                limit_process_order,
             }
         })?),
     }

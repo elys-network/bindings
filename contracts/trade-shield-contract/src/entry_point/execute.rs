@@ -1,9 +1,9 @@
-use crate::helper::get_discount;
+use crate::helper::get_mut_discount;
 
 use super::*;
 use cosmwasm_std::{Int128, StdError, SubMsg};
 use elys_bindings::trade_shield::states::{
-    LEVERAGE_ENABLED, MARKET_ORDER_ENABLED, PARAMS_ADMIN, PERPETUAL_ENABLED,
+    LEVERAGE_ENABLED, LIMIT_PROCESS_ORDER, MARKET_ORDER_ENABLED, PARAMS_ADMIN, PERPETUAL_ENABLED,
     PROCESS_ORDERS_ENABLED, REWARD_ENABLED, STAKE_ENABLED, SWAP_ENABLED,
 };
 use msg::ExecuteMsg;
@@ -134,7 +134,7 @@ pub fn execute(
                 routes,
                 token_in: info.funds[0].clone(),
                 token_out_min_amount: Int128::zero(),
-                discount: get_discount(&deps.as_ref(), info.sender.to_string())?,
+                discount: get_mut_discount(deps.storage, deps.querier, info.sender.to_string())?,
                 recipient: info.sender.into_string(),
             };
 
@@ -172,6 +172,7 @@ pub fn execute(
             perpetual_enabled,
             reward_enabled,
             leverage_enabled,
+            limit_process_order,
         } => {
             let admin = PARAMS_ADMIN.load(deps.storage)?;
 
@@ -198,6 +199,12 @@ pub fn execute(
             }
             if let Some(leverage_enabled) = leverage_enabled {
                 LEVERAGE_ENABLED.save(deps.storage, &leverage_enabled)?;
+            }
+            if let Some(limit_process_order) = limit_process_order {
+                match limit_process_order {
+                    0 => LIMIT_PROCESS_ORDER.save(deps.storage, &None)?,
+                    x => LIMIT_PROCESS_ORDER.save(deps.storage, &Some(x))?,
+                };
             }
             Ok(Response::new())
         }

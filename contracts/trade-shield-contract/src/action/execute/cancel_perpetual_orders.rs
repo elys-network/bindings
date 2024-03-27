@@ -31,7 +31,11 @@ pub fn cancel_perpetual_orders(
             });
         }
 
-        if let Some(order) = orders.iter().find(|order| order.status != Status::Pending) {
+        if let Some(order) = orders.iter().find(|order| {
+            order.status != Status::Pending
+                || order.order_type == PerpetualOrderType::MarketOpen
+                || order.order_type == PerpetualOrderType::MarketClose
+        }) {
             return Err(ContractError::CancelStatusError {
                 order_id: order.order_id,
                 status: order.status.clone(),
@@ -45,7 +49,13 @@ pub fn cancel_perpetual_orders(
                 Some(v) => v
                     .iter()
                     .filter_map(|id| match PERPETUAL_ORDER.load(deps.storage, *id) {
-                        Ok(order) if order.status == Status::Pending => Some(order),
+                        Ok(order)
+                            if order.status == Status::Pending
+                                && order.order_type != PerpetualOrderType::MarketOpen
+                                && order.order_type != PerpetualOrderType::MarketClose =>
+                        {
+                            Some(order)
+                        }
                         _ => None,
                     })
                     .collect(),
@@ -64,6 +74,12 @@ pub fn cancel_perpetual_orders(
     let mut orders = filter_order_by_type(orders, order_type)?;
 
     for order in orders.iter_mut() {
+        let key = order.gen_key()?;
+        let mut vec = SORTED_PENDING_PERPETUAL_ORDER.load(deps.storage, key.as_str())?;
+        if let Ok(index) = vec.binary_search(&order.order_id) {
+            vec.remove(index);
+        }
+        SORTED_PENDING_PERPETUAL_ORDER.save(deps.storage, key.as_str(), &vec)?;
         order.status = Status::Canceled;
         PERPETUAL_ORDER.save(deps.storage, order.order_id, order)?;
         PENDING_PERPETUAL_ORDER.remove(deps.storage, order.order_id);

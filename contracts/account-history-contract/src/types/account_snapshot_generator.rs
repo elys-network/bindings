@@ -214,18 +214,28 @@ impl AccountSnapshotGenerator {
                     apr: Some(Decimal::zero()),
                     assets: vec![],
                     pool_ratio: "".to_string(),
+                    current_pool_ratio: Some(HashMap::new()),
                     rewards_apr: Decimal::zero(),
                     borrow_apr: Decimal::zero(),
                     leverage_lp: Decimal::zero(),
                     perpetual: Decimal::zero(),
                     tvl: Decimal::zero(),
-                    rewards: Decimal::zero(),
+                    rewards_usd: Some(Decimal::zero()),
+                    rewardsUsd: Some(Decimal::zero()),
+                    reward_coins: Some([Coin::new(0 as u128, "".to_string())].to_vec()),
+                    total_shares: Coin::new(0 as u128, "".to_string()),
+                    share_usd_price: Some(Decimal::zero())
                 },
                 |pool| pool.clone(),
             );
+
+            let balance_uint = Uint128::new(user_pool.balance.amount.i128() as u128);
+            let share_price = pool.share_usd_price.or(Some(Decimal::zero())).unwrap();
+
             pool_resp.push(UserPoolResp {
                 pool,
                 balance: user_pool.balance,
+                available: Decimal::from_atomics(balance_uint, 18).unwrap() * share_price
             });
         }
 
