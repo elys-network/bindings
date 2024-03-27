@@ -224,6 +224,29 @@ impl PerpetualPosition {
     }
 }
 
+impl ToString for PerpetualPosition {
+    fn to_string(&self) -> String {
+        match self {
+            PerpetualPosition::Unspecified => "Unspecified".to_string(),
+            PerpetualPosition::Long => "Long".to_string(),
+            PerpetualPosition::Short => "Short".to_string(),
+        }
+    }
+}
+
+impl FromStr for PerpetualPosition {
+    type Err = StdError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
+            "Unspecified" => PerpetualPosition::Unspecified,
+            "Long" => PerpetualPosition::Long,
+            "Short" => PerpetualPosition::Short,
+            _ => return Err(StdError::generic_err("unknow type")),
+        })
+    }
+}
+
 #[cw_serde]
 pub struct Mtp {
     pub address: String,

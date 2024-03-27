@@ -75,12 +75,11 @@ pub fn cancel_perpetual_orders(
 
     for order in orders.iter_mut() {
         let key = order.gen_key()?;
-        let mut v = SORTED_PENDING_PERPETUAL_ORDER.load(deps.storage, key.as_str())?;
-        let index = v
-            .binary_search(&order.order_id)
-            .map_err(|id| StdError::not_found(format!("order: {id}")))?;
-        v.remove(index);
-        SORTED_PENDING_PERPETUAL_ORDER.save(deps.storage, key.as_str(), &v)?;
+        let mut vec = SORTED_PENDING_PERPETUAL_ORDER.load(deps.storage, key.as_str())?;
+        if let Ok(index) = vec.binary_search(&order.order_id) {
+            vec.remove(index);
+        }
+        SORTED_PENDING_PERPETUAL_ORDER.save(deps.storage, key.as_str(), &vec)?;
         order.status = Status::Canceled;
         PERPETUAL_ORDER.save(deps.storage, order.order_id, order)?;
         PENDING_PERPETUAL_ORDER.remove(deps.storage, order.order_id);

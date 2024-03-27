@@ -13,6 +13,12 @@ pub fn reply_to_close_perpetual_order(
 
     let mut order: PerpetualOrder = PERPETUAL_ORDER.load(deps.storage, order_id)?;
 
+    let key = order.gen_key()?;
+    let mut vec: Vec<u64> = SORTED_PENDING_PERPETUAL_ORDER.load(deps.storage, key.as_str())?;
+    if let Ok(index) = vec.binary_search(&order.order_id) {
+        vec.remove(index);
+    }
+
     let res: PerpetualCloseResponse = match get_response_from_reply(module_resp) {
         Ok(expr) => expr,
         Err(err) => {
