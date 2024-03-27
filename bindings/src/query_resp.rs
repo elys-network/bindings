@@ -388,7 +388,7 @@ pub struct QueryJoinPoolEstimationResponse {
     amounts_in: Vec<Coin>,
     share_amount_out: Coin,
     slippage: Decimal,
-    weight_balance_ratio: Decimal,
+    weight_balance_ratio: SignedDecimal,
 }
 
 #[cw_serde]
