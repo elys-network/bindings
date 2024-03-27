@@ -535,21 +535,6 @@ impl<'a> ElysQuerier<'a> {
     
         current_ratio
     }
-    // TODO: Do this inline
-    pub fn get_ratio_as_string(&self, pool: &PoolResp) -> String {
-        let mut ratio_string = String::new();
-        if let Some(current_pool_ratio) = &pool.current_pool_ratio {
-            for (index, asset) in pool.assets.iter().enumerate() {
-                if let Some(ratio) = current_pool_ratio.get(&asset.token.denom) {
-                    ratio_string.push_str(&ratio.to_string());
-                    if index < pool.assets.len() - 1 {
-                        ratio_string.push(':');
-                    }
-                }
-            }
-        }
-        ratio_string
-    }
 
     pub fn get_all_pools(
         &self,
@@ -616,7 +601,21 @@ impl<'a> ElysQuerier<'a> {
                                     let usdc_asset = updated_pool.assets.remove(index);
                                     updated_pool.assets.push(usdc_asset);
 
-                                    updated_pool.current_pool_ratio_string = Some(self.get_ratio_as_string(&updated_pool));
+                                    updated_pool.current_pool_ratio_string = {
+                                        let mut ratio_string = String::new();
+                                        if let Some(current_pool_ratio) = &updated_pool.current_pool_ratio {
+                                            for (index, asset) in updated_pool.assets.iter().enumerate() {
+                                                if let Some(ratio) = current_pool_ratio.get(&asset.token.denom) {
+                                                    ratio_string.push_str(&ratio.to_string());
+                                                    if index < updated_pool.assets.len() - 1 {
+                                                        ratio_string.push(':');
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        Some(ratio_string)
+                                    }
 
                                 }
                             }
