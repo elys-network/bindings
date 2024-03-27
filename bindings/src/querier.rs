@@ -544,9 +544,11 @@ impl<'a> ElysQuerier<'a> {
     ) -> StdResult<QueryEarnPoolResponse> {
         let pools_query = ElysQuery::get_all_pools(pool_ids.clone(), filter_type, pagination);
         let pools_request: QueryRequest<ElysQuery> = QueryRequest::Custom(pools_query);
-    
+        
         let pools_response: QueryEarnPoolResponse = self.querier.query(&pools_request)?;
         let aprs_response = self.get_pools_apr(pool_ids)?;
+
+        let usdc_entry = self.get_asset_profile("uusdc".to_string());
     
         match (pools_response.pools, aprs_response.data) {
             (Some(pools), Some(aprs)) => {
@@ -591,6 +593,34 @@ impl<'a> ElysQuerier<'a> {
                         updated_pool.current_pool_ratio = Some(self.get_current_pool_ratio(&updated_pool));
 
                         updated_pool.share_usd_price = Some(pool.tvl / Decimal::from_atomics(pool.total_shares.amount, 18).unwrap());
+
+                        // Sort results. USDC should be always last asset.
+                        match &usdc_entry {
+                            Ok(usdc_entry) => {
+                                if let Some(index) = updated_pool.assets.iter().position(|asset| asset.token.denom == usdc_entry.entry.denom) {
+                                    let usdc_asset = updated_pool.assets.remove(index);
+                                    updated_pool.assets.push(usdc_asset);
+
+                                    updated_pool.current_pool_ratio_string = {
+                                        let mut ratio_string = String::new();
+                                        if let Some(current_pool_ratio) = &updated_pool.current_pool_ratio {
+                                            for (index, asset) in updated_pool.assets.iter().enumerate() {
+                                                if let Some(ratio) = current_pool_ratio.get(&asset.token.denom) {
+                                                    ratio_string.push_str(&ratio.to_string());
+                                                    if index < updated_pool.assets.len() - 1 {
+                                                        ratio_string.push(':');
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        Some(ratio_string)
+                                    }
+
+                                }
+                            }
+                            _ => {}
+                        }
                         
                         updated_pool
                     })
