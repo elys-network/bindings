@@ -27,7 +27,7 @@ pub fn process_orders(
     let mut _n_spot_order = LIMIT_PROCESS_ORDER.load(deps.storage)?;
     let mut _n_perpetual_order = _n_spot_order.clone();
 
-    let _perpetual_orders: Vec<(String, Vec<u64>)> = if PERPETUAL_ENABLED.load(deps.storage)? {
+    let perpetual_orders: Vec<(String, Vec<u64>)> = if PERPETUAL_ENABLED.load(deps.storage)? {
         SORTED_PENDING_PERPETUAL_ORDER
             .prefix_range(deps.storage, None, None, Order::Ascending)
             .filter_map(|res| res.ok())
@@ -44,17 +44,11 @@ pub fn process_orders(
 
     let QueryGetEntryResponse {
         entry: Entry {
-            denom: usdc_denom, ..
+            denom: _usdc_denom, ..
         },
     } = querier.get_asset_profile("uusdc".to_string())?;
 
     for (key, order_ids) in spot_orders.iter() {
-        //     if let Some(n) = n_spot_order {
-        //         if n == 0 {
-        //             break;
-        //         }
-        //         n_spot_order = Some(n - 1);
-        //     }
         let (order_type, base_denom, quote_denom) = SpotOrder::from_key(key.as_str())?;
         if order_type == SpotOrderType::MarketBuy {
             bank_msgs.extend(cancel_spot_orders(deps.storage, key, order_ids, None)?);
@@ -99,17 +93,6 @@ pub fn process_orders(
             }
         };
 
-        // for i in 0..order_ids.len() {
-        //     let spot_order = PENDING_SPOT_ORDER.load(deps.storage, order_ids[i])?;
-
-        //     if spot_order.order_price.base_denom != spot_order.order_amount.denom
-        //         || spot_order.order_price.quote_denom != spot_order.order_target_denom
-        //     {
-        //         removed_ids.push(i);
-        //         continue;
-        //     }
-        // }
-
         let orders_to_process: Vec<u64> = split_spot_order(
             closest_spot_price,
             order_type,
@@ -130,81 +113,47 @@ pub fn process_orders(
         )?;
     }
 
-    // for (key, order_ids) in perpetual_orders.iter() {
-    //     // if let Some(n) = n_perpetual_order {
-    //     //     if n == 0 {
-    //     //         break;
-    //     //     }
-    //     //     n_perpetual_order = Some(n - 1);
-    //     // }
-    //     // let mut order = perpetual_order.to_owned();
+    for (key, order_ids) in perpetual_orders.iter() {
+        let (order_position_type, order_type, base_denom, quote_denom) =
+            PerpetualOrder::from_key(key.as_str())?;
 
-    //     // if perpetual_order.trigger_price.as_ref().unwrap().base_denom != usdc_denom
-    //     //     || perpetual_order.trigger_price.as_ref().unwrap().quote_denom
-    //     //         != perpetual_order.trading_asset
-    //     // {
-    //     //     order.status = Status::Canceled;
-    //     //     if perpetual_order.order_type == PerpetualOrderType::LimitOpen {
-    //     //         bank_msgs.push(BankMsg::Send {
-    //     //             to_address: order.owner.clone(),
-    //     //             amount: vec![order.collateral.clone()],
-    //     //         })
-    //     //     }
-    //     //     PENDING_PERPETUAL_ORDER.remove(deps.storage, order.order_id);
-    //     //     PERPETUAL_ORDER.save(deps.storage, order.order_id, &order)?;
-    //     //     continue;
-    //     // }
-    //     let (order_type, base_denom, quote_denom) = PerpetualOrder::from_key(key.as_str())?;
+        let market_price =
+            match querier.get_asset_price_from_denom_in_to_denom_out(&base_denom, &quote_denom) {
+                Ok(market_price) => market_price,
+                Err(_) => {
+                    cancel_perpetual_orders(deps.storage, key, &order_ids, None)?;
+                    continue;
+                }
+            };
 
-    //     let market_price =
-    //         match querier.get_asset_price_from_denom_in_to_denom_out(&base_denom, &quote_denom) {
-    //             Ok(market_price) => market_price,
-    //             Err(_) => {
-    //                 bank_msgs.extend(cancel_perpetual_orders(
-    //                     deps.storage,
-    //                     key.as_str(),
-    //                     &order_ids,
-    //                     None,
-    //                 )?);
-    //                 continue;
-    //             }
-    //         };
+        let closest_index = PerpetualOrder::binary_search(
+            &Some(OrderPrice {
+                base_denom,
+                quote_denom,
+                rate: market_price.clone(),
+            }),
+            deps.storage,
+            &order_ids,
+        )?;
 
-    //     // if order.order_type != PerpetualOrderType::LimitOpen {
-    //     //     match querier.mtp(order.owner.clone(), order.position_id.clone().unwrap()) {
-    //     //         Ok(mtp) => match mtp.mtp {
-    //     //             Some(_) => {}
-    //     //             None => {
-    //     //                 order.status = Status::Canceled;
-    //     //                 PENDING_PERPETUAL_ORDER.remove(deps.storage, order.order_id);
-    //     //                 PERPETUAL_ORDER.save(deps.storage, order.order_id, &order)?;
-    //     //                 continue;
-    //     //             }
-    //     //         },
-    //     //         Err(_) => {
-    //     //             order.status = Status::Canceled;
-    //     //             PENDING_PERPETUAL_ORDER.remove(deps.storage, order.order_id);
-    //     //             PERPETUAL_ORDER.save(deps.storage, order.order_id, &order)?;
-    //     //             continue;
-    //     //         }
-    //     //     };
-    //     // }
+        let order_to_execute = split_perpetual_order(
+            closest_index,
+            &order_position_type,
+            order_type,
+            market_price,
+            order_ids.to_owned(),
+            deps.storage,
+        )?;
 
-    //     // let closest_index = PerpetualOrder::binary_search(, storage, list)
-
-    //     // let order_to_execute = split_spot_order(closest_index, order_type, market_price, ids, storage)
-
-    //     // if check_perpetual_order(&perpetual_order, market_price) {
-    //     //     process_perpetual_order(
-    //     //         perpetual_order,
-    //     //         &mut submsgs,
-    //     //         &mut reply_info_id,
-    //     //         deps.storage,
-    //     //         &querier,
-    //     //         env.contract.address.as_str(),
-    //     //     )?;
-    //     // }
-    // }
+        process_perpetual_order(
+            order_to_execute,
+            &mut submsgs,
+            &mut reply_info_id,
+            deps.storage,
+            &querier,
+            env.contract.address.as_str(),
+        )?;
+    }
 
     MAX_REPLY_ID.save(deps.storage, &reply_info_id)?;
 
@@ -220,95 +169,169 @@ pub fn process_orders(
 }
 
 fn process_perpetual_order(
-    order: &PerpetualOrder,
+    orders_ids: Vec<u64>,
     submsgs: &mut Vec<SubMsg<ElysMsg>>,
     reply_info_id: &mut u64,
     storage: &mut dyn Storage,
     querier: &ElysQuerier<'_>,
     creator: &str,
 ) -> StdResult<()> {
-    let (msg, reply_type) = if order.order_type == PerpetualOrderType::LimitOpen {
-        (
-            ElysMsg::perpetual_open_position(
-                creator,
-                order.collateral.clone(),
-                &order.trading_asset,
-                order.position.clone(),
-                order.leverage.clone(),
-                order.take_profit_price.clone(),
-                &order.owner,
-            ),
-            ReplyType::PerpetualBrokerOpen,
-        )
-    } else {
-        let mtp = match querier
-            .mtp(order.owner.clone(), order.position_id.unwrap())?
-            .mtp
-        {
-            Some(mtp) => mtp,
+    for id in orders_ids {
+        let order = PENDING_PERPETUAL_ORDER.load(storage, id)?;
+
+        let (msg, reply_type) = if order.order_type == PerpetualOrderType::LimitOpen {
+            (
+                ElysMsg::perpetual_open_position(
+                    creator,
+                    order.collateral.clone(),
+                    &order.trading_asset,
+                    order.position.clone(),
+                    order.leverage.clone(),
+                    order.take_profit_price.clone(),
+                    &order.owner,
+                ),
+                ReplyType::PerpetualBrokerOpen,
+            )
+        } else {
+            let mtp = match querier
+                .mtp(order.owner.clone(), order.position_id.unwrap())?
+                .mtp
+            {
+                Some(mtp) => mtp,
+                None => {
+                    let mut order = order.to_owned();
+                    order.status = Status::Canceled;
+                    PENDING_PERPETUAL_ORDER.remove(storage, order.order_id);
+                    PERPETUAL_ORDER.save(storage, order.order_id, &order)?;
+                    let key = order.gen_key()?;
+                    let mut vec = SORTED_PENDING_PERPETUAL_ORDER.load(storage, key.as_str())?;
+                    let index = vec
+                        .binary_search(&order.order_id)
+                        .map_err(|_| StdError::not_found("order id not found"))?;
+                    vec.remove(index);
+                    SORTED_PENDING_PERPETUAL_ORDER.save(storage, key.as_str(), &vec)?;
+                    continue;
+                }
+            };
+
+            let amount = mtp.custody.i128();
+            (
+                ElysMsg::perpetual_close_position(
+                    creator,
+                    order.position_id.unwrap(),
+                    amount,
+                    &order.owner,
+                ),
+                ReplyType::PerpetualBrokerClose,
+            )
+        };
+
+        *reply_info_id = match reply_info_id.checked_add(1) {
+            Some(id) => id,
             None => {
-                let mut order = order.to_owned();
-                order.status = Status::Canceled;
-                PENDING_PERPETUAL_ORDER.remove(storage, order.order_id);
-                PERPETUAL_ORDER.save(storage, order.order_id, &order)?;
-                return Ok(());
+                return Err(StdError::overflow(OverflowError::new(
+                    cosmwasm_std::OverflowOperation::Add,
+                    "reply_info_max_id",
+                    "increment one",
+                ))
+                .into())
             }
         };
 
-        let amount = mtp.custody.i128();
-        (
-            ElysMsg::perpetual_close_position(
-                creator,
-                order.position_id.unwrap(),
-                amount,
-                &order.owner,
-            ),
-            ReplyType::PerpetualBrokerClose,
-        )
-    };
+        let reply_info = ReplyInfo {
+            id: *reply_info_id,
+            reply_type,
+            data: Some(to_json_binary(&order.order_id)?),
+        };
+        submsgs.push(SubMsg::reply_always(msg, *reply_info_id));
 
-    *reply_info_id = match reply_info_id.checked_add(1) {
-        Some(id) => id,
-        None => {
-            return Err(StdError::overflow(OverflowError::new(
-                cosmwasm_std::OverflowOperation::Add,
-                "reply_info_max_id",
-                "increment one",
-            ))
-            .into())
-        }
-    };
-
-    let reply_info = ReplyInfo {
-        id: *reply_info_id,
-        reply_type,
-        data: Some(to_json_binary(&order.order_id)?),
-    };
-    submsgs.push(SubMsg::reply_always(msg, *reply_info_id));
-
-    REPLY_INFO.save(storage, *reply_info_id, &reply_info)?;
+        REPLY_INFO.save(storage, *reply_info_id, &reply_info)?;
+    }
 
     Ok(())
 }
 
-fn check_perpetual_order(order: &PerpetualOrder, market_price: Decimal) -> bool {
-    if order.order_type == PerpetualOrderType::MarketClose
-        || order.order_type == PerpetualOrderType::MarketOpen
-    {
-        return false;
+fn split_perpetual_order(
+    closest_index: usize,
+    order_position_type: &PerpetualPosition,
+    order_type: PerpetualOrderType,
+    market_price: Decimal,
+    ids: Vec<u64>,
+    storage: &mut dyn Storage,
+) -> StdResult<Vec<u64>> {
+    if ids.is_empty() {
+        return Ok(vec![]);
     }
 
-    let (order_price, market_price) = (order.trigger_price.clone().unwrap().rate, market_price);
+    let order_price = if closest_index < ids.len() {
+        Some(
+            PENDING_PERPETUAL_ORDER
+                .load(storage, ids[closest_index])?
+                .trigger_price
+                .unwrap()
+                .rate,
+        )
+    } else {
+        None
+    };
 
-    match (&order.order_type, &order.position) {
-        (PerpetualOrderType::LimitOpen, PerpetualPosition::Long) => market_price <= order_price,
-        (PerpetualOrderType::LimitOpen, PerpetualPosition::Short) => market_price >= order_price,
-        (PerpetualOrderType::LimitClose, PerpetualPosition::Long) => market_price >= order_price,
-        (PerpetualOrderType::LimitClose, PerpetualPosition::Short) => market_price <= order_price,
-        (PerpetualOrderType::StopLoss, PerpetualPosition::Long) => market_price <= order_price,
-        (PerpetualOrderType::StopLoss, PerpetualPosition::Short) => market_price >= order_price,
-        _ => false,
+    match (order_price, order_type, order_position_type) {
+        (Some(price), PerpetualOrderType::LimitOpen, PerpetualPosition::Long) => {
+            if market_price <= price {
+                Ok(ids.get(closest_index..).unwrap_or(&[]).to_vec())
+            } else {
+                Ok(ids.get(closest_index + 1..).unwrap_or(&[]).to_vec())
+            }
+        }
+        (None, PerpetualOrderType::LimitOpen, PerpetualPosition::Long) => Ok(vec![]),
+        (Some(price), PerpetualOrderType::LimitOpen, PerpetualPosition::Short) => {
+            if market_price >= price {
+                Ok(ids.get(..=closest_index).unwrap_or(&[]).to_vec())
+            } else {
+                Ok(ids.get(..closest_index).unwrap_or(&[]).to_vec())
+            }
+        }
+        (None, PerpetualOrderType::LimitOpen, PerpetualPosition::Short) => Ok(ids),
+        (Some(price), PerpetualOrderType::LimitClose, PerpetualPosition::Long) => {
+            if market_price >= price {
+                Ok(ids.get(..=closest_index).unwrap_or(&[]).to_vec())
+            } else {
+                Ok(ids.get(..closest_index).unwrap_or(&[]).to_vec())
+            }
+        }
+        (None, PerpetualOrderType::LimitClose, PerpetualPosition::Long) => Ok(ids),
+        (Some(price), PerpetualOrderType::LimitClose, PerpetualPosition::Short) => {
+            if market_price <= price {
+                Ok(ids.get(closest_index..).unwrap_or(&[]).to_vec())
+            } else {
+                Ok(ids.get(closest_index + 1..).unwrap_or(&[]).to_vec())
+            }
+        }
+        (None, PerpetualOrderType::LimitClose, PerpetualPosition::Short) => Ok(vec![]),
+        (Some(price), PerpetualOrderType::StopLoss, PerpetualPosition::Long) => {
+            if market_price <= price {
+                Ok(ids.get(closest_index..).unwrap_or(&[]).to_vec())
+            } else {
+                Ok(ids.get(closest_index + 1..).unwrap_or(&[]).to_vec())
+            }
+        }
+        (None, PerpetualOrderType::StopLoss, PerpetualPosition::Long) => Ok(vec![]),
+        (Some(price), PerpetualOrderType::StopLoss, PerpetualPosition::Short) => {
+            if market_price >= price {
+                Ok(ids.get(..=closest_index).unwrap_or(&[]).to_vec())
+            } else {
+                Ok(ids.get(..closest_index).unwrap_or(&[]).to_vec())
+            }
+        }
+        (None, PerpetualOrderType::StopLoss, PerpetualPosition::Short) => Ok(ids),
+        _ => return Err(StdError::generic_err("process market order")),
     }
+    // (PerpetualOrderType::LimitOpen, PerpetualPosition::Long) => market_price <= order_price,
+    // (PerpetualOrderType::LimitOpen, PerpetualPosition::Short) => market_price >= order_price,
+    // (PerpetualOrderType::LimitClose, PerpetualPosition::Long) => market_price >= order_price,
+    // (PerpetualOrderType::LimitClose, PerpetualPosition::Short) => market_price <= order_price,
+    // (PerpetualOrderType::StopLoss, PerpetualPosition::Long) => market_price <= order_price,
+    // (PerpetualOrderType::StopLoss, PerpetualPosition::Short) => market_price >= order_price,
 }
 
 fn split_spot_order(
@@ -480,7 +503,7 @@ fn cancel_perpetual_orders(
     Ok(bank_msg)
 }
 
-fn calculate_token_out_min_amount(_order: &SpotOrder) -> Int128 {
+fn _calculate_token_out_min_amount(_order: &SpotOrder) -> Int128 {
     // FIXME:
     // insteade we want to use the amount field from swap-estimation-by-denom that
     // include slippage and reduce it by 1% that should be our token out min amount to return here

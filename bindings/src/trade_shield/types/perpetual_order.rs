@@ -113,18 +113,14 @@ impl PerpetualOrder {
         while low < high {
             let mid = low + (high - low) / 2;
             let PerpetualOrder { trigger_price, .. } = PERPETUAL_ORDER.load(storage, list[mid])?;
-            let mid_rate = match trigger_price {
-                Some(price) => price.rate,
-                None => return Err(StdError::generic_err("price not found")),
-            };
-
-            if mid_rate == *rate {
-                return Ok(mid);
+            if trigger_price.is_none() {
+                return Err(StdError::generic_err("price not found"));
             }
-            if mid_rate < *rate {
-                low = mid
+
+            if trigger_price.unwrap().rate < *rate {
+                low = mid + 1;
             } else {
-                high = mid
+                high = mid;
             }
         }
         Ok(low)
@@ -137,26 +133,40 @@ impl PerpetualOrder {
             return Err(StdError::generic_err("gen a key on a market order"));
         }
         if let Some(price) = &self.trigger_price {
-            Ok(self.order_type.to_string() + "\n" + &price.base_denom + "\n" + &price.quote_denom)
+            Ok(self.position.to_string()
+                + "\n"
+                + &self.order_type.to_string()
+                + "\n"
+                + &price.base_denom
+                + "\n"
+                + &price.quote_denom)
         } else {
             Err(StdError::not_found("trigger price not found"))
         }
     }
 
-    pub fn from_key(key: &str) -> StdResult<(PerpetualOrderType, String, String)> {
+    pub fn from_key(
+        key: &str,
+    ) -> StdResult<(PerpetualPosition, PerpetualOrderType, String, String)> {
         let vec: Vec<&str> = key.split('\n').collect();
-        if vec.len() != 3 {
+        if vec.len() != 4 {
             return Err(StdError::generic_err("Wrong Key"));
         }
 
-        let order_type = PerpetualOrderType::from_str(vec[0])?;
+        let order_position = PerpetualPosition::from_str(vec[0])?;
+        let order_type = PerpetualOrderType::from_str(vec[1])?;
         if order_type == PerpetualOrderType::MarketClose
             || order_type == PerpetualOrderType::MarketOpen
         {
             return Err(StdError::generic_err("Market Order"));
         }
 
-        Ok((order_type, vec[1].to_string(), vec[2].to_string()))
+        Ok((
+            order_position,
+            order_type,
+            vec[2].to_string(),
+            vec[3].to_string(),
+        ))
     }
 }
 
