@@ -105,6 +105,13 @@ impl AccountSnapshotGenerator {
             Expiration::Never {} => panic!("never expire"),
         };
 
+        let mut total_liquidity_position_balance = Decimal256::zero();
+        for pool in pool_balances_response.pools.iter() {
+            total_liquidity_position_balance = total_liquidity_position_balance.checked_add(
+                Decimal256::from(pool.available),
+            )?;
+        }
+
         let reward = rewards_response.rewards_map;
         let portfolio_usd = DecCoin::new(
             liquid_assets_response
@@ -118,24 +125,18 @@ impl AccountSnapshotGenerator {
                         .total_perpetual_asset_balance
                         .amount
                         .clone(),
-                )?,
+                )?.checked_add(total_liquidity_position_balance)?,
             &self.metadata.usdc_denom,
         );
         let reward_usd: DecCoin = DecCoin::new(
             Decimal256::from(reward.clone().total_usd),
             &self.metadata.usdc_denom,
         );
-        let mut total_balance = DecCoin::new(
+        let total_balance = DecCoin::new(
             portfolio_usd.amount.checked_add(reward_usd.amount)?,
             &self.metadata.usdc_denom,
         );
-        for pool in pool_balances_response.pools.iter() {
-            total_balance.amount = total_balance.amount.checked_add(
-                pool.pool
-                    .share_usd_price
-                    .map_or(Decimal256::zero(), |amount| amount.into()),
-            )?;
-        }
+        
         // Adds the records all the time as we should return data to the FE even if it is 0 balanced.
         Ok(Some(AccountSnapshot {
             date,
@@ -152,7 +153,7 @@ impl AccountSnapshotGenerator {
                     &self.metadata.usdc_denom,
                 ),
                 liquidity_positions_usd: DecCoin::new(
-                    Decimal256::zero(),
+                    total_liquidity_position_balance,
                     &self.metadata.usdc_denom,
                 ),
                 leverage_lp_usd: DecCoin::new(Decimal256::zero(), &self.metadata.usdc_denom),
