@@ -125,11 +125,17 @@ impl AccountSnapshotGenerator {
             Decimal256::from(reward.clone().total_usd),
             &self.metadata.usdc_denom,
         );
-        let total_balance = DecCoin::new(
+        let mut total_balance = DecCoin::new(
             portfolio_usd.amount.checked_add(reward_usd.amount)?,
             &self.metadata.usdc_denom,
         );
-
+        for pool in pool_balances_response.pools.iter() {
+            total_balance.amount = total_balance.amount.checked_add(
+                pool.pool
+                    .share_usd_price
+                    .map_or(Decimal256::zero(), |amount| amount.into()),
+            )?;
+        }
         // Adds the records all the time as we should return data to the FE even if it is 0 balanced.
         Ok(Some(AccountSnapshot {
             date,
@@ -238,7 +244,7 @@ impl AccountSnapshotGenerator {
             pool_resp.push(UserPoolResp {
                 pool,
                 balance: user_pool.balance,
-                available: Decimal::from_atomics(balance_uint, 18).unwrap() * share_price
+                available: Decimal::from_atomics(balance_uint, 18).unwrap() * share_price,
             });
         }
 
