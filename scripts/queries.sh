@@ -61,6 +61,7 @@ eden_denom="ueden"
 edenb_denom="uedenb"
 usdc_denom="ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
 atom_denom="ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4"
+osmo_denom="ibc/B4314D0E670CB43C88A5DCA09F76E5E812BD831CC2FEC6E434C9E5A9D1F57953"
 
 # Print denoms
 printf "\n# ELYS denom: %s\n" "$elys_denom"
@@ -518,6 +519,9 @@ case "$2" in
         ;;
     "swap_estimation_by_denom_atom_atom_usdc_with_small_amount")
         swap_estimation_by_denom 213565 $atom_denom $atom_denom $usdc_denom
+        ;;
+    "swap_estimation_by_denom_osmo_usdc")
+        swap_estimation_by_denom 1000000000 $osmo_denom $osmo_denom $usdc_denom
         ;;
     "all_prices")
         all_prices
