@@ -110,8 +110,8 @@ pub enum ElysMsg {
     },
     LeveragelpClose {
         creator: String,
-        position_id: u64,
-        amount: Int128,
+        id: u64,
+        lp_amount: Int128,
     },
 }
 
@@ -332,11 +332,11 @@ impl ElysMsg {
         }
     }
 
-    pub fn leveragelp_close_position(creator: String, position_id: u64, amount: Int128) -> Self {
+    pub fn leveragelp_close_position(creator: String, id: u64, lp_amount: Int128) -> Self {
         Self::LeveragelpClose {
-            creator: creator,
-            position_id: position_id,
-            amount: amount,
+            creator,
+            id,
+            lp_amount,
         }
     }
 }
