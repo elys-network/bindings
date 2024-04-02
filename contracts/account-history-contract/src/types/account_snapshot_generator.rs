@@ -81,7 +81,7 @@ impl AccountSnapshotGenerator {
 
         Ok(Some(PortfolioBalanceSnapshot {
             date: snapshot.date,
-            portfolio_balance_usd: snapshot.portfolio.balance_usd.amount.clone(),
+            portfolio_balance_usd: snapshot.portfolio.balance_usd.clone(),
             total_balance_usd: snapshot.total_balance.total_balance.clone(),
         }))
     }
@@ -112,48 +112,48 @@ impl AccountSnapshotGenerator {
         }
 
         let reward = rewards_response.rewards_map;
-        let portfolio_usd = DecCoin::new(
-            liquid_assets_response
-                .total_liquid_asset_balance
-                .amount
-                .checked_add(Decimal256::from(
-                    staked_assets_response.total_staked_balance.amount.clone(),
-                ))?
-                .checked_add(
-                    perpetual_response
-                        .total_perpetual_asset_balance
-                        .amount
-                        .clone(),
-                )?
-                .checked_add(total_liquidity_position_balance)?,
-            &self.metadata.usdc_denom,
-        );
-        let reward_usd = Decimal256::from(reward.clone().total_usd);
-        let total_balance = portfolio_usd.amount.checked_add(reward_usd.clone())?;
+        let portfolio_usd = liquid_assets_response
+            .total_liquid_asset_balance
+            .amount
+            .checked_add(Decimal256::from(
+                staked_assets_response.total_staked_balance.amount.clone(),
+            ))?
+            .checked_add(
+                perpetual_response
+                    .total_perpetual_asset_balance
+                    .amount
+                    .clone(),
+            )?
+            .checked_add(total_liquidity_position_balance)?;
+
+        let reward_usd = Decimal256::from(reward.total_usd.clone());
+        let total_balance = portfolio_usd.checked_add(reward_usd.clone())?;
 
         // Adds the records all the time as we should return data to the FE even if it is 0 balanced.
         Ok(Some(AccountSnapshot {
             date,
             total_balance: TotalBalance {
                 total_balance,
-                portfolio_usd: portfolio_usd.amount.clone(),
+                portfolio_usd: portfolio_usd.clone(),
                 reward_usd,
             },
             portfolio: Portfolio {
                 balance_usd: portfolio_usd,
-                liquid_assets_usd: liquid_assets_response.total_liquid_asset_balance.clone(),
-                staked_committed_usd: DecCoin::new(
-                    Decimal256::from(staked_assets_response.total_staked_balance.amount),
-                    &self.metadata.usdc_denom,
+                liquid_assets_usd: liquid_assets_response
+                    .total_liquid_asset_balance
+                    .amount
+                    .clone(),
+                staked_committed_usd: Decimal256::from(
+                    staked_assets_response.total_staked_balance.amount,
                 ),
-                liquidity_positions_usd: DecCoin::new(
-                    total_liquidity_position_balance,
-                    &self.metadata.usdc_denom,
-                ),
-                leverage_lp_usd: DecCoin::new(Decimal256::zero(), &self.metadata.usdc_denom),
-                perpetual_assets_usd: perpetual_response.total_perpetual_asset_balance.clone(),
-                usdc_earn_usd: DecCoin::new(Decimal256::zero(), &self.metadata.usdc_denom),
-                borrows_usd: DecCoin::new(Decimal256::zero(), &self.metadata.usdc_denom),
+                liquidity_positions_usd: total_liquidity_position_balance,
+                leverage_lp_usd: Decimal256::zero(),
+                perpetual_assets_usd: perpetual_response
+                    .total_perpetual_asset_balance
+                    .amount
+                    .clone(),
+                usdc_earn_usd: Decimal256::zero(),
+                borrows_usd: Decimal256::zero(),
             },
             reward,
             pool_balances: PoolBalances {
