@@ -82,7 +82,7 @@ impl AccountSnapshotGenerator {
         Ok(Some(PortfolioBalanceSnapshot {
             date: snapshot.date,
             portfolio_balance_usd: snapshot.portfolio.balance_usd.amount.clone(),
-            total_balance_usd: snapshot.total_balance.total_balance.amount.clone(),
+            total_balance_usd: snapshot.total_balance.total_balance.clone(),
         }))
     }
 
@@ -107,9 +107,8 @@ impl AccountSnapshotGenerator {
 
         let mut total_liquidity_position_balance = Decimal256::zero();
         for pool in pool_balances_response.pools.iter() {
-            total_liquidity_position_balance = total_liquidity_position_balance.checked_add(
-                Decimal256::from(pool.available),
-            )?;
+            total_liquidity_position_balance =
+                total_liquidity_position_balance.checked_add(Decimal256::from(pool.available))?;
         }
 
         let reward = rewards_response.rewards_map;
@@ -125,24 +124,19 @@ impl AccountSnapshotGenerator {
                         .total_perpetual_asset_balance
                         .amount
                         .clone(),
-                )?.checked_add(total_liquidity_position_balance)?,
+                )?
+                .checked_add(total_liquidity_position_balance)?,
             &self.metadata.usdc_denom,
         );
-        let reward_usd: DecCoin = DecCoin::new(
-            Decimal256::from(reward.clone().total_usd),
-            &self.metadata.usdc_denom,
-        );
-        let total_balance = DecCoin::new(
-            portfolio_usd.amount.checked_add(reward_usd.amount)?,
-            &self.metadata.usdc_denom,
-        );
-        
+        let reward_usd = Decimal256::from(reward.clone().total_usd);
+        let total_balance = portfolio_usd.amount.checked_add(reward_usd.clone())?;
+
         // Adds the records all the time as we should return data to the FE even if it is 0 balanced.
         Ok(Some(AccountSnapshot {
             date,
             total_balance: TotalBalance {
                 total_balance,
-                portfolio_usd: portfolio_usd.clone(),
+                portfolio_usd: portfolio_usd.amount.clone(),
                 reward_usd,
             },
             portfolio: Portfolio {
