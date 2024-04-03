@@ -313,13 +313,13 @@ impl AccountSnapshotGenerator {
         for balance in &available_asset_balance {
             total_available_balance.amount = total_available_balance
                 .amount
-                .checked_add(Decimal256::from(balance.amount_usdc.clone()))?
+                .checked_add(Decimal256::from(balance.amount_usd.clone()))?
         }
 
         for balance in &in_orders_asset_balance {
             total_in_orders_balance.amount = total_in_orders_balance
                 .amount
-                .checked_add(Decimal256::from(balance.amount_usdc.clone()))?
+                .checked_add(Decimal256::from(balance.amount_usd.clone()))?
         }
 
         let mut total_value_per_asset: HashMap<&String, CoinValue> = HashMap::new();
@@ -329,7 +329,7 @@ impl AccountSnapshotGenerator {
                 .entry(&available.denom)
                 .and_modify(|e| {
                     e.amount_token += available.amount_token.clone();
-                    e.amount_usdc += available.amount_usdc.clone();
+                    e.amount_usd += available.amount_usd.clone();
                 })
                 .or_insert_with(|| available.clone());
         }
@@ -339,7 +339,7 @@ impl AccountSnapshotGenerator {
                 .entry(&in_order.denom)
                 .and_modify(|e| {
                     e.amount_token += in_order.amount_token.clone();
-                    e.amount_usdc += in_order.amount_usdc.clone();
+                    e.amount_usd += in_order.amount_usd.clone();
                 })
                 .or_insert_with(|| in_order.clone());
         }
@@ -351,7 +351,7 @@ impl AccountSnapshotGenerator {
             Decimal256::from(
                 total_value_per_asset
                     .iter()
-                    .map(|v| v.amount_usdc)
+                    .map(|v| v.amount_usd)
                     .fold(Decimal::zero(), |acc, item| acc + item),
             ),
             &self.metadata.usdc_denom,
