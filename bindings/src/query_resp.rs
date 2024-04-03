@@ -437,8 +437,10 @@ pub struct UserPoolResp {
     pub pool: PoolResp,
     // User shares in pool
     pub balance: CommittedTokens,
-    // User balance in pool in terms of USD
-    pub available: Decimal
+    // User total balance in pool in terms of USD
+    pub available: Decimal,
+    // Balance based on current pool ratio
+    pub balance_breakdown: Vec<Option<CoinValue>>
 }
 
 #[cw_serde]

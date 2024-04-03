@@ -243,10 +243,35 @@ impl AccountSnapshotGenerator {
             let balance_uint = Uint128::new(user_pool.balance.amount.i128() as u128);
             let share_price = pool.share_usd_price.or(Some(Decimal::zero())).unwrap();
 
+            let balance_breakdown = match pool.current_pool_ratio.clone() {
+                Some(current_ratio) => {
+                    current_ratio
+                        .into_iter()
+                        .map(|ratio| {
+                            let asset_price = querier.get_asset_price(ratio.0.clone());
+            
+                            match asset_price {
+                                Ok(price) => {
+                                    let asset_shares =
+                                        Decimal::from_atomics(balance_uint, 18).unwrap() * ratio.1;
+                                    let shares_usd = asset_shares * share_price;
+                                    let asset_amount = shares_usd / price;
+        
+                                    Some(CoinValue::new(ratio.0.clone(), asset_amount, price, shares_usd))
+                                }
+                                Err(_) => None,
+                            }
+                        })
+                        .collect()
+                }
+                _ => vec![],
+            };
+
             pool_resp.push(UserPoolResp {
                 pool,
                 balance: user_pool.balance,
                 available: Decimal::from_atomics(balance_uint, 18).unwrap() * share_price,
+                balance_breakdown
             });
         }
 
