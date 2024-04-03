@@ -7,10 +7,7 @@ use cosmwasm_std::{
 };
 
 use crate::{
-    query::*,
-    query_resp::*,
-    trade_shield::types::{PoolAsset, StakedPosition, StakedPositionRaw, StakingValidator},
-    types::{BalanceAvailable, PageRequest, PerpetualPosition, Price, SwapAmountInRoute},
+    account_history::types::CoinValue, query::*, query_resp::*, trade_shield::types::{PoolAsset, StakedPosition, StakedPositionRaw, StakingValidator}, types::{BalanceAvailable, PageRequest, PerpetualPosition, Price, SwapAmountInRoute}
 };
 
 pub struct ElysQuerier<'a> {
@@ -593,6 +590,18 @@ impl<'a> ElysQuerier<'a> {
                         updated_pool.current_pool_ratio = Some(self.get_current_pool_ratio(&updated_pool));
 
                         updated_pool.share_usd_price = Some(pool.tvl / Decimal::from_atomics(pool.total_shares.amount, 18).unwrap());
+                        
+                        // Add USD value to every reward coin returned from chain
+                        match &usdc_entry {
+                            Ok(entry) => {
+                                updated_pool.fiat_rewards = Some(
+                                    updated_pool.reward_coins.clone().into_iter().map(|coin| {
+                                        CoinValue::from_coin(&coin, self, &entry.entry.denom).unwrap()
+                                    }).collect()
+                                );
+                            }
+                            _ => {}
+                        }
 
                         // Sort results. USDC should be always last asset.
                         match &usdc_entry {
