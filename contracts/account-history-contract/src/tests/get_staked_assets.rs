@@ -15,11 +15,13 @@ use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Mod
 use elys_bindings::account_history::types::earn_program::{
     EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram,
 };
-use elys_bindings::account_history::types::{AprElys, AprUsdc, BalanceReward, StakedAssets};
+use elys_bindings::account_history::types::{
+    AprElys, AprUsdc, BalanceReward, QueryAprResponse, StakedAssets,
+};
 use elys_bindings::query_resp::{
-    BalanceBorrowed, Entry, Lockup, QueryAprResponse, QueryGetEntryResponse, QueryGetPriceResponse,
-    QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryVestingInfoResponse,
-    StakedAvailable,
+    BalanceBorrowed, Entry, Lockup, QueryAprsResponse, QueryGetEntryResponse,
+    QueryGetPriceResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
+    QueryVestingInfoResponse, StakedAvailable,
 };
 use elys_bindings::types::{
     BalanceAvailable, Price, StakedPosition, StakingValidator, UnstakedPosition,
@@ -419,6 +421,18 @@ impl Module for ElysModuleWrapper {
                 };
                 Ok(to_json_binary(&resp)?)
             }
+            ElysQuery::Aprs {} => Ok(to_json_binary(&QueryAprsResponse {
+                usdc_apr_usdc: Uint128::new(100),
+                usdc_apr_edenb: Uint128::zero(),
+                usdc_apr_eden: Uint128::zero(),
+                usdc_apr_elys: Uint128::zero(),
+                eden_apr_usdc: Uint128::new(168),
+                eden_apr_edenb: Uint128::new(29),
+                eden_apr_elys: Uint128::new(29),
+                eden_apr_eden: Uint128::new(29),
+                edenb_apr_eden: Uint128::new(100),
+                edenb_apr_elys: Uint128::new(100),
+            })?),
             ElysQuery::CommitmentVestingInfo { .. } => {
                 let resp = QueryVestingInfoResponse {
                     vesting: BalanceAvailable {

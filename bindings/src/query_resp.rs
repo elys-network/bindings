@@ -223,6 +223,20 @@ pub struct QueryAprResponse {
     pub apr: Uint128,
 }
 
+#[cw_serde]
+pub struct QueryAprsResponse {
+    pub usdc_apr_usdc: Uint128,
+    pub eden_apr_usdc: Uint128,
+    pub usdc_apr_edenb: Uint128,
+    pub eden_apr_edenb: Uint128,
+    pub usdc_apr_eden: Uint128,
+    pub eden_apr_eden: Uint128,
+    pub edenb_apr_eden: Uint128,
+    pub usdc_apr_elys: Uint128,
+    pub eden_apr_elys: Uint128,
+    pub edenb_apr_elys: Uint128,
+}
+
 impl Default for QueryAprResponse {
     fn default() -> Self {
         Self {
@@ -393,7 +407,7 @@ pub struct QueryJoinPoolEstimationResponse {
 
 #[cw_serde]
 pub struct QueryPoolAssetEstimationResponse {
-    pub amounts: HashMap<String, Decimal256>
+    pub amounts: HashMap<String, Decimal256>,
 }
 
 #[cw_serde]
@@ -422,7 +436,7 @@ pub struct PoolResp {
     pub share_usd_price: Option<Decimal>,
     pub swap_fee: Option<Decimal>,
     pub fee_denom: Option<String>,
-    pub use_oracle: Option<bool>
+    pub use_oracle: Option<bool>,
 }
 
 #[cw_serde]
@@ -437,7 +451,7 @@ pub struct UserPoolResp {
     // User shares in pool
     pub balance: CommittedTokens,
     // User balance in pool in terms of USD
-    pub available: Decimal
+    pub available: Decimal,
 }
 
 #[cw_serde]
