@@ -1,13 +1,15 @@
-use std::str::FromStr;
 use std::collections::HashMap;
+use std::str::FromStr;
 
 use cosmwasm_std::{
     coin, to_json_vec, Binary, Coin, ContractResult, Decimal, QuerierWrapper, QueryRequest,
-    SignedDecimal, SignedDecimal256, StdError, StdResult, SystemResult
+    SignedDecimal, SignedDecimal256, StdError, StdResult, SystemResult,
 };
 
 use crate::{
-    account_history::types::CoinValue, query::*, query_resp::*, trade_shield::types::{PoolAsset, StakedPosition, StakedPositionRaw, StakingValidator}, types::{BalanceAvailable, PageRequest, PerpetualPosition, Price, SwapAmountInRoute}
+    account_history::types::CoinValue, query::*, query_resp::*, trade_shield::types::{
+        AmmPool, PoolAsset, PoolExtraInfo, StakedPosition, StakedPositionRaw, StakingValidator,
+    }, types::{BalanceAvailable, PageRequest, PerpetualPosition, Price, SwapAmountInRoute}
 };
 
 pub struct ElysQuerier<'a> {
@@ -34,6 +36,37 @@ impl<'a> ElysQuerier<'a> {
 
         Ok(prices)
     }
+    pub fn amm_get_pool(&self, pool_id: u64) -> StdResult<AmmGetPoolResponse> {
+        let request = QueryRequest::Custom(ElysQuery::amm_get_pool(pool_id));
+        let raw_resp: AmmGetPoolResponseRaw = self.querier.query(&request)?;
+        let resp = AmmGetPoolResponse {
+            pool: raw_resp.pool.into(),
+            extra_info: raw_resp.extra_info.unwrap_or(PoolExtraInfo {
+                tvl: Decimal::zero(),
+                lp_token_price: Decimal::zero(),
+            }),
+        };
+        Ok(resp)
+    }
+
+    pub fn amm_get_pools(&self, pagination: Option<PageRequest>) -> StdResult<AmmGetPoolsResponse> {
+        let request = QueryRequest::Custom(ElysQuery::amm_get_pools(pagination));
+        let raw_resp: AmmGetPoolsResponseRaw = self.querier.query(&request)?;
+        let pool: Vec<AmmPool> = raw_resp.pool.map_or(vec![], |pools| {
+            pools
+                .iter()
+                .map(|pool| pool.to_owned().into())
+                .collect::<Vec<AmmPool>>()
+        });
+        let extra_infos: Vec<PoolExtraInfo> = raw_resp.extra_infos.unwrap_or(vec![]);
+        let resp = AmmGetPoolsResponse {
+            pool,
+            extra_infos,
+            pagination: raw_resp.pagination,
+        };
+        Ok(resp)
+    }
+
     pub fn amm_swap_estimation(
         &self,
         routes: &Vec<SwapAmountInRoute>,
@@ -268,6 +301,12 @@ impl<'a> ElysQuerier<'a> {
         Ok(resp)
     }
 
+    pub fn get_incentive_aprs(&self) -> StdResult<QueryAprsResponse> {
+        let request = QueryRequest::Custom(ElysQuery::get_incentive_aprs());
+        let resp: QueryAprsResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
+
     pub fn get_sub_bucket_rewards_balance(
         &self,
         address: String,
@@ -480,11 +519,14 @@ impl<'a> ElysQuerier<'a> {
         Ok(resp)
     }
 
-    pub fn get_pools_apr(&self, pool_ids: Option<Vec<u64>>) -> StdResult<QueryIncentivePoolAprsResponse> {
+    pub fn get_pools_apr(
+        &self,
+        pool_ids: Option<Vec<u64>>,
+    ) -> StdResult<QueryIncentivePoolAprsResponse> {
         let query = ElysQuery::get_pools_apr(pool_ids);
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
         let response: StdResult<QueryIncentivePoolAprsResponse> = self.querier.query(&request);
-        
+
         match response {
             Ok(mut response) => {
                 if let Some(ref mut data) = response.data {
@@ -501,7 +543,11 @@ impl<'a> ElysQuerier<'a> {
         }
     }
 
-    pub fn join_pool_estimation(&self, pool_id: u64, amounts_in: Vec<Coin>) -> StdResult<QueryJoinPoolEstimationResponse> {
+    pub fn join_pool_estimation(
+        &self,
+        pool_id: u64,
+        amounts_in: Vec<Coin>,
+    ) -> StdResult<QueryJoinPoolEstimationResponse> {
         let query = ElysQuery::join_pool_estimation(pool_id, amounts_in);
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
         let response: QueryJoinPoolEstimationResponse = self.querier.query(&request)?;
@@ -511,25 +557,28 @@ impl<'a> ElysQuerier<'a> {
     pub fn get_current_pool_ratio(&self, pool: &PoolResp) -> HashMap<String, Decimal> {
         let mut current_ratio: HashMap<String, Decimal> = HashMap::new();
         let mut total_value: Decimal = Decimal::zero();
-    
+
         // Calculate total value locked (TVL) based on USD valuation
         for asset in &pool.assets {
             if let Some(usd_value) = asset.usd_value {
                 total_value += usd_value;
             }
         }
-    
+
         // Calculate ratio for each asset in the pool
         for asset in &pool.assets {
             let ratio = if let Some(usd_value) = asset.usd_value {
-                usd_value / total_value
+                match usd_value.checked_div(total_value) {
+                    Ok(resp) => resp,
+                    Err(_) => Decimal::zero(),
+                }
             } else {
                 Decimal::zero()
             };
-    
+
             current_ratio.insert(asset.token.denom.clone(), ratio);
         }
-    
+
         current_ratio
     }
 
@@ -541,12 +590,12 @@ impl<'a> ElysQuerier<'a> {
     ) -> StdResult<QueryEarnPoolResponse> {
         let pools_query = ElysQuery::get_all_pools(pool_ids.clone(), filter_type, pagination);
         let pools_request: QueryRequest<ElysQuery> = QueryRequest::Custom(pools_query);
-        
+
         let pools_response: QueryEarnPoolResponse = self.querier.query(&pools_request)?;
         let aprs_response = self.get_pools_apr(pool_ids)?;
 
         let usdc_entry = self.get_asset_profile("uusdc".to_string());
-    
+
         match (pools_response.pools, aprs_response.data) {
             (Some(pools), Some(aprs)) => {
                 // Create a map from pool_id to APR for efficient lookup
@@ -554,7 +603,7 @@ impl<'a> ElysQuerier<'a> {
                     .into_iter()
                     .map(|apr_response| (apr_response.pool_id.to_string(), apr_response.apr))
                     .collect();
-    
+
                 // Update the APR field for each pool, pool share price, add asset usd value
                 // and current Pool ratio
                 let pools_with_usd_values = pools
@@ -587,9 +636,17 @@ impl<'a> ElysQuerier<'a> {
                             })
                             .collect::<Vec<PoolAsset>>();
 
-                        updated_pool.current_pool_ratio = Some(self.get_current_pool_ratio(&updated_pool));
+                        updated_pool.current_pool_ratio =
+                            Some(self.get_current_pool_ratio(&updated_pool));
 
-                        updated_pool.share_usd_price = Some(pool.tvl / Decimal::from_atomics(pool.total_shares.amount, 18).unwrap());
+                        updated_pool.share_usd_price = Some(
+                            match pool.tvl.checked_div(
+                                Decimal::from_atomics(pool.total_shares.amount, 18).unwrap(),
+                            ) {
+                                Ok(resp) => resp,
+                                Err(_) => Decimal::zero(),
+                            },
+                        );
                         
                         // Add USD value to every reward coin returned from chain
                         match &usdc_entry {
@@ -606,15 +663,25 @@ impl<'a> ElysQuerier<'a> {
                         // Sort results. USDC should be always last asset.
                         match &usdc_entry {
                             Ok(usdc_entry) => {
-                                if let Some(index) = updated_pool.assets.iter().position(|asset| asset.token.denom == usdc_entry.entry.denom) {
+                                if let Some(index) = updated_pool
+                                    .assets
+                                    .iter()
+                                    .position(|asset| asset.token.denom == usdc_entry.entry.denom)
+                                {
                                     let usdc_asset = updated_pool.assets.remove(index);
                                     updated_pool.assets.push(usdc_asset);
 
                                     updated_pool.current_pool_ratio_string = {
                                         let mut ratio_string = String::new();
-                                        if let Some(current_pool_ratio) = &updated_pool.current_pool_ratio {
-                                            for (index, asset) in updated_pool.assets.iter().enumerate() {
-                                                if let Some(ratio) = current_pool_ratio.get(&asset.token.denom) {
+                                        if let Some(current_pool_ratio) =
+                                            &updated_pool.current_pool_ratio
+                                        {
+                                            for (index, asset) in
+                                                updated_pool.assets.iter().enumerate()
+                                            {
+                                                if let Some(ratio) =
+                                                    current_pool_ratio.get(&asset.token.denom)
+                                                {
                                                     ratio_string.push_str(&ratio.to_string());
                                                     if index < updated_pool.assets.len() - 1 {
                                                         ratio_string.push(':');
@@ -625,16 +692,15 @@ impl<'a> ElysQuerier<'a> {
 
                                         Some(ratio_string)
                                     }
-
                                 }
                             }
                             _ => {}
                         }
-                        
+
                         updated_pool
                     })
                     .collect::<Vec<PoolResp>>();
-    
+
                 Ok(QueryEarnPoolResponse {
                     pools: Some(pools_with_usd_values),
                 })

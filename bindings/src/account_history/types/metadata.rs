@@ -1,7 +1,7 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Decimal, StdError, StdResult, Uint128};
 
-use crate::{query_resp::QueryAprResponse, trade_shield::types::EarnType, ElysQuerier};
+use crate::{query_resp::QueryAprResponse, ElysQuerier};
 
 use super::ElysDenom;
 
@@ -66,6 +66,8 @@ impl Metadata {
             .get_asset_profile(ElysDenom::Eden.as_str().to_string())
             .map_err(|_| StdError::generic_err("an error occurred while getting eden denom"))?;
 
+        let aprs = querier.get_incentive_aprs()?;
+
         Ok(Self {
             usdc_denom,
             usdc_base_denom,
@@ -75,89 +77,39 @@ impl Metadata {
                 .map_or(0, |res| res),
 
             // APR section
-            usdc_apr_usdc: querier
-                .get_incentive_apr(
-                    EarnType::UsdcProgram as i32,
-                    ElysDenom::Usdc.as_str().to_string(),
-                )
-                .map_err(|_| {
-                    StdError::generic_err("an error occurred while getting usdc apr in usdc")
-                })?,
-            eden_apr_usdc: querier
-                .get_incentive_apr(
-                    EarnType::UsdcProgram as i32,
-                    ElysDenom::Eden.as_str().to_string(),
-                )
-                .map_err(|_| {
-                    StdError::generic_err("an error occurred while getting eden apr in usdc")
-                })?,
+            usdc_apr_usdc: QueryAprResponse {
+                apr: aprs.usdc_apr_usdc,
+            },
+            eden_apr_usdc: QueryAprResponse {
+                apr: aprs.eden_apr_usdc,
+            },
 
-            usdc_apr_edenb: querier
-                .get_incentive_apr(
-                    EarnType::EdenBProgram as i32,
-                    ElysDenom::Usdc.as_str().to_string(),
-                )
-                .map_err(|_| {
-                    StdError::generic_err("an error occurred while getting usdc apr in edenb")
-                })?,
-            eden_apr_edenb: querier
-                .get_incentive_apr(
-                    EarnType::EdenBProgram as i32,
-                    ElysDenom::Eden.as_str().to_string(),
-                )
-                .map_err(|_| {
-                    StdError::generic_err("an error occurred while getting eden apr in edenb")
-                })?,
+            usdc_apr_edenb: QueryAprResponse {
+                apr: aprs.usdc_apr_edenb,
+            },
+            eden_apr_edenb: QueryAprResponse {
+                apr: aprs.eden_apr_edenb,
+            },
 
-            usdc_apr_eden: querier
-                .get_incentive_apr(
-                    EarnType::EdenProgram as i32,
-                    ElysDenom::Usdc.as_str().to_string(),
-                )
-                .map_err(|_| {
-                    StdError::generic_err("an error occurred while getting usdc apr in eden")
-                })?,
-            eden_apr_eden: querier
-                .get_incentive_apr(
-                    EarnType::EdenProgram as i32,
-                    ElysDenom::Eden.as_str().to_string(),
-                )
-                .map_err(|_| {
-                    StdError::generic_err("an error occurred while getting eden apr in eden")
-                })?,
-            edenb_apr_eden: querier
-                .get_incentive_apr(
-                    EarnType::EdenProgram as i32,
-                    ElysDenom::EdenBoost.as_str().to_string(),
-                )
-                .map_err(|_| {
-                    StdError::generic_err("an error occurred while getting edenb apr in eden")
-                })?,
+            usdc_apr_eden: QueryAprResponse {
+                apr: aprs.usdc_apr_eden,
+            },
+            eden_apr_eden: QueryAprResponse {
+                apr: aprs.eden_apr_eden,
+            },
+            edenb_apr_eden: QueryAprResponse {
+                apr: aprs.edenb_apr_eden,
+            },
 
-            usdc_apr_elys: querier
-                .get_incentive_apr(
-                    EarnType::ElysProgram as i32,
-                    ElysDenom::Usdc.as_str().to_string(),
-                )
-                .map_err(|_| {
-                    StdError::generic_err("an error occurred while getting usdc apr in elys")
-                })?,
-            eden_apr_elys: querier
-                .get_incentive_apr(
-                    EarnType::ElysProgram as i32,
-                    ElysDenom::Eden.as_str().to_string(),
-                )
-                .map_err(|_| {
-                    StdError::generic_err("an error occurred while getting eden apr in elys")
-                })?,
-            edenb_apr_elys: querier
-                .get_incentive_apr(
-                    EarnType::ElysProgram as i32,
-                    ElysDenom::EdenBoost.as_str().to_string(),
-                )
-                .map_err(|_| {
-                    StdError::generic_err("an error occurred while getting edenb apr in elys")
-                })?,
+            usdc_apr_elys: QueryAprResponse {
+                apr: aprs.usdc_apr_elys,
+            },
+            eden_apr_elys: QueryAprResponse {
+                apr: aprs.eden_apr_elys,
+            },
+            edenb_apr_elys: QueryAprResponse {
+                apr: aprs.edenb_apr_elys,
+            },
 
             // prices
             uusdc_usd_price: Decimal::zero(),

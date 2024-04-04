@@ -28,6 +28,10 @@ pub enum ElysQuery {
     },
     #[returns(BalanceAvailable)]
     AmmBalance { address: String, denom: String },
+    #[returns(AmmGetPoolResponse)]
+    AmmPool { pool_id: u64 },
+    #[returns(AmmGetPoolsResponse)]
+    AmmPoolAll { pagination: Option<PageRequest> },
     // Define OracleQuery
     #[returns(OracleAllPriceResponse)]
     OraclePriceAll { pagination: PageRequest },
@@ -67,6 +71,8 @@ pub enum ElysQuery {
     AssetProfileEntryAll { pagination: Option<PageRequest> },
     #[returns(QueryAprResponse)]
     IncentiveApr { withdraw_type: i32, denom: String },
+    #[returns(QueryAprsResponse)]
+    IncentiveAprs {},
     #[returns(BalanceAvailable)]
     CommitmentRewardsSubBucketBalanceOfDenom {
         address: String,
@@ -106,14 +112,9 @@ pub enum ElysQuery {
         pagination: Option<PageRequest>,
     },
     #[returns(QueryIncentivePoolAprsResponse)]
-    IncentivePoolAprs {
-        pool_ids: Option<Vec<u64>>
-    },
+    IncentivePoolAprs { pool_ids: Option<Vec<u64>> },
     #[returns(QueryJoinPoolEstimationResponse)]
-    AmmJoinPoolEstimation {
-        pool_id: u64,
-        amounts_in: Vec<Coin>
-    },
+    AmmJoinPoolEstimation { pool_id: u64, amounts_in: Vec<Coin> },
     #[returns(LeveragelpParamsResponse)]
     LeveragelpParams {},
     #[returns(LeveragelpPositionsResponse)]
@@ -155,6 +156,12 @@ impl ElysQuery {
             token_in,
             discount,
         }
+    }
+    pub fn amm_get_pool(pool_id: u64) -> Self {
+        Self::AmmPool { pool_id }
+    }
+    pub fn amm_get_pools(pagination: Option<PageRequest>) -> Self {
+        Self::AmmPoolAll { pagination }
     }
     pub fn oracle_get_all_prices(pagination: PageRequest) -> Self {
         Self::OraclePriceAll { pagination }
@@ -299,6 +306,9 @@ impl ElysQuery {
             denom,
         }
     }
+    pub fn get_incentive_aprs() -> Self {
+        ElysQuery::IncentiveAprs {}
+    }
     pub fn get_all_pools(
         pool_ids: Option<Vec<u64>>,
         filter_type: i32,
@@ -311,14 +321,12 @@ impl ElysQuery {
         }
     }
     pub fn get_pools_apr(pool_ids: Option<Vec<u64>>) -> Self {
-        ElysQuery::IncentivePoolAprs {
-            pool_ids
-        }
+        ElysQuery::IncentivePoolAprs { pool_ids }
     }
     pub fn join_pool_estimation(pool_id: u64, amounts_in: Vec<Coin>) -> Self {
         ElysQuery::AmmJoinPoolEstimation {
             pool_id,
-            amounts_in
+            amounts_in,
         }
     }
 }

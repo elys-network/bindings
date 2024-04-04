@@ -4,7 +4,11 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, Uint128};
 
 use crate::{
-    account_history::types::CoinValue, trade_shield::types::{PerpetualPosition, StakedPositionRaw}, types::{
+    account_history::types::CoinValue,
+    trade_shield::types::{
+        AmmPool, AmmPoolRaw, PerpetualPosition, PoolExtraInfo, StakedPositionRaw,
+    },
+    types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, PoolAsset, Price, StakedPosition,
         SwapAmountInRoute, SwapAmountOutRoute, UnstakedPosition, ValidatorDetail, VestingDetail,
     }
@@ -14,6 +18,32 @@ use crate::{
 pub struct OracleAllPriceResponse {
     pub price: Option<Vec<Price>>,
     pub pagination: PageResponse,
+}
+
+#[cw_serde]
+pub struct AmmGetPoolResponseRaw {
+    pub pool: AmmPoolRaw,
+    pub extra_info: Option<PoolExtraInfo>,
+}
+
+#[cw_serde]
+pub struct AmmGetPoolResponse {
+    pub pool: AmmPool,
+    pub extra_info: PoolExtraInfo,
+}
+
+#[cw_serde]
+pub struct AmmGetPoolsResponseRaw {
+    pub pool: Option<Vec<AmmPoolRaw>>,
+    pub extra_infos: Option<Vec<PoolExtraInfo>>,
+    pub pagination: Option<PageResponse>,
+}
+
+#[cw_serde]
+pub struct AmmGetPoolsResponse {
+    pub pool: Vec<AmmPool>,
+    pub extra_infos: Vec<PoolExtraInfo>,
+    pub pagination: Option<PageResponse>,
 }
 
 #[cw_serde]
@@ -222,6 +252,20 @@ pub struct QueryAprResponse {
     pub apr: Uint128,
 }
 
+#[cw_serde]
+pub struct QueryAprsResponse {
+    pub usdc_apr_usdc: Uint128,
+    pub eden_apr_usdc: Uint128,
+    pub usdc_apr_edenb: Uint128,
+    pub eden_apr_edenb: Uint128,
+    pub usdc_apr_eden: Uint128,
+    pub eden_apr_eden: Uint128,
+    pub edenb_apr_eden: Uint128,
+    pub usdc_apr_elys: Uint128,
+    pub eden_apr_elys: Uint128,
+    pub edenb_apr_elys: Uint128,
+}
+
 impl Default for QueryAprResponse {
     fn default() -> Self {
         Self {
@@ -392,7 +436,7 @@ pub struct QueryJoinPoolEstimationResponse {
 
 #[cw_serde]
 pub struct QueryPoolAssetEstimationResponse {
-    pub amounts: HashMap<String, Decimal256>
+    pub amounts: HashMap<String, Decimal256>,
 }
 
 #[cw_serde]
@@ -418,6 +462,7 @@ pub struct PoolResp {
     pub borrow_apr: Decimal,
     pub leverage_lp: Decimal,
     pub perpetual: Decimal,
+    pub lp_token_price: Option<Decimal>,
     pub tvl: Decimal,
     pub total_shares: Coin,
     pub share_usd_price: Option<Decimal>,

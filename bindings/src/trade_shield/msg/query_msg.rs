@@ -32,6 +32,10 @@ pub enum QueryMsg {
         order_type: Option<PerpetualOrderType>,
         order_status: Option<Status>,
     },
+    #[returns(AmmGetPoolResponse)]
+    AmmGetPool { pool_id: u64 },
+    #[returns(AmmGetPoolsResponse)]
+    AmmGetPools { pagination: Option<PageRequest> },
     #[returns(AmmSwapEstimationByDenomResponse)]
     SwapEstimationByDenom {
         amount: Coin,
