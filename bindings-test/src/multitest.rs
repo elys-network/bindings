@@ -239,8 +239,8 @@ impl Module for ElysModule {
                     weight_balance_ratio: Decimal::zero(),
                 })?)
             }
-            ElysQuery::AmmGetPool { .. } => todo!("not implemented"),
-            ElysQuery::AmmGetPools { .. } => todo!("not implemented"),
+            ElysQuery::AmmPool { .. } => todo!("not implemented"),
+            ElysQuery::AmmPoolAll { .. } => todo!("not implemented"),
             ElysQuery::AmmSwapEstimationByDenom {
                 amount,
                 denom_in,
