@@ -72,7 +72,7 @@ pub enum ElysQuery {
     #[returns(QueryAprResponse)]
     IncentiveApr { withdraw_type: i32, denom: String },
     #[returns(QueryAprsResponse)]
-    Aprs {},
+    IncentiveAprs {},
     #[returns(BalanceAvailable)]
     CommitmentRewardsSubBucketBalanceOfDenom {
         address: String,
@@ -307,7 +307,7 @@ impl ElysQuery {
         }
     }
     pub fn get_incentive_aprs() -> Self {
-        ElysQuery::Aprs {}
+        ElysQuery::IncentiveAprs {}
     }
     pub fn get_all_pools(
         pool_ids: Option<Vec<u64>>,

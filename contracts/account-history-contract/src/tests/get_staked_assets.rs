@@ -421,7 +421,7 @@ impl Module for ElysModuleWrapper {
                 };
                 Ok(to_json_binary(&resp)?)
             }
-            ElysQuery::Aprs {} => Ok(to_json_binary(&QueryAprsResponse {
+            ElysQuery::IncentiveAprs {} => Ok(to_json_binary(&QueryAprsResponse {
                 usdc_apr_usdc: Uint128::new(100),
                 usdc_apr_edenb: Uint128::zero(),
                 usdc_apr_eden: Uint128::zero(),
