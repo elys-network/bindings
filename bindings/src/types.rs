@@ -332,18 +332,18 @@ pub struct PoolParams {
     pub fee_denom: String,
 }
 
-impl From<PoolParamsRaw> for PoolParams {
-    fn from(value: PoolParamsRaw) -> Self {
-        Self {
-            swap_fee: value.swap_fee,
-            exit_fee: value.exit_fee,
-            use_oracle: value.use_oracle.unwrap_or(false),
-            weight_breaking_fee_multiplier: value.weight_breaking_fee_multiplier,
-            weight_breaking_fee_exponent: value.weight_breaking_fee_exponent,
-            external_liquidity_ratio: value.external_liquidity_ratio,
-            weight_recovery_fee_portion: value.weight_recovery_fee_portion,
-            threshold_weight_difference: value.threshold_weight_difference,
-            fee_denom: value.fee_denom.unwrap_or("".to_string()),
+impl Into<PoolParams> for PoolParamsRaw {
+    fn into(self) -> PoolParams {
+        PoolParams {
+            swap_fee: self.swap_fee,
+            exit_fee: self.exit_fee,
+            use_oracle: self.use_oracle.unwrap_or(false),
+            weight_breaking_fee_multiplier: self.weight_breaking_fee_multiplier,
+            weight_breaking_fee_exponent: self.weight_breaking_fee_exponent,
+            external_liquidity_ratio: self.external_liquidity_ratio,
+            weight_recovery_fee_portion: self.weight_recovery_fee_portion,
+            threshold_weight_difference: self.threshold_weight_difference,
+            fee_denom: self.fee_denom.unwrap_or("".to_string()),
         }
     }
 }
@@ -359,16 +359,16 @@ pub struct AmmPoolRaw {
     pub rebalance_treasury: Option<String>,
 }
 
-impl From<AmmPoolRaw> for AmmPool {
-    fn from(value: AmmPoolRaw) -> Self {
-        Self {
-            pool_id: value.pool_id.unwrap_or(0),
-            address: value.address.unwrap_or("".to_string()),
-            pool_params: value.pool_params,
-            total_shares: value.total_shares,
-            pool_assets: value.pool_assets,
-            total_weight: value.total_weight,
-            rebalance_treasury: value.rebalance_treasury.unwrap_or("".to_string()),
+impl Into<AmmPool> for AmmPoolRaw {
+    fn into(self) -> AmmPool {
+        AmmPool {
+            pool_id: self.pool_id.unwrap_or(0),
+            address: self.address.unwrap_or("".to_string()),
+            pool_params: self.pool_params,
+            total_shares: self.total_shares,
+            pool_assets: self.pool_assets,
+            total_weight: self.total_weight,
+            rebalance_treasury: self.rebalance_treasury.unwrap_or("".to_string()),
         }
     }
 }
@@ -386,8 +386,8 @@ pub struct AmmPool {
 
 #[cw_serde]
 pub struct PoolExtraInfo {
-    tvl: Decimal,
-    lp_token_price: Decimal,
+    pub tvl: Decimal,
+    pub lp_token_price: Decimal,
 }
 
 #[cw_serde]

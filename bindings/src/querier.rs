@@ -9,7 +9,9 @@ use cosmwasm_std::{
 use crate::{
     query::*,
     query_resp::*,
-    trade_shield::types::{PoolAsset, StakedPosition, StakedPositionRaw, StakingValidator},
+    trade_shield::types::{
+        AmmPool, PoolAsset, PoolExtraInfo, StakedPosition, StakedPositionRaw, StakingValidator,
+    },
     types::{BalanceAvailable, PageRequest, PerpetualPosition, Price, SwapAmountInRoute},
 };
 
@@ -37,6 +39,37 @@ impl<'a> ElysQuerier<'a> {
 
         Ok(prices)
     }
+    pub fn amm_get_pool(&self, pool_id: u64) -> StdResult<AmmGetPoolResponse> {
+        let request = QueryRequest::Custom(ElysQuery::amm_get_pool(pool_id));
+        let raw_resp: AmmGetPoolResponseRaw = self.querier.query(&request)?;
+        let resp = AmmGetPoolResponse {
+            pool: raw_resp.pool.into(),
+            extra_info: raw_resp.extra_info.unwrap_or(PoolExtraInfo {
+                tvl: Decimal::zero(),
+                lp_token_price: Decimal::zero(),
+            }),
+        };
+        Ok(resp)
+    }
+
+    pub fn amm_get_pools(&self, pagination: Option<PageRequest>) -> StdResult<AmmGetPoolsResponse> {
+        let request = QueryRequest::Custom(ElysQuery::amm_get_pools(pagination));
+        let raw_resp: AmmGetPoolsResponseRaw = self.querier.query(&request)?;
+        let pool: Vec<AmmPool> = raw_resp.pool.map_or(vec![], |pools| {
+            pools
+                .iter()
+                .map(|pool| pool.to_owned().into())
+                .collect::<Vec<AmmPool>>()
+        });
+        let extra_infos: Vec<PoolExtraInfo> = raw_resp.extra_infos.unwrap_or(vec![]);
+        let resp = AmmGetPoolsResponse {
+            pool,
+            extra_infos,
+            pagination: raw_resp.pagination,
+        };
+        Ok(resp)
+    }
+
     pub fn amm_swap_estimation(
         &self,
         routes: &Vec<SwapAmountInRoute>,

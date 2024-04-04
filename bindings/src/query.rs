@@ -29,9 +29,9 @@ pub enum ElysQuery {
     #[returns(BalanceAvailable)]
     AmmBalance { address: String, denom: String },
     #[returns(AmmGetPoolResponse)]
-    AmmGetPool { pool_id: u64 },
+    AmmPool { pool_id: u64 },
     #[returns(AmmGetPoolsResponse)]
-    AmmGetPools { pagination: Option<PageRequest> },
+    AmmPoolAll { pagination: Option<PageRequest> },
     // Define OracleQuery
     #[returns(OracleAllPriceResponse)]
     OraclePriceAll { pagination: PageRequest },
@@ -156,6 +156,12 @@ impl ElysQuery {
             token_in,
             discount,
         }
+    }
+    pub fn amm_get_pool(pool_id: u64) -> Self {
+        Self::AmmPool { pool_id }
+    }
+    pub fn amm_get_pools(pagination: Option<PageRequest>) -> Self {
+        Self::AmmPoolAll { pagination }
     }
     pub fn oracle_get_all_prices(pagination: PageRequest) -> Self {
         Self::OraclePriceAll { pagination }

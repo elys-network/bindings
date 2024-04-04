@@ -21,28 +21,28 @@ pub struct OracleAllPriceResponse {
 
 #[cw_serde]
 pub struct AmmGetPoolResponseRaw {
-    pool: AmmPoolRaw,
-    extra_info: Option<PoolExtraInfo>,
+    pub pool: AmmPoolRaw,
+    pub extra_info: Option<PoolExtraInfo>,
 }
 
 #[cw_serde]
 pub struct AmmGetPoolResponse {
-    pool: AmmPool,
-    extra_info: PoolExtraInfo,
+    pub pool: AmmPool,
+    pub extra_info: PoolExtraInfo,
 }
 
 #[cw_serde]
 pub struct AmmGetPoolsResponseRaw {
-    pool: Option<Vec<AmmPoolRaw>>,
-    extra_info: Option<Vec<PoolExtraInfo>>,
-    pagination: Option<PageResponse>,
+    pub pool: Option<Vec<AmmPoolRaw>>,
+    pub extra_infos: Option<Vec<PoolExtraInfo>>,
+    pub pagination: Option<PageResponse>,
 }
 
 #[cw_serde]
 pub struct AmmGetPoolsResponse {
-    pool: Vec<AmmPool>,
-    extra_info: Vec<PoolExtraInfo>,
-    pagination: Option<PageResponse>,
+    pub pool: Vec<AmmPool>,
+    pub extra_infos: Vec<PoolExtraInfo>,
+    pub pagination: Option<PageResponse>,
 }
 
 #[cw_serde]
