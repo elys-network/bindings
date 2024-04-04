@@ -706,7 +706,7 @@ impl AccountSnapshotGenerator {
 
                         balance_rewards.push(BalanceReward {
                             asset: denom_ueden.clone(),
-                            amount: amount.amount,
+                            amount: reward.amount,
                             usd_amount: Some(rewards_in_usd),
                         });
 
@@ -761,7 +761,7 @@ impl AccountSnapshotGenerator {
 
                     balance_rewards.push(BalanceReward {
                         asset: amount.denom,
-                        amount: amount.amount,
+                        amount: reward.amount,
                         usd_amount: Some(rewards_in_usd),
                     });
                 }
