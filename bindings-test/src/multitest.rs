@@ -25,7 +25,7 @@ use elys_bindings::{
         LeveragelpParamsResponse, LeveragelpStatusReponse, LeveragelpWhitelistResponse,
         OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
         PerpetualOpenEstimationRawResponse, PerpetualQueryPositionsResponse, QueryAprResponse,
-        QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse,
+        QueryAprsResponse, QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse,
         QueryShowCommitmentsResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
         QueryVestingInfoResponse, StableStakeParamsData, StableStakeParamsResp,
     },
@@ -239,6 +239,8 @@ impl Module for ElysModule {
                     weight_balance_ratio: Decimal::zero(),
                 })?)
             }
+            ElysQuery::AmmPool { .. } => todo!("not implemented"),
+            ElysQuery::AmmPoolAll { .. } => todo!("not implemented"),
             ElysQuery::AmmSwapEstimationByDenom {
                 amount,
                 denom_in,
@@ -497,6 +499,21 @@ impl Module for ElysModule {
             ElysQuery::IncentiveApr { .. } => {
                 let resp = QueryAprResponse {
                     apr: Uint128::zero(),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::Aprs { .. } => {
+                let resp = QueryAprsResponse {
+                    usdc_apr_usdc: Uint128::zero(),
+                    eden_apr_usdc: Uint128::zero(),
+                    usdc_apr_edenb: Uint128::zero(),
+                    eden_apr_edenb: Uint128::zero(),
+                    usdc_apr_eden: Uint128::zero(),
+                    eden_apr_eden: Uint128::zero(),
+                    edenb_apr_eden: Uint128::zero(),
+                    usdc_apr_elys: Uint128::zero(),
+                    eden_apr_elys: Uint128::zero(),
+                    edenb_apr_elys: Uint128::zero(),
                 };
                 Ok(to_json_binary(&resp)?)
             }

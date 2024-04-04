@@ -306,6 +306,89 @@ pub struct VestingDetail {
     // Remaining time to vest. Javascript timestamp.
     pub remaining_time: u64,
 }
+#[cw_serde]
+pub struct PoolParamsRaw {
+    pub swap_fee: Decimal,
+    pub exit_fee: Decimal,
+    pub use_oracle: Option<bool>,
+    pub weight_breaking_fee_multiplier: Decimal,
+    pub weight_breaking_fee_exponent: Decimal,
+    pub external_liquidity_ratio: Decimal,
+    pub weight_recovery_fee_portion: Decimal,
+    pub threshold_weight_difference: Decimal,
+    pub fee_denom: Option<String>,
+}
+
+#[cw_serde]
+pub struct PoolParams {
+    pub swap_fee: Decimal,
+    pub exit_fee: Decimal,
+    pub use_oracle: bool,
+    pub weight_breaking_fee_multiplier: Decimal,
+    pub weight_breaking_fee_exponent: Decimal,
+    pub external_liquidity_ratio: Decimal,
+    pub weight_recovery_fee_portion: Decimal,
+    pub threshold_weight_difference: Decimal,
+    pub fee_denom: String,
+}
+
+impl Into<PoolParams> for PoolParamsRaw {
+    fn into(self) -> PoolParams {
+        PoolParams {
+            swap_fee: self.swap_fee,
+            exit_fee: self.exit_fee,
+            use_oracle: self.use_oracle.unwrap_or(false),
+            weight_breaking_fee_multiplier: self.weight_breaking_fee_multiplier,
+            weight_breaking_fee_exponent: self.weight_breaking_fee_exponent,
+            external_liquidity_ratio: self.external_liquidity_ratio,
+            weight_recovery_fee_portion: self.weight_recovery_fee_portion,
+            threshold_weight_difference: self.threshold_weight_difference,
+            fee_denom: self.fee_denom.unwrap_or("".to_string()),
+        }
+    }
+}
+
+#[cw_serde]
+pub struct AmmPoolRaw {
+    pub pool_id: Option<u64>,
+    pub address: Option<String>,
+    pub pool_params: PoolParamsRaw,
+    pub total_shares: Coin,
+    pub pool_assets: Vec<PoolAsset>,
+    pub total_weight: Int128,
+    pub rebalance_treasury: Option<String>,
+}
+
+impl Into<AmmPool> for AmmPoolRaw {
+    fn into(self) -> AmmPool {
+        AmmPool {
+            pool_id: self.pool_id.unwrap_or(0),
+            address: self.address.unwrap_or("".to_string()),
+            pool_params: self.pool_params,
+            total_shares: self.total_shares,
+            pool_assets: self.pool_assets,
+            total_weight: self.total_weight,
+            rebalance_treasury: self.rebalance_treasury.unwrap_or("".to_string()),
+        }
+    }
+}
+
+#[cw_serde]
+pub struct AmmPool {
+    pub pool_id: u64,
+    pub address: String,
+    pub pool_params: PoolParamsRaw,
+    pub total_shares: Coin,
+    pub pool_assets: Vec<PoolAsset>,
+    pub total_weight: Int128,
+    pub rebalance_treasury: String,
+}
+
+#[cw_serde]
+pub struct PoolExtraInfo {
+    pub tvl: Decimal,
+    pub lp_token_price: Decimal,
+}
 
 #[cw_serde]
 pub struct AmmJoinPool {

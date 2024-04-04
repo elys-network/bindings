@@ -229,6 +229,7 @@ impl AccountSnapshotGenerator {
                     fee_denom: Some("".to_string()),
                     swap_fee: Some(Decimal::zero()),
                     use_oracle: Some(false),
+                    lp_token_price: None,
                 },
                 |pool| pool.clone(),
             );
@@ -699,7 +700,7 @@ impl AccountSnapshotGenerator {
 
                         balance_rewards.push(BalanceReward {
                             asset: denom_ueden.clone(),
-                            amount: amount.amount,
+                            amount: reward.amount,
                             usd_amount: Some(rewards_in_usd),
                         });
 
@@ -754,7 +755,7 @@ impl AccountSnapshotGenerator {
 
                     balance_rewards.push(BalanceReward {
                         asset: amount.denom,
-                        amount: amount.amount,
+                        amount: reward.amount,
                         usd_amount: Some(rewards_in_usd),
                     });
                 }
