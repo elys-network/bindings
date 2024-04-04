@@ -4,7 +4,9 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, Uint128};
 
 use crate::{
-    trade_shield::types::{PerpetualPosition, StakedPositionRaw},
+    trade_shield::types::{
+        AmmPool, AmmPoolRaw, PerpetualPosition, PoolExtraInfo, StakedPositionRaw,
+    },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, PoolAsset, Price, StakedPosition,
         SwapAmountInRoute, SwapAmountOutRoute, UnstakedPosition, ValidatorDetail, VestingDetail,
@@ -15,6 +17,32 @@ use crate::{
 pub struct OracleAllPriceResponse {
     pub price: Option<Vec<Price>>,
     pub pagination: PageResponse,
+}
+
+#[cw_serde]
+pub struct AmmGetPoolResponseRaw {
+    pool: AmmPoolRaw,
+    extra_info: Option<PoolExtraInfo>,
+}
+
+#[cw_serde]
+pub struct AmmGetPoolResponse {
+    pool: AmmPool,
+    extra_info: PoolExtraInfo,
+}
+
+#[cw_serde]
+pub struct AmmGetPoolsResponseRaw {
+    pool: Option<Vec<AmmPoolRaw>>,
+    extra_info: Option<Vec<PoolExtraInfo>>,
+    pagination: Option<PageResponse>,
+}
+
+#[cw_serde]
+pub struct AmmGetPoolsResponse {
+    pool: Vec<AmmPool>,
+    extra_info: Vec<PoolExtraInfo>,
+    pagination: Option<PageResponse>,
 }
 
 #[cw_serde]
@@ -431,6 +459,7 @@ pub struct PoolResp {
     pub borrow_apr: Decimal,
     pub leverage_lp: Decimal,
     pub perpetual: Decimal,
+    pub lp_token_price: Option<Decimal>,
     pub tvl: Decimal,
     pub total_shares: Coin,
     pub share_usd_price: Option<Decimal>,

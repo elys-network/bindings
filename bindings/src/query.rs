@@ -28,6 +28,10 @@ pub enum ElysQuery {
     },
     #[returns(BalanceAvailable)]
     AmmBalance { address: String, denom: String },
+    #[returns(AmmGetPoolResponse)]
+    AmmGetPool { pool_id: u64 },
+    #[returns(AmmGetPoolsResponse)]
+    AmmGetPools { pagination: Option<PageRequest> },
     // Define OracleQuery
     #[returns(OracleAllPriceResponse)]
     OraclePriceAll { pagination: PageRequest },

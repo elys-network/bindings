@@ -107,9 +107,8 @@ impl AccountSnapshotGenerator {
 
         let mut total_liquidity_position_balance = Decimal256::zero();
         for pool in pool_balances_response.pools.iter() {
-            total_liquidity_position_balance = total_liquidity_position_balance.checked_add(
-                Decimal256::from(pool.available),
-            )?;
+            total_liquidity_position_balance =
+                total_liquidity_position_balance.checked_add(Decimal256::from(pool.available))?;
         }
 
         let reward = rewards_response.rewards_map;
@@ -125,7 +124,8 @@ impl AccountSnapshotGenerator {
                         .total_perpetual_asset_balance
                         .amount
                         .clone(),
-                )?.checked_add(total_liquidity_position_balance)?,
+                )?
+                .checked_add(total_liquidity_position_balance)?,
             &self.metadata.usdc_denom,
         );
         let reward_usd: DecCoin = DecCoin::new(
@@ -136,7 +136,7 @@ impl AccountSnapshotGenerator {
             portfolio_usd.amount.checked_add(reward_usd.amount)?,
             &self.metadata.usdc_denom,
         );
-        
+
         // Adds the records all the time as we should return data to the FE even if it is 0 balanced.
         Ok(Some(AccountSnapshot {
             date,
@@ -235,6 +235,7 @@ impl AccountSnapshotGenerator {
                     fee_denom: Some("".to_string()),
                     swap_fee: Some(Decimal::zero()),
                     use_oracle: Some(false),
+                    lp_token_price: None,
                 },
                 |pool| pool.clone(),
             );
