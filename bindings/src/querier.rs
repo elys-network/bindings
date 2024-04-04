@@ -538,7 +538,10 @@ impl<'a> ElysQuerier<'a> {
         // Calculate ratio for each asset in the pool
         for asset in &pool.assets {
             let ratio = if let Some(usd_value) = asset.usd_value {
-                usd_value / total_value
+                match usd_value.checked_div(total_value) {
+                    Ok(resp) => resp,
+                    Err(_) => Decimal::zero(),
+                }
             } else {
                 Decimal::zero()
             };
@@ -607,7 +610,12 @@ impl<'a> ElysQuerier<'a> {
                             Some(self.get_current_pool_ratio(&updated_pool));
 
                         updated_pool.share_usd_price = Some(
-                            pool.tvl / Decimal::from_atomics(pool.total_shares.amount, 18).unwrap(),
+                            match pool.tvl.checked_div(
+                                Decimal::from_atomics(pool.total_shares.amount, 18).unwrap(),
+                            ) {
+                                Ok(resp) => resp,
+                                Err(_) => Decimal::zero(),
+                            },
                         );
 
                         // Sort results. USDC should be always last asset.
