@@ -50,6 +50,14 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
             order_type,
             order_status,
         )?)?),
+        AmmGetPool { pool_id } => {
+            let querier = ElysQuerier::new(&deps.querier);
+            Ok(to_json_binary(&querier.amm_get_pool(pool_id)?)?)
+        }
+        AmmGetPools { pagination } => {
+            let querier = ElysQuerier::new(&deps.querier);
+            Ok(to_json_binary(&querier.amm_get_pools(pagination)?)?)
+        }
         SwapEstimationByDenom {
             amount,
             denom_in,
