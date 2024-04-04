@@ -66,6 +66,7 @@ impl Metadata {
             .get_asset_profile(ElysDenom::Eden.as_str().to_string())
             .map_err(|_| StdError::generic_err("an error occurred while getting eden denom"))?;
 
+        // panic!("LALAL");
         let aprs = querier.get_incentive_aprs()?;
 
         Ok(Self {
