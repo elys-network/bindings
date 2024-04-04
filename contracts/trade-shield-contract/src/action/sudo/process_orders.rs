@@ -399,7 +399,11 @@ fn process_spot_order(
     querier: QuerierWrapper<'_, ElysQuery>,
 ) -> StdResult<()> {
     for id in orders_ids {
-        let order = PENDING_SPOT_ORDER.load(storage, id)?;
+        let order = match PENDING_SPOT_ORDER.may_load(storage, id)? {
+            Some(order) => order,
+            None => continue,
+        };
+
         *reply_info_id = match reply_info_id.checked_add(1) {
             Some(id) => id,
             None => {
