@@ -502,7 +502,7 @@ impl Module for ElysModule {
                 };
                 Ok(to_json_binary(&resp)?)
             }
-            ElysQuery::Aprs { .. } => {
+            ElysQuery::IncentiveAprs { .. } => {
                 let resp = QueryAprsResponse {
                     usdc_apr_usdc: Uint128::zero(),
                     eden_apr_usdc: Uint128::zero(),
