@@ -33,7 +33,7 @@ pub fn get_liquid_assets(
             in_order_amount,
             in_order_value,
             total_amount: total.amount_token,
-            total_value: total.amount_usdc,
+            total_value: total.amount_usd,
         });
     }
 
@@ -45,7 +45,7 @@ pub fn get_liquid_assets(
 
 fn get_info(list_info: &Vec<CoinValue>, denom: &String) -> (Decimal, Decimal) {
     match list_info.iter().find(|info| &info.denom == denom).cloned() {
-        Some(data) => (data.amount_token, data.amount_usdc),
+        Some(data) => (data.amount_token, data.amount_usd),
         None => (Decimal::zero(), Decimal::zero()),
     }
 }

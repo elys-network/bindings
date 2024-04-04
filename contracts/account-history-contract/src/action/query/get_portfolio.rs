@@ -51,7 +51,7 @@ pub fn get_portfolio(
     };
 
     let actual_portfolio_balance =
-        match SignedDecimal256::try_from(new_snapshot.portfolio.balance_usd.amount) {
+        match SignedDecimal256::try_from(new_snapshot.portfolio.balance_usd) {
             Ok(balance) => balance,
             Err(_) => SignedDecimal256::zero(),
         };
