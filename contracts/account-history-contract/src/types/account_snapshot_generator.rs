@@ -243,29 +243,34 @@ impl AccountSnapshotGenerator {
             let balance_uint = Uint128::new(user_pool.balance.amount.i128() as u128);
             let share_price = pool.share_usd_price.or(Some(Decimal::zero())).unwrap();
 
-            let balance_breakdown = match pool.current_pool_ratio.clone() {
-                Some(current_ratio) => {
-                    current_ratio
-                        .into_iter()
-                        .map(|ratio| {
-                            let asset_price = querier.get_asset_price(ratio.0.clone());
+            // Assumes that pool.assets are in the desired displaying sort order.
+            let balance_breakdown = 
+                pool.assets
+                    .clone()
+                    .into_iter()
+                    .map(|asset| {
+                        match pool.current_pool_ratio.clone() {
+                            Some(ratios) => {
+                                let denom = asset.token.denom.clone();
+                                let ratio = ratios.get(&denom);
+                                let asset_price = querier.get_asset_price(denom.clone());
+
+                                match (asset_price, ratio) {
+                                    (Ok(price), Some(ratio)) => {
+                                        let asset_shares =
+                                            Decimal::from_atomics(balance_uint, 18).unwrap() * ratio;
+                                        let shares_usd = asset_shares * share_price;
+                                        let asset_amount = shares_usd / price;
             
-                            match asset_price {
-                                Ok(price) => {
-                                    let asset_shares =
-                                        Decimal::from_atomics(balance_uint, 18).unwrap() * ratio.1;
-                                    let shares_usd = asset_shares * share_price;
-                                    let asset_amount = shares_usd / price;
-        
-                                    Some(CoinValue::new(ratio.0.clone(), asset_amount, price, shares_usd))
+                                        Some(CoinValue::new(denom, asset_amount, price, shares_usd))
+                                    }
+                                    (_, _) => None,
                                 }
-                                Err(_) => None,
-                            }
-                        })
-                        .collect()
-                }
-                _ => vec![],
-            };
+                            },
+                            _ => None
+                        }
+                    })
+                    .collect();
 
             pool_resp.push(UserPoolResp {
                 pool,
