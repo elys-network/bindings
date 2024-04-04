@@ -4,13 +4,14 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, Uint128};
 
 use crate::{
+    account_history::types::CoinValue,
     trade_shield::types::{
         AmmPool, AmmPoolRaw, PerpetualPosition, PoolExtraInfo, StakedPositionRaw,
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, PoolAsset, Price, StakedPosition,
         SwapAmountInRoute, SwapAmountOutRoute, UnstakedPosition, ValidatorDetail, VestingDetail,
-    },
+    }
 };
 
 #[cw_serde]
@@ -454,8 +455,10 @@ pub struct PoolResp {
     pub current_pool_ratio: Option<HashMap<String, Decimal>>,
     pub current_pool_ratio_string: Option<String>,
     pub rewards_apr: Decimal,
-    pub rewards_usd: Option<Decimal>,
-    pub reward_coins: Option<Vec<Coin>>,
+    pub rewards_usd: Decimal,
+    pub reward_coins: Vec<Coin>,
+    // Reward coins with USD value in it. Mapped from reward_coins chain response.
+    pub fiat_rewards: Option<Vec<CoinValue>>,
     pub borrow_apr: Decimal,
     pub leverage_lp: Decimal,
     pub perpetual: Decimal,
@@ -463,9 +466,9 @@ pub struct PoolResp {
     pub tvl: Decimal,
     pub total_shares: Coin,
     pub share_usd_price: Option<Decimal>,
-    pub swap_fee: Option<Decimal>,
-    pub fee_denom: Option<String>,
-    pub use_oracle: Option<bool>,
+    pub swap_fee: Decimal,
+    pub fee_denom: String,
+    pub use_oracle: Option<bool>
 }
 
 #[cw_serde]
@@ -479,8 +482,10 @@ pub struct UserPoolResp {
     pub pool: PoolResp,
     // User shares in pool
     pub balance: CommittedTokens,
-    // User balance in pool in terms of USD
+    // User total balance in pool in terms of USD
     pub available: Decimal,
+    // Balance based on current pool ratio
+    pub balance_breakdown: Vec<Option<CoinValue>>
 }
 
 #[cw_serde]
