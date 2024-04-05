@@ -457,8 +457,16 @@ impl AccountSnapshotGenerator {
         let staked_asset_elys = elys_details.data;
         total_balance = match total_balance.checked_add(match staked_asset_elys.clone() {
             ElysEarnProgram {
-                staked: Some(r), ..
-            } => r.usd_amount,
+                staked: Some(staked),
+                unstaked_positions,
+                ..
+            } => {
+                let unstaked_balance = match unstaked_positions {
+                    Some(unstaked) => unstaked.into_iter().map(|position| position.unstaked.usd_amount).sum::<Decimal>(),
+                    None => Decimal::zero(),
+                };
+                staked.usd_amount + unstaked_balance
+            },
             _ => Decimal::zero(),
         }) {
             Ok(res) => res,
@@ -486,8 +494,17 @@ impl AccountSnapshotGenerator {
         let staked_asset_eden = eden_details.data;
         total_balance = match total_balance.checked_add(match staked_asset_eden.clone() {
             EdenEarnProgram {
-                staked: Some(r), ..
-            } => r.usd_amount,
+                staked: Some(staked),
+                vesting,
+                ..
+            } => {
+                let vesting_fiat_balance = match vesting {
+                    Some(vesting) => vesting.usd_amount,
+                    None => Decimal::zero()
+                };
+
+                vesting_fiat_balance + staked.usd_amount
+            },
             _ => Decimal::zero(),
         }) {
             Ok(res) => res,
