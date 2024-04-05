@@ -19,6 +19,7 @@ pub mod query_resp {
     mod get_perpetual_position_resp;
     mod get_perpetual_positions_for_address_resp;
     mod get_perpetual_positions_resp;
+    mod get_sorted_order_list_resp;
     mod get_spot_order_resp;
     mod get_spot_orders_resp;
     mod number_of_pending_order;
@@ -30,6 +31,7 @@ pub mod query_resp {
     pub use get_perpetual_position_resp::GetPerpetualPositionResp;
     pub use get_perpetual_positions_for_address_resp::GetPerpetualPositionsForAddressResp;
     pub use get_perpetual_positions_resp::GetPerpetualPositionsResp;
+    pub use get_sorted_order_list_resp::*;
     pub use get_spot_order_resp::GetSpotOrderResp;
     pub use get_spot_orders_resp::GetSpotOrdersResp;
     pub use number_of_pending_order::NumberOfPendingOrderResp;

@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::{trade_shield::states::PERPETUAL_ORDER, types::PerpetualPosition};
+use crate::{trade_shield::states::PENDING_PERPETUAL_ORDER, types::PerpetualPosition};
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
     Coin, OverflowError, SignedDecimal, SignedDecimal256, StdError, StdResult, Storage,
@@ -107,14 +107,28 @@ impl PerpetualOrder {
         let mut high = list.len();
         let rate = match trigger_price {
             Some(price) => &price.rate,
-            None => return Err(StdError::generic_err("price not found")),
+            None => {
+                return Err(StdError::generic_err(
+                    "perpetual: binary search: price not found",
+                ))
+            }
         };
 
         while low < high {
             let mid = low + (high - low) / 2;
-            let PerpetualOrder { trigger_price, .. } = PERPETUAL_ORDER.load(storage, list[mid])?;
+            let PerpetualOrder { trigger_price, .. } =
+                match PENDING_PERPETUAL_ORDER.may_load(storage, list[mid])? {
+                    Some(order) => order,
+                    None => {
+                        return Err(StdError::generic_err(
+                            "perpetual: binary search: order not found",
+                        ))
+                    }
+                };
             if trigger_price.is_none() {
-                return Err(StdError::generic_err("price not found"));
+                return Err(StdError::generic_err(
+                    "perpetual: binary search: price not found",
+                ));
             }
 
             if trigger_price.unwrap().rate < *rate {
