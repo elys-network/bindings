@@ -1,13 +1,16 @@
 use super::*;
-use cosmwasm_std::Order;
+use cosmwasm_std::{coin, Addr, Decimal, Order, StdError, Timestamp};
 use elys_bindings::trade_shield::{
-    msg::query_resp::{NumberOfPendingOrderResp, TradeShieldParamsResponse},
+    msg::query_resp::{
+        GetSortedOrderListResp, NumberOfPendingOrderResp, OrdersStates, TradeShieldParamsResponse,
+    },
     states::{
         LEVERAGE_ENABLED, LIMIT_PROCESS_ORDER, MARKET_ORDER_ENABLED, PARAMS_ADMIN,
         PENDING_PERPETUAL_ORDER, PENDING_SPOT_ORDER, PERPETUAL_ENABLED, PROCESS_ORDERS_ENABLED,
-        REWARD_ENABLED, STAKE_ENABLED, SWAP_ENABLED,
+        REWARD_ENABLED, SORTED_PENDING_SPOT_ORDER, SPOT_ORDER, STAKE_ENABLED, SWAP_ENABLED,
+        USER_SPOT_ORDER,
     },
-    types::{PerpetualOrder, SpotOrder},
+    types::{Date, OrderPrice, PerpetualOrder, SpotOrder, Status},
 };
 use msg::QueryMsg;
 
@@ -132,5 +135,53 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
                 limit_process_order,
             }
         })?),
+        GetSortedOrderList {
+            order_type,
+            base_denom,
+            quote_denom,
+        } => {
+            let dummy_order = SpotOrder {
+                order_type,
+                order_id: 0,
+                order_price: OrderPrice {
+                    base_denom,
+                    quote_denom,
+                    rate: Decimal::zero(),
+                },
+                order_amount: coin(0, ""),
+                owner_address: Addr::unchecked(""),
+                order_target_denom: "".to_string(),
+                status: trade_shield::types::Status::Canceled,
+                date: Date {
+                    height: 0,
+                    time: Timestamp::from_nanos(0),
+                },
+            };
+            let k = dummy_order.gen_key()?;
+            let v = match SORTED_PENDING_SPOT_ORDER.may_load(deps.storage, k.as_str())? {
+                Some(v) => v,
+                None => return Err(StdError::generic_err("no order found").into()),
+            };
+            let mut orders_states: Vec<OrdersStates> = vec![];
+            for i in 0..v.len() {
+                let id = v[i];
+                let (status, found) = match SPOT_ORDER.may_load(deps.storage, id)? {
+                    Some(order) => (order.status, true),
+                    None => (Status::Canceled, false),
+                };
+                let is_in_pending = PENDING_SPOT_ORDER.may_load(deps.storage, id)?.is_some();
+
+                orders_states.push(OrdersStates {
+                    id,
+                    status,
+                    is_in_pending,
+                    found,
+                });
+                if i >= 50 {
+                    break;
+                }
+            }
+            Ok(to_json_binary(&GetSortedOrderListResp { orders_states })?)
+        }
     }
 }

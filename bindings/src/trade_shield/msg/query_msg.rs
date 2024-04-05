@@ -65,4 +65,10 @@ pub enum QueryMsg {
     GetParams {},
     #[returns(NumberOfPendingOrderResp)]
     NumberOfPendingOrder {},
+    #[returns(GetSortedOrderListResp)]
+    GetSortedOrderList {
+        order_type: SpotOrderType,
+        base_denom: String,
+        quote_denom: String,
+    },
 }

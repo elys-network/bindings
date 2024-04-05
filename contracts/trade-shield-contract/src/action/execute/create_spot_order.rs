@@ -83,6 +83,7 @@ pub fn create_spot_order(
     )?;
 
     SPOT_ORDER.save(deps.storage, new_order.order_id, &new_order)?;
+    
     if new_order.order_type != SpotOrderType::MarketBuy {
         PENDING_SPOT_ORDER.save(deps.storage, new_order.order_id, &new_order)?;
         let key = new_order.gen_key()?;

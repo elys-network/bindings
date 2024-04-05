@@ -1,6 +1,6 @@
 use super::super::spot_order::SpotOrder;
-use crate::trade_shield::{states::SPOT_ORDER, types::OrderPrice};
-use cosmwasm_std::{Decimal, StdResult, Storage};
+use crate::trade_shield::{states::PENDING_SPOT_ORDER, types::OrderPrice};
+use cosmwasm_std::{Decimal, StdError, StdResult, Storage};
 
 impl SpotOrder {
     pub fn binary_search(
@@ -16,7 +16,14 @@ impl SpotOrder {
             let SpotOrder {
                 order_price: OrderPrice { rate: mid_rate, .. },
                 ..
-            } = SPOT_ORDER.load(storage, list[mid])?;
+            } = match PENDING_SPOT_ORDER.may_load(storage, list[mid])? {
+                Some(order) => order,
+                None => {
+                    return Err(StdError::generic_err(
+                        "spot=: binary search: price not found",
+                    ))
+                }
+            };
 
             if mid_rate < *rate {
                 low = mid + 1;

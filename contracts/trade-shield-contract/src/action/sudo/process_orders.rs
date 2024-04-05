@@ -50,10 +50,12 @@ pub fn process_orders(
 
     for (key, order_ids) in spot_orders.iter() {
         let (order_type, base_denom, quote_denom) = SpotOrder::from_key(key.as_str())?;
+
         if order_type == SpotOrderType::MarketBuy {
-            bank_msgs.extend(cancel_spot_orders(deps.storage, key, order_ids, None)?);
+            SORTED_PENDING_SPOT_ORDER.remove(deps.storage, key.as_str());
             continue;
         }
+
         let market_price =
             match querier.get_asset_price_from_denom_in_to_denom_out(&base_denom, &quote_denom) {
                 Ok(market_price) => {
@@ -101,7 +103,6 @@ pub fn process_orders(
             deps.storage,
         )?;
 
-        //     if check_spot_order(&spot_order, market_price) {
         process_spot_order(
             routes,
             orders_to_process,
