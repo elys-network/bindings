@@ -78,7 +78,13 @@ pub fn instantiate(
         user_perpetual_orders.insert(owner, ids);
     }
     MAX_REPLY_ID.save(deps.storage, &0)?;
-    SPOT_ORDER_MAX_ID.save(deps.storage, &0)?;
+    SPOT_ORDER_MAX_ID.save(
+        deps.storage,
+        &match msg.spot_orders.iter().max_by_key(|order| order.order_id) {
+            Some(o) => o.order_id,
+            None => 0,
+        },
+    )?;
     ACCOUNT_HISTORY_ADDRESS.save(deps.storage, &msg.account_history_address)?;
     user_spot_orders
         .into_iter()
