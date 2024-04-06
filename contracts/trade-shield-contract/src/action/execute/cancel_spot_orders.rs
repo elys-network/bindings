@@ -73,9 +73,11 @@ pub fn cancel_spot_orders(
     for order in orders.iter_mut() {
         let key = order.gen_key()?;
         let mut vec: Vec<u64> = SORTED_PENDING_SPOT_ORDER.load(deps.storage, key.as_str())?;
-        if let Ok(index) = vec.binary_search(&order.order_id) {
-            vec.remove(index);
-        }
+        let index = vec
+            .iter()
+            .position(|id| id == &order.order_id)
+            .ok_or_else(|| StdError::not_found("order id not found"))?;
+        vec.remove(index);
         SORTED_PENDING_SPOT_ORDER.save(deps.storage, key.as_str(), &vec)?;
 
         order.status = Status::Canceled;

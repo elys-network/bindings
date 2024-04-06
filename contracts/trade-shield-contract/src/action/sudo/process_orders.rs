@@ -207,8 +207,9 @@ fn process_perpetual_order(
                     let key = order.gen_key()?;
                     let mut vec = SORTED_PENDING_PERPETUAL_ORDER.load(storage, key.as_str())?;
                     let index = vec
-                        .binary_search(&order.order_id)
-                        .map_err(|_| StdError::not_found("order id not found"))?;
+                        .iter()
+                        .position(|id| id == &order.order_id)
+                        .ok_or_else(|| StdError::not_found("order id not found"))?;
                     vec.remove(index);
                     SORTED_PENDING_PERPETUAL_ORDER.save(storage, key.as_str(), &vec)?;
                     continue;

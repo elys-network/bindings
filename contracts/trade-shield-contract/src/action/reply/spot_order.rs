@@ -1,4 +1,4 @@
-use cosmwasm_std::{from_json, Binary, DepsMut, SubMsgResult};
+use cosmwasm_std::{from_json, Binary, DepsMut, StdError, SubMsgResult};
 
 use crate::helper::get_response_from_reply;
 
@@ -15,9 +15,11 @@ pub fn reply_to_spot_order(
 
     let key = order.gen_key()?;
     let mut vec: Vec<u64> = SORTED_PENDING_SPOT_ORDER.load(deps.storage, key.as_str())?;
-    if let Ok(index) = vec.binary_search(&order.order_id) {
-        vec.remove(index);
-    }
+    let index = vec
+        .iter()
+        .position(|id| id == &order.order_id)
+        .ok_or_else(|| StdError::not_found("order id not found"))?;
+    vec.remove(index);
 
     SORTED_PENDING_SPOT_ORDER.save(deps.storage, key.as_str(), &vec)?;
 

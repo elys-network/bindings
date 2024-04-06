@@ -46,7 +46,10 @@ pub fn cancel_perpetual_order(
     PENDING_PERPETUAL_ORDER.remove(deps.storage, order.order_id);
     let key = order.gen_key()?;
     let mut vec = SORTED_PENDING_PERPETUAL_ORDER.load(deps.storage, key.as_str())?;
-    let index = vec.binary_search(&order.order_id).map_err(|_| StdError::not_found("order id not found"))?;
+    let index = vec
+        .iter()
+        .position(|id| id == &order.order_id)
+        .ok_or_else(|| StdError::not_found("order id not found"))?;
     vec.remove(index);
     SORTED_PENDING_PERPETUAL_ORDER.save(deps.storage, key.as_str(), &vec)?;
 
@@ -55,5 +58,4 @@ pub fn cancel_perpetual_order(
     } else {
         Ok(resp)
     }
-
 }
