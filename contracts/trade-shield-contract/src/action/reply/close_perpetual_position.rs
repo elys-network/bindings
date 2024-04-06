@@ -1,4 +1,4 @@
-use cosmwasm_std::{from_json, Binary, StdError, SubMsgResult};
+use cosmwasm_std::{from_json, Binary, SubMsgResult};
 
 use crate::helper::get_response_from_reply;
 
@@ -15,12 +15,14 @@ pub fn reply_to_close_perpetual_order(
 
     let key = order.gen_key()?;
     let mut vec: Vec<u64> = SORTED_PENDING_PERPETUAL_ORDER.load(deps.storage, key.as_str())?;
-    let index = vec
-        .iter()
-        .position(|id| id == &order.order_id)
-        .ok_or_else(|| StdError::not_found("order id not found"))?;
-    vec.remove(index);
-
+    let mut index = PerpetualOrder::binary_search(&order.trigger_price, deps.storage, &vec)?;
+    let size_of_vec = vec.len();
+    while vec[index] != order_id && index < size_of_vec {
+        index += 1;
+    }
+    if index < size_of_vec {
+        vec.remove(index);
+    }
     let res: PerpetualCloseResponse = match get_response_from_reply(module_resp) {
         Ok(expr) => expr,
         Err(err) => {

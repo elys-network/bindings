@@ -1,4 +1,7 @@
-use crate::{helper::get_mut_discount, msg::ReplyType};
+use crate::{
+    helper::{get_mut_discount, remove_perpetual_order},
+    msg::ReplyType,
+};
 use cosmwasm_std::{
     coin, to_json_binary, Decimal, Int128, OverflowError, QuerierWrapper, StdError, StdResult,
     Storage, SubMsg,
@@ -200,18 +203,7 @@ fn process_perpetual_order(
             {
                 Some(mtp) => mtp,
                 None => {
-                    let mut order = order.to_owned();
-                    order.status = Status::Canceled;
-                    PENDING_PERPETUAL_ORDER.remove(storage, order.order_id);
-                    PERPETUAL_ORDER.save(storage, order.order_id, &order)?;
-                    let key = order.gen_key()?;
-                    let mut vec = SORTED_PENDING_PERPETUAL_ORDER.load(storage, key.as_str())?;
-                    let index = vec
-                        .iter()
-                        .position(|id| id == &order.order_id)
-                        .ok_or_else(|| StdError::not_found("order id not found"))?;
-                    vec.remove(index);
-                    SORTED_PENDING_PERPETUAL_ORDER.save(storage, key.as_str(), &vec)?;
+                    remove_perpetual_order(id, Status::Canceled, storage)?;
                     continue;
                 }
             };

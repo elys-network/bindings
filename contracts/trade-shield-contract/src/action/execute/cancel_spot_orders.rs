@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use cosmwasm_std::{to_json_binary, Coin, StdError};
 
 use super::*;
+use crate::helper::remove_spot_order;
 
 pub fn cancel_spot_orders(
     info: MessageInfo,
@@ -71,18 +72,7 @@ pub fn cancel_spot_orders(
     let mut orders = filter_order_by_type(orders, order_type)?;
 
     for order in orders.iter_mut() {
-        let key = order.gen_key()?;
-        let mut vec: Vec<u64> = SORTED_PENDING_SPOT_ORDER.load(deps.storage, key.as_str())?;
-        let index = vec
-            .iter()
-            .position(|id| id == &order.order_id)
-            .ok_or_else(|| StdError::not_found("order id not found"))?;
-        vec.remove(index);
-        SORTED_PENDING_SPOT_ORDER.save(deps.storage, key.as_str(), &vec)?;
-
-        order.status = Status::Canceled;
-        SPOT_ORDER.save(deps.storage, order.order_id, &order)?;
-        PENDING_SPOT_ORDER.remove(deps.storage, order.order_id);
+        remove_spot_order(order.order_id, Status::Canceled, deps.storage)?;
     }
 
     let order_ids: Vec<u64> = orders.iter().map(|order| order.order_id).collect();
