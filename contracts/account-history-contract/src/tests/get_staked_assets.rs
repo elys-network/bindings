@@ -436,8 +436,8 @@ impl Module for ElysModuleWrapper {
             ElysQuery::CommitmentVestingInfo { .. } => {
                 let resp = QueryVestingInfoResponse {
                     vesting: BalanceAvailable {
-                        amount: Uint128::zero(),
-                        usd_amount: Decimal::zero(),
+                        amount: Uint128::one(),
+                        usd_amount: Decimal::from_str("3530801.0067676894").unwrap(),
                     },
                     vesting_details: Some(vec![]),
                 };
@@ -580,7 +580,7 @@ fn get_staked_assets() {
 
     let expected: StakedAssetsResponse = StakedAssetsResponse {
         total_staked_balance: DecCoin::new(
-            Decimal256::from_str("9171.647735246481815781").unwrap(),
+            Decimal256::from_str("362389.958432642834912888").unwrap(),
             "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
         ),
         staked_assets: StakedAssets {
@@ -642,8 +642,8 @@ fn get_staked_assets() {
                     },
                 ]),
                 vesting: Some(BalanceAvailable {
-                    amount: Uint128::zero(),
-                    usd_amount: Decimal::zero(),
+                    amount: Uint128::one(),
+                    usd_amount: Decimal::from_str("3.5308010067676894").unwrap(),
                 }),
                 vesting_details: Some(vec![]), // FIXME: according to Wari we should have vesting details here
             },
