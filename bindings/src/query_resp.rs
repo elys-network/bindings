@@ -11,7 +11,7 @@ use crate::{
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, PoolAsset, Price, StakedPosition,
         SwapAmountInRoute, SwapAmountOutRoute, UnstakedPosition, ValidatorDetail, VestingDetail,
-    }
+    },
 };
 
 #[cw_serde]
@@ -382,14 +382,38 @@ pub struct RewardsUnclaimed {
 }
 
 #[cw_serde]
+pub struct VestingTokensRaw {
+    pub denom: String,
+    pub total_amount: Int128,
+    pub unvested_amount: Int128,
+    pub epoch_identifier: String,
+    pub num_epochs: Option<i64>,
+    pub current_epoch: Option<i64>,
+    pub vest_started_timestamp: Option<i64>,
+}
+
+#[cw_serde]
 pub struct VestingTokens {
-    denom: String,
-    total_amount: Int128,
-    unvested_amount: Int128,
-    epoch_identifier: String,
-    num_epochs: i64,
-    current_epoch: i64,
-    vest_started_timestamp: i64,
+    pub denom: String,
+    pub total_amount: Int128,
+    pub unvested_amount: Int128,
+    pub epoch_identifier: String,
+    pub num_epochs: i64,
+    pub current_epoch: i64,
+    pub vest_started_timestamp: i64,
+}
+
+#[cw_serde]
+pub struct CommitmentsRaw {
+    pub creator: String,
+    pub committed_tokens: Option<Vec<CommittedTokens>>,
+    pub rewards_unclaimed: Option<Vec<Coin>>,
+    pub claimed: Option<Vec<Coin>>,
+    pub vesting_tokens: Option<Vec<VestingTokensRaw>>,
+    pub rewards_by_elys_unclaimed: Option<Vec<Coin>>,
+    pub rewards_by_eden_unclaimed: Option<Vec<Coin>>,
+    pub rewards_by_edenb_unclaimed: Option<Vec<Coin>>,
+    pub rewards_by_usdc_unclaimed: Option<Vec<Coin>>,
 }
 
 #[cw_serde]
@@ -403,6 +427,11 @@ pub struct Commitments {
     pub rewards_by_eden_unclaimed: Option<Vec<Coin>>,
     pub rewards_by_edenb_unclaimed: Option<Vec<Coin>>,
     pub rewards_by_usdc_unclaimed: Option<Vec<Coin>>,
+}
+
+#[cw_serde]
+pub struct QueryShowCommitmentsResponseRaw {
+    pub commitments: CommitmentsRaw,
 }
 
 #[cw_serde]
@@ -468,7 +497,7 @@ pub struct PoolResp {
     pub share_usd_price: Option<Decimal>,
     pub swap_fee: Decimal,
     pub fee_denom: String,
-    pub use_oracle: Option<bool>
+    pub use_oracle: Option<bool>,
 }
 
 #[cw_serde]
@@ -485,7 +514,7 @@ pub struct UserPoolResp {
     // User total balance in pool in terms of USD
     pub available: Decimal,
     // Balance based on current pool ratio
-    pub balance_breakdown: Vec<Option<CoinValue>>
+    pub balance_breakdown: Vec<Option<CoinValue>>,
 }
 
 #[cw_serde]

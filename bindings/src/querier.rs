@@ -7,9 +7,13 @@ use cosmwasm_std::{
 };
 
 use crate::{
-    account_history::types::CoinValue, query::*, query_resp::*, trade_shield::types::{
+    account_history::types::CoinValue,
+    query::*,
+    query_resp::*,
+    trade_shield::types::{
         AmmPool, PoolAsset, PoolExtraInfo, StakedPosition, StakedPositionRaw, StakingValidator,
-    }, types::{BalanceAvailable, PageRequest, PerpetualPosition, Price, SwapAmountInRoute}
+    },
+    types::{BalanceAvailable, PageRequest, PerpetualPosition, Price, SwapAmountInRoute},
 };
 
 pub struct ElysQuerier<'a> {
@@ -492,7 +496,40 @@ impl<'a> ElysQuerier<'a> {
             creator: address.to_owned(),
         };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(commitments_query);
-        let resp: QueryShowCommitmentsResponse = self.querier.query(&request)?;
+        let raw_resp: QueryShowCommitmentsResponseRaw = self.querier.query(&request)?;
+        let vesting_tokens: Option<Vec<VestingTokens>> = match raw_resp.commitments.vesting_tokens {
+            Some(vec) => Some(
+                vec.iter()
+                    .map(|vesting_token| VestingTokens {
+                        denom: vesting_token.denom.clone(),
+                        total_amount: vesting_token.total_amount.clone(),
+                        unvested_amount: vesting_token.unvested_amount.clone(),
+                        epoch_identifier: vesting_token.epoch_identifier.clone(),
+                        num_epochs: vesting_token.num_epochs.clone().unwrap_or(0),
+                        current_epoch: vesting_token.current_epoch.clone().unwrap_or(0),
+                        vest_started_timestamp: vesting_token
+                            .vest_started_timestamp
+                            .clone()
+                            .unwrap_or(0),
+                    })
+                    .collect(),
+            ),
+            None => None,
+        };
+        let resp = QueryShowCommitmentsResponse {
+            commitments: Commitments {
+                creator: raw_resp.commitments.creator,
+                committed_tokens: raw_resp.commitments.committed_tokens,
+                rewards_unclaimed: raw_resp.commitments.rewards_unclaimed,
+                claimed: raw_resp.commitments.claimed,
+                vesting_tokens,
+                rewards_by_elys_unclaimed: raw_resp.commitments.rewards_by_elys_unclaimed,
+                rewards_by_eden_unclaimed: raw_resp.commitments.rewards_by_eden_unclaimed,
+                rewards_by_edenb_unclaimed: raw_resp.commitments.rewards_by_edenb_unclaimed,
+                rewards_by_usdc_unclaimed: raw_resp.commitments.rewards_by_usdc_unclaimed,
+            },
+        };
+
         Ok(resp)
     }
 
@@ -647,14 +684,20 @@ impl<'a> ElysQuerier<'a> {
                                 Err(_) => Decimal::zero(),
                             },
                         );
-                        
+
                         // Add USD value to every reward coin returned from chain
                         match &usdc_entry {
                             Ok(entry) => {
                                 updated_pool.fiat_rewards = Some(
-                                    updated_pool.reward_coins.clone().into_iter().map(|coin| {
-                                        CoinValue::from_coin(&coin, self, &entry.entry.denom).unwrap()
-                                    }).collect()
+                                    updated_pool
+                                        .reward_coins
+                                        .clone()
+                                        .into_iter()
+                                        .map(|coin| {
+                                            CoinValue::from_coin(&coin, self, &entry.entry.denom)
+                                                .unwrap()
+                                        })
+                                        .collect(),
                                 );
                             }
                             _ => {}
