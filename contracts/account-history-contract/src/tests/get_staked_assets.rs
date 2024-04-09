@@ -641,10 +641,10 @@ fn get_staked_assets() {
                         usd_amount: None,
                     },
                 ]),
-                vesting: Some(BalanceAvailable {
+                vesting: BalanceAvailable {
                     amount: Uint128::zero(),
                     usd_amount: Decimal::zero(),
-                }),
+                },
                 vesting_details: Some(vec![]), // FIXME: according to Wari we should have vesting details here
             },
             elys_earn_program: ElysEarnProgram {

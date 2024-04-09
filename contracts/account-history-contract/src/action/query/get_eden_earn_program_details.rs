@@ -1,9 +1,9 @@
 use super::*;
 use crate::msg::query_resp::earn::GetEdenEarnProgramResp;
-use cosmwasm_std::{Decimal, Deps};
+use cosmwasm_std::{Decimal, Deps, Uint128};
 use elys_bindings::account_history::types::earn_program::EdenEarnProgram;
 use elys_bindings::account_history::types::{AprElys, BalanceReward, ElysDenom};
-use elys_bindings::types::VestingDetail;
+use elys_bindings::types::BalanceAvailable;
 use elys_bindings::{query_resp::QueryAprResponse, types::EarnType, ElysQuerier, ElysQuery};
 
 pub fn get_eden_earn_program_details(
@@ -44,7 +44,7 @@ pub fn get_eden_earn_program_details(
                 )?;
                 let mut available = querier.get_balance(addr.clone(), asset.clone())?;
                 let mut staked = querier.get_staked_balance(addr.clone(), asset.clone())?;
-                let mut vesting_info = querier.get_vesting_info(addr.clone())?;
+                let vesting_info = querier.get_vesting_info(addr.clone())?;
 
                 let mut staked_in_usd = uelys_price_in_uusdc
                     .checked_mul(
@@ -84,54 +84,6 @@ pub fn get_eden_earn_program_details(
                     .checked_mul(uusdc_usd_price)
                     .map_or(Decimal::zero(), |res| res);
 
-                let total_vesting_in_usd = vesting_info
-                    .vesting
-                    .usd_amount
-                    .checked_mul(uusdc_usd_price)
-                    .map_or(Decimal::zero(), |res| res);
-                vesting_info.vesting.usd_amount = total_vesting_in_usd;
-
-                let new_vesting_details = match vesting_info.vesting_details {
-                    Some(vesting_detials) => {
-                        let mut new_vesting_details: Vec<VestingDetail> = Vec::new();
-                        for mut v in vesting_detials {
-                            v.remaining_time = v.remaining_time * 1000;
-                            v.balance_vested.usd_amount = v
-                                .balance_vested
-                                .usd_amount
-                                .checked_mul(uusdc_usd_price)
-                                .map_or(Decimal::zero(), |res| res);
-                            v.remaining_vest.usd_amount = v
-                                .remaining_vest
-                                .usd_amount
-                                .checked_mul(uelys_price_in_uusdc)
-                                .map_or(Decimal::zero(), |res| res);
-                            v.remaining_vest.usd_amount = v
-                                .remaining_vest
-                                .usd_amount
-                                .checked_mul(uusdc_usd_price)
-                                .map_or(Decimal::zero(), |res| res);
-
-                            v.total_vest.usd_amount = v
-                                .total_vest
-                                .usd_amount
-                                .checked_mul(uelys_price_in_uusdc)
-                                .map_or(Decimal::zero(), |res| res);
-                            v.total_vest.usd_amount = v
-                                .total_vest
-                                .usd_amount
-                                .checked_mul(uusdc_usd_price)
-                                .map_or(Decimal::zero(), |res| res);
-
-                            new_vesting_details.push(v)
-                        }
-
-                        new_vesting_details
-                    }
-                    None => vec![],
-                };
-                vesting_info.vesting_details = Some(new_vesting_details);
-
                 EdenEarnProgram {
                     bonding_period: 0,
                     apr: AprElys {
@@ -158,7 +110,7 @@ pub fn get_eden_earn_program_details(
                             usd_amount: None,
                         },
                     ]),
-                    vesting: Some(vesting_info.vesting),
+                    vesting: vesting_info.vesting,
                     vesting_details: vesting_info.vesting_details,
                 }
             }
@@ -172,7 +124,10 @@ pub fn get_eden_earn_program_details(
                 available: None,
                 staked: None,
                 rewards: None,
-                vesting: None,
+                vesting: BalanceAvailable {
+                    amount: Uint128::zero(),
+                    usd_amount: Decimal::zero()
+                },
                 vesting_details: None,
             },
         },
