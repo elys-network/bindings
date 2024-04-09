@@ -70,6 +70,7 @@ pub enum ExecuteMsg {
     EdenCancelVestRequest {
         amount: u64,
     },
+    ClaimVesting {},
     ClaimRewardsRequest {
         withdraw_type: EarnType,
     },
