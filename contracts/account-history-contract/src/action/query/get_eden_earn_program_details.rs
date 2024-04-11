@@ -43,18 +43,8 @@ pub fn get_eden_earn_program_details(
                     EarnType::EdenProgram as i32,
                 )?;
                 let mut available = querier.get_balance(addr.clone(), asset.clone())?;
-                let mut staked = querier.get_staked_balance(addr.clone(), asset.clone())?;
+                let staked = querier.get_staked_balance(addr.clone(), asset.clone())?;
                 let vesting_info = querier.get_vesting_info(addr.clone())?;
-
-                let mut staked_in_usd = uelys_price_in_uusdc
-                    .checked_mul(
-                        Decimal::from_atomics(staked.amount, 0).map_or(Decimal::zero(), |res| res),
-                    )
-                    .map_or(Decimal::zero(), |res| res);
-                staked_in_usd = staked_in_usd
-                    .checked_mul(uusdc_usd_price)
-                    .map_or(Decimal::zero(), |res| res);
-                staked.usd_amount = staked_in_usd;
 
                 // have value in usd
                 let mut available_in_usd = uelys_price_in_uusdc
