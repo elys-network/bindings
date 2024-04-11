@@ -944,7 +944,7 @@ impl Module for ElysModule {
                     data: Some(data),
                 })
             }
-            ElysMsg::ClaimVesting { .. } => {
+            ElysMsg::CommitmentClaimVesting { .. } => {
                 let data = to_json_binary(&MsgResponse {
                     result: "Ok".to_string()
                 })?;
