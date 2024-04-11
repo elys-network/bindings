@@ -568,6 +568,7 @@ impl Module for ElysModule {
                 Ok(to_json_binary(&resp)?)
             }
             ElysQuery::CommitmentStakedBalanceOfDenom { .. } => {
+                // This is returning the same staked balance for each staking program (Usdc program, eden program, elys program, etc.).
                 let resp = BalanceAvailable {
                     amount: Uint128::new(100),
                     usd_amount: Decimal::from_atomics(Uint128::new(100), 0).unwrap(),

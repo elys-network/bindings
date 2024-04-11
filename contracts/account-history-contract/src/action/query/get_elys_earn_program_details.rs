@@ -4,7 +4,7 @@ use cosmwasm_std::{Decimal, Deps};
 use elys_bindings::{
     account_history::types::{earn_program::ElysEarnProgram, AprElys, BalanceReward, ElysDenom},
     query_resp::QueryAprResponse,
-    types::{EarnType, StakedPosition, UnstakedPosition},
+    types::EarnType,
     ElysQuerier, ElysQuery,
 };
 

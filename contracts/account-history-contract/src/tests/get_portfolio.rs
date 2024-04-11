@@ -359,16 +359,16 @@ fn get_portfolio() {
         .unwrap();
 
     let expected = GetPortfolioResp {
-        actual_portfolio_balance: SignedDecimal256::from_str("1982.608896785343").unwrap(),
+        actual_portfolio_balance: SignedDecimal256::from_str("2282.608106962543").unwrap(),
         old_portfolio_balance: SignedDecimal256::from_str("0").unwrap(),
         // balance_24h_change: SignedDecimal256::from_str("0").unwrap(),
-        balance_24h_change: SignedDecimal256::from_str("1982.608896785343").unwrap(),
+        balance_24h_change: SignedDecimal256::from_str("2282.608106962543").unwrap(),
         portfolio: Portfolio {
-            balance_usd: Decimal256::from_str("1982.608896785343").unwrap(),
+            balance_usd: Decimal256::from_str("2282.608106962543").unwrap(),
 
             liquid_assets_usd: Decimal256::from_str("1982.607662051143").unwrap(),
 
-            staked_committed_usd: Decimal256::from_str("0.0012347342").unwrap(),
+            staked_committed_usd: Decimal256::from_str("300.0004449114").unwrap(),
 
             liquidity_positions_usd: Decimal256::from_str("0").unwrap(),
 
@@ -504,11 +504,11 @@ fn get_portfolio() {
 
     assert_eq!(
         resp.actual_portfolio_balance,
-        SignedDecimal256::from_str("3534.710196785343").unwrap()
+        SignedDecimal256::from_str("3834.709406962543").unwrap()
     );
     assert_eq!(
         resp.old_portfolio_balance,
-        SignedDecimal256::from_str("3362.254496785343").unwrap() // SignedDecimal256::from_str("0").unwrap()
+        SignedDecimal256::from_str("3662.253706962543").unwrap() // SignedDecimal256::from_str("0").unwrap()
     );
     assert_eq!(
         resp.balance_24h_change,
