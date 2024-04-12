@@ -385,11 +385,10 @@ pub struct RewardsUnclaimed {
 pub struct VestingTokens {
     denom: String,
     total_amount: Int128,
-    unvested_amount: Int128,
-    epoch_identifier: String,
-    num_epochs: i64,
-    current_epoch: i64,
-    vest_started_timestamp: i64,
+    claimed_amount: Int128,
+    num_blocks: i64,
+    start_block: i64,
+    vest_started_timestamp: i64
 }
 
 #[cw_serde]

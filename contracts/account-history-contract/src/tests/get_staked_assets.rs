@@ -223,7 +223,7 @@ impl Module for ElysModuleWrapper {
                             },
                             staked: BalanceAvailable {
                                 amount: Uint128::new(10000000),
-                                usd_amount: Decimal::from_str("10000000").unwrap(),
+                                usd_amount: Decimal::from_str("35.308010067676894").unwrap(),
                             },
                         }]),
                     },
@@ -247,7 +247,7 @@ impl Module for ElysModuleWrapper {
                             remaining_time: 1707328694,
                             unstaked: BalanceAvailable {
                                 amount: Uint128::new(100038144098),
-                                usd_amount: Decimal::from_str("100038144098").unwrap(),
+                                usd_amount: Decimal::from_str("353214.779896389585407707").unwrap(),
                             },
                         }]),
                     },
@@ -353,12 +353,12 @@ impl Module for ElysModuleWrapper {
                         lockups: None,
                     },
                     "uelys" => StakedAvailable {
-                        usd_amount: Decimal::from_str("10000000").unwrap(),
+                        usd_amount: Decimal::from_str("35.308010067676894").unwrap(),
                         amount: Uint128::new(10000000),
                         lockups: Some(vec![]),
                     },
                     "ueden" => StakedAvailable {
-                        usd_amount: Decimal::from_str("2587611057").unwrap(),
+                        usd_amount: Decimal::from_str("9136.339725178804921781").unwrap(),
                         amount: Uint128::new(2587611057),
                         lockups: Some(vec![Lockup {
                             amount: Int128::new(5200770174),
@@ -641,10 +641,10 @@ fn get_staked_assets() {
                         usd_amount: None,
                     },
                 ]),
-                vesting: Some(BalanceAvailable {
+                vesting: BalanceAvailable {
                     amount: Uint128::zero(),
                     usd_amount: Decimal::zero(),
-                }),
+                },
                 vesting_details: Some(vec![]), // FIXME: according to Wari we should have vesting details here
             },
             elys_earn_program: ElysEarnProgram {
@@ -703,7 +703,7 @@ fn get_staked_assets() {
                         voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
                         commission: Decimal::from_str("0.1").unwrap(),
                     },
-                    remaining_time: 1707328694000,
+                    remaining_time: 1707328694,
                     unstaked: BalanceAvailable {
                         amount: Uint128::new(100038144098),
                         usd_amount: Decimal::from_str("353214.779896389585407707").unwrap(),

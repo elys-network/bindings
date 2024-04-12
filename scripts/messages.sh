@@ -338,37 +338,37 @@ function all_perpetual_orders() {
 function enable_all_params() {
     printf "\n# Set Params\n"
     execute_message \
-    "$ts_contract_address" \
-    '{
-        "set_params": {
-            "market_order_enabled": true,
-            "stake_enabled": true,
-            "process_order_enabled": true,
-            "swap_enabled": true,
-            "perpetual_enabled": true,
-            "reward_enabled": true,
-            "leverage_enabled": true
-        }
-    }'\
-    wasm-cancel_perpetual_order
+        "$ts_contract_address" \
+        '{
+            "set_params": {
+                "market_order_enabled": true,
+                "stake_enabled": true,
+                "process_order_enabled": true,
+                "swap_enabled": true,
+                "perpetual_enabled": true,
+                "reward_enabled": true,
+                "leverage_enabled": true
+            }
+        }' \
+        wasm-set_params
 }
 
 function disable_all_params() {
     printf "\n# Set Params\n"
     execute_message \
-    "$ts_contract_address" \
-    '{
-        "set_params": {
-            "market_order_enabled": false,
-            "stake_enabled": false,
-            "process_order_enabled": false,
-            "swap_enabled": false,
-            "perpetual_enabled": false,
-            "reward_enabled": false,
-            "leverage_enabled": false
-        }
-    }'\
-    wasm-cancel_perpetual_order
+        "$ts_contract_address" \
+        '{
+            "set_params": {
+                "market_order_enabled": false,
+                "stake_enabled": false,
+                "process_order_enabled": false,
+                "swap_enabled": false,
+                "perpetual_enabled": false,
+                "reward_enabled": false,
+                "leverage_enabled": false
+            }
+        }' \
+        wasm-set_params
 }
 
 function set_limit_to_process_orders() {
@@ -376,13 +376,25 @@ function set_limit_to_process_orders() {
     limit_number=$1
     printf "\n# Set Params\n"
     execute_message \
-    "$ts_contract_address" \
-    '{
-        "set_params": {
-            "limit_process_order": "'"$limit_number"'"
-        }
-    }'\
-    wasm-cancel_perpetual_order
+        "$ts_contract_address" \
+        '{
+            "set_params": {
+                "limit_process_order": "'"$limit_number"'"
+            }
+        }' \
+        wasm-set_params
+}
+
+function eden_claim_vesting_request() {
+    #set limit to process orders: set to zero for the limit to be NONE
+    limit_number=$1
+    printf "\n# Eden Claim Vesting Request\n"
+    execute_message \
+        "$ts_contract_address" \
+        '{
+            "eden_claim_vesting_request": {}
+        }' \
+        wasm-eden_claim_vesting_request
 }
 
 # function(s) to run based on the provided argument
@@ -440,6 +452,9 @@ case "$1" in
         ;;
     "set_limit_to_process_orders")
         set_limit_to_process_orders $2
+        ;;
+    "eden_claim_vesting_request")
+        eden_claim_vesting_request
         ;;
     *)
         # Default case: run all functions
