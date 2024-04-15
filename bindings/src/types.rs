@@ -284,7 +284,7 @@ pub enum EarnType {
     UsdcProgram = 1,
     ElysProgram = 2,
     EdenProgram = 3,
-    EdenBProgram = 4,
+    EdenBProgram = 4
 }
 
 #[cw_serde]
@@ -304,7 +304,7 @@ pub struct VestingDetail {
     // The balance that's already vested
     pub vested_so_far: BalanceAvailable,
     // Remaining blocks for this vesting to finish.
-    pub remaining_blocks: u64,
+    pub remaining_blocks: i64,
 }
 #[cw_serde]
 pub struct PoolParamsRaw {
