@@ -10,7 +10,7 @@ use elys_bindings::{
     account_history::{
         msg::query_resp::{
 
-            GetRewardsResp, StakedAssetsResponse,
+            GetRewardsResp, StakedAssetsResponse, BalanceBreakdown,
         },
         types::{
             earn_program::{
@@ -31,7 +31,7 @@ use elys_bindings::{
         },
         types::{PerpetualOrder, PerpetualOrderPlus, PerpetualOrderType, SpotOrder, Status},
     },
-    types::BalanceAvailable,
+    types::{BalanceAvailable, VestingDetail},
     ElysQuerier, ElysQuery,
 };
 
@@ -399,6 +399,10 @@ impl AccountSnapshotGenerator {
         // create staked_assets variable that is a StakedAssets struct
         let mut staked_assets = StakedAssets::default();
         let mut total_balance = Decimal::zero();
+        let mut balance = Decimal::zero();
+        let mut rewards = Decimal::zero();
+        let mut vesting = Decimal::zero();
+        let mut unstaking= Decimal::zero();
 
         let usdc_details = get_usdc_earn_program_details(
             deps,
@@ -443,6 +447,16 @@ impl AccountSnapshotGenerator {
             _ => Decimal::zero(),
         }).unwrap_or_default();
         staked_assets.elys_earn_program = staked_asset_elys;
+        unstaking = if let Some(unstaked_positions) =  staked_asset_elys.unstaked_positions{
+            let total_usd_amount = unstaked_positions.iter().fold(
+                Decimal::zero(),
+                |acc, position| {
+                    // Accumulate the usd_amount from each UnstakedPosition
+                    acc + position.unstaked.usd_amount
+                },
+            );
+            Some(total_usd_amount)
+        };
 
         // eden program
         let eden_details = get_eden_earn_program_details(
@@ -464,6 +478,12 @@ impl AccountSnapshotGenerator {
             } => r.usd_amount,
             _ => Decimal::zero(),
         }).unwrap_or_default();
+        vesting = match staked_asset_eden.clone() {
+            EdenEarnProgram {
+                vesting: r, ..
+            } => r.usd_amount,
+            _ => Decimal::zero(),
+        };
 
         staked_assets.eden_earn_program = staked_asset_eden;
 
@@ -497,7 +517,14 @@ impl AccountSnapshotGenerator {
                 Decimal256::from(total_balance),
                 self.metadata.usdc_denom.to_owned(),
             ),
-            
+            balance,
+            balance_break_down: BalanceBreakdown {
+                staked: Decimal256::from(total_balance),
+                rewards,
+                unstaking,
+                vesting,
+            }
+
         })
     }
 
