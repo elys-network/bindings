@@ -113,7 +113,7 @@ impl AccountSnapshotGenerator {
             .total_liquid_asset_balance
             .amount
             .checked_add(Decimal256::from(
-                staked_assets_response.total_staked_balance.amount.clone(),
+                staked_assets_response.total_balance,
             ))?
             .checked_add(
                 perpetual_response
