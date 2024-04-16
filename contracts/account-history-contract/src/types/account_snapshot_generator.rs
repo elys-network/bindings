@@ -402,7 +402,6 @@ impl AccountSnapshotGenerator {
         let mut balance = Decimal::zero();
         let mut rewards = Decimal::zero();
         let mut vesting = Decimal::zero();
-        let mut unstaking= Decimal::zero();
 
         let usdc_details = get_usdc_earn_program_details(
             deps,
@@ -447,7 +446,7 @@ impl AccountSnapshotGenerator {
             _ => Decimal::zero(),
         }).unwrap_or_default();
         staked_assets.elys_earn_program = staked_asset_elys;
-        unstaking = if let Some(unstaked_positions) =  staked_asset_elys.unstaked_positions{
+        let unstaking = if let Some(unstaked_positions) =  staked_asset_elys.unstaked_positions{
             let total_usd_amount = unstaked_positions.iter().fold(
                 Decimal::zero(),
                 |acc, position| {
@@ -455,7 +454,9 @@ impl AccountSnapshotGenerator {
                     acc + position.unstaked.usd_amount
                 },
             );
-            Some(total_usd_amount)
+            total_usd_amount
+        }else {
+            Decimal::zero()
         };
 
         // eden program
@@ -519,7 +520,7 @@ impl AccountSnapshotGenerator {
             ),
             balance,
             balance_break_down: BalanceBreakdown {
-                staked: Decimal256::from(total_balance),
+                staked: Decimal::from(total_balance),
                 rewards,
                 unstaking,
                 vesting,
