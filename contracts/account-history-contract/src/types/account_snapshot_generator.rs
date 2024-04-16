@@ -446,18 +446,7 @@ impl AccountSnapshotGenerator {
             _ => Decimal::zero(),
         }).unwrap_or_default();
         staked_assets.elys_earn_program = staked_asset_elys;
-        let unstaking = if let Some(unstaked_positions) =  staked_asset_elys.unstaked_positions{
-            let total_usd_amount = unstaked_positions.iter().fold(
-                Decimal::zero(),
-                |acc, position| {
-                    // Accumulate the usd_amount from each UnstakedPosition
-                    acc + position.unstaked.usd_amount
-                },
-            );
-            total_usd_amount
-        }else {
-            Decimal::zero()
-        };
+        let unstaking = BalanceBreakdown::calculate_total_unstaking_balance(staked_asset_elys.unstaked_positions);
 
         // eden program
         let eden_details = get_eden_earn_program_details(
