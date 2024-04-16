@@ -34,7 +34,7 @@ use elys_bindings::{
         },
         types::{PerpetualOrder, PerpetualOrderPlus, PerpetualOrderType, SpotOrder, Status},
     },
-    types::BalanceAvailable,
+    types::{BalanceAvailable, EarnType},
     ElysQuerier, ElysQuery,
 };
 
@@ -165,6 +165,55 @@ impl AccountSnapshotGenerator {
         }))
     }
 
+    pub fn get_pools_user_rewards(
+        &self,
+        deps: &Deps<ElysQuery>,
+        address: &String
+    ) -> (Decimal, HashMap<String, BalanceAvailable>) {
+        let querier = ElysQuerier::new(&deps.querier);
+
+        let usdc_rewards = querier.get_sub_bucket_rewards_balance(
+            address.clone(),
+            self.metadata.usdc_denom.to_owned(),
+            EarnType::LiquidityMiningProgram as i32
+        );
+        let eden_rewards = querier.get_sub_bucket_rewards_balance(
+            address.clone(),
+            ElysDenom::Eden.as_str().to_string(),
+            EarnType::LiquidityMiningProgram as i32
+        );
+        
+
+        let mut total = Decimal::zero();
+        let mut breakdown: HashMap<String, BalanceAvailable> = HashMap::new();
+        match usdc_rewards {
+            Ok(reward) => {
+                let decimal_reward = Decimal::from_atomics(reward.amount, 6).unwrap();
+                // usd_value is not being converted on chain
+                let fiat_reward = decimal_reward * self.metadata.uusdc_usd_price;
+
+                total = total.checked_add(fiat_reward).map_or(Decimal::zero(), |res| res);
+                breakdown.insert(self.metadata.usdc_denom.to_owned(), BalanceAvailable {amount: reward.amount, usd_amount: fiat_reward});
+            }
+            Err(_) => {}
+        };
+
+        match eden_rewards {
+            Ok(reward) => {
+                let decimal_reward = Decimal::from_atomics(reward.amount, 6).unwrap();
+                // usd_value is not being converted on chain. 
+                // uelys_price_in_uusdc incorrectly named, it should be usd...
+                let fiat_reward = decimal_reward * self.metadata.uelys_price_in_uusdc;
+
+                total = total.checked_add(fiat_reward).map_or(Decimal::zero(), |res| res);
+                breakdown.insert(ElysDenom::Eden.as_str().to_string(), BalanceAvailable {amount: reward.amount, usd_amount: fiat_reward});
+            }
+            Err(_) => {}
+        };
+
+        (total, breakdown)
+    }
+
     pub fn get_pool_balances(
         &self,
         deps: &Deps<ElysQuery>,
@@ -266,16 +315,19 @@ impl AccountSnapshotGenerator {
                         }
                     })
                     .collect();
+            
+                
+                pool_resp.push(UserPoolResp {
+                    pool,
+                    balance: user_pool.balance,
+                    available: Decimal::from_atomics(balance_uint, 18).unwrap() * share_price,
+                    balance_breakdown
+                });
+            }
+            
+        let (rewards, rewards_breakdown) = self.get_pools_user_rewards(&deps, address);
 
-            pool_resp.push(UserPoolResp {
-                pool,
-                balance: user_pool.balance,
-                available: Decimal::from_atomics(balance_uint, 18).unwrap() * share_price,
-                balance_breakdown
-            });
-        }
-
-        Ok(QueryUserPoolResponse { pools: pool_resp })
+        Ok(QueryUserPoolResponse { pools: pool_resp, rewards, rewards_breakdown })
     }
 
     pub fn get_liquid_assets(
