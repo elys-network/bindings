@@ -399,9 +399,6 @@ impl AccountSnapshotGenerator {
         // create staked_assets variable that is a StakedAssets struct
         let mut staked_assets = StakedAssets::default();
         let mut total_staked_balance = Decimal::zero();
-        let rewards_resp = self.get_rewards(&deps, &address)?;
-        let rewards = rewards_resp.rewards_map.total_usd;
-        let mut vesting = Decimal::zero();
 
         let usdc_details = get_usdc_earn_program_details(
             deps,
@@ -445,8 +442,8 @@ impl AccountSnapshotGenerator {
             } => r.usd_amount,
             _ => Decimal::zero(),
         }).unwrap_or_default();
-        staked_assets.elys_earn_program = staked_asset_elys;
-        let unstaking = if let Some(unstaked_positions) =  staked_asset_elys.unstaked_positions{
+        staked_assets.elys_earn_program = staked_asset_elys.clone();
+        let unstaking = if let Some(unstaked_positions) =  staked_asset_elys.unstaked_positions {
             let total_usd_amount = unstaked_positions.iter().fold(
                 Decimal::zero(),
                 |acc, position| {
@@ -479,7 +476,7 @@ impl AccountSnapshotGenerator {
             } => r.usd_amount,
             _ => Decimal::zero(),
         }).unwrap_or_default();
-        vesting = match staked_asset_eden.clone() {
+        let vesting = match staked_asset_eden.clone() {
             EdenEarnProgram {
                 vesting: r, ..
             } => r.usd_amount,
@@ -514,7 +511,6 @@ impl AccountSnapshotGenerator {
         
         let balance_break_down = BalanceBreakdown {
             staked: Decimal::from(total_staked_balance),
-            rewards,
             unstaking,
             vesting,
         };
