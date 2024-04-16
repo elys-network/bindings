@@ -9,10 +9,7 @@ use cw_utils::Expiration;
 use elys_bindings::{
     account_history::{
         msg::query_resp::{
-            earn::{
-                GetEdenBoostEarnProgramResp, GetEdenEarnProgramResp, GetElysEarnProgramResp,
-                GetUsdcEarnProgramResp,
-            },
+
             GetRewardsResp, StakedAssetsResponse,
         },
         types::{
@@ -298,13 +295,8 @@ impl AccountSnapshotGenerator {
             self.metadata.usdc_apr_eden.to_owned(),
             self.metadata.eden_apr_eden.to_owned(),
             self.metadata.edenb_apr_eden.to_owned(),
-        )
-        .map_or(
-            GetEdenEarnProgramResp {
-                data: EdenEarnProgram::default(),
-            },
-            |program| program,
-        );
+        ).unwrap_or_default();
+
         let available = eden_program.data.available.map_or(
             BalanceAvailable {
                 amount: Uint128::zero(),
@@ -408,7 +400,7 @@ impl AccountSnapshotGenerator {
         let mut staked_assets = StakedAssets::default();
         let mut total_balance = Decimal::zero();
 
-        let usdc_details = match get_usdc_earn_program_details(
+        let usdc_details = get_usdc_earn_program_details(
             deps,
             Some(address.to_owned()),
             ElysDenom::Usdc.as_str().to_string(),
@@ -418,27 +410,20 @@ impl AccountSnapshotGenerator {
             self.metadata.uelys_price_in_uusdc,
             self.metadata.usdc_apr_usdc.to_owned(),
             self.metadata.eden_apr_usdc.to_owned(),
-        ) {
-            Ok(details) => details,
-            Err(_) => GetUsdcEarnProgramResp {
-                data: UsdcEarnProgram::default(),
-            },
-        };
+        ).unwrap_or_default();
+
         // usdc program
         let staked_asset_usdc = usdc_details.data.clone();
-        total_balance = match total_balance.checked_add(match staked_asset_usdc.clone() {
+        total_balance = total_balance.checked_add(match staked_asset_usdc.clone() {
             UsdcEarnProgram {
                 staked: Some(r), ..
             } => r.usd_amount,
             _ => Decimal::zero(),
-        }) {
-            Ok(res) => res,
-            Err(_) => Decimal::zero(),
-        };
+        }).unwrap_or_default();
         staked_assets.usdc_earn_program = staked_asset_usdc;
 
         // elys program
-        let elys_details = match get_elys_earn_program_details(
+        let elys_details = get_elys_earn_program_details(
             deps,
             Some(address.to_owned()),
             ElysDenom::Elys.as_str().to_string(),
@@ -448,26 +433,19 @@ impl AccountSnapshotGenerator {
             self.metadata.usdc_apr_elys.to_owned(),
             self.metadata.eden_apr_elys.to_owned(),
             self.metadata.edenb_apr_elys.to_owned(),
-        ) {
-            Ok(details) => details,
-            Err(_) => GetElysEarnProgramResp {
-                data: ElysEarnProgram::default(),
-            },
-        };
+        ).unwrap_or_default();
+        
         let staked_asset_elys = elys_details.data;
-        total_balance = match total_balance.checked_add(match staked_asset_elys.clone() {
+        total_balance = total_balance.checked_add(match staked_asset_elys.clone() {
             ElysEarnProgram {
                 staked: Some(r), ..
             } => r.usd_amount,
             _ => Decimal::zero(),
-        }) {
-            Ok(res) => res,
-            Err(_) => Decimal::zero(),
-        };
+        }).unwrap_or_default();
         staked_assets.elys_earn_program = staked_asset_elys;
 
         // eden program
-        let eden_details = match get_eden_earn_program_details(
+        let eden_details = get_eden_earn_program_details(
             deps,
             Some(address.to_owned()),
             ElysDenom::Eden.as_str().to_string(),
@@ -477,22 +455,16 @@ impl AccountSnapshotGenerator {
             self.metadata.usdc_apr_eden.to_owned(),
             self.metadata.eden_apr_eden.to_owned(),
             self.metadata.edenb_apr_eden.to_owned(),
-        ) {
-            Ok(details) => details,
-            Err(_) => GetEdenEarnProgramResp {
-                data: EdenEarnProgram::default(),
-            },
-        };
+        ).unwrap_or_default();
+
         let staked_asset_eden = eden_details.data;
-        total_balance = match total_balance.checked_add(match staked_asset_eden.clone() {
+        total_balance = total_balance.checked_add(match staked_asset_eden.clone() {
             EdenEarnProgram {
                 staked: Some(r), ..
             } => r.usd_amount,
             _ => Decimal::zero(),
-        }) {
-            Ok(res) => res,
-            Err(_) => Decimal::zero(),
-        };
+        }).unwrap_or_default();
+
         staked_assets.eden_earn_program = staked_asset_eden;
 
         let edenb_details = get_eden_boost_earn_program_details(
@@ -504,13 +476,8 @@ impl AccountSnapshotGenerator {
             self.metadata.uelys_price_in_uusdc,
             self.metadata.usdc_apr_edenb.to_owned(),
             self.metadata.eden_apr_edenb.to_owned(),
-        )
-        .map_or(
-            GetEdenBoostEarnProgramResp {
-                data: EdenBoostEarnProgram::default(),
-            },
-            |details| details,
-        );
+        ).unwrap_or_default();
+        
         let staked_asset_edenb = edenb_details.data;
         total_balance = total_balance
             .checked_add(match staked_asset_edenb.clone() {
@@ -521,8 +488,7 @@ impl AccountSnapshotGenerator {
                         .map_or(Decimal::zero(), |res| res)
                 }),
                 _ => Decimal::zero(),
-            })
-            .map_or(Decimal::zero(), |res| res);
+            }).unwrap_or_default();
         staked_assets.eden_boost_earn_program = staked_asset_edenb;
 
         Ok(StakedAssetsResponse {
@@ -531,6 +497,7 @@ impl AccountSnapshotGenerator {
                 Decimal256::from(total_balance),
                 self.metadata.usdc_denom.to_owned(),
             ),
+            
         })
     }
 
