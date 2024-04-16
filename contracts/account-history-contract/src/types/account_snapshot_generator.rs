@@ -31,7 +31,7 @@ use elys_bindings::{
         },
         types::{PerpetualOrder, PerpetualOrderPlus, PerpetualOrderType, SpotOrder, Status},
     },
-    types::{BalanceAvailable, VestingDetail},
+    types::BalanceAvailable,
     ElysQuerier, ElysQuery,
 };
 
@@ -398,9 +398,9 @@ impl AccountSnapshotGenerator {
     ) -> StdResult<StakedAssetsResponse> {
         // create staked_assets variable that is a StakedAssets struct
         let mut staked_assets = StakedAssets::default();
-        let mut total_balance = Decimal::zero();
-        let mut balance = Decimal::zero();
-        let mut rewards = Decimal::zero();
+        let mut total_staked_balance = Decimal::zero();
+        let rewards_resp = self.get_rewards(&deps, &address)?;
+        let rewards = rewards_resp.rewards_map.total_usd;
         let mut vesting = Decimal::zero();
 
         let usdc_details = get_usdc_earn_program_details(
@@ -417,7 +417,7 @@ impl AccountSnapshotGenerator {
 
         // usdc program
         let staked_asset_usdc = usdc_details.data.clone();
-        total_balance = total_balance.checked_add(match staked_asset_usdc.clone() {
+        total_staked_balance = total_staked_balance.checked_add(match staked_asset_usdc.clone() {
             UsdcEarnProgram {
                 staked: Some(r), ..
             } => r.usd_amount,
@@ -439,14 +439,25 @@ impl AccountSnapshotGenerator {
         ).unwrap_or_default();
         
         let staked_asset_elys = elys_details.data;
-        total_balance = total_balance.checked_add(match staked_asset_elys.clone() {
+        total_staked_balance = total_staked_balance.checked_add(match staked_asset_elys.clone() {
             ElysEarnProgram {
                 staked: Some(r), ..
             } => r.usd_amount,
             _ => Decimal::zero(),
         }).unwrap_or_default();
         staked_assets.elys_earn_program = staked_asset_elys;
-        let unstaking = BalanceBreakdown::calculate_total_unstaking_balance(staked_asset_elys.unstaked_positions);
+        let unstaking = if let Some(unstaked_positions) =  staked_asset_elys.unstaked_positions{
+            let total_usd_amount = unstaked_positions.iter().fold(
+                Decimal::zero(),
+                |acc, position| {
+                    // Accumulate the usd_amount from each UnstakedPosition
+                    acc + position.unstaked.usd_amount
+                },
+            );
+            total_usd_amount
+        }else {
+            Decimal::zero()
+        };
 
         // eden program
         let eden_details = get_eden_earn_program_details(
@@ -462,7 +473,7 @@ impl AccountSnapshotGenerator {
         ).unwrap_or_default();
 
         let staked_asset_eden = eden_details.data;
-        total_balance = total_balance.checked_add(match staked_asset_eden.clone() {
+        total_staked_balance = total_staked_balance.checked_add(match staked_asset_eden.clone() {
             EdenEarnProgram {
                 staked: Some(r), ..
             } => r.usd_amount,
@@ -489,7 +500,7 @@ impl AccountSnapshotGenerator {
         ).unwrap_or_default();
         
         let staked_asset_edenb = edenb_details.data;
-        total_balance = total_balance
+        total_staked_balance = total_staked_balance
             .checked_add(match staked_asset_edenb.clone() {
                 EdenBoostEarnProgram {
                     rewards: Some(r), ..
@@ -500,21 +511,22 @@ impl AccountSnapshotGenerator {
                 _ => Decimal::zero(),
             }).unwrap_or_default();
         staked_assets.eden_boost_earn_program = staked_asset_edenb;
+        
+        let balance_break_down = BalanceBreakdown {
+            staked: Decimal::from(total_staked_balance),
+            rewards,
+            unstaking,
+            vesting,
+        };
 
         Ok(StakedAssetsResponse {
             staked_assets,
             total_staked_balance: DecCoin::new(
-                Decimal256::from(total_balance),
+                Decimal256::from(total_staked_balance),
                 self.metadata.usdc_denom.to_owned(),
             ),
-            balance,
-            balance_break_down: BalanceBreakdown {
-                staked: Decimal::from(total_balance),
-                rewards,
-                unstaking,
-                vesting,
-            }
-
+            total_balance: balance_break_down.total(),
+            balance_break_down
         })
     }
 
