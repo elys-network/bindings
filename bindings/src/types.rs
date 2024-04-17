@@ -284,7 +284,8 @@ pub enum EarnType {
     UsdcProgram = 1,
     ElysProgram = 2,
     EdenProgram = 3,
-    EdenBProgram = 4
+    EdenBProgram = 4,
+    LiquidityMiningProgram = 5
 }
 
 #[cw_serde]

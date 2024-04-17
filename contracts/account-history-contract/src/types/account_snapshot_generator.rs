@@ -28,6 +28,7 @@ use elys_bindings::{
         },
         types::{PerpetualOrder, PerpetualOrderPlus, PerpetualOrderType, SpotOrder, Status},
     },
+    types::{BalanceAvailable, EarnType},
     ElysQuerier, ElysQuery,
 };
 
@@ -108,9 +109,7 @@ impl AccountSnapshotGenerator {
         let portfolio_usd = liquid_assets_response
             .total_liquid_asset_balance
             .amount
-            .checked_add(Decimal256::from(
-                staked_assets_response.total_balance,
-            ))?
+            .checked_add(Decimal256::from(staked_assets_response.total_balance))?
             .checked_add(
                 perpetual_response
                     .total_perpetual_asset_balance
@@ -156,6 +155,70 @@ impl AccountSnapshotGenerator {
             staked_assets: staked_assets_response.staked_assets,
             perpetual_assets: perpetual_response,
         }))
+    }
+
+    pub fn get_pools_user_rewards(
+        &self,
+        deps: &Deps<ElysQuery>,
+        address: &String,
+    ) -> (Decimal, HashMap<String, BalanceAvailable>) {
+        let querier = ElysQuerier::new(&deps.querier);
+
+        let usdc_rewards = querier.get_sub_bucket_rewards_balance(
+            address.clone(),
+            self.metadata.usdc_denom.to_owned(),
+            EarnType::LiquidityMiningProgram as i32,
+        );
+        let eden_rewards = querier.get_sub_bucket_rewards_balance(
+            address.clone(),
+            ElysDenom::Eden.as_str().to_string(),
+            EarnType::LiquidityMiningProgram as i32,
+        );
+
+        let mut total = Decimal::zero();
+        let mut breakdown: HashMap<String, BalanceAvailable> = HashMap::new();
+        match usdc_rewards {
+            Ok(reward) => {
+                let decimal_reward = Decimal::from_atomics(reward.amount, 6).unwrap();
+                // usd_value is not being converted on chain
+                let fiat_reward = decimal_reward * self.metadata.uusdc_usd_price;
+
+                total = total
+                    .checked_add(fiat_reward)
+                    .map_or(Decimal::zero(), |res| res);
+                breakdown.insert(
+                    self.metadata.usdc_denom.to_owned(),
+                    BalanceAvailable {
+                        amount: reward.amount,
+                        usd_amount: fiat_reward,
+                    },
+                );
+            }
+            Err(_) => {}
+        };
+
+        match eden_rewards {
+            Ok(reward) => {
+                let decimal_reward = Decimal::from_atomics(reward.amount, 6).unwrap();
+                // usd_value is not being converted on chain.
+                // uelys_price_in_uusdc incorrectly named, it should be usd...
+                let fiat_reward = decimal_reward * self.metadata.uelys_price_in_uusdc;
+
+                total = total
+                    .checked_add(fiat_reward)
+                    .map_or(Decimal::zero(), |res| res);
+                breakdown.insert(
+                    ElysDenom::Eden.as_str().to_string(),
+                    BalanceAvailable {
+                        amount: reward.amount,
+                        usd_amount: fiat_reward,
+                    },
+                );
+            }
+            Err(_) => {}
+        };
+
+        (total, breakdown)
     }
 
     pub fn get_pool_balances(
@@ -246,7 +309,13 @@ impl AccountSnapshotGenerator {
             });
         }
 
-        Ok(QueryUserPoolResponse { pools: pool_resp })
+        let (rewards, rewards_breakdown) = self.get_pools_user_rewards(&deps, address);
+
+        Ok(QueryUserPoolResponse {
+            pools: pool_resp,
+            rewards,
+            rewards_breakdown,
+        })
     }
 
     pub fn get_liquid_assets(
@@ -455,7 +524,7 @@ impl AccountSnapshotGenerator {
                 _ => Decimal::zero(),
             })
             .unwrap_or_default();
-        let vesting = staked_asset_eden.vesting.usd_amount; 
+        let vesting = staked_asset_eden.vesting.usd_amount;
 
         staked_assets.eden_earn_program = staked_asset_eden;
 
