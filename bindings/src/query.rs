@@ -6,7 +6,7 @@ use crate::types::{BalanceAvailable, PageRequest, SwapAmountInRoute};
 use super::query_resp::*;
 
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::{Coin, CustomQuery, Decimal, SignedDecimal, SignedDecimal256};
+use cosmwasm_std::{Coin, CustomQuery, Decimal, SignedDecimal, SignedDecimal256, Uint128};
 
 // Now define ElysQuery to include the new OracleQuery and AmmQuery
 #[cw_serde]
@@ -115,6 +115,8 @@ pub enum ElysQuery {
     IncentivePoolAprs { pool_ids: Option<Vec<u64>> },
     #[returns(QueryJoinPoolEstimationResponse)]
     AmmJoinPoolEstimation { pool_id: u64, amounts_in: Vec<Coin> },
+    #[returns(QueryExitPoolEstimationResponse)]
+    AmmExitPoolEstimation{ pool_id: u64, share_amount_in: Uint128, token_out_denom: String },
     #[returns(LeveragelpParamsResponse)]
     LeveragelpParams {},
     #[returns(LeveragelpPositionsResponse)]
@@ -327,6 +329,13 @@ impl ElysQuery {
         ElysQuery::AmmJoinPoolEstimation {
             pool_id,
             amounts_in,
+        }
+    }
+    pub fn exit_pool_estimation(pool_id: u64, share_amount_in: Uint128, token_out_denom: String) -> Self {
+        ElysQuery::AmmExitPoolEstimation {
+            pool_id,
+            share_amount_in,
+            token_out_denom
         }
     }
 }

@@ -439,6 +439,11 @@ pub struct QueryPoolAssetEstimationResponse {
 }
 
 #[cw_serde]
+pub struct QueryExitPoolEstimationResponse {
+    pub amounts_out: Vec<Coin>
+}
+
+#[cw_serde]
 pub struct QueryUserPoolResponse {
     // Total Rewards in fiat
     pub rewards: Decimal,
