@@ -285,6 +285,7 @@ pub enum EarnType {
     ElysProgram = 2,
     EdenProgram = 3,
     EdenBProgram = 4,
+    LiquidityMiningProgram = 5
 }
 
 #[cw_serde]
@@ -298,13 +299,13 @@ pub struct VestingDetail {
     // The id of the vesting
     pub id: String,
     // The total vest for the current vest
-    pub total_vest: BalanceAvailable,
+    pub total_vesting: BalanceAvailable,
+    // The amount claimed for the current vest.
+    pub claimed: BalanceAvailable,
     // The balance that's already vested
-    pub balance_vested: BalanceAvailable,
-    // The remaining amount to vest
-    pub remaining_vest: BalanceAvailable,
-    // Remaining time to vest. Javascript timestamp.
-    pub remaining_time: u64,
+    pub vested_so_far: BalanceAvailable,
+    // Remaining blocks for this vesting to finish.
+    pub remaining_blocks: i64,
 }
 #[cw_serde]
 pub struct PoolParamsRaw {

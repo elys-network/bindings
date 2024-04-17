@@ -4,7 +4,7 @@ use cosmwasm_std::{Decimal, Deps};
 use elys_bindings::{
     account_history::types::{earn_program::ElysEarnProgram, AprElys, BalanceReward, ElysDenom},
     query_resp::QueryAprResponse,
-    types::{EarnType, StakedPosition, UnstakedPosition},
+    types::EarnType,
     ElysQuerier, ElysQuery,
 };
 
@@ -44,10 +44,10 @@ pub fn get_elys_earn_program_details(
                     EarnType::ElysProgram as i32,
                 )?;
                 let mut available = querier.get_balance(addr.clone(), asset.clone())?;
-                let mut staked = querier.get_staked_balance(addr.clone(), asset.clone())?;
+                let staked = querier.get_staked_balance(addr.clone(), asset.clone())?;
 
-                let mut staked_positions = querier.get_staked_positions(addr.clone())?;
-                let mut unstaked_positions = querier.get_unstaked_positions(addr.clone())?;
+                let staked_positions = querier.get_staked_positions(addr.clone())?;
+                let unstaked_positions = querier.get_unstaked_positions(addr.clone())?;
 
                 let uusdc_rewards_in_usd = uusdc_rewards
                     .usd_amount
@@ -76,66 +76,6 @@ pub fn get_elys_earn_program_details(
                     .checked_mul(uusdc_usd_price)
                     .map_or(Decimal::zero(), |res| res);
                 available.usd_amount = available_in_usd;
-
-                let mut staked_in_usd = uelys_price_in_uusdc
-                    .checked_mul(
-                        Decimal::from_atomics(staked.amount, 0).map_or(Decimal::zero(), |res| res),
-                    )
-                    .map_or(Decimal::zero(), |res| res);
-                staked_in_usd = staked_in_usd
-                    .checked_mul(uusdc_usd_price)
-                    .map_or(Decimal::zero(), |res| res);
-                staked.usd_amount = staked_in_usd;
-
-                let new_staked_position = match staked_positions.staked_position {
-                    Some(staked_positions) => {
-                        let mut new_staked_positions: Vec<StakedPosition> = Vec::new();
-                        for mut s in staked_positions {
-                            s.staked.usd_amount = s
-                                .staked
-                                .usd_amount
-                                .checked_mul(uelys_price_in_uusdc)
-                                .map_or(Decimal::zero(), |res| res);
-                            s.staked.usd_amount = s
-                                .staked
-                                .usd_amount
-                                .checked_mul(uusdc_usd_price)
-                                .map_or(Decimal::zero(), |res| res);
-                            new_staked_positions.push(s)
-                        }
-
-                        new_staked_positions
-                    }
-                    None => vec![],
-                };
-
-                staked_positions.staked_position = Some(new_staked_position);
-
-                let new_unstaked_position = match unstaked_positions.unstaked_position {
-                    Some(unstaked_positions) => {
-                        let mut new_unstaked_positions: Vec<UnstakedPosition> = Vec::new();
-                        for mut s in unstaked_positions {
-                            s.unstaked.usd_amount = s
-                                .unstaked
-                                .usd_amount
-                                .checked_mul(uelys_price_in_uusdc)
-                                .map_or(Decimal::zero(), |res| res);
-                            s.unstaked.usd_amount = s
-                                .unstaked
-                                .usd_amount
-                                .checked_mul(uusdc_usd_price)
-                                .map_or(Decimal::zero(), |res| res);
-
-                            s.remaining_time = s.remaining_time * 1000;
-                            new_unstaked_positions.push(s)
-                        }
-
-                        new_unstaked_positions
-                    }
-                    None => vec![],
-                };
-
-                unstaked_positions.unstaked_position = Some(new_unstaked_position);
 
                 ElysEarnProgram {
                     bonding_period: 14,

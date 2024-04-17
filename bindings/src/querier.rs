@@ -758,7 +758,11 @@ impl<'a> ElysQuerier<'a> {
     }
 
     pub fn get_asset_price(&self, asset: impl Into<String>) -> StdResult<Decimal> {
-        let asset: String = asset.into();
+        let mut asset: String = asset.into();
+
+        if asset == "ueden" {
+            asset = "uelys".to_string()
+        }
 
         let QueryGetEntryResponse {
             entry:
