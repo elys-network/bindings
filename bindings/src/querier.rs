@@ -503,10 +503,9 @@ impl<'a> ElysQuerier<'a> {
                     .map(|vesting_token| VestingTokens {
                         denom: vesting_token.denom.clone(),
                         total_amount: vesting_token.total_amount.clone(),
-                        unvested_amount: vesting_token.unvested_amount.clone(),
-                        epoch_identifier: vesting_token.epoch_identifier.clone(),
-                        num_epochs: vesting_token.num_epochs.clone().unwrap_or(0),
-                        current_epoch: vesting_token.current_epoch.clone().unwrap_or(0),
+                        claimed_amount: vesting_token.claimed_amount.clone(),
+                        num_blocks: vesting_token.num_blocks.clone().unwrap_or(0),
+                        start_blocks: vesting_token.start_blocks.clone().unwrap_or(0),
                         vest_started_timestamp: vesting_token
                             .vest_started_timestamp
                             .clone()

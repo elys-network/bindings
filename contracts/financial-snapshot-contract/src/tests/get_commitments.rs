@@ -1,12 +1,10 @@
-
 use anyhow::{bail, Result as AnyResult};
-use cosmwasm_std::{
-     to_json_binary, Addr, Empty, Int128
-};
-use cw_multi_test::{BasicAppBuilder, ContractWrapper, Executor};
+use cosmwasm_std::{to_json_binary, Addr, Empty, Int128};
 use cw_multi_test::{AppResponse, Module};
+use cw_multi_test::{BasicAppBuilder, ContractWrapper, Executor};
 use elys_bindings::query_resp::{
- CommitmentsRaw,QueryShowCommitmentsResponse, QueryShowCommitmentsResponseRaw, VestingTokens, VestingTokensRaw
+    CommitmentsRaw, QueryShowCommitmentsResponse, QueryShowCommitmentsResponseRaw, VestingTokens,
+    VestingTokensRaw,
 };
 use elys_bindings::{ElysMsg, ElysQuery};
 use elys_bindings_test::ElysModule;
@@ -33,27 +31,28 @@ impl Module for ElysModuleWrapper {
         request: Self::QueryT,
     ) -> AnyResult<cosmwasm_std::Binary> {
         match request {
-            ElysQuery::CommitmentShowCommitments { creator } => Ok(to_json_binary(&QueryShowCommitmentsResponseRaw {
-                commitments: CommitmentsRaw {
-                    creator,
-                    committed_tokens: None,
-                    rewards_unclaimed: None,
-                    claimed: None,
-                    vesting_tokens: Some(vec![VestingTokensRaw {
-                        denom:"uelys".to_string(),
-                        total_amount: Int128::new(2000),
-                        unvested_amount: Int128::zero(),
-                        epoch_identifier: "".to_string(),
-                        num_epochs: None, // simulate the value is omitted
-                        current_epoch: None,// simulate the value is omitted
-                        vest_started_timestamp: Some(8),
-                    }]),
-                    rewards_by_elys_unclaimed: None,
-                    rewards_by_eden_unclaimed: None,
-                    rewards_by_edenb_unclaimed: None,
-                    rewards_by_usdc_unclaimed: None,
-                },
-            })?),
+            ElysQuery::CommitmentShowCommitments { creator } => {
+                Ok(to_json_binary(&QueryShowCommitmentsResponseRaw {
+                    commitments: CommitmentsRaw {
+                        creator,
+                        committed_tokens: None,
+                        rewards_unclaimed: None,
+                        claimed: None,
+                        vesting_tokens: Some(vec![VestingTokensRaw {
+                            denom: "uelys".to_string(),
+                            total_amount: Int128::new(2000),
+                            num_blocks: None,
+                            start_blocks: None,
+                            vest_started_timestamp: Some(8),
+                            claimed_amount: Int128::zero(),
+                        }]),
+                        rewards_by_elys_unclaimed: None,
+                        rewards_by_eden_unclaimed: None,
+                        rewards_by_edenb_unclaimed: None,
+                        rewards_by_usdc_unclaimed: None,
+                    },
+                })?)
+            }
             _ => panic!("not implemented"),
         }
     }
@@ -100,20 +99,46 @@ impl Module for ElysModuleWrapper {
     }
 }
 
-
 #[test]
 fn get_commitments_missing_field() {
     let mut app = BasicAppBuilder::<ElysMsg, ElysQuery>::new_custom()
-    .with_custom(ElysModuleWrapper(ElysModule {})).build(|_, _, _|{});
+        .with_custom(ElysModuleWrapper(ElysModule {}))
+        .build(|_, _, _| {});
 
     let code = ContractWrapper::new(execute, instantiate::instantiate, query);
     let code_id = app.store_code(Box::new(code));
 
-    let addr = app.instantiate_contract(code_id, Addr::unchecked("owner"), &instantiate::InstantiateMockMsg { epoch_cycle_interval: 0 }, &[], "Contract", None).unwrap();
+    let addr = app
+        .instantiate_contract(
+            code_id,
+            Addr::unchecked("owner"),
+            &instantiate::InstantiateMockMsg {
+                epoch_cycle_interval: 0,
+            },
+            &[],
+            "Contract",
+            None,
+        )
+        .unwrap();
 
-    let resp: QueryShowCommitmentsResponse = app.wrap().query_wasm_smart(addr.as_str(), &QueryMsg::GetCommitments { delegator_addr: "user".to_string() }).unwrap();
+    let resp: QueryShowCommitmentsResponse = app
+        .wrap()
+        .query_wasm_smart(
+            addr.as_str(),
+            &QueryMsg::GetCommitments {
+                delegator_addr: "user".to_string(),
+            },
+        )
+        .unwrap();
     let vesting: VestingTokens = resp.commitments.vesting_tokens.unwrap()[0].clone();
-    let vesting_dummy: VestingTokens = VestingTokens { denom: "uelys".to_string(), total_amount:Int128::new(2000), unvested_amount: Int128::zero(), epoch_identifier: "".to_string(), num_epochs: 0, current_epoch: 0, vest_started_timestamp: 8 };
+    let vesting_dummy: VestingTokens = VestingTokens {
+        denom: "uelys".to_string(),
+        total_amount: Int128::new(2000),
+        vest_started_timestamp: 8,
+        claimed_amount: Int128::zero(),
+        num_blocks: 0,
+        start_blocks: 0,
+    };
 
     assert_eq!(vesting, vesting_dummy);
 }
