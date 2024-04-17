@@ -12,6 +12,7 @@ use cosmwasm_std::{
     Uint128,
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
+use elys_bindings::account_history::msg::query_resp::BalanceBreakdown;
 use elys_bindings::account_history::types::earn_program::{
     EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram,
 };
@@ -578,11 +579,37 @@ fn get_staked_assets() {
         )
         .unwrap();
 
+    let balance_break_down = BalanceBreakdown {
+        vesting: Decimal::zero(),
+        unstaking: vec![UnstakedPosition {
+            id: "1".to_string(),
+            validator: StakingValidator {
+                id: String::from("1"),
+                address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw".to_string(),
+                name: "nirvana".to_string(),
+                voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
+                commission: Decimal::from_str("0.1").unwrap(),
+            },
+            remaining_time: 1707328694,
+            unstaked: BalanceAvailable {
+                amount: Uint128::new(100038144098),
+                usd_amount: Decimal::from_str("353214.779896389585407707").unwrap(),
+            },
+        }]
+        .iter()
+        .fold(Decimal::zero(), |acc, item| {
+            acc.checked_add(item.unstaked.usd_amount).unwrap_or_default()
+        }),
+        staked: Decimal::from_str("9171.647735246481815781").unwrap(),
+    };
+
     let expected: StakedAssetsResponse = StakedAssetsResponse {
         total_staked_balance: DecCoin::new(
             Decimal256::from_str("9171.647735246481815781").unwrap(),
             "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
         ),
+        total_balance: balance_break_down.total(),
+        balance_break_down,
         staked_assets: StakedAssets {
             eden_boost_earn_program: EdenBoostEarnProgram {
                 bonding_period: 0,

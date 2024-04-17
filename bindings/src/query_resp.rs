@@ -470,6 +470,33 @@ pub struct PoolResp {
     pub use_oracle: Option<bool>
 }
 
+impl Default for PoolResp {
+    fn default() -> Self {
+        Self {
+            pool_id: 0,
+            apr: Some(Decimal::zero()),
+            assets: vec![],
+            pool_ratio: "".to_string(),
+            current_pool_ratio: Some(HashMap::new()),
+            current_pool_ratio_string: Some("".to_string()),
+            rewards_apr: Decimal::zero(),
+            borrow_apr: Decimal::zero(),
+            leverage_lp: Decimal::zero(),
+            perpetual: Decimal::zero(),
+            tvl: Decimal::zero(),
+            rewards_usd: Decimal::zero(),
+            reward_coins: [Coin::new(0 as u128, "".to_string())].to_vec(),
+            fiat_rewards: None,
+            total_shares: Coin::new(0 as u128, "".to_string()),
+            share_usd_price: Some(Decimal::zero()),
+            fee_denom: "".to_string(),
+            swap_fee: Decimal::zero(),
+            use_oracle: Some(false),
+            lp_token_price: None,
+        }
+    }
+}
+
 #[cw_serde]
 pub struct IncentivePoolApr {
     pub apr: Decimal,

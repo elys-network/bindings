@@ -288,6 +288,7 @@ pub enum EarnType {
 }
 
 #[cw_serde]
+#[derive(Default)]
 pub struct BalanceAvailable {
     pub amount: Uint128,
     pub usd_amount: Decimal,
