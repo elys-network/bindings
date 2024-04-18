@@ -8,7 +8,7 @@ use cosmwasm_std::{
 use cw_utils::Expiration;
 use elys_bindings::{
     account_history::{
-        msg::query_resp::{BalanceBreakdown, GetRewardsResp, StakedAssetsResponse},
+        msg::query_resp::{GetRewardsResp, StakeAssetBalanceBreakdown, StakedAssetsResponse},
         types::{
             earn_program::{
                 EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram,
@@ -108,9 +108,7 @@ impl AccountSnapshotGenerator {
         let portfolio_usd = liquid_assets_response
             .total_liquid_asset_balance
             .amount
-            .checked_add(Decimal256::from(
-                staked_assets_response.total_balance,
-            ))?
+            .checked_add(Decimal256::from(staked_assets_response.total_balance))?
             .checked_add(
                 perpetual_response
                     .total_perpetual_asset_balance
@@ -147,6 +145,7 @@ impl AccountSnapshotGenerator {
                     .clone(),
                 usdc_earn_usd: Decimal256::zero(),
                 borrows_usd: Decimal256::zero(),
+                stake_balance_breakdown: staked_assets_response.balance_break_down,
             },
             reward,
             pool_balances: PoolBalances {
@@ -455,7 +454,7 @@ impl AccountSnapshotGenerator {
                 _ => Decimal::zero(),
             })
             .unwrap_or_default();
-        let vesting = staked_asset_eden.vesting.usd_amount; 
+        let vesting = staked_asset_eden.vesting.usd_amount;
 
         staked_assets.eden_earn_program = staked_asset_eden;
 
@@ -485,7 +484,7 @@ impl AccountSnapshotGenerator {
             .unwrap_or_default();
         staked_assets.eden_boost_earn_program = staked_asset_edenb;
 
-        let balance_break_down = BalanceBreakdown {
+        let balance_break_down = StakeAssetBalanceBreakdown {
             staked: Decimal::from(total_staked_balance),
             unstaking,
             vesting,

@@ -12,7 +12,7 @@ use cosmwasm_std::{
     Uint128,
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
-use elys_bindings::account_history::msg::query_resp::BalanceBreakdown;
+use elys_bindings::account_history::msg::query_resp::StakeAssetBalanceBreakdown;
 use elys_bindings::account_history::types::earn_program::{
     EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram,
 };
@@ -579,7 +579,7 @@ fn get_staked_assets() {
         )
         .unwrap();
 
-    let balance_break_down = BalanceBreakdown {
+    let balance_break_down = StakeAssetBalanceBreakdown {
         vesting: Decimal::zero(),
         unstaking: vec![UnstakedPosition {
             id: "1".to_string(),

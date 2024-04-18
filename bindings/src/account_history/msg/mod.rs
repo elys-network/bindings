@@ -31,7 +31,7 @@ pub mod query_resp {
 
     mod staked_assets_response;
     pub use staked_assets_response::StakedAssetsResponse;
-    pub use staked_assets_response::BalanceBreakdown;
+    pub use staked_assets_response::StakeAssetBalanceBreakdown;
     
     pub mod earn {
         mod get_eden_boost_earn_details_resp;
