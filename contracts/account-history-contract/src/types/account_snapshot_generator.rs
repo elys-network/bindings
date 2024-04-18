@@ -10,9 +10,7 @@ use elys_bindings::{
     account_history::{
         msg::query_resp::{GetRewardsResp, StakeAssetBalanceBreakdown, StakedAssetsResponse},
         types::{
-            earn_program::{
-                EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram,
-            },
+            earn_program::{EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram},
             AccountSnapshot, BalanceReward, CoinValue, ElysDenom, LiquidAsset, Metadata,
             PerpetualAsset, PerpetualAssets, PoolBalances, Portfolio, PortfolioBalanceSnapshot,
             Reward, StakedAssets, TotalBalance,
@@ -542,19 +540,7 @@ impl AccountSnapshotGenerator {
         .unwrap_or_default();
 
         let staked_asset_edenb = edenb_details.data;
-        total_staked_balance = total_staked_balance
-            .checked_add(match staked_asset_edenb.clone() {
-                EdenBoostEarnProgram {
-                    rewards: Some(r), ..
-                } => r.iter().fold(Decimal::zero(), |acc, item| {
-                    acc.checked_add(item.usd_amount.unwrap_or_default())
-                        .unwrap_or_default()
-                }),
-                _ => Decimal::zero(),
-            })
-            .unwrap_or_default();
         staked_assets.eden_boost_earn_program = staked_asset_edenb;
-
         let balance_break_down = StakeAssetBalanceBreakdown {
             staked: Decimal::from(total_staked_balance),
             unstaking,
