@@ -2,8 +2,7 @@ use std::collections::HashMap;
 use std::str::FromStr;
 
 use cosmwasm_std::{
-    coin, to_json_vec, Binary, Coin, ContractResult, Decimal, QuerierWrapper, QueryRequest,
-    SignedDecimal, SignedDecimal256, StdError, StdResult, SystemResult,
+    coin, to_json_vec, Binary, Coin, ContractResult, Decimal, QuerierWrapper, QueryRequest, SignedDecimal, SignedDecimal256, StdError, StdResult, SystemResult, Uint128
 };
 
 use crate::{
@@ -551,6 +550,17 @@ impl<'a> ElysQuerier<'a> {
         let query = ElysQuery::join_pool_estimation(pool_id, amounts_in);
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
         let response: QueryJoinPoolEstimationResponse = self.querier.query(&request)?;
+        Ok(response)
+    }
+
+    pub fn exit_pool_estimation(
+        &self,
+        pool_id: u64,
+        share_amount_in: Uint128
+    ) -> StdResult<QueryExitPoolEstimationResponse> {
+        let query = ElysQuery::exit_pool_estimation(pool_id, share_amount_in, "".to_string());
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
+        let response: QueryExitPoolEstimationResponse = self.querier.query(&request)?;
         Ok(response)
     }
 
