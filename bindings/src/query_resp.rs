@@ -440,6 +440,10 @@ pub struct QueryPoolAssetEstimationResponse {
 
 #[cw_serde]
 pub struct QueryUserPoolResponse {
+    // Total Rewards in fiat
+    pub rewards: Decimal,
+    // Each reward including the fiat amount
+    pub rewards_breakdown: HashMap<String, BalanceAvailable>,
     pub pools: Vec<UserPoolResp>,
 }
 
