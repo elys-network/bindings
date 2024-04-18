@@ -13,6 +13,7 @@ use cosmwasm_std::{
 };
 use cw_multi_test::{AppResponse, BankSudo, BasicAppBuilder, ContractWrapper, Executor, Module};
 use cw_utils::Expiration;
+use elys_bindings::account_history::msg::query_resp::StakeAssetBalanceBreakdown;
 use elys_bindings::account_history::types::{Portfolio, PortfolioBalanceSnapshot};
 use elys_bindings::query_resp::{
     Entry, OracleAssetInfoResponse, QueryGetEntryResponse, QueryGetPriceResponse,
@@ -379,6 +380,11 @@ fn get_portfolio() {
             usdc_earn_usd: Decimal256::from_str("0").unwrap(),
 
             borrows_usd: Decimal256::from_str("0").unwrap(),
+            stake_balance_breakdown: StakeAssetBalanceBreakdown {
+                staked: Decimal::from_str("300.0004449114").unwrap_or_default(),
+                unstaking: Decimal::from_str("0").unwrap_or_default(),
+                vesting: Decimal::from_str("100").unwrap_or_default(),
+            },
         },
     };
 
