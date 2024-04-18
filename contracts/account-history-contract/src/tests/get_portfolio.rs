@@ -369,7 +369,7 @@ fn get_portfolio() {
 
             liquid_assets_usd: Decimal256::from_str("1982.607662051143").unwrap(),
 
-            staked_committed_usd: Decimal256::from_str("300").unwrap(),
+            staked_committed_usd: Decimal256::from_str("400").unwrap(),
 
             liquidity_positions_usd: Decimal256::from_str("0").unwrap(),
 
