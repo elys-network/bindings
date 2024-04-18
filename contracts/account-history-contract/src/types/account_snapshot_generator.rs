@@ -134,7 +134,7 @@ impl AccountSnapshotGenerator {
                     .amount
                     .clone(),
                 staked_committed_usd: Decimal256::from(
-                    staked_assets_response.total_staked_balance.amount,
+                    staked_assets_response.total_balance,
                 ),
                 liquidity_positions_usd: total_liquidity_position_balance,
                 leverage_lp_usd: Decimal256::zero(),
