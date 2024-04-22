@@ -159,6 +159,7 @@ impl Module for ElysModule {
             ElysQuery::AmmEarnMiningPoolAll { .. } => todo!("AmmEarnMiningPoolAll"),
             ElysQuery::IncentivePoolAprs { .. } => todo!("IncentivePoolAprs"),
             ElysQuery::AmmJoinPoolEstimation { .. } => todo!("AmmJoinPoolEstimation"),
+            ElysQuery::AmmExitPoolEstimation { .. } => todo!("AmmJoinPoolEstimation"),
             ElysQuery::CommitmentAllValidators { .. } => todo!("CommitmentAllValidators"),
             ElysQuery::CommitmentDelegations { .. } => todo!("CommitmentDelegations"),
             ElysQuery::CommitmentDelegatorValidators { .. } => {
