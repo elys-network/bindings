@@ -48,10 +48,6 @@ pub fn get_usdc_earn_program_details(
 
                 let mut staked =
                     querier.get_staked_balance(addr.clone(), usdc_base_denom.clone())?;
-                staked.usd_amount = staked
-                    .usd_amount
-                    .checked_mul(uusdc_usd_price)
-                    .map_or(Decimal::zero(), |res| res);
 
                 let mut borrowed = querier.get_borrowed_balance()?;
                 borrowed.usd_amount = borrowed

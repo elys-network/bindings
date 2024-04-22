@@ -8,11 +8,12 @@ use crate::{
 };
 use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
-    coin, to_json_binary, Addr, BlockInfo, DecCoin, Decimal, Decimal256, Empty, SignedDecimal256,
-    StdError, Timestamp, Uint128,
+    coin, to_json_binary, Addr, BlockInfo, Decimal, Decimal256, Empty, SignedDecimal256, StdError,
+    Timestamp, Uint128,
 };
 use cw_multi_test::{AppResponse, BankSudo, BasicAppBuilder, ContractWrapper, Executor, Module};
 use cw_utils::Expiration;
+use elys_bindings::account_history::msg::query_resp::StakeAssetBalanceBreakdown;
 use elys_bindings::account_history::types::{Portfolio, PortfolioBalanceSnapshot};
 use elys_bindings::query_resp::{
     Entry, OracleAssetInfoResponse, QueryGetEntryResponse, QueryGetPriceResponse,
@@ -359,50 +360,30 @@ fn get_portfolio() {
         .unwrap();
 
     let expected = GetPortfolioResp {
-        actual_portfolio_balance: SignedDecimal256::from_str("1982.608896785343").unwrap(),
+        actual_portfolio_balance: SignedDecimal256::from_str("2382.607662051143").unwrap(),
         old_portfolio_balance: SignedDecimal256::from_str("0").unwrap(),
         // balance_24h_change: SignedDecimal256::from_str("0").unwrap(),
-        balance_24h_change: SignedDecimal256::from_str("1982.608896785343").unwrap(),
+        balance_24h_change: SignedDecimal256::from_str("2382.607662051143").unwrap(),
         portfolio: Portfolio {
-            balance_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("1982.608896785343").unwrap(),
-            },
-            liquid_assets_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("1982.607662051143").unwrap(),
-            },
-            staked_committed_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("0.0012347342").unwrap(),
-            },
-            liquidity_positions_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("0").unwrap(),
-            },
-            leverage_lp_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("0").unwrap(),
-            },
-            perpetual_assets_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("0").unwrap(),
-            },
-            usdc_earn_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("0").unwrap(),
-            },
-            borrows_usd: DecCoin {
-                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                    .to_string(),
-                amount: Decimal256::from_str("0").unwrap(),
+            balance_usd: Decimal256::from_str("2382.607662051143").unwrap(),
+
+            liquid_assets_usd: Decimal256::from_str("1982.607662051143").unwrap(),
+
+            staked_committed_usd: Decimal256::from_str("400").unwrap(),
+
+            liquidity_positions_usd: Decimal256::from_str("0").unwrap(),
+
+            leverage_lp_usd: Decimal256::from_str("0").unwrap(),
+
+            perpetual_assets_usd: Decimal256::from_str("0").unwrap(),
+
+            usdc_earn_usd: Decimal256::from_str("0").unwrap(),
+
+            borrows_usd: Decimal256::from_str("0").unwrap(),
+            stake_balance_breakdown: StakeAssetBalanceBreakdown {
+                staked: Decimal::from_str("300").unwrap_or_default(),
+                unstaking: Decimal::from_str("0").unwrap_or_default(),
+                vesting: Decimal::from_str("100").unwrap_or_default(),
             },
         },
     };
@@ -529,11 +510,11 @@ fn get_portfolio() {
 
     assert_eq!(
         resp.actual_portfolio_balance,
-        SignedDecimal256::from_str("3534.710196785343").unwrap()
+        SignedDecimal256::from_str("3934.708962051143").unwrap()
     );
     assert_eq!(
         resp.old_portfolio_balance,
-        SignedDecimal256::from_str("3362.254496785343").unwrap() // SignedDecimal256::from_str("0").unwrap()
+        SignedDecimal256::from_str("3762.253262051143").unwrap() // SignedDecimal256::from_str("0").unwrap()
     );
     assert_eq!(
         resp.balance_24h_change,

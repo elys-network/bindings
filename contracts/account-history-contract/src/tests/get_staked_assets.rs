@@ -12,14 +12,17 @@ use cosmwasm_std::{
     Uint128,
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
+use elys_bindings::account_history::msg::query_resp::StakeAssetBalanceBreakdown;
 use elys_bindings::account_history::types::earn_program::{
     EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram,
 };
-use elys_bindings::account_history::types::{AprElys, AprUsdc, BalanceReward, StakedAssets};
+use elys_bindings::account_history::types::{
+    AprElys, AprUsdc, BalanceReward, QueryAprResponse, StakedAssets,
+};
 use elys_bindings::query_resp::{
-    BalanceBorrowed, Entry, Lockup, QueryAprResponse, QueryGetEntryResponse, QueryGetPriceResponse,
-    QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryVestingInfoResponse,
-    StakedAvailable,
+    BalanceBorrowed, Entry, Lockup, QueryAprsResponse, QueryGetEntryResponse,
+    QueryGetPriceResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
+    QueryVestingInfoResponse, StakedAvailable,
 };
 use elys_bindings::types::{
     BalanceAvailable, Price, StakedPosition, StakingValidator, UnstakedPosition,
@@ -221,7 +224,7 @@ impl Module for ElysModuleWrapper {
                             },
                             staked: BalanceAvailable {
                                 amount: Uint128::new(10000000),
-                                usd_amount: Decimal::from_str("10000000").unwrap(),
+                                usd_amount: Decimal::from_str("35.308010067676894").unwrap(),
                             },
                         }]),
                     },
@@ -245,7 +248,7 @@ impl Module for ElysModuleWrapper {
                             remaining_time: 1707328694,
                             unstaked: BalanceAvailable {
                                 amount: Uint128::new(100038144098),
-                                usd_amount: Decimal::from_str("100038144098").unwrap(),
+                                usd_amount: Decimal::from_str("353214.779896389585407707").unwrap(),
                             },
                         }]),
                     },
@@ -351,12 +354,12 @@ impl Module for ElysModuleWrapper {
                         lockups: None,
                     },
                     "uelys" => StakedAvailable {
-                        usd_amount: Decimal::from_str("10000000").unwrap(),
+                        usd_amount: Decimal::from_str("35.308010067676894").unwrap(),
                         amount: Uint128::new(10000000),
                         lockups: Some(vec![]),
                     },
                     "ueden" => StakedAvailable {
-                        usd_amount: Decimal::from_str("2587611057").unwrap(),
+                        usd_amount: Decimal::from_str("9136.339725178804921781").unwrap(),
                         amount: Uint128::new(2587611057),
                         lockups: Some(vec![Lockup {
                             amount: Int128::new(5200770174),
@@ -419,6 +422,18 @@ impl Module for ElysModuleWrapper {
                 };
                 Ok(to_json_binary(&resp)?)
             }
+            ElysQuery::IncentiveAprs {} => Ok(to_json_binary(&QueryAprsResponse {
+                usdc_apr_usdc: Uint128::new(100),
+                usdc_apr_edenb: Uint128::zero(),
+                usdc_apr_eden: Uint128::zero(),
+                usdc_apr_elys: Uint128::zero(),
+                eden_apr_usdc: Uint128::new(168),
+                eden_apr_edenb: Uint128::new(29),
+                eden_apr_elys: Uint128::new(29),
+                eden_apr_eden: Uint128::new(29),
+                edenb_apr_eden: Uint128::new(100),
+                edenb_apr_elys: Uint128::new(100),
+            })?),
             ElysQuery::CommitmentVestingInfo { .. } => {
                 let resp = QueryVestingInfoResponse {
                     vesting: BalanceAvailable {
@@ -564,11 +579,37 @@ fn get_staked_assets() {
         )
         .unwrap();
 
+    let balance_break_down = StakeAssetBalanceBreakdown {
+        vesting: Decimal::zero(),
+        unstaking: vec![UnstakedPosition {
+            id: "1".to_string(),
+            validator: StakingValidator {
+                id: String::from("1"),
+                address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw".to_string(),
+                name: "nirvana".to_string(),
+                voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
+                commission: Decimal::from_str("0.1").unwrap(),
+            },
+            remaining_time: 1707328694,
+            unstaked: BalanceAvailable {
+                amount: Uint128::new(100038144098),
+                usd_amount: Decimal::from_str("353214.779896389585407707").unwrap(),
+            },
+        }]
+        .iter()
+        .fold(Decimal::zero(), |acc, item| {
+            acc.checked_add(item.unstaked.usd_amount).unwrap_or_default()
+        }),
+        staked: Decimal::from_str("9171.647735246481815781").unwrap(),
+    };
+
     let expected: StakedAssetsResponse = StakedAssetsResponse {
         total_staked_balance: DecCoin::new(
             Decimal256::from_str("9171.647735246481815781").unwrap(),
             "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
         ),
+        total_balance: balance_break_down.total(),
+        balance_break_down,
         staked_assets: StakedAssets {
             eden_boost_earn_program: EdenBoostEarnProgram {
                 bonding_period: 0,
@@ -627,10 +668,10 @@ fn get_staked_assets() {
                         usd_amount: None,
                     },
                 ]),
-                vesting: Some(BalanceAvailable {
+                vesting: BalanceAvailable {
                     amount: Uint128::zero(),
                     usd_amount: Decimal::zero(),
-                }),
+                },
                 vesting_details: Some(vec![]), // FIXME: according to Wari we should have vesting details here
             },
             elys_earn_program: ElysEarnProgram {
@@ -689,7 +730,7 @@ fn get_staked_assets() {
                         voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
                         commission: Decimal::from_str("0.1").unwrap(),
                     },
-                    remaining_time: 1707328694000,
+                    remaining_time: 1707328694,
                     unstaked: BalanceAvailable {
                         amount: Uint128::new(100038144098),
                         usd_amount: Decimal::from_str("353214.779896389585407707").unwrap(),

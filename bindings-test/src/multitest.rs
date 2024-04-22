@@ -25,7 +25,7 @@ use elys_bindings::{
         LeveragelpParamsResponse, LeveragelpStatusReponse, LeveragelpWhitelistResponse,
         OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
         PerpetualOpenEstimationRawResponse, PerpetualQueryPositionsResponse, QueryAprResponse,
-        QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse,
+        QueryAprsResponse, QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse,
         QueryShowCommitmentsResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
         QueryVestingInfoResponse, StableStakeParamsData, StableStakeParamsResp,
     },
@@ -159,6 +159,7 @@ impl Module for ElysModule {
             ElysQuery::AmmEarnMiningPoolAll { .. } => todo!("AmmEarnMiningPoolAll"),
             ElysQuery::IncentivePoolAprs { .. } => todo!("IncentivePoolAprs"),
             ElysQuery::AmmJoinPoolEstimation { .. } => todo!("AmmJoinPoolEstimation"),
+            ElysQuery::AmmExitPoolEstimation { .. } => todo!("AmmJoinPoolEstimation"),
             ElysQuery::CommitmentAllValidators { .. } => todo!("CommitmentAllValidators"),
             ElysQuery::CommitmentDelegations { .. } => todo!("CommitmentDelegations"),
             ElysQuery::CommitmentDelegatorValidators { .. } => {
@@ -239,6 +240,8 @@ impl Module for ElysModule {
                     weight_balance_ratio: Decimal::zero(),
                 })?)
             }
+            ElysQuery::AmmPool { .. } => todo!("not implemented"),
+            ElysQuery::AmmPoolAll { .. } => todo!("not implemented"),
             ElysQuery::AmmSwapEstimationByDenom {
                 amount,
                 denom_in,
@@ -500,6 +503,21 @@ impl Module for ElysModule {
                 };
                 Ok(to_json_binary(&resp)?)
             }
+            ElysQuery::IncentiveAprs { .. } => {
+                let resp = QueryAprsResponse {
+                    usdc_apr_usdc: Uint128::zero(),
+                    eden_apr_usdc: Uint128::zero(),
+                    usdc_apr_edenb: Uint128::zero(),
+                    eden_apr_edenb: Uint128::zero(),
+                    usdc_apr_eden: Uint128::zero(),
+                    eden_apr_eden: Uint128::zero(),
+                    edenb_apr_eden: Uint128::zero(),
+                    usdc_apr_elys: Uint128::zero(),
+                    eden_apr_elys: Uint128::zero(),
+                    edenb_apr_elys: Uint128::zero(),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
             ElysQuery::OraclePrice { asset, .. } => {
                 if asset.as_str() == "USDC" {
                     let resp = QueryGetPriceResponse {
@@ -551,6 +569,7 @@ impl Module for ElysModule {
                 Ok(to_json_binary(&resp)?)
             }
             ElysQuery::CommitmentStakedBalanceOfDenom { .. } => {
+                // This is returning the same staked balance for each staking program (Usdc program, eden program, elys program, etc.).
                 let resp = BalanceAvailable {
                     amount: Uint128::new(100),
                     usd_amount: Decimal::from_atomics(Uint128::new(100), 0).unwrap(),
@@ -921,6 +940,15 @@ impl Module for ElysModule {
                 LAST_MODULE_USED.save(storage, &Some("Commitment".to_string()))?;
                 let data = to_json_binary(&MsgResponse {
                     result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
+            ElysMsg::CommitmentClaimVesting { .. } => {
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string()
                 })?;
                 Ok(AppResponse {
                     events: vec![],

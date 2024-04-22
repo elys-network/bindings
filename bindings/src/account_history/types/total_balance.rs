@@ -1,20 +1,20 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{DecCoin, Decimal256};
+use cosmwasm_std::Decimal256;
 
 #[cw_serde]
 pub struct TotalBalance {
-    pub total_balance: DecCoin,
-    pub portfolio_usd: DecCoin,
-    pub reward_usd: DecCoin,
+    pub total_balance: Decimal256,
+    pub portfolio_usd: Decimal256,
+    pub reward_usd: Decimal256,
 }
 
 // implement zero
 impl TotalBalance {
-    pub fn zero(value_denom: &String) -> Self {
+    pub fn zero(_value_denom: &String) -> Self {
         Self {
-            total_balance: DecCoin::new(Decimal256::zero(), value_denom.to_string()),
-            portfolio_usd: DecCoin::new(Decimal256::zero(), value_denom.to_string()),
-            reward_usd: DecCoin::new(Decimal256::zero(), value_denom.to_string()),
+            total_balance: Decimal256::zero(),
+            portfolio_usd: Decimal256::zero(),
+            reward_usd: Decimal256::zero(),
         }
     }
 }

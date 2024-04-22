@@ -2,6 +2,8 @@ use std::collections::HashMap;
 
 use cosmwasm_std::{to_json_binary, Coin, StdError};
 
+use crate::helper::remove_perpetual_order;
+
 use super::*;
 
 pub fn cancel_perpetual_orders(
@@ -74,15 +76,7 @@ pub fn cancel_perpetual_orders(
     let mut orders = filter_order_by_type(orders, order_type)?;
 
     for order in orders.iter_mut() {
-        let key = order.gen_key()?;
-        let mut vec = SORTED_PENDING_PERPETUAL_ORDER.load(deps.storage, key.as_str())?;
-        if let Ok(index) = vec.binary_search(&order.order_id) {
-            vec.remove(index);
-        }
-        SORTED_PENDING_PERPETUAL_ORDER.save(deps.storage, key.as_str(), &vec)?;
-        order.status = Status::Canceled;
-        PERPETUAL_ORDER.save(deps.storage, order.order_id, order)?;
-        PENDING_PERPETUAL_ORDER.remove(deps.storage, order.order_id);
+        remove_perpetual_order(order.order_id, Status::Canceled, deps.storage)?;
     }
 
     let order_ids: Vec<u64> = orders.iter().map(|order| order.order_id).collect();

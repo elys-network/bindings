@@ -15,7 +15,12 @@ pub fn reply_to_spot_order(
 
     let key = order.gen_key()?;
     let mut vec: Vec<u64> = SORTED_PENDING_SPOT_ORDER.load(deps.storage, key.as_str())?;
-    if let Ok(index) = vec.binary_search(&order.order_id) {
+    let mut index = SpotOrder::binary_search(&order.order_price.rate, deps.storage, &vec)?;
+    let size_of_vec = vec.len();
+    while vec[index] != order_id && index < size_of_vec {
+        index += 1;
+    }
+    if index < size_of_vec {
         vec.remove(index);
     }
 

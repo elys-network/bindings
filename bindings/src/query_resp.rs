@@ -4,17 +4,46 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, Uint128};
 
 use crate::{
-    trade_shield::types::{PerpetualPosition, StakedPositionRaw},
+    account_history::types::CoinValue,
+    trade_shield::types::{
+        AmmPool, AmmPoolRaw, PerpetualPosition, PoolExtraInfo, StakedPositionRaw,
+    },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, PoolAsset, Price, StakedPosition,
         SwapAmountInRoute, SwapAmountOutRoute, UnstakedPosition, ValidatorDetail, VestingDetail,
-    },
+    }
 };
 
 #[cw_serde]
 pub struct OracleAllPriceResponse {
     pub price: Option<Vec<Price>>,
     pub pagination: PageResponse,
+}
+
+#[cw_serde]
+pub struct AmmGetPoolResponseRaw {
+    pub pool: AmmPoolRaw,
+    pub extra_info: Option<PoolExtraInfo>,
+}
+
+#[cw_serde]
+pub struct AmmGetPoolResponse {
+    pub pool: AmmPool,
+    pub extra_info: PoolExtraInfo,
+}
+
+#[cw_serde]
+pub struct AmmGetPoolsResponseRaw {
+    pub pool: Option<Vec<AmmPoolRaw>>,
+    pub extra_infos: Option<Vec<PoolExtraInfo>>,
+    pub pagination: Option<PageResponse>,
+}
+
+#[cw_serde]
+pub struct AmmGetPoolsResponse {
+    pub pool: Vec<AmmPool>,
+    pub extra_infos: Vec<PoolExtraInfo>,
+    pub pagination: Option<PageResponse>,
 }
 
 #[cw_serde]
@@ -223,6 +252,20 @@ pub struct QueryAprResponse {
     pub apr: Uint128,
 }
 
+#[cw_serde]
+pub struct QueryAprsResponse {
+    pub usdc_apr_usdc: Uint128,
+    pub eden_apr_usdc: Uint128,
+    pub usdc_apr_edenb: Uint128,
+    pub eden_apr_edenb: Uint128,
+    pub usdc_apr_eden: Uint128,
+    pub eden_apr_eden: Uint128,
+    pub edenb_apr_eden: Uint128,
+    pub usdc_apr_elys: Uint128,
+    pub eden_apr_elys: Uint128,
+    pub edenb_apr_elys: Uint128,
+}
+
 impl Default for QueryAprResponse {
     fn default() -> Self {
         Self {
@@ -342,11 +385,10 @@ pub struct RewardsUnclaimed {
 pub struct VestingTokens {
     denom: String,
     total_amount: Int128,
-    unvested_amount: Int128,
-    epoch_identifier: String,
-    num_epochs: i64,
-    current_epoch: i64,
-    vest_started_timestamp: i64,
+    claimed_amount: Int128,
+    num_blocks: i64,
+    start_block: i64,
+    vest_started_timestamp: i64
 }
 
 #[cw_serde]
@@ -393,11 +435,20 @@ pub struct QueryJoinPoolEstimationResponse {
 
 #[cw_serde]
 pub struct QueryPoolAssetEstimationResponse {
-    pub amounts: HashMap<String, Decimal256>
+    pub amounts: HashMap<String, Decimal256>,
+}
+
+#[cw_serde]
+pub struct QueryExitPoolEstimationResponse {
+    pub amounts_out: Vec<Coin>
 }
 
 #[cw_serde]
 pub struct QueryUserPoolResponse {
+    // Total Rewards in fiat
+    pub rewards: Decimal,
+    // Each reward including the fiat amount
+    pub rewards_breakdown: HashMap<String, BalanceAvailable>,
     pub pools: Vec<UserPoolResp>,
 }
 
@@ -412,17 +463,47 @@ pub struct PoolResp {
     pub current_pool_ratio: Option<HashMap<String, Decimal>>,
     pub current_pool_ratio_string: Option<String>,
     pub rewards_apr: Decimal,
-    pub rewards_usd: Option<Decimal>,
-    pub reward_coins: Option<Vec<Coin>>,
+    pub rewards_usd: Decimal,
+    pub reward_coins: Vec<Coin>,
+    // Reward coins with USD value in it. Mapped from reward_coins chain response.
+    pub fiat_rewards: Option<Vec<CoinValue>>,
     pub borrow_apr: Decimal,
     pub leverage_lp: Decimal,
     pub perpetual: Decimal,
+    pub lp_token_price: Option<Decimal>,
     pub tvl: Decimal,
     pub total_shares: Coin,
     pub share_usd_price: Option<Decimal>,
-    pub swap_fee: Option<Decimal>,
-    pub fee_denom: Option<String>,
+    pub swap_fee: Decimal,
+    pub fee_denom: String,
     pub use_oracle: Option<bool>
+}
+
+impl Default for PoolResp {
+    fn default() -> Self {
+        Self {
+            pool_id: 0,
+            apr: Some(Decimal::zero()),
+            assets: vec![],
+            pool_ratio: "".to_string(),
+            current_pool_ratio: Some(HashMap::new()),
+            current_pool_ratio_string: Some("".to_string()),
+            rewards_apr: Decimal::zero(),
+            borrow_apr: Decimal::zero(),
+            leverage_lp: Decimal::zero(),
+            perpetual: Decimal::zero(),
+            tvl: Decimal::zero(),
+            rewards_usd: Decimal::zero(),
+            reward_coins: [Coin::new(0 as u128, "".to_string())].to_vec(),
+            fiat_rewards: None,
+            total_shares: Coin::new(0 as u128, "".to_string()),
+            share_usd_price: Some(Decimal::zero()),
+            fee_denom: "".to_string(),
+            swap_fee: Decimal::zero(),
+            use_oracle: Some(false),
+            lp_token_price: None,
+        }
+    }
 }
 
 #[cw_serde]
@@ -436,8 +517,10 @@ pub struct UserPoolResp {
     pub pool: PoolResp,
     // User shares in pool
     pub balance: CommittedTokens,
-    // User balance in pool in terms of USD
-    pub available: Decimal
+    // User total balance in pool in terms of USD
+    pub available: Decimal,
+    // Balance based on current pool ratio
+    pub balance_breakdown: Vec<Option<CoinValue>>
 }
 
 #[cw_serde]

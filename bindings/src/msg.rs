@@ -77,6 +77,9 @@ pub enum ElysMsg {
         amount: Int128,
         denom: String,
     },
+    CommitmentClaimVesting {
+        sender: String
+    },
     IncentiveWithdrawRewards {
         delegator_address: String,
         withdraw_type: i32,
@@ -262,6 +265,12 @@ impl ElysMsg {
             creator: creator.to_owned(),
             amount: amount,
             denom: denom.to_owned(),
+        }
+    }
+
+    pub fn eden_claim_vesting(sender: String) -> Self {
+        Self::CommitmentClaimVesting {
+            sender: sender.to_owned()
         }
     }
 

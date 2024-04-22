@@ -1,4 +1,7 @@
-use crate::{helper::get_mut_discount, msg::ReplyType};
+use crate::{
+    helper::{get_mut_discount, remove_perpetual_order},
+    msg::ReplyType,
+};
 use cosmwasm_std::{
     coin, to_json_binary, Decimal, Int128, OverflowError, QuerierWrapper, StdError, StdResult,
     Storage, SubMsg,
@@ -50,10 +53,12 @@ pub fn process_orders(
 
     for (key, order_ids) in spot_orders.iter() {
         let (order_type, base_denom, quote_denom) = SpotOrder::from_key(key.as_str())?;
+
         if order_type == SpotOrderType::MarketBuy {
-            bank_msgs.extend(cancel_spot_orders(deps.storage, key, order_ids, None)?);
+            SORTED_PENDING_SPOT_ORDER.remove(deps.storage, key.as_str());
             continue;
         }
+
         let market_price =
             match querier.get_asset_price_from_denom_in_to_denom_out(&base_denom, &quote_denom) {
                 Ok(market_price) => {
@@ -101,7 +106,6 @@ pub fn process_orders(
             deps.storage,
         )?;
 
-        //     if check_spot_order(&spot_order, market_price) {
         process_spot_order(
             routes,
             orders_to_process,
@@ -199,17 +203,7 @@ fn process_perpetual_order(
             {
                 Some(mtp) => mtp,
                 None => {
-                    let mut order = order.to_owned();
-                    order.status = Status::Canceled;
-                    PENDING_PERPETUAL_ORDER.remove(storage, order.order_id);
-                    PERPETUAL_ORDER.save(storage, order.order_id, &order)?;
-                    let key = order.gen_key()?;
-                    let mut vec = SORTED_PENDING_PERPETUAL_ORDER.load(storage, key.as_str())?;
-                    let index = vec
-                        .binary_search(&order.order_id)
-                        .map_err(|_| StdError::not_found("order id not found"))?;
-                    vec.remove(index);
-                    SORTED_PENDING_PERPETUAL_ORDER.save(storage, key.as_str(), &vec)?;
+                    remove_perpetual_order(id, Status::Canceled, storage)?;
                     continue;
                 }
             };
@@ -399,7 +393,11 @@ fn process_spot_order(
     querier: QuerierWrapper<'_, ElysQuery>,
 ) -> StdResult<()> {
     for id in orders_ids {
-        let order = PENDING_SPOT_ORDER.load(storage, id)?;
+        let order = match PENDING_SPOT_ORDER.may_load(storage, id)? {
+            Some(order) => order,
+            None => continue,
+        };
+
         *reply_info_id = match reply_info_id.checked_add(1) {
             Some(id) => id,
             None => {

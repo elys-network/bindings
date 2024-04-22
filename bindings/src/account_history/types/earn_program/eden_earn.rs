@@ -6,6 +6,7 @@ use crate::{
 };
 
 use cosmwasm_schema::cw_serde;
+use cosmwasm_std::{Decimal, Uint128};
 
 #[cw_serde]
 pub struct EdenEarnProgram {
@@ -25,7 +26,7 @@ pub struct EdenEarnProgram {
     // Eden Boost doesnt have USD amount.
     pub rewards: Option<Vec<BalanceReward>>,
     // The sum of all the total_vest.
-    pub vesting: Option<BalanceAvailable>,
+    pub vesting: BalanceAvailable,
     // A list of all the vesting details for the EDEN program.
     // it should only be included if address is in the request object.
     pub vesting_details: Option<Vec<VestingDetail>>,
@@ -40,7 +41,10 @@ impl Default for EdenEarnProgram {
             available: None,
             staked: None,
             rewards: None,
-            vesting: None,
+            vesting: BalanceAvailable {
+                amount: Uint128::zero(),
+                usd_amount: Decimal::zero()
+            },
             vesting_details: None,
         }
     }

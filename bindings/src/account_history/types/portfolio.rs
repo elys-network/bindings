@@ -1,30 +1,34 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{DecCoin, Decimal256};
+use cosmwasm_std::Decimal256;
+
+use crate::account_history::msg::query_resp::StakeAssetBalanceBreakdown;
 
 #[cw_serde]
 pub struct Portfolio {
-    pub balance_usd: DecCoin,
-    pub liquid_assets_usd: DecCoin,
-    pub staked_committed_usd: DecCoin,
-    pub liquidity_positions_usd: DecCoin,
-    pub leverage_lp_usd: DecCoin,
-    pub perpetual_assets_usd: DecCoin,
-    pub usdc_earn_usd: DecCoin,
-    pub borrows_usd: DecCoin,
+    pub balance_usd: Decimal256,
+    pub liquid_assets_usd: Decimal256,
+    pub staked_committed_usd: Decimal256,
+    pub liquidity_positions_usd: Decimal256,
+    pub leverage_lp_usd: Decimal256,
+    pub perpetual_assets_usd: Decimal256,
+    pub usdc_earn_usd: Decimal256,
+    pub borrows_usd: Decimal256,
+    pub stake_balance_breakdown: StakeAssetBalanceBreakdown
 }
 
 // implement zero
 impl Portfolio {
-    pub fn zero(value_denom: &String) -> Self {
+    pub fn zero(_value_denom: &String) -> Self {
         Self {
-            balance_usd: DecCoin::new(Decimal256::zero(), value_denom.to_string()),
-            liquid_assets_usd: DecCoin::new(Decimal256::zero(), value_denom.to_string()),
-            staked_committed_usd: DecCoin::new(Decimal256::zero(), value_denom.to_string()),
-            liquidity_positions_usd: DecCoin::new(Decimal256::zero(), value_denom.to_string()),
-            leverage_lp_usd: DecCoin::new(Decimal256::zero(), value_denom.to_string()),
-            perpetual_assets_usd: DecCoin::new(Decimal256::zero(), value_denom.to_string()),
-            usdc_earn_usd: DecCoin::new(Decimal256::zero(), value_denom.to_string()),
-            borrows_usd: DecCoin::new(Decimal256::zero(), value_denom.to_string()),
+            balance_usd: Decimal256::zero(),
+            liquid_assets_usd: Decimal256::zero(),
+            staked_committed_usd: Decimal256::zero(),
+            liquidity_positions_usd: Decimal256::zero(),
+            leverage_lp_usd: Decimal256::zero(),
+            perpetual_assets_usd: Decimal256::zero(),
+            usdc_earn_usd: Decimal256::zero(),
+            borrows_usd: Decimal256::zero(),
+            stake_balance_breakdown: StakeAssetBalanceBreakdown::default(),
         }
     }
 }
