@@ -1,5 +1,3 @@
-use core::panic;
-
 use crate::{
     msg::query_resp::GetPortfolioResp, states::HISTORY, types::AccountSnapshotGenerator,
     utils::get_raw_today,
@@ -27,18 +25,15 @@ pub fn get_portfolio(
         &user_address,
     )?; 
 
-    let twenty_four_hours_ago = match get_raw_today(&env.block).checked_sub_days(Days::new(1)) {
-        Some(date_time) => date_time.format("%Y-%m-%d").to_string(),
-        None => panic!("Failed to convert block time to date "),
-    };
+    let twenty_four_hours_ago = get_raw_today(&env.block).checked_sub_days(Days::new(1)).expect("Failed to convert block time to date ").format("%Y-%m-%d").to_string();
 
-    let old_snapshot = match HISTORY.may_load(deps.storage, &user_address)? {
-        Some(snapshots) => match snapshots.get(&twenty_four_hours_ago) {
-            Some(snapshot) => snapshot.clone(),
-            None => PortfolioBalanceSnapshot::default(),
-        },
-        None => PortfolioBalanceSnapshot::default(),
-    };
+    let old_snapshot = HISTORY.may_load(deps.storage, &user_address).map_or(PortfolioBalanceSnapshot::default(), |snapshots| -> PortfolioBalanceSnapshot {
+        snapshots
+            .unwrap_or_default()
+            .get(&twenty_four_hours_ago)
+            .unwrap_or(&PortfolioBalanceSnapshot::default())
+            .clone()
+    });
 
     let actual_portfolio_balance =
         SignedDecimal256::try_from(new_snapshot.portfolio.balance_usd).unwrap_or_default();
@@ -52,7 +47,7 @@ pub fn get_portfolio(
         .unwrap_or_default();
 
     let resp = GetPortfolioResp {
-        portfolio: new_snapshot.portfolio.clone(),
+        portfolio: new_snapshot.portfolio,
         actual_portfolio_balance,
         old_portfolio_balance,
         balance_24h_change,
