@@ -7,13 +7,15 @@ use crate::query_resp::{
     AuthAddressesResponse, BalanceBorrowed, PoolFilterType, QueryEarnPoolResponse,
     QueryIncentivePoolAprsResponse, QueryJoinPoolEstimationResponse, QueryExitPoolEstimationResponse,
     QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryUserPoolResponse,
-    QueryVestingInfoResponse, StableStakeParamsData, StakedAvailable, QueryPoolAssetEstimationResponse
+    QueryVestingInfoResponse, StableStakeParamsData, StakedAvailable, QueryPoolAssetEstimationResponse,
+    EstakingRewardsResponse
 };
 #[allow(unused_imports)]
 use crate::types::{BalanceAvailable, PageRequest};
 use cosmwasm_schema::{cw_serde, QueryResponses};
 #[cfg(feature = "debug")]
 use cosmwasm_std::{Coin, DecCoin, Decimal};
+use super::query_resp::estaking::*;
 
 #[cw_serde]
 #[derive(QueryResponses)]
@@ -70,6 +72,9 @@ pub enum QueryMsg {
         pool_id: u64,
         amount: DecCoin
     },
+    
+    #[returns(GetEstakingRewardsResponse)]
+    GetEstakingRewards {address: String},
 
     // debug only
     #[cfg(feature = "debug")]
@@ -130,5 +135,5 @@ pub enum QueryMsg {
 
     #[cfg(feature = "debug")]
     #[returns(Decimal)]
-    AmmPriceByDenom { token_in: Coin, discount: Decimal },
+    AmmPriceByDenom { token_in: Coin, discount: Decimal }
 }

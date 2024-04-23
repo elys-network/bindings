@@ -143,6 +143,10 @@ pub enum ElysQuery {
     LeveragelpPools { pagination: Option<PageRequest> },
     #[returns(LeveragelpPositionResponse)]
     LeveragelpPosition { address: String, id: u64 },
+    #[returns(EstakingRewardsResponse)]
+    EstakingRewards {
+        address: String
+    }
 }
 
 impl CustomQuery for ElysQuery {}
@@ -336,6 +340,11 @@ impl ElysQuery {
             pool_id,
             share_amount_in,
             token_out_denom
+        }
+    }
+    pub fn query_estaking_rewards(address: String) -> Self {
+        ElysQuery::EstakingRewards {
+            address
         }
     }
 }

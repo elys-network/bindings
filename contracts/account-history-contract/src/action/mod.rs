@@ -17,6 +17,7 @@ pub mod query {
     mod get_portfolio;
     mod get_rewards;
     mod get_total_balance;
+    mod get_estaking_rewards;
 
     #[cfg(feature = "debug")]
     mod all;
@@ -62,4 +63,5 @@ pub mod query {
     pub use get_rewards::get_rewards;
     pub use get_staked_assets::get_staked_assets;
     pub use get_total_balance::get_total_balance;
+    pub use get_estaking_rewards::get_estaking_rewards;
 }

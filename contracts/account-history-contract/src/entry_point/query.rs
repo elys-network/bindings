@@ -1,6 +1,5 @@
 use crate::action::query::{
-    get_liquid_assets, get_membership_tier, get_perpetuals_assets, get_pool_balances,
-    get_portfolio, get_rewards, get_staked_assets, get_total_balance,
+    get_estaking_rewards, get_liquid_assets, get_membership_tier, get_perpetuals_assets, get_pool_balances, get_portfolio, get_rewards, get_staked_assets, get_total_balance
 };
 
 #[cfg(feature = "debug")]
@@ -86,6 +85,10 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
                 &querier.get_asset_price_from_denom_in_to_denom_out(denom_in, denom_out)?,
             )
         }
+
+        GetEstakingRewards {
+            address
+        } => to_json_binary(&get_estaking_rewards(deps, address)?),
 
         // debug only
         #[cfg(feature = "debug")]
