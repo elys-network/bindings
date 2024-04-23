@@ -35,26 +35,27 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
 
     let today = get_today(&env.block);
 
-    let mut addresses_to_process: Vec<String> = vec![];
+    let mut histories: Vec<(String, Option<HashMap<String, PortfolioBalanceSnapshot>>)> = vec![];
     for address in resp.addresses {
         if let Some(history) = HISTORY.may_load(deps.storage, &address)? {
             if history.get(&today.clone()).is_some() {
                 // skip if the account has been updated today
                 continue;
+            } else {
+                histories.push((address,Some(history)));
             }
+        } else {
+            histories.push((address, None));
         }
-        addresses_to_process.push(address)
     }
 
     let generator = AccountSnapshotGenerator::new(&deps.as_ref())?;
 
-    for address in addresses_to_process.iter() {
-        let mut history: HashMap<String, PortfolioBalanceSnapshot> =
-            if let Some(histories) = HISTORY.may_load(deps.storage, &address)? {
-                clean_up_history(histories, &env.block, &generator.expiration)
-            } else {
-                HashMap::new()
-            };
+    for (address, history) in histories.iter_mut() {
+
+        let history_data= history.get_or_insert(HashMap::new());
+
+        clean_up_history(history_data, &env.block, &generator.expiration);
 
         let new_part = generator.generate_portfolio_balance_snapshot_for_address(
             &querier,
@@ -63,26 +64,22 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             address,
         )?;
 
-        if let Some(part) = new_part {
-            history.insert(today.clone(), part);
-        }
-        if history.is_empty() {
-            HISTORY.remove(deps.storage, &address);
-        } else {
-            HISTORY.save(deps.storage, &address, &history)?;
-        }
+
+        history_data.insert(today.clone(), new_part);
+        HISTORY.save(deps.storage, &address, &history_data)?;
     }
 
     Ok(Response::default())
 }
 
 fn clean_up_history(
-    history: HashMap<String, PortfolioBalanceSnapshot>,
+    history: &mut HashMap<String, PortfolioBalanceSnapshot>,
     block_info: &BlockInfo,
     expiration: &Expiration,
-) -> HashMap<String, PortfolioBalanceSnapshot> {
-    let mut history = history;
-
+) {
+    if history.is_empty() {
+        return 
+    }
     let expiration = match expiration {
         Expiration::AtHeight(h) => Timestamp::from_seconds(h * 3), // since a block is created every 3 seconds
         Expiration::AtTime(t) => t.clone(),
@@ -90,7 +87,7 @@ fn clean_up_history(
     };
 
     if expiration > block_info.time {
-        return history;
+        return 
     }
 
     let expired_date = block_info.time.minus_seconds(expiration.seconds());
@@ -104,11 +101,9 @@ fn clean_up_history(
             _ => panic!("never expire"),
         };
         if timestamp <= expired_date {
-            history.remove_entry(&date);
             history.remove(&date);
         }
     }
-    return history;
 }
 
 #[cfg(test)]
@@ -145,7 +140,7 @@ mod tests {
         assert!(history.get("2024-02-07").is_some());
         assert!(history.get("2024-01-31").is_some());
 
-        let history = clean_up_history(history, &block_info, &expiration);
+        clean_up_history(&mut history, &block_info, &expiration);
 
         assert!(history.get("2024-02-07").is_some());
         assert!(history.get("2024-01-31").is_none());

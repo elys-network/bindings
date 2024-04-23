@@ -72,18 +72,14 @@ impl AccountSnapshotGenerator {
         deps: &Deps<ElysQuery>,
         env: &Env,
         address: &String,
-    ) -> StdResult<Option<PortfolioBalanceSnapshot>> {
-        let snapshot =
-            match self.generate_account_snapshot_for_address(querier, deps, env, address)? {
-                Some(snapshot) => snapshot,
-                None => return Ok(None),
-            };
+    ) -> StdResult<PortfolioBalanceSnapshot> {
+        let snapshot = self.generate_account_snapshot_for_address(querier, deps, env, address)?;
 
-        Ok(Some(PortfolioBalanceSnapshot {
+        Ok(PortfolioBalanceSnapshot {
             date: snapshot.date,
             portfolio_balance_usd: snapshot.portfolio.balance_usd.clone(),
             total_balance_usd: snapshot.total_balance.total_balance.clone(),
-        }))
+        })
     }
 
     pub fn generate_account_snapshot_for_address(
@@ -92,7 +88,7 @@ impl AccountSnapshotGenerator {
         deps: &Deps<ElysQuery>,
         env: &Env,
         address: &String,
-    ) -> StdResult<Option<AccountSnapshot>> {
+    ) -> StdResult<AccountSnapshot> {
         let liquid_assets_response = self.get_liquid_assets(&deps, querier, &address)?;
         let staked_assets_response = self.get_staked_assets(&deps, &address)?;
         let rewards_response = self.get_rewards(&deps, &address)?;
@@ -130,7 +126,7 @@ impl AccountSnapshotGenerator {
         let total_balance = portfolio_usd.checked_add(reward_usd.clone())?;
 
         // Adds the records all the time as we should return data to the FE even if it is 0 balanced.
-        Ok(Some(AccountSnapshot {
+        Ok(AccountSnapshot {
             date,
             total_balance: TotalBalance {
                 total_balance,
@@ -162,27 +158,26 @@ impl AccountSnapshotGenerator {
             liquid_asset: liquid_assets_response,
             staked_assets: staked_assets_response.staked_assets,
             perpetual_assets: perpetual_response,
-        }))
+        })
     }
 
     pub fn get_pools_user_rewards(
         &self,
         deps: &Deps<ElysQuery>,
-        address: &String
+        address: &String,
     ) -> (Decimal, HashMap<String, BalanceAvailable>) {
         let querier = ElysQuerier::new(&deps.querier);
 
         let usdc_rewards = querier.get_sub_bucket_rewards_balance(
             address.clone(),
             self.metadata.usdc_denom.to_owned(),
-            EarnType::LiquidityMiningProgram as i32
+            EarnType::LiquidityMiningProgram as i32,
         );
         let eden_rewards = querier.get_sub_bucket_rewards_balance(
             address.clone(),
             ElysDenom::Eden.as_str().to_string(),
-            EarnType::LiquidityMiningProgram as i32
+            EarnType::LiquidityMiningProgram as i32,
         );
-        
 
         let mut total = Decimal::zero();
         let mut breakdown: HashMap<String, BalanceAvailable> = HashMap::new();
@@ -192,8 +187,16 @@ impl AccountSnapshotGenerator {
                 // usd_value is not being converted on chain
                 let fiat_reward = decimal_reward * self.metadata.uusdc_usd_price;
 
-                total = total.checked_add(fiat_reward).map_or(Decimal::zero(), |res| res);
-                breakdown.insert(self.metadata.usdc_denom.to_owned(), BalanceAvailable {amount: reward.amount, usd_amount: fiat_reward});
+                total = total
+                    .checked_add(fiat_reward)
+                    .map_or(Decimal::zero(), |res| res);
+                breakdown.insert(
+                    self.metadata.usdc_denom.to_owned(),
+                    BalanceAvailable {
+                        amount: reward.amount,
+                        usd_amount: fiat_reward,
+                    },
+                );
             }
             Err(_) => {}
         };
@@ -201,12 +204,20 @@ impl AccountSnapshotGenerator {
         match eden_rewards {
             Ok(reward) => {
                 let decimal_reward = Decimal::from_atomics(reward.amount, 6).unwrap();
-                // usd_value is not being converted on chain. 
+                // usd_value is not being converted on chain.
                 // uelys_price_in_uusdc incorrectly named, it should be usd...
                 let fiat_reward = decimal_reward * self.metadata.uelys_price_in_uusdc;
 
-                total = total.checked_add(fiat_reward).map_or(Decimal::zero(), |res| res);
-                breakdown.insert(ElysDenom::Eden.as_str().to_string(), BalanceAvailable {amount: reward.amount, usd_amount: fiat_reward});
+                total = total
+                    .checked_add(fiat_reward)
+                    .map_or(Decimal::zero(), |res| res);
+                breakdown.insert(
+                    ElysDenom::Eden.as_str().to_string(),
+                    BalanceAvailable {
+                        amount: reward.amount,
+                        usd_amount: fiat_reward,
+                    },
+                );
             }
             Err(_) => {}
         };
@@ -288,46 +299,47 @@ impl AccountSnapshotGenerator {
             let share_price = pool.share_usd_price.or(Some(Decimal::zero())).unwrap();
 
             // Assumes that pool.assets are in the desired displaying sort order.
-            let balance_breakdown = 
-                pool.assets
-                    .clone()
-                    .into_iter()
-                    .map(|asset| {
-                        match pool.current_pool_ratio.clone() {
-                            Some(ratios) => {
-                                let denom = asset.token.denom.clone();
-                                let ratio = ratios.get(&denom);
-                                let asset_price = querier.get_asset_price(denom.clone());
+            let balance_breakdown = pool
+                .assets
+                .clone()
+                .into_iter()
+                .map(|asset| match pool.current_pool_ratio.clone() {
+                    Some(ratios) => {
+                        let denom = asset.token.denom.clone();
+                        let ratio = ratios.get(&denom);
+                        let asset_price = querier.get_asset_price(denom.clone());
 
-                                match (asset_price, ratio) {
-                                    (Ok(price), Some(ratio)) => {
-                                        let asset_shares =
-                                            Decimal::from_atomics(balance_uint, 18).unwrap() * ratio;
-                                        let shares_usd = asset_shares * share_price;
-                                        let asset_amount = shares_usd / price;
-            
-                                        Some(CoinValue::new(denom, asset_amount, price, shares_usd))
-                                    }
-                                    (_, _) => None,
-                                }
-                            },
-                            _ => None
+                        match (asset_price, ratio) {
+                            (Ok(price), Some(ratio)) => {
+                                let asset_shares =
+                                    Decimal::from_atomics(balance_uint, 18).unwrap() * ratio;
+                                let shares_usd = asset_shares * share_price;
+                                let asset_amount = shares_usd / price;
+
+                                Some(CoinValue::new(denom, asset_amount, price, shares_usd))
+                            }
+                            (_, _) => None,
                         }
-                    })
-                    .collect();
-            
-                
-                pool_resp.push(UserPoolResp {
-                    pool,
-                    balance: user_pool.balance,
-                    available: Decimal::from_atomics(balance_uint, 18).unwrap() * share_price,
-                    balance_breakdown
-                });
-            }
-            
+                    }
+                    _ => None,
+                })
+                .collect();
+
+            pool_resp.push(UserPoolResp {
+                pool,
+                balance: user_pool.balance,
+                available: Decimal::from_atomics(balance_uint, 18).unwrap() * share_price,
+                balance_breakdown,
+            });
+        }
+
         let (rewards, rewards_breakdown) = self.get_pools_user_rewards(&deps, address);
 
-        Ok(QueryUserPoolResponse { pools: pool_resp, rewards, rewards_breakdown })
+        Ok(QueryUserPoolResponse {
+            pools: pool_resp,
+            rewards,
+            rewards_breakdown,
+        })
     }
 
     pub fn get_liquid_assets(
