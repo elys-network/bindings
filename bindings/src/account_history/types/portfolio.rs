@@ -1,6 +1,8 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::Decimal256;
 
+use crate::account_history::msg::query_resp::StakeAssetBalanceBreakdown;
+
 #[cw_serde]
 pub struct Portfolio {
     pub balance_usd: Decimal256,
@@ -11,6 +13,7 @@ pub struct Portfolio {
     pub perpetual_assets_usd: Decimal256,
     pub usdc_earn_usd: Decimal256,
     pub borrows_usd: Decimal256,
+    pub stake_balance_breakdown: StakeAssetBalanceBreakdown
 }
 
 // implement zero
@@ -25,6 +28,7 @@ impl Portfolio {
             perpetual_assets_usd: Decimal256::zero(),
             usdc_earn_usd: Decimal256::zero(),
             borrows_usd: Decimal256::zero(),
+            stake_balance_breakdown: StakeAssetBalanceBreakdown::default(),
         }
     }
 }
