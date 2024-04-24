@@ -799,6 +799,30 @@ impl<'a> ElysQuerier<'a> {
             ))
         })
     }
+
+    /// This function queries the Masterchef contract to get rewards for a specific address and
+    /// pool IDs.
+    /// 
+    /// Arguments:
+    /// 
+    /// * `address`: The `address` parameter in the `get_masterchef_rewards` function is a String
+    /// representing the address of the user for whom you want to retrieve the rewards from the
+    /// Masterchef contract.
+    /// * `pool_ids`: The `pool_ids` parameter is a vector of unsigned 64-bit integers representing the
+    /// pool IDs for which you want to get the rewards from the Masterchef contract.
+    /// 
+    /// Returns:
+    /// 
+    /// The function `get_masterchef_rewards` returns a `StdResult` containing a
+    /// `MasterchefClaimRewardsResponse`.
+    pub fn get_masterchef_rewards(&self, address: String, pool_ids: Vec<u64>) -> StdResult<MasterchefClaimRewardsResponse> {
+        let request = QueryRequest::Custom(ElysQuery::MasterchefClaimRewards{
+        pool_ids,
+        sender: address,
+        });
+        self.querier.query(&request)
+    }
+
     #[allow(dead_code)]
     #[cfg(feature = "debug")]
     fn query_binary(&self, request: &QueryRequest<ElysQuery>) -> StdResult<Binary> {
