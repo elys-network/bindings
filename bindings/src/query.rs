@@ -143,6 +143,11 @@ pub enum ElysQuery {
     LeveragelpPools { pagination: Option<PageRequest> },
     #[returns(LeveragelpPositionResponse)]
     LeveragelpPosition { address: String, id: u64 },
+    #[returns(MasterchefClaimRewardsResponse)]
+    MasterchefClaimRewards {
+        sender: String,
+        pool_ids: Vec<u64>,
+    }
 }
 
 impl CustomQuery for ElysQuery {}
@@ -338,4 +343,8 @@ impl ElysQuery {
             token_out_denom
         }
     }
+    pub fn get_masterchef_claim_rewards(address: String, pool_ids: Vec<u64>) -> Self {
+        ElysQuery::MasterchefClaimRewards { sender: address, pool_ids }
+    }
+
 }

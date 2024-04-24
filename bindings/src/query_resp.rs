@@ -610,3 +610,9 @@ pub struct LeveragelpPoolsResponse {
     pub pool: Vec<LeveragelpPool>,
     pub pagination: Option<PageResponse>,
 }
+
+#[cw_serde]
+pub struct MasterchefClaimRewardsResponse {
+    pub code: u64,
+    pub result: String
+}
