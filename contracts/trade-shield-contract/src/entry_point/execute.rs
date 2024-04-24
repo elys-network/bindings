@@ -207,5 +207,7 @@ pub fn execute(
             }
             Ok(Response::new())
         }
+
+        EstakingWithdrawElysStakingRewards {} => estaking_withdraw_elys_staking_rewards(info, deps)
     }
 }

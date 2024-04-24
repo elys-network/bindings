@@ -115,4 +115,6 @@ pub enum ExecuteMsg {
         leverage_enabled: Option<bool>,
         limit_process_order: Option<u128>, // set to zero set the limit to None
     },
+
+    EstakingWithdrawElysStakingRewards {}
 }
