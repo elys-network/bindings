@@ -64,18 +64,14 @@ impl AccountSnapshotGenerator {
         deps: &Deps<ElysQuery>,
         env: &Env,
         address: &String,
-    ) -> StdResult<Option<PortfolioBalanceSnapshot>> {
-        let snapshot =
-            match self.generate_account_snapshot_for_address(querier, deps, env, address)? {
-                Some(snapshot) => snapshot,
-                None => return Ok(None),
-            };
+    ) -> StdResult<PortfolioBalanceSnapshot> {
+        let snapshot = self.generate_account_snapshot_for_address(querier, deps, env, address)?;
 
-        Ok(Some(PortfolioBalanceSnapshot {
+        Ok(PortfolioBalanceSnapshot {
             date: snapshot.date,
             portfolio_balance_usd: snapshot.portfolio.balance_usd.clone(),
             total_balance_usd: snapshot.total_balance.total_balance.clone(),
-        }))
+        })
     }
 
     pub fn generate_account_snapshot_for_address(
@@ -84,7 +80,7 @@ impl AccountSnapshotGenerator {
         deps: &Deps<ElysQuery>,
         env: &Env,
         address: &String,
-    ) -> StdResult<Option<AccountSnapshot>> {
+    ) -> StdResult<AccountSnapshot> {
         let liquid_assets_response = self.get_liquid_assets(&deps, querier, &address)?;
         let staked_assets_response = self.get_staked_assets(&deps, &address)?;
         let rewards_response = self.get_rewards(&deps, &address)?;
@@ -120,7 +116,7 @@ impl AccountSnapshotGenerator {
         let total_balance = portfolio_usd.checked_add(reward_usd.clone())?;
 
         // Adds the records all the time as we should return data to the FE even if it is 0 balanced.
-        Ok(Some(AccountSnapshot {
+        Ok(AccountSnapshot {
             date,
             total_balance: TotalBalance {
                 total_balance,
@@ -153,7 +149,7 @@ impl AccountSnapshotGenerator {
             liquid_asset: liquid_assets_response,
             staked_assets: staked_assets_response.staked_assets,
             perpetual_assets: perpetual_response,
-        }))
+        })
     }
 
     pub fn get_pools_user_rewards(
