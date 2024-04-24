@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, Uint128};
+use cosmwasm_std::{Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, Uint128, Coin};
 
 use crate::{
     account_history::types::CoinValue,
@@ -11,7 +11,7 @@ use crate::{
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, PoolAsset, Price, StakedPosition,
         SwapAmountInRoute, SwapAmountOutRoute, UnstakedPosition, ValidatorDetail, VestingDetail,
-    }
+    },
 };
 
 #[cw_serde]
@@ -388,7 +388,7 @@ pub struct VestingTokens {
     claimed_amount: Int128,
     num_blocks: i64,
     start_block: i64,
-    vest_started_timestamp: i64
+    vest_started_timestamp: i64,
 }
 
 #[cw_serde]
@@ -440,7 +440,7 @@ pub struct QueryPoolAssetEstimationResponse {
 
 #[cw_serde]
 pub struct QueryExitPoolEstimationResponse {
-    pub amounts_out: Vec<Coin>
+    pub amounts_out: Vec<Coin>,
 }
 
 #[cw_serde]
@@ -476,7 +476,7 @@ pub struct PoolResp {
     pub share_usd_price: Option<Decimal>,
     pub swap_fee: Decimal,
     pub fee_denom: String,
-    pub use_oracle: Option<bool>
+    pub use_oracle: Option<bool>,
 }
 
 impl Default for PoolResp {
@@ -520,7 +520,7 @@ pub struct UserPoolResp {
     // User total balance in pool in terms of USD
     pub available: Decimal,
     // Balance based on current pool ratio
-    pub balance_breakdown: Vec<Option<CoinValue>>
+    pub balance_breakdown: Vec<Option<CoinValue>>,
 }
 
 #[cw_serde]
@@ -614,5 +614,17 @@ pub struct LeveragelpPoolsResponse {
 #[cw_serde]
 pub struct MasterchefClaimRewardsResponse {
     pub code: u64,
-    pub result: String
+    pub result: String,
+}
+
+#[cw_serde]
+pub struct MasterchefUserPendingRewardResponse {
+    pub rewards: Vec<Rewards>,
+    pub total_rewards: Vec<Coin>,
+}
+
+#[cw_serde]
+pub struct Rewards {
+    pool_id: u64,
+    rewards: Vec<Coin>,
 }

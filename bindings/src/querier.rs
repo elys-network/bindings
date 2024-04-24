@@ -2,13 +2,18 @@ use std::collections::HashMap;
 use std::str::FromStr;
 
 use cosmwasm_std::{
-    coin, to_json_vec, Binary, Coin, ContractResult, Decimal, QuerierWrapper, QueryRequest, SignedDecimal, SignedDecimal256, StdError, StdResult, SystemResult, Uint128
+    coin, to_json_vec, Binary, Coin, ContractResult, Decimal, QuerierWrapper, QueryRequest,
+    SignedDecimal, SignedDecimal256, StdError, StdResult, SystemResult, Uint128,
 };
 
 use crate::{
-    account_history::types::CoinValue, query::*, query_resp::*, trade_shield::types::{
+    account_history::types::CoinValue,
+    query::*,
+    query_resp::*,
+    trade_shield::types::{
         AmmPool, PoolAsset, PoolExtraInfo, StakedPosition, StakedPositionRaw, StakingValidator,
-    }, types::{BalanceAvailable, PageRequest, PerpetualPosition, Price, SwapAmountInRoute}
+    },
+    types::{BalanceAvailable, PageRequest, PerpetualPosition, Price, SwapAmountInRoute},
 };
 
 pub struct ElysQuerier<'a> {
@@ -556,7 +561,7 @@ impl<'a> ElysQuerier<'a> {
     pub fn exit_pool_estimation(
         &self,
         pool_id: u64,
-        share_amount_in: Uint128
+        share_amount_in: Uint128,
     ) -> StdResult<QueryExitPoolEstimationResponse> {
         let query = ElysQuery::exit_pool_estimation(pool_id, share_amount_in, "".to_string());
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
@@ -657,14 +662,20 @@ impl<'a> ElysQuerier<'a> {
                                 Err(_) => Decimal::zero(),
                             },
                         );
-                        
+
                         // Add USD value to every reward coin returned from chain
                         match &usdc_entry {
                             Ok(entry) => {
                                 updated_pool.fiat_rewards = Some(
-                                    updated_pool.reward_coins.clone().into_iter().map(|coin| {
-                                        CoinValue::from_coin(&coin, self, &entry.entry.denom).unwrap()
-                                    }).collect()
+                                    updated_pool
+                                        .reward_coins
+                                        .clone()
+                                        .into_iter()
+                                        .map(|coin| {
+                                            CoinValue::from_coin(&coin, self, &entry.entry.denom)
+                                                .unwrap()
+                                        })
+                                        .collect(),
                                 );
                             }
                             _ => {}
@@ -802,25 +813,48 @@ impl<'a> ElysQuerier<'a> {
 
     /// This function queries the Masterchef contract to get rewards for a specific address and
     /// pool IDs.
-    /// 
+    ///
     /// Arguments:
-    /// 
+    ///
     /// * `address`: The `address` parameter in the `get_masterchef_rewards` function is a String
     /// representing the address of the user for whom you want to retrieve the rewards from the
     /// Masterchef contract.
     /// * `pool_ids`: The `pool_ids` parameter is a vector of unsigned 64-bit integers representing the
     /// pool IDs for which you want to get the rewards from the Masterchef contract.
+    ///
+    /// Returns:
+    ///
+    /// The function `get_masterchef_rewards` returns a `StdResult` containing a
+    /// `MasterchefClaimRewardsResponse`.
+    pub fn get_masterchef_rewards(
+        &self,
+        address: String,
+        pool_ids: Vec<u64>,
+    ) -> StdResult<MasterchefClaimRewardsResponse> {
+        self.querier.query(&QueryRequest::Custom(
+            ElysQuery::get_masterchef_claim_rewards(address, pool_ids),
+        ))
+    }
+
+    /// This function retrieves pending rewards for a user from the Masterchef contract.
+    /// 
+    /// Arguments:
+    /// 
+    /// * `address`: The `address` parameter in the `get_masterchef_pending_rewards` function is a
+    /// String type that represents the address for which you want to retrieve pending rewards from the
+    /// Masterchef contract.
     /// 
     /// Returns:
     /// 
-    /// The function `get_masterchef_rewards` returns a `StdResult` containing a
-    /// `MasterchefClaimRewardsResponse`.
-    pub fn get_masterchef_rewards(&self, address: String, pool_ids: Vec<u64>) -> StdResult<MasterchefClaimRewardsResponse> {
-        let request = QueryRequest::Custom(ElysQuery::MasterchefClaimRewards{
-        pool_ids,
-        sender: address,
-        });
-        self.querier.query(&request)
+    /// The function `get_masterchef_pending_rewards` returns a `StdResult` containing a
+    /// `MasterchefUserPendingRewardResponse`.
+    pub fn get_masterchef_pending_rewards(
+        &self,
+        address: String,
+    ) -> StdResult<MasterchefUserPendingRewardResponse> {
+        self.querier.query(&QueryRequest::Custom(
+            ElysQuery::masterchef_pending_rewards(address),
+        ))
     }
 
     #[allow(dead_code)]

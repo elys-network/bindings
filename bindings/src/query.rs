@@ -147,7 +147,11 @@ pub enum ElysQuery {
     MasterchefClaimRewards {
         sender: String,
         pool_ids: Vec<u64>,
-    }
+    },
+    #[returns(MasterchefUserPendingRewardResponse)]
+    MasterchefUserPendingRewardRequest {
+        user: String,
+    },
 }
 
 impl CustomQuery for ElysQuery {}
@@ -344,7 +348,10 @@ impl ElysQuery {
         }
     }
     pub fn get_masterchef_claim_rewards(address: String, pool_ids: Vec<u64>) -> Self {
-        ElysQuery::MasterchefClaimRewards { sender: address, pool_ids }
+        Self::MasterchefClaimRewards { sender: address, pool_ids }
+    }
+    pub fn masterchef_pending_rewards(address: String) -> Self {
+        Self::MasterchefUserPendingRewardRequest { user: address }
     }
 
 }
