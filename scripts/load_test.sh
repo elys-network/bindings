@@ -126,4 +126,4 @@ while IFS= read -r line; do
 done < $OUTPUT
 wait
 
-# echo "All transactions have been broadcasted."
+echo "All transactions have been broadcasted."
