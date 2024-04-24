@@ -621,6 +621,7 @@ impl Module for ElysModule {
                 Ok(to_json_binary(&resp)?)
             }
             ElysQuery::MasterchefClaimRewards { .. } => todo!("MasterchefClaimRewards"),
+            ElysQuery::MasterchefUserPendingReward { .. } => todo!("MasterchefUserPendingReward")
         }
     }
 
