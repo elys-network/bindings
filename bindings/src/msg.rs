@@ -116,6 +116,10 @@ pub enum ElysMsg {
         position_id: u64,
         amount: Int128,
     },
+    EstakingWithdrawReward {
+        validator_address: String,
+        delegator_address: String
+    }
 }
 
 impl ElysMsg {
@@ -346,6 +350,13 @@ impl ElysMsg {
             creator: creator,
             position_id: position_id,
             amount: amount,
+        }
+    }
+
+    pub fn estaking_withdraw_reward(delegator_address: String, validator_address: String) -> Self {
+        Self::EstakingWithdrawReward {
+            delegator_address,
+            validator_address
         }
     }
 }
