@@ -20,14 +20,7 @@ use elys_bindings::{
         PerpetualOpenResponse,
     },
     query_resp::{
-        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse,
-        BalanceBorrowed, Commitments, Entry, LeveragelpIsWhitelistedResponse, LeveragelpParams,
-        LeveragelpParamsResponse, LeveragelpStatusReponse, LeveragelpWhitelistResponse,
-        OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
-        PerpetualOpenEstimationRawResponse, PerpetualQueryPositionsResponse, QueryAprResponse,
-        QueryAprsResponse, QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse,
-        QueryShowCommitmentsResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
-        QueryVestingInfoResponse, StableStakeParamsData, StableStakeParamsResp,
+        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse, BalanceBorrowed, Commitments, Entry, LeveragelpIsWhitelistedResponse, LeveragelpParams, LeveragelpParamsResponse, LeveragelpStatusReponse, LeveragelpWhitelistResponse, OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse, PerpetualOpenEstimationRawResponse, PerpetualQueryPositionsResponse, QueryAprResponse, QueryAprsResponse, QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse, QueryShowCommitmentsResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryVestingInfoResponse, StableStakeParamsData, StableStakeParamsResp
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
@@ -627,6 +620,7 @@ impl Module for ElysModule {
                 };
                 Ok(to_json_binary(&resp)?)
             }
+            ElysQuery::MasterchefClaimRewards { .. } => todo!("MasterchefClaimRewards"),
         }
     }
 
