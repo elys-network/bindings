@@ -63,3 +63,8 @@ pub mod query {
     pub use get_staked_assets::get_staked_assets;
     pub use get_total_balance::get_total_balance;
 }
+
+pub mod execute {
+    mod add_wallet;
+    pub use add_wallet::add_wallet;
+}

@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
-use cosmwasm_std::{BlockInfo, DepsMut, Env, Response, StdError, StdResult, Timestamp};
+use cosmwasm_std::{BlockInfo, DepsMut, Env, Response, StdResult, Timestamp};
 use cw_utils::Expiration;
 
 use crate::{
-    states::{HISTORY, METADATA, PAGINATION},
+    states::{ACCOUNT_LIST, HISTORY, METADATA},
     types::AccountSnapshotGenerator,
     utils::get_today,
 };
@@ -20,29 +20,21 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     metadata = metadata.update_prices(&querier)?;
     METADATA.save(deps.storage, &metadata)?;
 
-    // update pagination
-    let mut pagination = PAGINATION.load(deps.storage)?;
-
-    let resp = querier.accounts(Some(pagination.clone())).map_err(|e| {
-        StdError::generic_err(format!(
-            "failed to get accounts with pagination {:?}: {}",
-            pagination, e
-        ))
-    })?;
-
-    pagination.update(resp.pagination.next_key);
-    PAGINATION.save(deps.storage, &pagination)?;
-
     let today = get_today(&env.block);
+    let address_list: Vec<String> = ACCOUNT_LIST
+        .prefix_range(deps.storage, None, None, cosmwasm_std::Order::Descending)
+        .filter_map(|res| res.ok().map(|(addr, _)| addr))
+        .collect();
+    ACCOUNT_LIST.clear(deps.storage);
 
     let mut histories: Vec<(String, Option<HashMap<String, PortfolioBalanceSnapshot>>)> = vec![];
-    for address in resp.addresses {
+    for address in address_list {
         if let Some(history) = HISTORY.may_load(deps.storage, &address)? {
             if history.get(&today.clone()).is_some() {
                 // skip if the account has been updated today
                 continue;
             } else {
-                histories.push((address,Some(history)));
+                histories.push((address, Some(history)));
             }
         } else {
             histories.push((address, None));
@@ -52,8 +44,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     let generator = AccountSnapshotGenerator::new(&deps.as_ref())?;
 
     for (address, history) in histories.iter_mut() {
-
-        let history_data= history.get_or_insert(HashMap::new());
+        let history_data = history.get_or_insert(HashMap::new());
 
         clean_up_history(history_data, &env.block, &generator.expiration);
 
@@ -63,7 +54,6 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             &env,
             address,
         )?;
-
 
         history_data.insert(today.clone(), new_part);
         HISTORY.save(deps.storage, &address, &history_data)?;
@@ -78,7 +68,7 @@ fn clean_up_history(
     expiration: &Expiration,
 ) {
     if history.is_empty() {
-        return 
+        return;
     }
     let expiration = match expiration {
         Expiration::AtHeight(h) => Timestamp::from_seconds(h * 3), // since a block is created every 3 seconds
@@ -87,7 +77,7 @@ fn clean_up_history(
     };
 
     if expiration > block_info.time {
-        return 
+        return;
     }
 
     let expired_date = block_info.time.minus_seconds(expiration.seconds());
