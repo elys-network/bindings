@@ -1,6 +1,9 @@
-use crate::trade_shield::types::default_take_profit_price;
 #[allow(unused_imports)]
 use crate::types::{BalanceAvailable, PageRequest, SwapAmountInRoute};
+use crate::{
+    account_history::msg::query_resp::masterchef::QueryPoolAprsResponse,
+    trade_shield::types::default_take_profit_price,
+};
 
 #[allow(unused_imports)]
 use super::query_resp::*;
@@ -151,6 +154,8 @@ pub enum ElysQuery {
     MasterchefUserPendingReward { user: String },
     #[returns(EstakingRewardsResponse)]
     EstakingRewards { address: String },
+    #[returns(QueryPoolAprsResponse)]
+    MasterchefPoolApr { pool_ids: Vec<u64> },
 }
 
 impl CustomQuery for ElysQuery {}
@@ -353,6 +358,9 @@ impl ElysQuery {
 
     pub fn masterchef_pending_rewards(address: String) -> Self {
         Self::MasterchefUserPendingReward { user: address }
+    }
+    pub fn get_masterchef_pool_apr(pool_ids: Vec<u64>) -> Self {
+        Self::MasterchefPoolApr { pool_ids }
     }
     pub fn query_estaking_rewards(address: String) -> Self {
         ElysQuery::EstakingRewards { address }

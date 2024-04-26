@@ -51,6 +51,8 @@ pub mod query_resp {
 
     pub mod masterchef {
         mod get_masterchef_pending_rewards;
+        mod get_masterchef_pool_apr_response;
         pub use get_masterchef_pending_rewards::GetMasterchefUserPendingRewardResponse;
+        pub use get_masterchef_pool_apr_response::QueryPoolAprsResponse;
     }
 }
