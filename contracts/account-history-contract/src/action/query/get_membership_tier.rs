@@ -1,13 +1,10 @@
 use crate::{
-    msg::query_resp::MembershipTierResponse,
-    states::HISTORY,
-    types::AccountSnapshotGenerator,
-    utils::{get_raw_today, get_today},
+    msg::query_resp::MembershipTierResponse, states::HISTORY, types::AccountSnapshotGenerator,
 };
 use chrono::NaiveDateTime;
-use cosmwasm_std::{Deps, Env, StdResult, Timestamp};
+use cosmwasm_std::{Decimal256, Deps, Env, StdResult, Timestamp};
 use cw_utils::Expiration;
-use elys_bindings::{account_history::types::PortfolioBalanceSnapshot, ElysQuery};
+use elys_bindings::ElysQuery;
 
 pub fn get_membership_tier(
     env: Env,
@@ -15,7 +12,6 @@ pub fn get_membership_tier(
     user_address: String,
 ) -> StdResult<MembershipTierResponse> {
     let generator = AccountSnapshotGenerator::new(&deps)?;
-    let mut dates: Vec<String> = vec![];
     let expiration = match generator.expiration {
         Expiration::AtHeight(h) => Timestamp::from_seconds(h * 3), // since a block is created every 3 seconds
         Expiration::AtTime(t) => t.clone(),
@@ -26,30 +22,26 @@ pub fn get_membership_tier(
         .time
         .minus_seconds(expiration.seconds())
         .plus_days(1);
+    let mut user_balance_snapshots: Vec<Decimal256> = vec![];
 
     while day_date < env.block.time {
         let date = NaiveDateTime::from_timestamp_opt(day_date.seconds() as i64, 0)
             .expect("Failed to convert block time to date")
             .format("%Y-%m-%d")
             .to_string();
-        dates.push(date);
+
+        let day_history = HISTORY.may_load(deps.storage, &date)?;
+        if let Some(day_history) = day_history {
+            if let Some(portfolio) = day_history.get(&user_address) {
+                user_balance_snapshots.push(portfolio.total_balance_usd)
+            };
+        }
+
         day_date = day_date.plus_days(1);
     }
 
-    let user_history: Vec<PortfolioBalanceSnapshot> =
-        match HISTORY.may_load(deps.storage, &user_address)? {
-            Some(history) => history,
-            None => return Ok(MembershipTierResponse::zero()),
-        }
-        .values()
-        .cloned()
-        .collect();
-
-    match user_history
-        .iter()
-        .min_by_key(|snapshot| snapshot.total_balance_usd)
-    {
-        Some(snapshot) => Ok(MembershipTierResponse::calc(snapshot.total_balance_usd)),
+    match user_balance_snapshots.iter().min_by_key(|balance| balance) {
+        Some(balance) => Ok(MembershipTierResponse::calc(balance.to_owned())),
         None => return Ok(MembershipTierResponse::zero()),
     }
 }

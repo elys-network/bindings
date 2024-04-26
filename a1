@@ -1,0 +1,44 @@
+# Node: tcp://localhost:26657
+# AH contract address: elys17p9rzwnnfxcjp32un9ug7yhhzgtkhvl9jfksztgw5uh69wac2pgs98tvuy
+# FS contract address: elys14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3fsthx
+# TS contract address: elys1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqau4f4q
+
+# ELYS denom: uelys
+# EDEN denom: ueden
+# EDENB denom: uedenb
+# USDC denom: ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65
+# ATOM denom: ibc/E2D2F6ADCC68AA3384B2F5DFACCA437923D137C14E86FB8A10207CF3BED0C8D4
+
+# User address: elys1pszy7cq5xhx6dvu082nvyjjd2q6mln9n3k5ly0
+
+# Get stable stake params
+$ elysd q --output json --node "tcp://localhost:26657" wasm contract-state smart "elys1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqau4f4q" '{
+        "leveragelp_query_positions_for_address": {
+           "address" : "elys1pszy7cq5xhx6dvu082nvyjjd2q6mln9n3k5ly0"
+        }
+    }' | jq
+{
+  "data": {
+    "positions": [
+      {
+        "address": "elys1pszy7cq5xhx6dvu082nvyjjd2q6mln9n3k5ly0",
+        "collateral": {
+          "denom": "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+          "amount": "10000000"
+        },
+        "liabilities": "40000000",
+        "interest_paid": "0",
+        "leverage": "5",
+        "leveraged_lp_amount": "53544376889632580922",
+        "position_health": "1.249154436189753586",
+        "id": 2,
+        "amm_pool_id": 2,
+        "stop_loss_price": "0"
+      }
+    ],
+    "pagination": {
+      "next_key": null,
+      "total": null
+    }
+  }
+}
