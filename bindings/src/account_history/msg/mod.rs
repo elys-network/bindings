@@ -48,4 +48,11 @@ pub mod query_resp {
         mod get_estaking_rewards_response;
         pub use get_estaking_rewards_response::GetEstakingRewardsResponse;
     }
+
+    pub mod masterchef {
+        mod get_masterchef_pending_rewards;
+        mod get_masterchef_claim_rewards;
+        pub use get_masterchef_pending_rewards::GetMasterchefUserPendingRewardResponse;
+        pub use get_masterchef_claim_rewards::GetMasterchefClaimRewardsResponse;
+    }
 }
