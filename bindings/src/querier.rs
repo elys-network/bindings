@@ -7,7 +7,7 @@ use cosmwasm_std::{
 };
 
 use crate::{
-    account_history::{msg::query_resp::masterchef::QueryPoolAprsResponse, types::CoinValue},
+    account_history::types::CoinValue,
     query::*,
     query_resp::*,
     trade_shield::types::{

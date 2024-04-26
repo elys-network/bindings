@@ -1,6 +1,5 @@
 use cosmwasm_std::{Deps, StdResult};
-use elys_bindings::query_resp::MasterChefPoolAprResponse;
-use elys_bindings::{ElysQuerier, ElysQuery};
+use elys_bindings::{account_history::msg::query_resp::masterchef::MasterChefPoolAprResponse, ElysQuerier, ElysQuery};
 
 use crate::types::AccountSnapshotGenerator;
 

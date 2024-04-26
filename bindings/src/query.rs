@@ -1,9 +1,6 @@
+use crate::trade_shield::types::default_take_profit_price;
 #[allow(unused_imports)]
 use crate::types::{BalanceAvailable, PageRequest, SwapAmountInRoute};
-use crate::{
-    account_history::msg::query_resp::masterchef::QueryPoolAprsResponse,
-    trade_shield::types::default_take_profit_price,
-};
 
 #[allow(unused_imports)]
 use super::query_resp::*;
