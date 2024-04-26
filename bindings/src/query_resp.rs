@@ -617,14 +617,14 @@ pub struct LeveragelpPoolsResponse {
 #[derive(Default)]
 pub struct MasterchefUserPendingRewardResponse {
     pub rewards: Vec<MasterchefUserPendingRewardData>,
-    pub total_rewards: Vec<DecCoin>,
+    pub total_rewards: Vec<Coin>,
 }
 
 #[cw_serde]
 #[derive(Default)]
 pub struct MasterchefUserPendingRewardData {
     pool_id: u64,
-    rewards: Vec<DecCoin>,
+    rewards: Vec<Coin>,
 }
 #[cw_serde]
 #[derive(Default)]
@@ -660,11 +660,11 @@ impl EstakingRewardsResponse {
 }
 
 impl MasterchefUserPendingRewardResponse {
-    pub fn to_dec_coin_values(
+    pub fn to_coin_values(
         &self,
         querier: &ElysQuerier<'_>,
         usdc_denom: &String,
-    ) -> StdResult<(HashMap<u64, DecCoinValue>, Vec<DecCoinValue>)> {
+    ) -> StdResult<(HashMap<u64, CoinValue>, Vec<CoinValue>)> {
         Ok((self.rewards_to_dec_coins(querier, usdc_denom)?, self.total_rewards_to_dec_coin(querier, usdc_denom)?))
     }
 
@@ -672,11 +672,11 @@ impl MasterchefUserPendingRewardResponse {
         &self,
         querier: &ElysQuerier<'_>,
         usdc_denom: &String,
-    ) -> StdResult<HashMap<u64, DecCoinValue>> {
+    ) -> StdResult<HashMap<u64, CoinValue>> {
         let mut dec_coin_values = HashMap::new();
         for MasterchefUserPendingRewardData { rewards, pool_id } in &self.rewards {
             for reward in rewards {
-                dec_coin_values.insert(*pool_id,DecCoinValue::from_dec_coin(reward, querier, usdc_denom)?);
+                dec_coin_values.insert(*pool_id,CoinValue::from_coin(reward, querier, usdc_denom)?);
             }
         }
         Ok(dec_coin_values)
@@ -686,10 +686,10 @@ impl MasterchefUserPendingRewardResponse {
         &self,
         querier: &ElysQuerier<'_>,
         usdc_denom: &String,
-    ) -> StdResult<Vec<DecCoinValue>> {
+    ) -> StdResult<Vec<CoinValue>> {
         let mut dec_coin_values = Vec::new();
         for reward in &self.total_rewards {
-            dec_coin_values.push(DecCoinValue::from_dec_coin(reward, querier, usdc_denom)?);
+            dec_coin_values.push(CoinValue::from_coin(reward, querier, usdc_denom)?);
         }
         Ok(dec_coin_values)
     }
