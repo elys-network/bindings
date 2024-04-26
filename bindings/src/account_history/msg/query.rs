@@ -72,12 +72,6 @@ pub enum QueryMsg {
 
     #[returns(GetMasterchefUserPendingRewardResponse)]
     GetMasterchefPendingRewards { address: String },
-
-    #[returns(GetMasterchefClaimRewardsResponse)]
-    GetMasterchefClaimRewards {
-        sender: String,
-        pool_ids: Vec<u64>,
-    },
     // debug only
     #[cfg(feature = "debug")]
     #[returns(ParamsResp)]

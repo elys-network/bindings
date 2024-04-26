@@ -7,7 +7,7 @@ use cosmwasm_std::{
 };
 
 use crate::{
-    account_history::{msg::query_resp::masterchef::GetMasterchefClaimRewardsResponse, types::CoinValue},
+    account_history::types::CoinValue,
     query::*,
     query_resp::*,
     trade_shield::types::{
@@ -810,42 +810,16 @@ impl<'a> ElysQuerier<'a> {
             ))
         })
     }
-
-    /// This function queries the Masterchef contract to get rewards for a specific address and
-    /// pool IDs.
-    ///
-    /// Arguments:
-    ///
-    /// * `address`: The `address` parameter in the `get_masterchef_rewards` function is a String
-    /// representing the address of the user for whom you want to retrieve the rewards from the
-    /// Masterchef contract.
-    /// * `pool_ids`: The `pool_ids` parameter is a vector of unsigned 64-bit integers representing the
-    /// pool IDs for which you want to get the rewards from the Masterchef contract.
-    ///
-    /// Returns:
-    ///
-    /// The function `get_masterchef_rewards` returns a `StdResult` containing a
-    /// `GetMas`.
-    pub fn get_masterchef_rewards(
-        &self,
-        address: String,
-        pool_ids: Vec<u64>,
-    ) -> StdResult<GetMasterchefClaimRewardsResponse> {
-        self.querier.query(&QueryRequest::Custom(
-            ElysQuery::get_masterchef_claim_rewards(address, pool_ids),
-        ))
-    }
-
     /// This function retrieves pending rewards for a user from the Masterchef contract.
-    /// 
+    ///
     /// Arguments:
-    /// 
+    ///
     /// * `address`: The `address` parameter in the `get_masterchef_pending_rewards` function is a
     /// String type that represents the address for which you want to retrieve pending rewards from the
     /// Masterchef contract.
-    /// 
+    ///
     /// Returns:
-    /// 
+    ///
     /// The function `get_masterchef_pending_rewards` returns a `StdResult` containing a
     /// `MasterchefUserPendingRewardResponse`.
     pub fn get_masterchef_pending_rewards(
@@ -857,15 +831,13 @@ impl<'a> ElysQuerier<'a> {
         ))
     }
 
-    pub fn get_estaking_rewards(
-        &self,
-        address: String,
-    ) -> StdResult<EstakingRewardsResponse> {
-        let query = ElysQuery::EstakingRewards { address: address.to_owned() };
+    pub fn get_estaking_rewards(&self, address: String) -> StdResult<EstakingRewardsResponse> {
+        let query = ElysQuery::EstakingRewards {
+            address: address.to_owned(),
+        };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
         self.querier.query(&request)
     }
-
 
     #[allow(dead_code)]
     #[cfg(feature = "debug")]

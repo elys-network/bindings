@@ -1,5 +1,5 @@
 use crate::action::query::{
-    get_estaking_rewards, get_liquid_assets, get_masterchef_claim_rewards,
+    get_estaking_rewards, get_liquid_assets,
     get_masterchef_pending_rewards, get_membership_tier, get_perpetuals_assets, get_pool_balances,
     get_portfolio, get_rewards, get_staked_assets, get_total_balance,
 };
@@ -89,10 +89,6 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
 
         GetMasterchefPendingRewards { address } => {
             to_json_binary(&get_masterchef_pending_rewards(deps, address)?)
-        }
-
-        GetMasterchefClaimRewards { sender, pool_ids } => {
-            to_json_binary(&get_masterchef_claim_rewards(deps, sender, pool_ids)?)
         }
 
         // debug only

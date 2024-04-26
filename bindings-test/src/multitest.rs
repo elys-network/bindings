@@ -621,7 +621,6 @@ impl Module for ElysModule {
                 };
                 Ok(to_json_binary(&resp)?)
             }
-            ElysQuery::MasterchefClaimRewards { .. } => todo!("MasterchefClaimRewards"),
             ElysQuery::MasterchefUserPendingReward { .. } => todo!("MasterchefUserPendingReward")
         }
     }
@@ -1012,6 +1011,16 @@ impl Module for ElysModule {
                     data: Some(data),
                 })
             }
+            ElysMsg::MasterchefClaimRewards { .. } => {
+                LAST_MODULE_USED.save(storage, &Some("MasterchefClaimRewards".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            },
         }
     }
 

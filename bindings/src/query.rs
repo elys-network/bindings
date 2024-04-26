@@ -1,9 +1,6 @@
+use crate::trade_shield::types::default_take_profit_price;
 #[allow(unused_imports)]
 use crate::types::{BalanceAvailable, PageRequest, SwapAmountInRoute};
-use crate::{
-    account_history::msg::query_resp::masterchef::GetMasterchefClaimRewardsResponse,
-    trade_shield::types::default_take_profit_price,
-};
 
 #[allow(unused_imports)]
 use super::query_resp::*;
@@ -150,8 +147,6 @@ pub enum ElysQuery {
     LeveragelpPools { pagination: Option<PageRequest> },
     #[returns(LeveragelpPositionResponse)]
     LeveragelpPosition { address: String, id: u64 },
-    #[returns(GetMasterchefClaimRewardsResponse)]
-    MasterchefClaimRewards { sender: String, pool_ids: Vec<u64> },
     #[returns(MasterchefUserPendingRewardResponse)]
     MasterchefUserPendingReward { user: String },
     #[returns(EstakingRewardsResponse)]
@@ -356,12 +351,6 @@ impl ElysQuery {
         }
     }
 
-    pub fn get_masterchef_claim_rewards(address: String, pool_ids: Vec<u64>) -> Self {
-        Self::MasterchefClaimRewards {
-            sender: address,
-            pool_ids,
-        }
-    }
     pub fn masterchef_pending_rewards(address: String) -> Self {
         Self::MasterchefUserPendingReward { user: address }
     }

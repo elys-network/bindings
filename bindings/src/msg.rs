@@ -116,6 +116,7 @@ pub enum ElysMsg {
         position_id: u64,
         amount: Int128,
     },
+    MasterchefClaimRewards { sender: String, pool_ids: Vec<u64> },
 }
 
 impl ElysMsg {
@@ -346,6 +347,13 @@ impl ElysMsg {
             creator: creator,
             position_id: position_id,
             amount: amount,
+        }
+    }
+
+    pub fn get_masterchef_claim_rewards(address: String, pool_ids: Vec<u64>) -> Self {
+        Self::MasterchefClaimRewards {
+            sender: address,
+            pool_ids,
         }
     }
 }

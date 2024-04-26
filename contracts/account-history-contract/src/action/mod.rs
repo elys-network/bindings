@@ -19,7 +19,6 @@ pub mod query {
     mod get_total_balance;
     mod get_estaking_rewards;
     mod get_masterchef_pending_rewards;
-    mod get_masterchef_claim_rewards;
 
     #[cfg(feature = "debug")]
     mod all;
@@ -67,5 +66,4 @@ pub mod query {
     pub use get_total_balance::get_total_balance;
     pub use get_estaking_rewards::get_estaking_rewards;
     pub use get_masterchef_pending_rewards::get_masterchef_pending_rewards;
-    pub use get_masterchef_claim_rewards::get_masterchef_claim_rewards;
 }
