@@ -484,6 +484,8 @@ pub struct ValidatorDetail {
     // Only available if there's some and if address.
     // is sent in request object.
     pub staked: Option<BalanceAvailable>,
+    pub jailed: bool,
+    pub inactive: bool,
 }
 
 #[cw_serde]
