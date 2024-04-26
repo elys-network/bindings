@@ -1,6 +1,9 @@
-use crate::trade_shield::types::default_take_profit_price;
 #[allow(unused_imports)]
 use crate::types::{BalanceAvailable, PageRequest, SwapAmountInRoute};
+use crate::{
+    account_history::msg::query_resp::masterchef::GetMasterchefClaimRewardsResponse,
+    trade_shield::types::default_take_profit_price,
+};
 
 #[allow(unused_imports)]
 use super::query_resp::*;
@@ -116,7 +119,11 @@ pub enum ElysQuery {
     #[returns(QueryJoinPoolEstimationResponse)]
     AmmJoinPoolEstimation { pool_id: u64, amounts_in: Vec<Coin> },
     #[returns(QueryExitPoolEstimationResponse)]
-    AmmExitPoolEstimation{ pool_id: u64, share_amount_in: Uint128, token_out_denom: String },
+    AmmExitPoolEstimation {
+        pool_id: u64,
+        share_amount_in: Uint128,
+        token_out_denom: String,
+    },
     #[returns(LeveragelpParamsResponse)]
     LeveragelpParams {},
     #[returns(LeveragelpPositionsResponse)]
@@ -143,19 +150,12 @@ pub enum ElysQuery {
     LeveragelpPools { pagination: Option<PageRequest> },
     #[returns(LeveragelpPositionResponse)]
     LeveragelpPosition { address: String, id: u64 },
-    #[returns(MasterchefClaimRewardsResponse)]
-    MasterchefClaimRewards {
-        sender: String,
-        pool_ids: Vec<u64>,
-    },
+    #[returns(GetMasterchefClaimRewardsResponse)]
+    MasterchefClaimRewards { sender: String, pool_ids: Vec<u64> },
     #[returns(MasterchefUserPendingRewardResponse)]
-    MasterchefUserPendingReward {
-        user: String,
-    },
+    MasterchefUserPendingReward { user: String },
     #[returns(EstakingRewardsResponse)]
-    EstakingRewards {
-        address: String
-    }
+    EstakingRewards { address: String },
 }
 
 impl CustomQuery for ElysQuery {}
@@ -344,23 +344,28 @@ impl ElysQuery {
             amounts_in,
         }
     }
-    pub fn exit_pool_estimation(pool_id: u64, share_amount_in: Uint128, token_out_denom: String) -> Self {
+    pub fn exit_pool_estimation(
+        pool_id: u64,
+        share_amount_in: Uint128,
+        token_out_denom: String,
+    ) -> Self {
         ElysQuery::AmmExitPoolEstimation {
             pool_id,
             share_amount_in,
-            token_out_denom
+            token_out_denom,
         }
     }
 
     pub fn get_masterchef_claim_rewards(address: String, pool_ids: Vec<u64>) -> Self {
-        Self::MasterchefClaimRewards { sender: address, pool_ids }
+        Self::MasterchefClaimRewards {
+            sender: address,
+            pool_ids,
+        }
     }
     pub fn masterchef_pending_rewards(address: String) -> Self {
         Self::MasterchefUserPendingReward { user: address }
     }
     pub fn query_estaking_rewards(address: String) -> Self {
-        ElysQuery::EstakingRewards {
-            address
-        }
+        ElysQuery::EstakingRewards { address }
     }
 }

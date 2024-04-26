@@ -7,7 +7,7 @@ use cosmwasm_std::{
 };
 
 use crate::{
-    account_history::types::CoinValue,
+    account_history::{msg::query_resp::masterchef::GetMasterchefClaimRewardsResponse, types::CoinValue},
     query::*,
     query_resp::*,
     trade_shield::types::{
@@ -825,12 +825,12 @@ impl<'a> ElysQuerier<'a> {
     /// Returns:
     ///
     /// The function `get_masterchef_rewards` returns a `StdResult` containing a
-    /// `MasterchefClaimRewardsResponse`.
+    /// `GetMas`.
     pub fn get_masterchef_rewards(
         &self,
         address: String,
         pool_ids: Vec<u64>,
-    ) -> StdResult<MasterchefClaimRewardsResponse> {
+    ) -> StdResult<GetMasterchefClaimRewardsResponse> {
         self.querier.query(&QueryRequest::Custom(
             ElysQuery::get_masterchef_claim_rewards(address, pool_ids),
         ))

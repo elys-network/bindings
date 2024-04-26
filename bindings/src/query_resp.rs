@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, DecCoin, Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, StdResult, Uint128};
+use cosmwasm_std::{
+    Coin, DecCoin, Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, StdResult, Uint128,
+};
 
 use crate::{
     account_history::types::{CoinValue, DecCoinValue},
@@ -11,7 +13,8 @@ use crate::{
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, PoolAsset, Price, StakedPosition,
         SwapAmountInRoute, SwapAmountOutRoute, UnstakedPosition, ValidatorDetail, VestingDetail,
-    }, ElysQuerier
+    },
+    ElysQuerier,
 };
 
 #[cw_serde]
@@ -610,47 +613,38 @@ pub struct LeveragelpPoolsResponse {
     pub pool: Vec<LeveragelpPool>,
     pub pagination: Option<PageResponse>,
 }
-
 #[cw_serde]
-pub struct MasterchefClaimRewardsResponse {
-    pub code: u64,
-    pub result: String,
-}
-
-#[cw_serde]
+#[derive(Default)]
 pub struct MasterchefUserPendingRewardResponse {
-    pub rewards: Vec<Rewards>,
-    pub total_rewards: Vec<Coin>,
+    pub rewards: Vec<MasterchefUserPendingRewardData>,
+    pub total_rewards: Vec<DecCoin>,
 }
 
 #[cw_serde]
-pub struct Rewards {
+#[derive(Default)]
+pub struct MasterchefUserPendingRewardData {
     pool_id: u64,
-    rewards: Vec<Coin>,
+    rewards: Vec<DecCoin>,
 }
 #[cw_serde]
+#[derive(Default)]
 pub struct EstakingRewardsResponse {
     pub rewards: Vec<DelegationDelegatorReward>,
-    pub total: Vec<DecCoin>
+    pub total: Vec<DecCoin>,
 }
 
 #[cw_serde]
 pub struct DelegationDelegatorReward {
     pub validator_address: String,
-    pub reward: Vec<DecCoin>
-}
-
-impl Default for EstakingRewardsResponse {
-    fn default() -> Self {
-        Self {
-            rewards: [].to_vec(),
-            total: [].to_vec()
-        }
-    }
+    pub reward: Vec<DecCoin>,
 }
 
 impl EstakingRewardsResponse {
-    pub fn to_dec_coin_values(&self, querier: &ElysQuerier<'_>, usdc_denom: &String) -> StdResult<Vec<(String, DecCoinValue)>> {
+    pub fn to_dec_coin_values(
+        &self,
+        querier: &ElysQuerier<'_>,
+        usdc_denom: &String,
+    ) -> StdResult<Vec<(String, DecCoinValue)>> {
         let mut dec_coin_values = Vec::new();
 
         for delegation_reward in &self.rewards {
@@ -661,6 +655,42 @@ impl EstakingRewardsResponse {
             }
         }
 
+        Ok(dec_coin_values)
+    }
+}
+
+impl MasterchefUserPendingRewardResponse {
+    pub fn to_dec_coin_values(
+        &self,
+        querier: &ElysQuerier<'_>,
+        usdc_denom: &String,
+    ) -> StdResult<(HashMap<u64, DecCoinValue>, Vec<DecCoinValue>)> {
+        Ok((self.rewards_to_dec_coins(querier, usdc_denom)?, self.total_rewards_to_dec_coin(querier, usdc_denom)?))
+    }
+
+    fn rewards_to_dec_coins(
+        &self,
+        querier: &ElysQuerier<'_>,
+        usdc_denom: &String,
+    ) -> StdResult<HashMap<u64, DecCoinValue>> {
+        let mut dec_coin_values = HashMap::new();
+        for MasterchefUserPendingRewardData { rewards, pool_id } in &self.rewards {
+            for reward in rewards {
+                dec_coin_values.insert(*pool_id,DecCoinValue::from_dec_coin(reward, querier, usdc_denom)?);
+            }
+        }
+        Ok(dec_coin_values)
+    }
+
+    fn total_rewards_to_dec_coin(
+        &self,
+        querier: &ElysQuerier<'_>,
+        usdc_denom: &String,
+    ) -> StdResult<Vec<DecCoinValue>> {
+        let mut dec_coin_values = Vec::new();
+        for reward in &self.total_rewards {
+            dec_coin_values.push(DecCoinValue::from_dec_coin(reward, querier, usdc_denom)?);
+        }
         Ok(dec_coin_values)
     }
 }

@@ -11,11 +11,12 @@ pub struct CoinValue {
 }
 
 #[cw_serde]
+#[derive(Default)]
 pub struct DecCoinValue {
     pub denom: String,
     pub amount_token: Decimal256,
     pub price: Decimal,
-    pub amount_usd: Decimal256
+    pub amount_usd: Decimal256,
 }
 
 impl CoinValue {
@@ -33,10 +34,9 @@ impl CoinValue {
         querier: &ElysQuerier<'_>,
         usdc_denom: &String,
     ) -> StdResult<Self> {
-        let OracleAssetInfoResponse { asset_info } = match querier.asset_info(balance.denom.clone())
-        {
-            Ok(res) => res,
-            Err(_) => OracleAssetInfoResponse {
+        let OracleAssetInfoResponse { asset_info } = querier
+            .asset_info(balance.denom.clone())
+            .unwrap_or(OracleAssetInfoResponse {
                 asset_info: OracleAssetInfo {
                     denom: balance.denom.clone(),
                     display: balance.denom.clone(),
@@ -44,8 +44,7 @@ impl CoinValue {
                     elys_ticker: balance.denom.clone(),
                     decimal: 6,
                 },
-            },
-        };
+            });
         let decimal_point_token = asset_info.decimal;
 
         if &balance.denom == usdc_denom {
@@ -110,9 +109,12 @@ impl DecCoinValue {
     ) -> StdResult<Self> {
         if &balance.denom == usdc_denom {
             let price = querier.get_asset_price(usdc_denom)?;
-            let amount_usd = balance.amount.checked_mul(Decimal256::from(price.clone())).map_err(|e| {
-                StdError::generic_err(format!("failed to convert amount to amount_usd: {}", e))
-            })?;
+            let amount_usd = balance
+                .amount
+                .checked_mul(Decimal256::from(price.clone()))
+                .map_err(|e| {
+                    StdError::generic_err(format!("failed to convert amount to amount_usd: {}", e))
+                })?;
 
             return Ok(Self {
                 denom: balance.denom.clone(),
@@ -126,7 +128,8 @@ impl DecCoinValue {
             .get_asset_price(balance.denom.clone())
             .map_err(|e| StdError::generic_err(format!("failed to get_asset_price: {}", e)))?;
 
-        let amount_usd = balance.amount
+        let amount_usd = balance
+            .amount
             .checked_mul(Decimal256::from(price.clone()))
             .map_err(|e| {
                 StdError::generic_err(format!(
@@ -141,16 +144,5 @@ impl DecCoinValue {
             price,
             amount_usd,
         })
-    }
-}
-
-impl Default for DecCoinValue {
-    fn default() -> Self {
-        Self {
-            amount_token: Decimal256::zero(),
-            amount_usd: Decimal256::zero(),
-            denom: "".to_string(),
-            price: Decimal::zero()
-        }
     }
 }
