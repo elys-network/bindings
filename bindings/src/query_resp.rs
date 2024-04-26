@@ -1,17 +1,17 @@
 use std::collections::HashMap;
 
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, Uint128, Coin};
+use cosmwasm_std::{Coin, DecCoin, Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, StdResult, Uint128};
 
 use crate::{
-    account_history::types::CoinValue,
+    account_history::types::{CoinValue, DecCoinValue},
     trade_shield::types::{
         AmmPool, AmmPoolRaw, PerpetualPosition, PoolExtraInfo, StakedPositionRaw,
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, PoolAsset, Price, StakedPosition,
         SwapAmountInRoute, SwapAmountOutRoute, UnstakedPosition, ValidatorDetail, VestingDetail,
-    },
+    }, ElysQuerier
 };
 
 #[cw_serde]
@@ -627,4 +627,39 @@ pub struct MasterchefUserPendingRewardResponse {
 pub struct Rewards {
     pool_id: u64,
     rewards: Vec<Coin>,
+}
+pub struct EstakingRewardsResponse {
+    pub rewards: Vec<DelegationDelegatorReward>,
+    pub total: Vec<DecCoin>
+}
+
+#[cw_serde]
+pub struct DelegationDelegatorReward {
+    pub validator_address: String,
+    pub reward: Vec<DecCoin>
+}
+
+impl Default for EstakingRewardsResponse {
+    fn default() -> Self {
+        Self {
+            rewards: [].to_vec(),
+            total: [].to_vec()
+        }
+    }
+}
+
+impl EstakingRewardsResponse {
+    pub fn to_dec_coin_values(&self, querier: &ElysQuerier<'_>, usdc_denom: &String) -> StdResult<Vec<(String, DecCoinValue)>> {
+        let mut dec_coin_values = Vec::new();
+
+        for delegation_reward in &self.rewards {
+            let validator_address = delegation_reward.validator_address.clone();
+            for dec_coin in &delegation_reward.reward {
+                let dec_coin_value = DecCoinValue::from_dec_coin(dec_coin, querier, usdc_denom)?;
+                dec_coin_values.push((validator_address.clone(), dec_coin_value));
+            }
+        }
+
+        Ok(dec_coin_values)
+    }
 }

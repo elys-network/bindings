@@ -43,4 +43,9 @@ pub mod query_resp {
         mod get_usdc_earn_details_resp;
         pub use get_usdc_earn_details_resp::GetUsdcEarnProgramResp;
     }
+
+    pub mod estaking {
+        mod get_estaking_rewards_response;
+        pub use get_estaking_rewards_response::GetEstakingRewardsResponse;
+    }
 }

@@ -114,6 +114,7 @@ impl Module for ElysModule {
                 Ok(to_json_binary(&resp)?)
             }
 
+            ElysQuery::EstakingRewards { .. } => todo!("QueryEstakingRewards"),
             ElysQuery::LeveragelpQueryPositions { .. } => todo!("LeveragelpQueryPositions"),
             ElysQuery::LeveragelpQueryPositionsByPool { .. } => {
                 todo!("LeveragelpQueryPositionsByPool")

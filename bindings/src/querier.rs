@@ -857,6 +857,17 @@ impl<'a> ElysQuerier<'a> {
         ))
     }
 
+    pub fn get_estaking_rewards(
+        &self,
+        address: String,
+    ) -> StdResult<EstakingRewardsResponse> {
+        let query = ElysQuery::EstakingRewards { address: address.to_owned() };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
+        let resp: EstakingRewardsResponse = self.querier.query(&request)?;
+        Ok(resp)
+    }
+
+
     #[allow(dead_code)]
     #[cfg(feature = "debug")]
     fn query_binary(&self, request: &QueryRequest<ElysQuery>) -> StdResult<Binary> {

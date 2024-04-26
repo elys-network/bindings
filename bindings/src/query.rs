@@ -152,6 +152,10 @@ pub enum ElysQuery {
     MasterchefUserPendingReward {
         user: String,
     },
+    #[returns(EstakingRewardsResponse)]
+    EstakingRewards {
+        address: String
+    }
 }
 
 impl CustomQuery for ElysQuery {}
@@ -347,11 +351,16 @@ impl ElysQuery {
             token_out_denom
         }
     }
+
     pub fn get_masterchef_claim_rewards(address: String, pool_ids: Vec<u64>) -> Self {
         Self::MasterchefClaimRewards { sender: address, pool_ids }
     }
     pub fn masterchef_pending_rewards(address: String) -> Self {
         Self::MasterchefUserPendingReward { user: address }
     }
-
+    pub fn query_estaking_rewards(address: String) -> Self {
+        ElysQuery::EstakingRewards {
+            address
+        }
+    }
 }
