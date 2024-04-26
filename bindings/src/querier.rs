@@ -846,6 +846,14 @@ impl<'a> ElysQuerier<'a> {
         self.querier.query(&request)
     }
 
+    pub fn get_masterchef_stable_stake_apr(&self, denom: String) -> StdResult<QueryStableStakeAprResponse> {
+        self.querier
+            .query(&QueryRequest::Custom(ElysQuery::get_masterchef_stable_stake_apr(
+                denom,
+            )))
+    }
+
+
     #[allow(dead_code)]
     #[cfg(feature = "debug")]
     fn query_binary(&self, request: &QueryRequest<ElysQuery>) -> StdResult<Binary> {

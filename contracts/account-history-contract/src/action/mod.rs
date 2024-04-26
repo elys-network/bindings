@@ -10,6 +10,7 @@ pub mod query {
     mod get_estaking_rewards;
     mod get_masterchef_pending_rewards;
     mod get_masterchef_pool_apr;
+    mod get_masterchef_stable_stake_apr;
     mod get_membership_tier;
     mod get_perpetual_asset;
     mod get_pool_balances;
@@ -62,6 +63,7 @@ pub mod query {
     pub use get_estaking_rewards::get_estaking_rewards;
     pub use get_masterchef_pending_rewards::get_masterchef_pending_rewards;
     pub use get_masterchef_pool_apr::get_masterchef_pool_apr;
+    pub use get_masterchef_stable_stake_apr::get_masterchef_stable_stake_apr;
     pub use get_membership_tier::get_membership_tier;
     pub use get_perpetual_asset::get_perpetuals_assets;
     pub use get_portfolio::get_portfolio;

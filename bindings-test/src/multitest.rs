@@ -630,6 +630,7 @@ impl Module for ElysModule {
             }
             ElysQuery::MasterchefUserPendingReward { .. } => todo!("MasterchefUserPendingReward"),
             ElysQuery::MasterchefPoolApr { .. } => todo!("MasterchefPoolApr"),
+            ElysQuery::MasterchefStableStakeApr { .. } => todo!("MasterchefStableStakeApr"),
         }
     }
 

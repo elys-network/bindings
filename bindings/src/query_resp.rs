@@ -731,3 +731,8 @@ impl PoolApr {
         })
     }
 }
+
+#[cw_serde]
+pub struct QueryStableStakeAprResponse {
+    pub apr: i128,
+}

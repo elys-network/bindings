@@ -1,7 +1,5 @@
 use crate::action::query::{
-    get_estaking_rewards, get_liquid_assets, get_masterchef_pending_rewards,
-    get_masterchef_pool_apr, get_membership_tier, get_perpetuals_assets, get_pool_balances,
-    get_portfolio, get_rewards, get_staked_assets, get_total_balance,
+    get_estaking_rewards, get_liquid_assets, get_masterchef_pending_rewards, get_masterchef_pool_apr, get_masterchef_stable_stake_apr, get_membership_tier, get_perpetuals_assets, get_pool_balances, get_portfolio, get_rewards, get_staked_assets, get_total_balance
 };
 
 #[cfg(feature = "debug")]
@@ -93,6 +91,10 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
 
         GetMasterChefPoolApr { pool_ids } => {
             to_json_binary(&get_masterchef_pool_apr(deps, pool_ids)?)
+        }
+
+        GetMasterchefStableStakeApr { denom } => {
+            to_json_binary(&get_masterchef_stable_stake_apr(deps, denom)?)
         }
 
         // debug only
