@@ -2,5 +2,5 @@ use cosmwasm_schema::cw_serde;
 
 #[cw_serde]
 pub enum ExecuteMsg {
-    AddAddress { wallet: String },
+    AddUserAddressToQueue { user_address: String },
 }

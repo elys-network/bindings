@@ -4,7 +4,7 @@ use cosmwasm_std::{BlockInfo, DepsMut, Env, Response, StdResult, Timestamp};
 use cw_utils::Expiration;
 
 use crate::{
-    states::{ACCOUNT_LIST, HISTORY, METADATA},
+    states::{HISTORY, METADATA, USER_ADDRESS_QUEUE},
     types::AccountSnapshotGenerator,
     utils::get_today,
 };
@@ -21,14 +21,14 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     METADATA.save(deps.storage, &metadata)?;
 
     let today = get_today(&env.block);
-    let address_list: Vec<String> = ACCOUNT_LIST
+    let user_address_queue: Vec<String> = USER_ADDRESS_QUEUE
         .prefix_range(deps.storage, None, None, cosmwasm_std::Order::Descending)
         .filter_map(|res| res.ok().map(|(addr, _)| addr))
         .collect();
-    ACCOUNT_LIST.clear(deps.storage);
+    USER_ADDRESS_QUEUE.clear(deps.storage);
 
     let mut histories: Vec<(String, Option<HashMap<String, PortfolioBalanceSnapshot>>)> = vec![];
-    for address in address_list {
+    for address in user_address_queue {
         if let Some(history) = HISTORY.may_load(deps.storage, &address)? {
             if history.get(&today.clone()).is_some() {
                 // skip if the account has been updated today

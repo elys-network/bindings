@@ -1,7 +1,7 @@
 use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdError, StdResult};
 use elys_bindings::{account_history::msg::ExecuteMsg, ElysMsg, ElysQuery};
 
-use crate::{action::execute::add_wallet, states::TRADE_SHIELD_ADDRESS};
+use crate::{action::execute::add_user_address_to_queue, states::TRADE_SHIELD_ADDRESS};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
@@ -11,7 +11,7 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> StdResult<Response<ElysMsg>> {
     match msg {
-        ExecuteMsg::AddAddress { wallet } => {
+        ExecuteMsg::AddUserAddressToQueue { user_address } => {
             let trade_shield_address = match TRADE_SHIELD_ADDRESS.load(deps.storage)? {
                 Some(addr) => addr,
                 None => return Err(StdError::generic_err("Unauthorized")),
@@ -19,7 +19,7 @@ pub fn execute(
             if trade_shield_address.as_str() != info.sender.as_str() {
                 return Err(StdError::generic_err("Unauthorized"));
             }
-            add_wallet(deps.storage, wallet)?;
+            add_user_address_to_queue(deps.storage, user_address)?;
             Ok(Response::new())
         }
     }
