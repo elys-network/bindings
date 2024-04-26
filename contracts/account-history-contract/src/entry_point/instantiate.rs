@@ -1,12 +1,11 @@
 use cw_utils::Expiration;
 use elys_bindings::account_history::types::Metadata;
-use elys_bindings::types::PageRequest;
 
 use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, Timestamp};
 use elys_bindings::{ElysMsg, ElysQuerier, ElysQuery};
 
 use crate::msg::InstantiateMsg;
-use crate::states::{EXPIRATION, METADATA, PAGINATION, TRADE_SHIELD_ADDRESS};
+use crate::states::{EXPIRATION, METADATA, PROCESSED_ACCOUNT_PER_BLOCK, TRADE_SHIELD_ADDRESS};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -24,22 +23,13 @@ pub fn instantiate(
         )?,
     };
 
-    // PAGINATION
+    // PROCESSED_ACCOUNT_PER_BLOCK
     let limit = match msg.limit {
         Some(limit) => limit,
         None => 1,
     };
 
-    PAGINATION.save(
-        deps.storage,
-        &PageRequest {
-            key: None,
-            limit,
-            reverse: false,
-            offset: None,
-            count_total: false,
-        },
-    )?;
+    PROCESSED_ACCOUNT_PER_BLOCK.save(deps.storage, &limit)?;
 
     // TRADESHIELD ADDRESS
     TRADE_SHIELD_ADDRESS.save(deps.storage, &msg.trade_shield_address)?;

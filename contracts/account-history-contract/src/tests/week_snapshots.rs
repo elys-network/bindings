@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use std::vec;
 
 use crate::entry_point::instantiate;
 use crate::{
@@ -6,22 +7,28 @@ use crate::{
     msg::*,
 };
 use anyhow::{bail, Error, Result as AnyResult};
-use cosmwasm_std::{coin, to_json_binary, Addr, BlockInfo, Decimal, Empty, StdError, Timestamp};
+use cosmwasm_std::{
+    coin, coins, to_json_binary, Addr, BlockInfo, Decimal, Empty, SignedDecimal, StdError,
+    Timestamp,
+};
 use cw_multi_test::{AppResponse, BankSudo, BasicAppBuilder, ContractWrapper, Executor, Module};
 use cw_utils::Expiration;
 use elys_bindings::account_history::types::PortfolioBalanceSnapshot;
 use elys_bindings::query_resp::{
-    Entry, OracleAssetInfoResponse, QueryGetEntryResponse, QueryGetPriceResponse,
+    AmmSwapEstimationByDenomResponse, Entry, OracleAssetInfoResponse, QueryGetEntryResponse,
+    QueryGetPriceResponse,
 };
-use elys_bindings::types::{OracleAssetInfo, Price};
+use elys_bindings::types::{OracleAssetInfo, Price, SwapAmountInRoute};
 use elys_bindings::{ElysMsg, ElysQuery};
 use elys_bindings_test::{
     ElysModule, ACCOUNT, ASSET_INFO, LAST_MODULE_USED, PERPETUAL_OPENED_POSITION, PRICES,
 };
 use trade_shield_contract::entry_point::{
-    execute as trade_shield_execute, instantiate as trade_shield_init, query as trade_shield_query,
+    execute as trade_shield_execute, instantiate as trade_shield_init,
+    migrate as trade_shield_migrate, query as trade_shield_query,
 };
-use trade_shield_contract::msg::InstantiateMsg as TradeShieldInstantiateMsg;
+use trade_shield_contract::msg as trade_shield_msg;
+use trade_shield_contract::types::{OrderPrice, SpotOrderType};
 
 struct ElysModuleWrapper(ElysModule);
 
@@ -194,8 +201,28 @@ impl Module for ElysModuleWrapper {
                 };
                 Ok(to_json_binary(&resp)?)
             }
-            ElysQuery::AmmSwapEstimationByDenom { .. } => {
-                panic!("not implemented")
+            ElysQuery::AmmSwapEstimationByDenom {
+                amount,
+                denom_out,
+                discount,
+                ..
+            } => {
+                let resp = AmmSwapEstimationByDenomResponse {
+                    in_route: Some(vec![SwapAmountInRoute {
+                        pool_id: 1,
+                        token_out_denom: denom_out.clone(),
+                    }]),
+                    out_route: None,
+                    spot_price: Decimal::one(),
+                    amount,
+                    swap_fee: SignedDecimal::zero(),
+                    discount: SignedDecimal::from_str(discount.to_string().as_str()).unwrap(),
+                    available_liquidity: coin(999999999, denom_out),
+                    weight_balance_ratio: SignedDecimal::zero(),
+                    price_impact: SignedDecimal::zero(),
+                    slippage: Decimal::zero(),
+                };
+                Ok(to_json_binary(&resp)?)
             }
             _ => self.0.query(api, storage, querier, block, request),
         }
@@ -276,9 +303,10 @@ fn get_portfolio() {
 
     // trade shield deployment
     let trade_shield_code =
-        ContractWrapper::new(trade_shield_execute, trade_shield_init, trade_shield_query);
+        ContractWrapper::new(trade_shield_execute, trade_shield_init, trade_shield_query)
+            .with_migrate(trade_shield_migrate);
     let trade_shield_code_id = app.store_code(Box::new(trade_shield_code));
-    let trade_shield_init = TradeShieldInstantiateMsg {
+    let trade_shield_init = trade_shield_msg::InstantiateMsg {
         account_history_address: None,
     };
     let trade_shield_address = app
@@ -288,10 +316,9 @@ fn get_portfolio() {
             &trade_shield_init,
             &[],
             "Contract",
-            None,
+            Some("admin".to_string()),
         )
-        .unwrap()
-        .to_string();
+        .unwrap();
 
     // Create a contract wrapper and store its code.
     let code = ContractWrapper::new(execute, instantiate, query).with_sudo(sudo);
@@ -303,7 +330,7 @@ fn get_portfolio() {
         expiration: Some(cw_utils::Expiration::AtTime(Timestamp::from_seconds(
             604800,
         ))),
-        trade_shield_address: Some(trade_shield_address),
+        trade_shield_address: Some(trade_shield_address.to_string()),
     };
 
     // Instantiate the contract with "owner" as the deployer.
@@ -317,6 +344,38 @@ fn get_portfolio() {
             None,
         )
         .unwrap();
+
+    app.migrate_contract(
+        Addr::unchecked("admin"),
+        trade_shield_address.clone(),
+        &trade_shield_msg::MigrateMsg {
+            account_history_address: Some(addr.to_string()),
+        },
+        trade_shield_code_id,
+    )
+    .unwrap();
+
+    app.execute_contract(
+        Addr::unchecked("user"),
+        trade_shield_address.clone(),
+        &trade_shield_msg::ExecuteMsg::CreateSpotOrder {
+            order_type: SpotOrderType::StopLoss,
+            order_source_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
+            order_target_denom: "uelys".to_string(),
+            order_price: Some(OrderPrice {
+                base_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                quote_denom: "uelys".to_string(),
+                rate: Decimal::one(),
+            }),
+        },
+        &coins(
+            100,
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+        ),
+    )
+    .unwrap();
 
     // t0
     app.set_block(BlockInfo {

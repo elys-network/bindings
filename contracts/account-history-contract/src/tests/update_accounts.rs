@@ -9,9 +9,11 @@ use cw_utils::Expiration;
 use elys_bindings::types::{OracleAssetInfo, Price};
 use elys_bindings_test::ElysApp;
 use trade_shield_contract::entry_point::{
-    execute as trade_shield_execute, instantiate as trade_shield_init, query as trade_shield_query,
+    execute as trade_shield_execute, instantiate as trade_shield_init,
+    migrate as trade_shield_migrate, query as trade_shield_query,
 };
-use trade_shield_contract::msg::InstantiateMsg as TradeShieldInstantiateMsg;
+use trade_shield_contract::msg as trade_shield_msg;
+use trade_shield_contract::types::{OrderPrice, SpotOrderType};
 
 #[test]
 fn history() {
@@ -61,11 +63,12 @@ fn history() {
     let history_code_id = app.store_code(Box::new(history_code));
 
     let trade_shield_code =
-        ContractWrapper::new(trade_shield_execute, trade_shield_init, trade_shield_query);
+        ContractWrapper::new(trade_shield_execute, trade_shield_init, trade_shield_query)
+            .with_migrate(trade_shield_migrate);
 
     let trade_shield_code_id = app.store_code(Box::new(trade_shield_code));
 
-    let trade_shield_init = TradeShieldInstantiateMsg {
+    let trade_shield_init = trade_shield_msg::InstantiateMsg {
         account_history_address: None,
     };
 
@@ -76,7 +79,7 @@ fn history() {
             &trade_shield_init,
             &[],
             "Contract",
-            None,
+            Some("admin".to_string()),
         )
         .unwrap();
 
@@ -98,6 +101,35 @@ fn history() {
             None,
         )
         .unwrap();
+
+    app.migrate_contract(
+        Addr::unchecked("admin"),
+        trade_shield_address.clone(),
+        &trade_shield_msg::MigrateMsg {
+            account_history_address: Some(addr.to_string()),
+        },
+        trade_shield_code_id,
+    )
+    .unwrap();
+
+    app.execute_contract(
+        Addr::unchecked("user-a"),
+        trade_shield_address.clone(),
+        &trade_shield_msg::ExecuteMsg::CreateSpotOrder {
+            order_type: SpotOrderType::StopLoss,
+            order_source_denom: "uelys".to_string(),
+            order_target_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
+            order_price: Some(OrderPrice {
+                base_denom: "uelys".to_string(),
+                quote_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                rate: Decimal::one(),
+            }),
+        },
+        &coins(100, "uelys"),
+    )
+    .unwrap();
 
     let update_msg = SudoMsg::ClockEndBlock {};
 

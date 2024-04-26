@@ -4,7 +4,7 @@ use cosmwasm_std::{BlockInfo, DepsMut, Env, Response, StdResult, Timestamp};
 use cw_utils::Expiration;
 
 use crate::{
-    states::{HISTORY, METADATA, USER_ADDRESS_QUEUE},
+    states::{HISTORY, METADATA, PROCESSED_ACCOUNT_PER_BLOCK, USER_ADDRESS_QUEUE},
     types::AccountSnapshotGenerator,
     utils::get_today,
 };
@@ -25,19 +25,27 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
         .prefix_range(deps.storage, None, None, cosmwasm_std::Order::Descending)
         .filter_map(|res| res.ok().map(|(addr, _)| addr))
         .collect();
-    USER_ADDRESS_QUEUE.clear(deps.storage);
+
+    let processed_account_per_block: usize =
+        PROCESSED_ACCOUNT_PER_BLOCK.load(deps.storage)? as usize;
+    let processed_account_per_block = if processed_account_per_block > user_address_queue.len() {
+        user_address_queue.len()
+    } else {
+        processed_account_per_block
+    };
 
     let mut histories: Vec<(String, Option<HashMap<String, PortfolioBalanceSnapshot>>)> = vec![];
-    for address in user_address_queue {
-        if let Some(history) = HISTORY.may_load(deps.storage, &address)? {
+    for i in 0..processed_account_per_block {
+        USER_ADDRESS_QUEUE.remove(deps.storage, &user_address_queue[i]);
+        if let Some(history) = HISTORY.may_load(deps.storage, &user_address_queue[i])? {
             if history.get(&today.clone()).is_some() {
                 // skip if the account has been updated today
                 continue;
             } else {
-                histories.push((address, Some(history)));
+                histories.push((user_address_queue[i].clone(), Some(history)));
             }
         } else {
-            histories.push((address, None));
+            histories.push((user_address_queue[i].clone(), None));
         }
     }
 
