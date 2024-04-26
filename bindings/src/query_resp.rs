@@ -628,6 +628,7 @@ pub struct Rewards {
     pool_id: u64,
     rewards: Vec<Coin>,
 }
+#[cw_serde]
 pub struct EstakingRewardsResponse {
     pub rewards: Vec<DelegationDelegatorReward>,
     pub total: Vec<DecCoin>

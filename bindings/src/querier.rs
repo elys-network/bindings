@@ -863,8 +863,7 @@ impl<'a> ElysQuerier<'a> {
     ) -> StdResult<EstakingRewardsResponse> {
         let query = ElysQuery::EstakingRewards { address: address.to_owned() };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
-        let resp: EstakingRewardsResponse = self.querier.query(&request)?;
-        Ok(resp)
+        self.querier.query(&request)
     }
 
 
