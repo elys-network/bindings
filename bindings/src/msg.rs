@@ -116,7 +116,9 @@ pub enum ElysMsg {
         id: u64,
         lp_amount: Int128,
     },
-    EstakingWithdrawElysStakingRewards {},
+    EstakingWithdrawElysStakingRewards {
+        delegator_address: String
+    },
     EstakingWithdrawReward {
         validator_address: String,
         delegator_address: String

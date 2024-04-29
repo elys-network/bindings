@@ -649,6 +649,7 @@ impl Module for ElysModule {
         QueryC: cosmwasm_std::CustomQuery + serde::de::DeserializeOwned + 'static,
     {
         match msg {
+            ElysMsg::EstakingWithdrawElysStakingRewards { .. } => todo!("EstakingWithdrawElysStakingRewards"),
             ElysMsg::EstakingWithdrawReward { .. } => todo!("EstakingWithdrawReward"),
             ElysMsg::AmmSwapExactAmountIn {
                 sender,
