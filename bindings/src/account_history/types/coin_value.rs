@@ -11,6 +11,7 @@ pub struct CoinValue {
 }
 
 #[cw_serde]
+#[derive(Default)]
 pub struct DecCoinValue {
     pub denom: String,
     pub amount_token: Decimal256,
@@ -141,16 +142,5 @@ impl DecCoinValue {
             price,
             amount_usd,
         })
-    }
-}
-
-impl Default for DecCoinValue {
-    fn default() -> Self {
-        Self {
-            amount_token: Decimal256::zero(),
-            amount_usd: Decimal256::zero(),
-            denom: "".to_string(),
-            price: Decimal::zero()
-        }
     }
 }

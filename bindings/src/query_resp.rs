@@ -612,6 +612,7 @@ pub struct LeveragelpPoolsResponse {
 }
 
 #[cw_serde]
+#[derive(Default)]
 pub struct EstakingRewardsResponse {
     pub rewards: Vec<DelegationDelegatorReward>,
     pub total: Vec<DecCoin>
@@ -621,15 +622,6 @@ pub struct EstakingRewardsResponse {
 pub struct DelegationDelegatorReward {
     pub validator_address: String,
     pub reward: Vec<DecCoin>
-}
-
-impl Default for EstakingRewardsResponse {
-    fn default() -> Self {
-        Self {
-            rewards: [].to_vec(),
-            total: [].to_vec()
-        }
-    }
 }
 
 impl EstakingRewardsResponse {
