@@ -1,6 +1,6 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{DepsMut, Env, MessageInfo, Response, StdResult};
-use elys_bindings::ElysQuery;
+use elys_bindings::{ElysMsg, ElysQuery};
 
 use crate::states::*;
 
@@ -14,6 +14,6 @@ pub fn instantiate(
     _env: Env,
     _info: MessageInfo,
     _msg: InstantiateMockMsg,
-) -> StdResult<Response> {
+) -> StdResult<Response<ElysMsg>> {
     Ok(Response::new())
 }
