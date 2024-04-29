@@ -90,7 +90,7 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         #[cfg(feature = "debug")]
         All { pagination } => to_json_binary(&all(deps, pagination)?),
         #[cfg(feature = "debug")]
-        UserSnapshots { user_address } => to_json_binary(&user_snapshots(deps, user_address)?),
+        UserSnapshots { user_address } => to_json_binary(&user_snapshots(env, deps, user_address)?),
         #[cfg(feature = "debug")]
         LastSnapshot { user_address } => to_json_binary(&last_snapshot(deps, user_address, env)?),
         #[cfg(feature = "debug")]

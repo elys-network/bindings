@@ -40,7 +40,7 @@ pub fn get_membership_tier(
         day_date = day_date.plus_days(1);
     }
 
-    match user_balance_snapshots.iter().min_by_key(|balance| balance) {
+    match user_balance_snapshots.iter().min_by_key(|&balance| balance) {
         Some(balance) => Ok(MembershipTierResponse::calc(balance.to_owned())),
         None => return Ok(MembershipTierResponse::zero()),
     }
