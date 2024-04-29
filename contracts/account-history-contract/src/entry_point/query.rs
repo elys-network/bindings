@@ -94,7 +94,7 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         #[cfg(feature = "debug")]
         LastSnapshot { user_address } => to_json_binary(&last_snapshot(deps, user_address, env)?),
         #[cfg(feature = "debug")]
-        UserValue { user_address } => to_json_binary(&user_value(deps, user_address)?),
+        UserValue { user_address } => to_json_binary(&user_value(env, deps, user_address)?),
         #[cfg(feature = "debug")]
         CommitmentStakedPositions { delegator_address } => {
             let querier = ElysQuerier::new(&deps.querier);
