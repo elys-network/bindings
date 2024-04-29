@@ -208,6 +208,10 @@ pub fn execute(
             Ok(Response::new())
         }
 
-        EstakingWithdrawElysStakingRewards {} => estaking_withdraw_elys_staking_rewards(info, deps)
+        EstakingWithdrawElysStakingRewards {} => estaking_withdraw_elys_staking_rewards(info, deps),
+
+        EstakingWithdrawReward {
+            validator_address
+        } => estaking_withdraw_reward(info, deps, validator_address)
     }
 }

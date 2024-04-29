@@ -61,6 +61,7 @@ pub mod execute {
     mod open_leveragelp_position_request;
 
     mod estaking_withdraw_elys_staking_rewards;
+    mod estaking_withdraw_reward;
 
     use super::*;
 
@@ -87,6 +88,7 @@ pub mod execute {
     pub use unstake_request::unstake_request;
 
     pub use estaking_withdraw_elys_staking_rewards::estaking_withdraw_elys_staking_rewards;
+    pub use estaking_withdraw_reward::estaking_withdraw_reward;
 }
 
 pub mod reply {
