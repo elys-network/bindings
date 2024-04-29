@@ -453,6 +453,97 @@ function get_liquidity_pools() {
     }'
 }
 
+# get levarage lp params
+function leveragelp_params() {
+    printf "\n# Get stable stake params\n"
+    query_contract "$ts_contract_address" '{
+        "leveragelp_params": {}
+    }'
+}
+
+# get leverage lp query positions
+function leveragelp_query_positions() {
+    printf "\n# Get stable stake params\n"
+    query_contract "$ts_contract_address" '{
+        "leveragelp_query_positions": {}
+    }'
+}
+
+# get leveragelp_get_status
+function leveragelp_query_positions_by_pool() {
+    printf "\n# Get stable stake params\n"
+    query_contract "$ts_contract_address" '{
+        "leveragelp_query_positions_by_pool": {
+           "amm_pool_id" : 2
+        }
+    }'
+}
+
+# get leveragelp get status
+function leveragelp_get_status() {
+    printf "\n# Get stable stake params\n"
+    query_contract "$ts_contract_address" '{
+        "leveragelp_get_status": {}
+    }'
+}
+
+# get leveragelp query positions for address
+function leveragelp_query_positions_for_address() {
+    printf "\n# Get stable stake params\n"
+    query_contract "$ts_contract_address" '{
+        "leveragelp_query_positions_for_address": {
+           "address" : "'"$user_address"'"
+        }
+    }'
+}
+
+# get leveragelp get whitelist
+function leveragelp_get_whitelist() {
+    printf "\n# Get stable stake params\n"
+    query_contract "$ts_contract_address" '{
+        "leveragelp_get_whitelist": {}
+    }'
+}
+
+# get leveragelp is whitelisted
+function leveragelp_is_whitelisted() {
+    printf "\n# Get stable stake params\n"
+    query_contract "$ts_contract_address" '{
+        "leveragelp_is_whitelisted": {
+           "address" : "'"$user_address"'"
+        }
+    }'
+}
+
+# get leveragelp pool
+function leveragelp_pool() {
+    printf "\n# Get stable stake params\n"
+    query_contract "$ts_contract_address" '{
+        "leveragelp_pool": {
+            "index": 2
+        }
+    }'
+}
+
+# get leveragelp pools
+function leveragelp_pools() {
+    printf "\n# Get stable stake params\n"
+    query_contract "$ts_contract_address" '{
+        "leveragelp_pools": {}
+    }'
+}
+
+# get leveragelp position
+function leveragelp_position() {
+    printf "\n# Get stable stake params\n"
+    query_contract "$ts_contract_address" '{
+        "leveragelp_position": {
+            "address" : "'"$user_address"'",
+            "id": 2
+        }
+    }'
+}
+
 function ts_params() {
     printf "\n# Get TS Params\n"
     query_contract \
@@ -650,6 +741,36 @@ case "$2" in
         ;;
     "get_asset_price_from_denom_in_to_denom_out")
         get_asset_price_from_denom_in_to_denom_out $3 $4
+        ;;
+    "leveragelp_params")
+        leveragelp_params
+        ;;
+    "leveragelp_query_positions")
+        leveragelp_query_positions
+        ;;
+    "leveragelp_query_positions_by_pool")
+        leveragelp_query_positions_by_pool
+        ;;
+    "leveragelp_get_status")
+        leveragelp_get_status
+        ;;
+    "leveragelp_query_positions_for_address")
+        leveragelp_query_positions_for_address
+        ;;
+    "leveragelp_get_whitelist")
+        leveragelp_get_whitelist
+        ;;
+    "leveragelp_is_whitelisted")
+        leveragelp_is_whitelisted
+        ;;
+    "leveragelp_pool")
+        leveragelp_pool
+        ;;
+    "leveragelp_pools")
+        leveragelp_pools
+        ;;
+    "leveragelp_position")
+        leveragelp_position
         ;;
     "ts_params")
         ts_params

@@ -15,7 +15,7 @@ pub fn open_leveragelp_position_request(
     }
 
     let msg: ElysMsg = ElysMsg::leveragelp_open_position(
-        info.sender.into_string(),
+        info.sender.to_string(),
         amm_pool_id,
         collateral_asset,
         collateral_amount,

@@ -388,13 +388,36 @@ pub struct RewardsUnclaimed {
 }
 
 #[cw_serde]
+pub struct VestingTokensRaw {
+    pub denom: String,
+    pub total_amount: Int128,
+    pub claimed_amount: Int128,
+    pub num_blocks: Option<i64>,
+    pub start_blocks: Option<i64>,
+    pub vest_started_timestamp: Option<i64>,
+}
+
+#[cw_serde]
 pub struct VestingTokens {
-    denom: String,
-    total_amount: Int128,
-    claimed_amount: Int128,
-    num_blocks: i64,
-    start_block: i64,
-    vest_started_timestamp: i64,
+    pub denom: String,
+    pub total_amount: Int128,
+    pub claimed_amount: Int128,
+    pub num_blocks: i64,
+    pub start_blocks: i64,
+    pub vest_started_timestamp: i64,
+}
+
+#[cw_serde]
+pub struct CommitmentsRaw {
+    pub creator: String,
+    pub committed_tokens: Option<Vec<CommittedTokens>>,
+    pub rewards_unclaimed: Option<Vec<Coin>>,
+    pub claimed: Option<Vec<Coin>>,
+    pub vesting_tokens: Option<Vec<VestingTokensRaw>>,
+    pub rewards_by_elys_unclaimed: Option<Vec<Coin>>,
+    pub rewards_by_eden_unclaimed: Option<Vec<Coin>>,
+    pub rewards_by_edenb_unclaimed: Option<Vec<Coin>>,
+    pub rewards_by_usdc_unclaimed: Option<Vec<Coin>>,
 }
 
 #[cw_serde]
@@ -408,6 +431,11 @@ pub struct Commitments {
     pub rewards_by_eden_unclaimed: Option<Vec<Coin>>,
     pub rewards_by_edenb_unclaimed: Option<Vec<Coin>>,
     pub rewards_by_usdc_unclaimed: Option<Vec<Coin>>,
+}
+
+#[cw_serde]
+pub struct QueryShowCommitmentsResponseRaw {
+    pub commitments: CommitmentsRaw,
 }
 
 #[cw_serde]
@@ -539,6 +567,16 @@ pub enum PoolFilterType {
 }
 
 #[cw_serde]
+pub struct LeveragelpParamsRaw {
+    pub leverage_max: Option<Decimal>,
+    pub max_open_positions: Option<i64>,
+    pub pool_open_threshold: Option<Decimal>,
+    pub safety_factor: Option<Decimal>,
+    pub whitelisting_enabled: Option<bool>,
+    pub epoch_length: Option<i64>,
+}
+
+#[cw_serde]
 pub struct LeveragelpParams {
     pub leverage_max: Decimal,
     pub max_open_positions: i64,
@@ -546,6 +584,11 @@ pub struct LeveragelpParams {
     pub safety_factor: Decimal,
     pub whitelisting_enabled: bool,
     pub epoch_length: i64,
+}
+
+#[cw_serde]
+pub struct LeveragelpParamsResponseRaw {
+    pub params: Option<LeveragelpParamsRaw>,
 }
 
 #[cw_serde]
@@ -557,10 +600,10 @@ pub struct LeveragelpParamsResponse {
 pub struct LeveragelpPosition {
     pub address: String,
     pub collateral: Coin,
-    pub liabilities: i64,
-    pub interest_paid: i64,
+    pub liabilities: Int128,
+    pub interest_paid: Int128,
     pub leverage: Decimal,
-    pub leveraged_lp_amount: i64,
+    pub leveraged_lp_amount: Int128,
     pub position_health: Decimal,
     pub id: u64,
     pub amm_pool_id: u64,
@@ -570,6 +613,12 @@ pub struct LeveragelpPosition {
 #[cw_serde]
 pub struct LeveragelpPositionResponse {
     pub position: Option<LeveragelpPosition>,
+}
+
+#[cw_serde]
+pub struct LeveragelpPositionsResponseRaw {
+    pub positions: Option<Vec<LeveragelpPosition>>,
+    pub pagination: Option<PageResponse>,
 }
 
 #[cw_serde]
@@ -585,9 +634,22 @@ pub struct LeveragelpStatusReponse {
 }
 
 #[cw_serde]
+pub struct LeveragelpWhitelistResponseRaw {
+    pub whitelist: Option<Vec<String>>,
+    pub pagination: Option<PageResponse>,
+}
+
+
+#[cw_serde]
 pub struct LeveragelpWhitelistResponse {
     pub whitelist: Vec<String>,
     pub pagination: Option<PageResponse>,
+}
+
+#[cw_serde]
+pub struct LeveragelpIsWhitelistedResponseRaw {
+    pub address: String,
+    pub is_whitelisted: Option<bool>,
 }
 
 #[cw_serde]
@@ -597,18 +659,39 @@ pub struct LeveragelpIsWhitelistedResponse {
 }
 
 #[cw_serde]
+pub struct LeveragelpPoolRaw {
+    pub amm_pool_id: u64,
+    pub health: Decimal,
+    pub enabled: Option<bool>,
+    pub closed: Option<bool>,
+    pub leveraged_lp_amount: Int128,
+    pub leverage_max: Decimal,
+}
+
+#[cw_serde]
 pub struct LeveragelpPool {
     pub amm_pool_id: u64,
     pub health: Decimal,
     pub enabled: bool,
     pub closed: bool,
-    pub leveraged_lp_amount: i64,
+    pub leveraged_lp_amount: Int128,
     pub leverage_max: Decimal,
+}
+
+#[cw_serde]
+pub struct LeveragelpPoolResponseRaw {
+    pub pool: LeveragelpPoolRaw,
 }
 
 #[cw_serde]
 pub struct LeveragelpPoolResponse {
     pub pool: LeveragelpPool,
+}
+
+#[cw_serde]
+pub struct LeveragelpPoolsResponseRaw {
+    pub pool: Vec<LeveragelpPoolRaw>,
+    pub pagination: Option<PageResponse>,
 }
 
 #[cw_serde]
