@@ -22,3 +22,4 @@ elys-bindings = { path = "../../bindings" }
 [dev-dependencies]
 cw-multi-test = "0.13.4"
 elys-bindings = { path = "../../bindings", features = ["testing"] }
+elys-bindings-test = { path = "../../bindings-test" }
