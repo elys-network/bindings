@@ -627,7 +627,7 @@ pub struct MasterchefUserPendingRewardResponse {
 #[derive(Default)]
 pub struct MasterchefUserPendingRewardData {
     pool_id: u64,
-    rewards: Vec<Coin>,
+    reward: Vec<Coin>,
 }
 #[cw_serde]
 #[derive(Default)]
@@ -680,12 +680,9 @@ impl MasterchefUserPendingRewardResponse {
         usdc_denom: &String,
     ) -> StdResult<HashMap<u64, CoinValue>> {
         let mut dec_coin_values = HashMap::new();
-        for MasterchefUserPendingRewardData { rewards, pool_id } in &self.rewards {
-            for reward in rewards {
-                dec_coin_values.insert(
-                    *pool_id,
-                    CoinValue::from_coin(reward, querier, usdc_denom)?,
-                );
+        for MasterchefUserPendingRewardData { reward, pool_id } in &self.rewards {
+            for r in reward {
+                dec_coin_values.insert(*pool_id,CoinValue::from_coin(r, querier, usdc_denom)?);
             }
         }
         Ok(dec_coin_values)
