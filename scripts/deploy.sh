@@ -129,7 +129,8 @@ codeid=$(elysd q tx $txhash --node $NODE | extract_code_id)
 echo "ah code id: $codeid"
 if [ -n "$AH_CONTRACT_ADDRESS" ]; then
     txhash=$(elysd tx wasm migrate $OPTIONS --sequence $(($sequence + 6)) $AH_CONTRACT_ADDRESS $codeid '{
-        "trade_shield_address": "'"$TS_CONTRACT_ADDRESS"'"
+        "trade_shield_address": "'"$TS_CONTRACT_ADDRESS"'",
+        "limit": 30
     }' | extract_txhash)
     echo "ah migrate txhash: $txhash"
 else
