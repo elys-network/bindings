@@ -667,7 +667,7 @@ impl MasterchefUserPendingRewardResponse {
         &self,
         querier: &ElysQuerier<'_>,
         usdc_denom: &String,
-    ) -> StdResult<(HashMap<u64, CoinValue>, Vec<CoinValue>)> {
+    ) -> StdResult<(HashMap<u64, Vec<CoinValue>>, Vec<CoinValue>)> {
         Ok((
             self.rewards_to_coins(querier, usdc_denom)?,
             self.total_rewards_to_coin(querier, usdc_denom)?,
@@ -678,12 +678,17 @@ impl MasterchefUserPendingRewardResponse {
         &self,
         querier: &ElysQuerier<'_>,
         usdc_denom: &String,
-    ) -> StdResult<HashMap<u64, CoinValue>> {
+    ) -> StdResult<HashMap<u64, Vec<CoinValue>>> {
         let mut dec_coin_values = HashMap::new();
         for MasterchefUserPendingRewardData { reward, pool_id } in &self.rewards {
-            for r in reward {
-                dec_coin_values.insert(*pool_id,CoinValue::from_coin(r, querier, usdc_denom)?);
-            }
+            let coin = {
+                dec_coin_values.entry(*pool_id).or_insert_with(|| vec![])
+            };
+            coin.extend(
+                reward
+                    .iter()
+                    .map(|v| CoinValue::from_coin(v, querier, usdc_denom).unwrap_or_default()),
+            );
         }
         Ok(dec_coin_values)
     }

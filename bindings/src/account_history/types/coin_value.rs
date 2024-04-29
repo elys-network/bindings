@@ -3,6 +3,7 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, DecCoin, Decimal, Decimal256, StdError, StdResult};
 
 #[cw_serde]
+#[derive(Default)]
 pub struct CoinValue {
     pub denom: String,
     pub amount_token: Decimal,
