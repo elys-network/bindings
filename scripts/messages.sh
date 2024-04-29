@@ -157,7 +157,7 @@ function create_spot_order() {
 function amm_swap_exact_amount_in() {
     printf "\n# AMM swap exact amount in\n"
     execute_message \
-        "$ah_contract_address" \
+        "$ts_contract_address" \
         '{
             "amm_swap_exact_amount_in": {
                 "routes": [
@@ -170,6 +170,29 @@ function amm_swap_exact_amount_in() {
         }' \
         wasm-amm_swap_exact_amount_in \
         "1000000uelys"
+}
+
+# amm swap exact amount in with multiple routes
+function amm_swap_exact_amount_in_with_multiple_routes() {
+    printf "\n# AMM swap exact amount in with multiple routes\n"
+    execute_message \
+        "$ts_contract_address" \
+        '{
+            "amm_swap_exact_amount_in": {
+                "routes": [
+                    {
+                        "pool_id": 3,
+                        "token_out_denom": "'"$usdc_denom"'"
+                    },
+                    {
+                        "pool_id": 2,
+                        "token_out_denom": "'"$atom_denom"'"
+                    }
+                ]
+            }
+        }' \
+        wasm-amm_swap_exact_amount_in \
+        "10000000uelys"
 }
 
 # Create spot order as market buy
@@ -187,7 +210,7 @@ function create_spot_order_as_market_buy() {
             }
         }' \
         wasm-create_spot_order \
-        "100000000$source"
+        "10000000$source"
 }
 
 # Create perpetual order as market open
@@ -431,6 +454,9 @@ function eden_claim_vesting_request() {
 case "$1" in
     "amm_swap_exact_amount_in")
         amm_swap_exact_amount_in
+        ;;
+    "amm_swap_exact_amount_in_with_multiple_routes")
+        amm_swap_exact_amount_in_with_multiple_routes
         ;;
     "create_spot_order_as_market_buy")
         create_spot_order_as_market_buy $2 $3
