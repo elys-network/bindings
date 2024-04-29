@@ -327,6 +327,36 @@ function cancel_perpetual_order() {
         wasm-cancel_perpetual_order
 }
 
+# Open a leverage lp position
+function leveragelp_open() {
+    execute_message \
+        "$ts_contract_address" \
+        '{
+            "leveragelp_open": {
+                "amm_pool_id": 2,
+                "collateral_asset": "'"$usdc_denom"'",
+                "collateral_amount": "10000000",
+                "leverage": "5.0",
+                "stop_loss_price": "0.0"
+            }
+        }' \
+        wasm-cancel_perpetual_order
+}
+
+# Close a leverage lp position
+function leveragelp_close() {
+    execute_message \
+        "$ts_contract_address" \
+        '{
+            "leveragelp_close": {
+                "position_id" : 2,
+                "amount" : "5000000"
+            }
+        }' \
+        wasm-cancel_perpetual_order
+}
+
+
 # Get all spot orders
 function all_spot_orders() {
     printf "\n# Get all spot orders\n"
@@ -469,6 +499,12 @@ case "$1" in
         ;;
     "cancel_perpetual_order")
         cancel_perpetual_order $2
+        ;;
+    "leveragelp_open")
+        leveragelp_open
+        ;;
+    "leveragelp_close")
+        leveragelp_close
         ;;
     "enable_all_params")
         enable_all_params

@@ -17,6 +17,7 @@ use msg::QueryMsg;
 pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, ContractError> {
     use action::query;
     use QueryMsg::*;
+    let querier = ElysQuerier::new(&deps.querier);
 
     match msg {
         GetSpotOrder { order_id } => Ok(to_json_binary(&query::get_spot_order(deps, order_id)?)?),
@@ -109,6 +110,36 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
                 spot_orders: spot_orders.len() as u128,
                 perpetual_orders: perpetual_orders.len() as u128,
             })?)
+        }
+        LeveragelpParams {} => Ok(to_json_binary(&querier.leveragelp_params()?)?),
+        LeveragelpQueryPositions { pagination } => Ok(to_json_binary(
+            &querier.leveragelp_query_positions(pagination)?,
+        )?),
+        LeveragelpQueryPositionsByPool {
+            amm_pool_id,
+            pagination,
+        } => Ok(to_json_binary(
+            &querier.leveragelp_query_positions_by_pool(amm_pool_id, pagination)?,
+        )?),
+        LeveragelpGetStatus {} => Ok(to_json_binary(&querier.leveragelp_get_status()?)?),
+        LeveragelpQueryPositionsForAddress {
+            address,
+            pagination,
+        } => Ok(to_json_binary(
+            &querier.leveragelp_query_positions_for_address(address, pagination)?,
+        )?),
+        LeveragelpGetWhitelist { pagination } => Ok(to_json_binary(
+            &querier.leveragelp_get_whitelist(pagination)?,
+        )?),
+        LeveragelpIsWhitelisted { address } => Ok(to_json_binary(
+            &querier.leveragelp_is_whitelisted(address)?,
+        )?),
+        LeveragelpPool { index } => Ok(to_json_binary(&querier.leveragelp_pool(index)?)?),
+        LeveragelpPools { pagination } => {
+            Ok(to_json_binary(&querier.leveragelp_pools(pagination)?)?)
+        }
+        LeveragelpPosition { address, id } => {
+            Ok(to_json_binary(&querier.leveragelp_position(address, id)?)?)
         }
         GetParams {} => Ok(to_json_binary(&{
             let params_admin = PARAMS_ADMIN.load(deps.storage)?;
