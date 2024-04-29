@@ -17,14 +17,18 @@ pub fn get_membership_tier(
         Expiration::AtTime(t) => t.clone(),
         _ => panic!("never expire"),
     };
-    let mut day_date = env
-        .block
-        .time
-        .minus_seconds(expiration.seconds())
-        .plus_days(1);
+    let mut day_date = if env.block.time.seconds() < expiration.seconds() {
+        Timestamp::from_seconds(0)
+    } else {
+        env.block
+            .time
+            .minus_seconds(expiration.seconds())
+            .plus_days(1)
+    };
+
     let mut user_balance_snapshots: Vec<Decimal256> = vec![];
 
-    while day_date < env.block.time {
+    while day_date <= env.block.time {
         let date = NaiveDateTime::from_timestamp_opt(day_date.seconds() as i64, 0)
             .expect("Failed to convert block time to date")
             .format("%Y-%m-%d")
