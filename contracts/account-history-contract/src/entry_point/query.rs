@@ -5,8 +5,8 @@ use crate::action::query::{
 
 #[cfg(feature = "debug")]
 use crate::action::query::{
-    all, get_pools, get_pools_apr, join_pool_estimation, last_snapshot, params, user_snapshots, user_value,
-    pool_asset_estimation, exit_pool_estimation
+    all, exit_pool_estimation, get_pools, get_pools_apr, join_pool_estimation, last_snapshot,
+    params, pool_asset_estimation, user_snapshots, user_value,
 };
 
 use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult};
@@ -42,7 +42,7 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         GetRewards { user_address } => to_json_binary(&get_rewards(deps, user_address, env)?),
 
         GetMembershipTier { user_address } => {
-            to_json_binary(&get_membership_tier(deps, user_address)?)
+            to_json_binary(&get_membership_tier(env, deps, user_address)?)
         }
         GetPerpetualAssets { user_address } => {
             to_json_binary(&get_perpetuals_assets(deps, user_address, env)?)
@@ -58,23 +58,20 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
             pagination,
         } => to_json_binary(&get_pools(deps, pool_ids, filter_type, pagination)?),
 
-        GetLiquidityPoolsApr {
-            pool_ids
-        } => to_json_binary(&get_pools_apr(deps, pool_ids)?),
+        GetLiquidityPoolsApr { pool_ids } => to_json_binary(&get_pools_apr(deps, pool_ids)?),
 
         JoinPoolEstimation {
             pool_id,
-            amounts_in
+            amounts_in,
         } => to_json_binary(&join_pool_estimation(deps, pool_id, amounts_in)?),
 
-        PoolAssetEstimation {
-            pool_id,
-            amount
-        } => to_json_binary(&pool_asset_estimation(deps, pool_id, amount)?),
+        PoolAssetEstimation { pool_id, amount } => {
+            to_json_binary(&pool_asset_estimation(deps, pool_id, amount)?)
+        }
 
         ExitPoolEstimation {
             pool_id,
-            exit_fiat_amount
+            exit_fiat_amount,
         } => to_json_binary(&exit_pool_estimation(deps, pool_id, exit_fiat_amount)?),
 
         GetAssetPriceFromDenomInToDenomOut {
