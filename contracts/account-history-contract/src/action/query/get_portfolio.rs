@@ -4,6 +4,7 @@ use crate::{
 };
 use chrono::Days;
 use cosmwasm_std::{Deps, Env, SignedDecimal256, StdResult};
+use cw_utils::Expiration;
 use elys_bindings::{account_history::types::PortfolioBalanceSnapshot, ElysQuerier, ElysQuery};
 
 pub fn get_portfolio(
@@ -43,10 +44,14 @@ pub fn get_portfolio(
     let old_portfolio_balance =
         SignedDecimal256::try_from(old_snapshot.portfolio_balance_usd).unwrap_or_default();
 
-    let balance_24h_change = actual_portfolio_balance
-        .clone()
-        .checked_sub(old_portfolio_balance)
-        .unwrap_or_default();
+    let balance_24h_change = if (old_snapshot.date == Expiration::Never {}) {
+        SignedDecimal256::zero()
+    } else {
+        actual_portfolio_balance
+            .clone()
+            .checked_sub(old_portfolio_balance)
+            .unwrap_or_default()
+    };
 
     let resp = GetPortfolioResp {
         portfolio: new_snapshot.portfolio,

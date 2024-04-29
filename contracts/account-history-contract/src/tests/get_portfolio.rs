@@ -414,8 +414,7 @@ fn get_portfolio() {
     let expected = GetPortfolioResp {
         actual_portfolio_balance: SignedDecimal256::from_str("2382.607662051143").unwrap(),
         old_portfolio_balance: SignedDecimal256::from_str("0").unwrap(),
-        // balance_24h_change: SignedDecimal256::from_str("0").unwrap(),
-        balance_24h_change: SignedDecimal256::from_str("2382.607662051143").unwrap(),
+        balance_24h_change: SignedDecimal256::from_str("0").unwrap(),
         portfolio: Portfolio {
             balance_usd: Decimal256::from_str("2382.607662051143").unwrap(),
 
