@@ -2,7 +2,7 @@
 
 # Function to check if a command exists
 command_exists() {
-    type "$1" &> /dev/null
+    type "$1" &>/dev/null
 }
 
 # Ensure jq is installed
@@ -229,7 +229,6 @@ function get_asset_price_from_denom_in_to_denom_out() {
         }
     }'
 }
-
 
 # Get spot order
 function spot_order() {
@@ -547,8 +546,8 @@ function leveragelp_position() {
 function ts_params() {
     printf "\n# Get TS Params\n"
     query_contract \
-    "$ts_contract_address" \
-    '{
+        "$ts_contract_address" \
+        '{
         "get_params": {}
     }'
 }
@@ -556,8 +555,8 @@ function ts_params() {
 function number_of_pending_orders() {
     printf "\n# number_of_pending_orders\n"
     query_contract \
-    "$ts_contract_address" \
-    '{
+        "$ts_contract_address" \
+        '{
         "number_of_pending_order": {}
     }'
 }
@@ -582,7 +581,6 @@ function get_masterchef_pending_rewards() {
     }'
 }
 
-
 # get Masterchef Pending Rewards
 function get_masterchef_stable_stake_apr() {
     denom=$1
@@ -594,235 +592,242 @@ function get_masterchef_stable_stake_apr() {
     }'
 }
 
-
-
 # function(s) to run based on the provided argument
 case "$2" in
-    "ah_params")
-        ah_params
-        ;;
-    "total_balance")
-        total_balance
-        ;;
-    "membership_tier")
-        membership_tier
-        ;;
-    "portfolio_balance")
-        portfolio_balance
-        ;;
-    "rewards")
-        rewards
-        ;;
-    "liquid_assets")
-        liquid_assets
-        ;;
-    "staked_assets")
-        staked_assets
-        ;;
-    "perpetual_assets")
-        perpetual_assets
-        ;;
-    "user_value")
-        user_value
-        ;;
-    "swap_estimation_by_denom_elys_usdc_elys")
-        swap_estimation_by_denom 1000000 uelys $usdc_denom uelys
-        ;;
-    "swap_estimation_by_denom_elys_elys_usdc")
-        swap_estimation_by_denom 1000000 uelys uelys $usdc_denom
-        ;;
-    "swap_estimation_by_denom_usdc_usdc_usdc")
-        swap_estimation_by_denom 1000000 $usdc_denom $usdc_denom $usdc_denom
-        ;;
-    "swap_estimation_by_denom_usdc_usdc_atom")
-        swap_estimation_by_denom 1000000 $usdc_denom $usdc_denom $atom_denom
-        ;;
-    "swap_estimation_by_denom_atom_atom_usdc")
-        swap_estimation_by_denom 1000000 $atom_denom $atom_denom $usdc_denom
-        ;;
-    "swap_estimation_by_denom_usdc_usdc_atom_with_large_amount")
-        swap_estimation_by_denom 112234000000 $usdc_denom $usdc_denom $atom_denom
-        ;;
-    "swap_estimation_by_denom_atom_atom_usdc_with_small_amount")
-        swap_estimation_by_denom 213565 $atom_denom $atom_denom $usdc_denom
-        ;;
-    "swap_estimation_by_denom_osmo_usdc")
-        swap_estimation_by_denom 1000000000 $osmo_denom $osmo_denom $usdc_denom
-        ;;
-    "all_prices")
-        all_prices
-        ;;
-    "asset_info")
-        asset_info
-        ;;
-    "spot_order")
-        spot_order $3
-        ;;
-    "all_spot_orders")
-        all_spot_orders
-        ;;
-    "spot_orders_stop_loss")
-        spot_orders stop_loss
-        ;;
-    "spot_orders_limit_sell")
-        spot_orders limit_sell
-        ;;
-    "spot_orders_limit_buy")
-        spot_orders limit_buy
-        ;;
-    "spot_orders_market_buy")
-        spot_orders market_buy
-        ;;
-    "perpetual_position")
-        perpetual_position
-        ;;
-    "perpetual_order")
-        perpetual_order
-        ;;
-    "perpetual_orders_stop_loss")
-        perpetual_orders stop_loss
-        ;;
-    "perpetual_orders_limit_open")
-        perpetual_orders limit_open
-        ;;
-    "perpetual_orders_limit_close")
-        perpetual_orders limit_close
-        ;;
-    "perpetual_orders_market_open")
-        perpetual_orders market_open
-        ;;
-    "perpetual_orders_market_close")
-        perpetual_orders market_close
-        ;;
-    "perpetual_open_estimation")
-        perpetual_open_estimation
-        ;;
-    "perpetual_get_positions_for_address")
-        perpetual_get_positions_for_address
-        ;;
-    "get_commitment_staked_positions")
-        get_commitment_staked_positions
-        ;;
-    "get_commitment_unstaked_positions")
-        get_commitment_unstaked_positions
-        ;;
-    "get_commitment_rewards_sub_bucket_balance_of_denom")
-        get_commitment_rewards_sub_bucket_balance_of_denom $3 $4
-        ;;
-    "get_commitment_staked_balance_of_denom")
-        get_commitment_staked_balance_of_denom $3
-        ;;
-    "get_stable_stake_balance_of_borrow")
-        get_stable_stake_balance_of_borrow
-        ;;
-    "get_commitment_vesting_info")
-        get_commitment_vesting_info
-        ;;
-    "get_amm_price_by_denom")
-        get_amm_price_by_denom $3
-        ;;
-    "get_user_snapshots")
-        get_user_snapshots
-        ;;
-    "get_user_last_snapshot")
-        get_user_last_snapshot
-        ;;
-    "get_all_snapshots")
-        get_all_snapshots
-        ;;
-    "get_stable_stake_params")
-        get_stable_stake_params
-        ;;
-    "get_liquidity_pools")
-        get_liquidity_pools
-        ;;
-    "get_asset_price")
-        get_asset_price $3
-        ;;
-    "get_asset_price_from_denom_in_to_denom_out")
-        get_asset_price_from_denom_in_to_denom_out $3 $4
-        ;;
-    "leveragelp_params")
-        leveragelp_params
-        ;;
-    "leveragelp_query_positions")
-        leveragelp_query_positions
-        ;;
-    "leveragelp_query_positions_by_pool")
-        leveragelp_query_positions_by_pool
-        ;;
-    "leveragelp_get_status")
-        leveragelp_get_status
-        ;;
-    "leveragelp_query_positions_for_address")
-        leveragelp_query_positions_for_address
-        ;;
-    "leveragelp_get_whitelist")
-        leveragelp_get_whitelist
-        ;;
-    "leveragelp_is_whitelisted")
-        leveragelp_is_whitelisted
-        ;;
-    "leveragelp_pool")
-        leveragelp_pool
-        ;;
-    "leveragelp_pools")
-        leveragelp_pools
-        ;;
-    "leveragelp_position")
-        leveragelp_position
-        ;;
-    "ts_params")
-        ts_params
-        ;;
-    "number_of_pending_orders")
-        number_of_pending_orders
-        ;;
-    *)
-        # Default case: run all functions
-        ah_params
-        ts_params
-        total_balance
-        membership_tier
-        portfolio_balance
-        rewards
-        liquid_assets
-        staked_assets
-        perpetual_assets
-        user_value
-        swap_estimation_by_denom 1000000 uelys $usdc_denom uelys
-        swap_estimation_by_denom 1000000 $usdc_denom $usdc_denom $usdc_denom
-        swap_estimation_by_denom 1000000 $usdc_denom $usdc_denom $atom_denom
-        swap_estimation_by_denom 1000000 $atom_denom $atom_denom $usdc_denom
-        swap_estimation_by_denom 112234000000 $usdc_denom $usdc_denom $atom_denom
-        swap_estimation_by_denom 213565 $atom_denom $atom_denom $usdc_denom
-        all_prices
-        asset_info
-        spot_order
-        all_spot_orders
-        spot_orders stop_loss
-        spot_orders limit_sell
-        spot_orders limit_buy
-        spot_orders market_buy
-        perpetual_position
-        perpetual_order
-        perpetual_orders stop_loss
-        perpetual_orders limit_open
-        perpetual_orders limit_close
-        perpetual_orders market_open
-        perpetual_orders market_close
-        perpetual_open_estimation
-        perpetual_get_positions_for_address
-        get_commitment_staked_positions
-        get_commitment_unstaked_positions
-        get_commitment_rewards_sub_bucket_balance_of_denom ueden 2
-        get_commitment_staked_balance_of_denom $usdc_denom
-        get_stable_stake_balance_of_borrow
-        get_commitment_vesting_info
-        get_amm_price_by_denom $usdc_denom
-        get_amm_price_by_denom $elys_denom
-        get_amm_price_by_denom $eden_denom
-        get_stable_stake_params
-        get_liquidity_pools
-        ;;
+"ah_params")
+    ah_params
+    ;;
+"total_balance")
+    total_balance
+    ;;
+"membership_tier")
+    membership_tier
+    ;;
+"portfolio_balance")
+    portfolio_balance
+    ;;
+"rewards")
+    rewards
+    ;;
+"liquid_assets")
+    liquid_assets
+    ;;
+"staked_assets")
+    staked_assets
+    ;;
+"perpetual_assets")
+    perpetual_assets
+    ;;
+"user_value")
+    user_value
+    ;;
+"swap_estimation_by_denom_elys_usdc_elys")
+    swap_estimation_by_denom 1000000 uelys $usdc_denom uelys
+    ;;
+"swap_estimation_by_denom_elys_elys_usdc")
+    swap_estimation_by_denom 1000000 uelys uelys $usdc_denom
+    ;;
+"swap_estimation_by_denom_usdc_usdc_usdc")
+    swap_estimation_by_denom 1000000 $usdc_denom $usdc_denom $usdc_denom
+    ;;
+"swap_estimation_by_denom_usdc_usdc_atom")
+    swap_estimation_by_denom 1000000 $usdc_denom $usdc_denom $atom_denom
+    ;;
+"swap_estimation_by_denom_atom_atom_usdc")
+    swap_estimation_by_denom 1000000 $atom_denom $atom_denom $usdc_denom
+    ;;
+"swap_estimation_by_denom_usdc_usdc_atom_with_large_amount")
+    swap_estimation_by_denom 112234000000 $usdc_denom $usdc_denom $atom_denom
+    ;;
+"swap_estimation_by_denom_atom_atom_usdc_with_small_amount")
+    swap_estimation_by_denom 213565 $atom_denom $atom_denom $usdc_denom
+    ;;
+"swap_estimation_by_denom_osmo_usdc")
+    swap_estimation_by_denom 1000000000 $osmo_denom $osmo_denom $usdc_denom
+    ;;
+"all_prices")
+    all_prices
+    ;;
+"asset_info")
+    asset_info
+    ;;
+"spot_order")
+    spot_order $3
+    ;;
+"all_spot_orders")
+    all_spot_orders
+    ;;
+"spot_orders_stop_loss")
+    spot_orders stop_loss
+    ;;
+"spot_orders_limit_sell")
+    spot_orders limit_sell
+    ;;
+"spot_orders_limit_buy")
+    spot_orders limit_buy
+    ;;
+"spot_orders_market_buy")
+    spot_orders market_buy
+    ;;
+"perpetual_position")
+    perpetual_position
+    ;;
+"perpetual_order")
+    perpetual_order
+    ;;
+"perpetual_orders_stop_loss")
+    perpetual_orders stop_loss
+    ;;
+"perpetual_orders_limit_open")
+    perpetual_orders limit_open
+    ;;
+"perpetual_orders_limit_close")
+    perpetual_orders limit_close
+    ;;
+"perpetual_orders_market_open")
+    perpetual_orders market_open
+    ;;
+"perpetual_orders_market_close")
+    perpetual_orders market_close
+    ;;
+"perpetual_open_estimation")
+    perpetual_open_estimation
+    ;;
+"perpetual_get_positions_for_address")
+    perpetual_get_positions_for_address
+    ;;
+"get_commitment_staked_positions")
+    get_commitment_staked_positions
+    ;;
+"get_commitment_unstaked_positions")
+    get_commitment_unstaked_positions
+    ;;
+"get_commitment_rewards_sub_bucket_balance_of_denom")
+    get_commitment_rewards_sub_bucket_balance_of_denom $3 $4
+    ;;
+"get_commitment_staked_balance_of_denom")
+    get_commitment_staked_balance_of_denom $3
+    ;;
+"get_stable_stake_balance_of_borrow")
+    get_stable_stake_balance_of_borrow
+    ;;
+"get_commitment_vesting_info")
+    get_commitment_vesting_info
+    ;;
+"get_amm_price_by_denom")
+    get_amm_price_by_denom $3
+    ;;
+"get_user_snapshots")
+    get_user_snapshots
+    ;;
+"get_user_last_snapshot")
+    get_user_last_snapshot
+    ;;
+"get_all_snapshots")
+    get_all_snapshots
+    ;;
+"get_stable_stake_params")
+    get_stable_stake_params
+    ;;
+"get_liquidity_pools")
+    get_liquidity_pools
+    ;;
+"get_asset_price")
+    get_asset_price $3
+    ;;
+"get_asset_price_from_denom_in_to_denom_out")
+    get_asset_price_from_denom_in_to_denom_out $3 $4
+    ;;
+"leveragelp_params")
+    leveragelp_params
+    ;;
+"leveragelp_query_positions")
+    leveragelp_query_positions
+    ;;
+"leveragelp_query_positions_by_pool")
+    leveragelp_query_positions_by_pool
+    ;;
+"leveragelp_get_status")
+    leveragelp_get_status
+    ;;
+"leveragelp_query_positions_for_address")
+    leveragelp_query_positions_for_address
+    ;;
+"leveragelp_get_whitelist")
+    leveragelp_get_whitelist
+    ;;
+"leveragelp_is_whitelisted")
+    leveragelp_is_whitelisted
+    ;;
+"leveragelp_pool")
+    leveragelp_pool
+    ;;
+"leveragelp_pools")
+    leveragelp_pools
+    ;;
+"leveragelp_position")
+    leveragelp_position
+    ;;
+"ts_params")
+    ts_params
+    ;;
+"number_of_pending_orders")
+    number_of_pending_orders
+    ;;
+"get_estaking_rewards")
+    get_estaking_rewards
+    ;;
+"get_masterchef_pending_rewards")
+    get_masterchef_pending_rewards
+    ;;
+"get_masterchef_stable_stake_apr")
+    get_masterchef_stable_stake_apr $3
+    ;;
+*)
+    # Default case: run all functions
+    ah_params
+    ts_params
+    total_balance
+    membership_tier
+    portfolio_balance
+    rewards
+    liquid_assets
+    staked_assets
+    perpetual_assets
+    user_value
+    swap_estimation_by_denom 1000000 uelys $usdc_denom uelys
+    swap_estimation_by_denom 1000000 $usdc_denom $usdc_denom $usdc_denom
+    swap_estimation_by_denom 1000000 $usdc_denom $usdc_denom $atom_denom
+    swap_estimation_by_denom 1000000 $atom_denom $atom_denom $usdc_denom
+    swap_estimation_by_denom 112234000000 $usdc_denom $usdc_denom $atom_denom
+    swap_estimation_by_denom 213565 $atom_denom $atom_denom $usdc_denom
+    all_prices
+    asset_info
+    spot_order
+    all_spot_orders
+    spot_orders stop_loss
+    spot_orders limit_sell
+    spot_orders limit_buy
+    spot_orders market_buy
+    perpetual_position
+    perpetual_order
+    perpetual_orders stop_loss
+    perpetual_orders limit_open
+    perpetual_orders limit_close
+    perpetual_orders market_open
+    perpetual_orders market_close
+    perpetual_open_estimation
+    perpetual_get_positions_for_address
+    get_commitment_staked_positions
+    get_commitment_unstaked_positions
+    get_commitment_rewards_sub_bucket_balance_of_denom ueden 2
+    get_commitment_staked_balance_of_denom $usdc_denom
+    get_stable_stake_balance_of_borrow
+    get_commitment_vesting_info
+    get_amm_price_by_denom $usdc_denom
+    get_amm_price_by_denom $elys_denom
+    get_amm_price_by_denom $eden_denom
+    get_stable_stake_params
+    get_liquidity_pools
+    ;;
 esac

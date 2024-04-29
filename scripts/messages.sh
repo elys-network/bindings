@@ -2,7 +2,7 @@
 
 # Function to check if a command exists
 command_exists() {
-    type "$1" &> /dev/null
+    type "$1" &>/dev/null
 }
 
 # Ensure jq is installed
@@ -25,7 +25,7 @@ fi
 
 # Extract txhash from the output of a command
 extract_txhash() {
-    awk -F 'txhash: ' '/txhash:/{print $2; exit}';
+    awk -F 'txhash: ' '/txhash:/{print $2; exit}'
 }
 
 # Define a function to query the contract state
@@ -58,9 +58,9 @@ execute_message() {
         echo "Failed to execute the message. Please check the error message above."
         exit 1
     fi
-    
+
     # loop until query tx cli does not fail
-    while ! elysd q tx $txhash --node "$NODE" &> /dev/null; do
+    while ! elysd q tx $txhash --node "$NODE" &>/dev/null; do
         echo "Waiting for the transaction to be included in a block..."
         sleep 0.5
     done
@@ -85,7 +85,7 @@ printf "# Node: %s\n" "$NODE"
 printf "# Name: %s\n" "$NAME"
 
 # Ensure that the account has been set using elysd keys show command
-if ! elysd keys show $NAME &> /dev/null; then
+if ! elysd keys show $NAME &>/dev/null; then
     echo "$NAME account has not been set. Please set the $NAME account using elysd keys show command."
     exit 1
 fi
@@ -270,7 +270,7 @@ function create_perpetual_order() {
 }
 
 # Perpetual Close Position
-function perpetual_close_position () {
+function perpetual_close_position() {
     order_id=$1
     amount=$2
     printf "\n# Perpetual Close Position"
@@ -355,7 +355,6 @@ function leveragelp_close() {
         }' \
         wasm-cancel_perpetual_order
 }
-
 
 # Get all spot orders
 function all_spot_orders() {
@@ -450,77 +449,94 @@ function eden_claim_vesting_request() {
         wasm-eden_claim_vesting_request
 }
 
+function masterchef_claim_rewards() {
+    pool_ids=$1
+    printf "\n# Eden Claim Vesting Request\n"
+    execute_message \
+        "$ts_contract_address" \
+        '{
+            "masterchef_claim_rewards": { 
+                "pool_ids": "'"$pool_ids"'"
+            }
+        }' \
+        wasm-eden_claim_vesting_request
+}
+
 # function(s) to run based on the provided argument
 case "$1" in
-    "amm_swap_exact_amount_in")
-        amm_swap_exact_amount_in
-        ;;
-    "amm_swap_exact_amount_in_with_multiple_routes")
-        amm_swap_exact_amount_in_with_multiple_routes
-        ;;
-    "create_spot_order_as_market_buy")
-        create_spot_order_as_market_buy $2 $3
-        ;;
-    "create_spot_order_as_limit_buy")
-        create_spot_order "limit_buy" $2 $3 $4
-        ;;
-    "create_spot_order_as_limit_sell")
-        create_spot_order "limit_sell" $2 $3 $4
-        ;;
-    "create_spot_order_as_stop_loss")
-        create_spot_order "stop_loss" $2 $3 $4
-        ;;
-    "all_spot_orders")
-        all_spot_orders
-        ;;
-    "spot_order")
-        spot_order $2
-        ;;
-    "cancel_spot_order")
-        cancel_spot_order $2
-        ;;
-    "create_perpetual_order_as_market_open")
-        create_perpetual_order_as_market_open
-        ;;
-    "create_perpetual_order_as_market_close")
-        create_perpetual_order_as_market_close $2
-        ;;
-    "create_perpetual_order_as_limit_open")
-        create_perpetual_order "limit_open"
-        ;;
-    "perpetual_close_position")
-        perpetual_close_position $2 $3
-        ;;
-    "perpetual_open_estimation")
-        perpetual_open_estimation
-        ;;
-    "all_perpetual_orders")
-        all_perpetual_orders
-        ;;
-    "cancel_perpetual_order")
-        cancel_perpetual_order $2
-        ;;
-    "leveragelp_open")
-        leveragelp_open
-        ;;
-    "leveragelp_close")
-        leveragelp_close
-        ;;
-    "enable_all_params")
-        enable_all_params
-        ;;
-    "disable_all_params")
-        disable_all_params
-        ;;
-    "set_limit_to_process_orders")
-        set_limit_to_process_orders $2
-        ;;
-    "eden_claim_vesting_request")
-        eden_claim_vesting_request
-        ;;
-    *)
-        # Default case: run all functions
-        all_spot_orders
-        all_perpetual_orders
-        ;;
+"amm_swap_exact_amount_in")
+    amm_swap_exact_amount_in
+    ;;
+"amm_swap_exact_amount_in_with_multiple_routes")
+    amm_swap_exact_amount_in_with_multiple_routes
+    ;;
+"create_spot_order_as_market_buy")
+    create_spot_order_as_market_buy $2 $3
+    ;;
+"create_spot_order_as_limit_buy")
+    create_spot_order "limit_buy" $2 $3 $4
+    ;;
+"create_spot_order_as_limit_sell")
+    create_spot_order "limit_sell" $2 $3 $4
+    ;;
+"create_spot_order_as_stop_loss")
+    create_spot_order "stop_loss" $2 $3 $4
+    ;;
+"all_spot_orders")
+    all_spot_orders
+    ;;
+"spot_order")
+    spot_order $2
+    ;;
+"cancel_spot_order")
+    cancel_spot_order $2
+    ;;
+"create_perpetual_order_as_market_open")
+    create_perpetual_order_as_market_open
+    ;;
+"create_perpetual_order_as_market_close")
+    create_perpetual_order_as_market_close $2
+    ;;
+"create_perpetual_order_as_limit_open")
+    create_perpetual_order "limit_open"
+    ;;
+"perpetual_close_position")
+    perpetual_close_position $2 $3
+    ;;
+"perpetual_open_estimation")
+    perpetual_open_estimation
+    ;;
+"all_perpetual_orders")
+    all_perpetual_orders
+    ;;
+"cancel_perpetual_order")
+    cancel_perpetual_order $2
+    ;;
+"leveragelp_open")
+    leveragelp_open
+    ;;
+"leveragelp_close")
+    leveragelp_close
+    ;;
+"enable_all_params")
+    enable_all_params
+    ;;
+"disable_all_params")
+    disable_all_params
+    ;;
+"set_limit_to_process_orders")
+    set_limit_to_process_orders $2
+    ;;
+"eden_claim_vesting_request")
+    eden_claim_vesting_request
+    ;;
+"masterchef_claim_rewards")
+    masterchef_claim_rewards $2
+    ;;
+
+*)
+    # Default case: run all functions
+    all_spot_orders
+    all_perpetual_orders
+    ;;
 esac
