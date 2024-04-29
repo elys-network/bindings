@@ -5,6 +5,7 @@ use super::query_resp::masterchef::*;
 
 #[allow(unused_imports)]
 use super::query_resp::*;
+use crate::query_resp::QueryStableStakeAprResponse;
 #[allow(unused_imports)]
 use crate::query_resp::{
     AuthAddressesResponse, BalanceBorrowed, EstakingRewardsResponse, PoolFilterType,
@@ -72,6 +73,14 @@ pub enum QueryMsg {
 
     #[returns(GetMasterchefUserPendingRewardResponse)]
     GetMasterchefPendingRewards { address: String },
+
+    #[returns(QueryStableStakeAprResponse)]
+    GetMasterchefStableStakeApr { denom: String },
+
+    #[returns(MasterChefPoolAprResponse)]
+    GetMasterChefPoolApr {
+        pool_ids: Vec<u64>,
+    },
     // debug only
     #[cfg(feature = "debug")]
     #[returns(ParamsResp)]

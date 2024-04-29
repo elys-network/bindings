@@ -6,7 +6,10 @@ use cosmwasm_std::{
 };
 
 use crate::{
-    account_history::types::{CoinValue, DecCoinValue},
+    account_history::{
+        msg::query_resp::masterchef::PoolAprValue,
+        types::{CoinValue, DecCoinValue},
+    },
     trade_shield::types::{
         AmmPool, AmmPoolRaw, PerpetualPosition, PoolExtraInfo, StakedPositionRaw,
     },
@@ -665,10 +668,13 @@ impl MasterchefUserPendingRewardResponse {
         querier: &ElysQuerier<'_>,
         usdc_denom: &String,
     ) -> StdResult<(HashMap<u64, CoinValue>, Vec<CoinValue>)> {
-        Ok((self.rewards_to_dec_coins(querier, usdc_denom)?, self.total_rewards_to_dec_coin(querier, usdc_denom)?))
+        Ok((
+            self.rewards_to_coins(querier, usdc_denom)?,
+            self.total_rewards_to_coin(querier, usdc_denom)?,
+        ))
     }
 
-    fn rewards_to_dec_coins(
+    fn rewards_to_coins(
         &self,
         querier: &ElysQuerier<'_>,
         usdc_denom: &String,
@@ -682,7 +688,7 @@ impl MasterchefUserPendingRewardResponse {
         Ok(dec_coin_values)
     }
 
-    fn total_rewards_to_dec_coin(
+    fn total_rewards_to_coin(
         &self,
         querier: &ElysQuerier<'_>,
         usdc_denom: &String,
@@ -693,4 +699,37 @@ impl MasterchefUserPendingRewardResponse {
         }
         Ok(dec_coin_values)
     }
+}
+
+#[cw_serde]
+pub struct QueryPoolAprsResponse {
+    pub data: Vec<PoolApr>,
+}
+
+#[cw_serde]
+pub struct PoolApr {
+    pub pool_id: u64,
+    pub eden_apr: DecCoin,
+    pub usdc_apr: DecCoin,
+    pub total_apr: DecCoin,
+}
+
+impl PoolApr {
+    pub fn to_dec_coin_value(
+        &self,
+        querier: &ElysQuerier<'_>,
+        usdc_denom: &String,
+    ) -> StdResult<PoolAprValue> {
+        Ok(PoolAprValue {
+            pool_id: self.pool_id,
+            eden_apr: DecCoinValue::from_dec_coin(&self.eden_apr, querier, usdc_denom)?,
+            usdc_apr: DecCoinValue::from_dec_coin(&self.usdc_apr, querier, usdc_denom)?,
+            total_apr: DecCoinValue::from_dec_coin(&self.total_apr, querier, usdc_denom)?,
+        })
+    }
+}
+
+#[cw_serde]
+pub struct QueryStableStakeAprResponse {
+    pub apr: Int128,
 }

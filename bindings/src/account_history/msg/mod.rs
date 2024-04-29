@@ -19,6 +19,7 @@ pub mod query_resp {
     mod total_value_per_asset_resp;
     mod user_value_response;
 
+
     pub use get_all_resp::GetAllResp;
     pub use get_portfolio_resp::GetPortfolioResp;
     pub use get_rewards_resp::GetRewardsResp;
@@ -30,9 +31,9 @@ pub mod query_resp {
     pub use user_value_response::UserValueResponse;
 
     mod staked_assets_response;
-    pub use staked_assets_response::StakedAssetsResponse;
     pub use staked_assets_response::StakeAssetBalanceBreakdown;
-    
+    pub use staked_assets_response::StakedAssetsResponse;
+
     pub mod earn {
         mod get_eden_boost_earn_details_resp;
         pub use get_eden_boost_earn_details_resp::GetEdenBoostEarnProgramResp;
@@ -51,6 +52,10 @@ pub mod query_resp {
 
     pub mod masterchef {
         mod get_masterchef_pending_rewards;
+        mod get_masterchef_pool_apr_response;
+        mod get_masterchef_stable_stake_response;
         pub use get_masterchef_pending_rewards::GetMasterchefUserPendingRewardResponse;
+        pub use get_masterchef_pool_apr_response::{MasterChefPoolAprResponse, PoolAprValue};
+        pub use get_masterchef_stable_stake_response::StableStakeAprResponse;
     }
 }

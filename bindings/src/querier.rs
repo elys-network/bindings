@@ -831,6 +831,13 @@ impl<'a> ElysQuerier<'a> {
         ))
     }
 
+    pub fn get_masterchef_pool_apr(&self, pool_ids: Vec<u64>) -> StdResult<QueryPoolAprsResponse> {
+        self.querier
+            .query(&QueryRequest::Custom(ElysQuery::get_masterchef_pool_apr(
+                pool_ids,
+            )))
+    }
+
     pub fn get_estaking_rewards(&self, address: String) -> StdResult<EstakingRewardsResponse> {
         let query = ElysQuery::EstakingRewards {
             address: address.to_owned(),
@@ -838,6 +845,14 @@ impl<'a> ElysQuerier<'a> {
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
         self.querier.query(&request)
     }
+
+    pub fn get_masterchef_stable_stake_apr(&self, denom: String) -> StdResult<QueryStableStakeAprResponse> {
+        self.querier
+            .query(&QueryRequest::Custom(ElysQuery::get_masterchef_stable_stake_apr(
+                denom,
+            )))
+    }
+
 
     #[allow(dead_code)]
     #[cfg(feature = "debug")]

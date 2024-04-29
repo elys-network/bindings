@@ -20,7 +20,14 @@ use elys_bindings::{
         PerpetualOpenResponse,
     },
     query_resp::{
-        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse, BalanceBorrowed, Commitments, Entry, LeveragelpIsWhitelistedResponse, LeveragelpParams, LeveragelpParamsResponse, LeveragelpStatusReponse, LeveragelpWhitelistResponse, OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse, PerpetualOpenEstimationRawResponse, PerpetualQueryPositionsResponse, QueryAprResponse, QueryAprsResponse, QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse, QueryShowCommitmentsResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryVestingInfoResponse, StableStakeParamsData, StableStakeParamsResp
+        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse,
+        BalanceBorrowed, Commitments, Entry, LeveragelpIsWhitelistedResponse, LeveragelpParams,
+        LeveragelpParamsResponse, LeveragelpStatusReponse, LeveragelpWhitelistResponse,
+        OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
+        PerpetualOpenEstimationRawResponse, PerpetualQueryPositionsResponse, QueryAprResponse,
+        QueryAprsResponse, QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse,
+        QueryShowCommitmentsResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
+        QueryVestingInfoResponse, StableStakeParamsData, StableStakeParamsResp,
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
@@ -621,7 +628,9 @@ impl Module for ElysModule {
                 };
                 Ok(to_json_binary(&resp)?)
             }
-            ElysQuery::MasterchefUserPendingReward { .. } => todo!("MasterchefUserPendingReward")
+            ElysQuery::MasterchefUserPendingReward { .. } => todo!("MasterchefUserPendingReward"),
+            ElysQuery::MasterchefPoolApr { .. } => todo!("MasterchefPoolApr"),
+            ElysQuery::MasterchefStableStakeApr { .. } => todo!("MasterchefStableStakeApr"),
         }
     }
 
@@ -943,7 +952,7 @@ impl Module for ElysModule {
             }
             ElysMsg::CommitmentClaimVesting { .. } => {
                 let data = to_json_binary(&MsgResponse {
-                    result: "Ok".to_string()
+                    result: "Ok".to_string(),
                 })?;
                 Ok(AppResponse {
                     events: vec![],
@@ -1020,7 +1029,7 @@ impl Module for ElysModule {
                     events: vec![],
                     data: Some(data),
                 })
-            },
+            }
         }
     }
 
