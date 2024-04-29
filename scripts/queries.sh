@@ -470,6 +470,41 @@ function number_of_pending_orders() {
         "number_of_pending_order": {}
     }'
 }
+
+# get EstakingRewards
+function get_estaking_rewards() {
+    printf "\n# Get estaking rewards\n"
+    query_contract "$ah_contract_address" '{
+        "get_estaking_rewards": {
+             "address": "'"$user_address"'"
+        }
+    }'
+}
+
+# get Masterchef Pending Rewards
+function get_masterchef_pending_rewards() {
+    printf "\n# Get master chef pending rewards\n"
+    query_contract "$ah_contract_address" '{
+        "get_masterchef_pending_rewards": {
+             "address": "'"$user_address"'"
+        }
+    }'
+}
+
+
+# get Masterchef Pending Rewards
+function get_masterchef_stable_stake_apr() {
+    denom=$1
+    printf "\n# Get Masterchef stable stake apr\n"
+    query_contract "$ah_contract_address" '{
+        "get_masterchef_stable_stake_apr": {
+             "denom": "'"$denom"'"
+        }
+    }'
+}
+
+
+
 # function(s) to run based on the provided argument
 case "$2" in
     "ah_params")
