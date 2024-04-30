@@ -212,6 +212,9 @@ pub fn execute(
             }
             Ok(Response::new())
         }
+        EstakingWithdrawReward { validator_address } => {
+            estaking_withdraw_reward(info, deps, validator_address)
+        }
     }?;
 
     let resp = if let Some(account_history_address) = account_history_address {
