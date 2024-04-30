@@ -1,10 +1,12 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr};
 
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, Uint128};
+use cosmwasm_std::{
+    Coin, DecCoin, Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, StdResult, Uint128,
+};
 
 use crate::{
-    account_history::types::CoinValue,
+    account_history::types::{CoinValue, DecCoinValue},
     trade_shield::types::{
         AmmPool, AmmPoolRaw, PerpetualPosition, PoolExtraInfo, StakedPositionRaw,
     },
@@ -12,6 +14,7 @@ use crate::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, PoolAsset, Price, StakedPosition,
         SwapAmountInRoute, SwapAmountOutRoute, UnstakedPosition, ValidatorDetail, VestingDetail,
     },
+    ElysQuerier,
 };
 
 #[cw_serde]
@@ -468,7 +471,7 @@ pub struct QueryPoolAssetEstimationResponse {
 
 #[cw_serde]
 pub struct QueryExitPoolEstimationResponse {
-    pub amounts_out: Vec<Coin>
+    pub amounts_out: Vec<Coin>,
 }
 
 #[cw_serde]
@@ -692,4 +695,127 @@ pub struct LeveragelpPoolsResponseRaw {
 pub struct LeveragelpPoolsResponse {
     pub pool: Vec<LeveragelpPool>,
     pub pagination: Option<PageResponse>,
+}
+#[cw_serde]
+#[derive(Default)]
+pub struct MasterchefUserPendingRewardResponse {
+    pub rewards: Vec<MasterchefUserPendingRewardData>,
+    pub total_rewards: Vec<Coin>,
+}
+
+#[cw_serde]
+#[derive(Default)]
+pub struct MasterchefUserPendingRewardData {
+    pool_id: u64,
+    reward: Vec<Coin>,
+}
+#[cw_serde]
+#[derive(Default)]
+pub struct EstakingRewardsResponse {
+    pub rewards: Vec<DelegationDelegatorReward>,
+    pub total: Vec<DecCoin>,
+}
+
+#[cw_serde]
+pub struct DelegationDelegatorReward {
+    pub validator_address: String,
+    pub reward: Vec<DecCoin>,
+}
+
+impl EstakingRewardsResponse {
+    pub fn to_dec_coin_values(
+        &self,
+        querier: &ElysQuerier<'_>,
+        usdc_denom: &String,
+    ) -> StdResult<Vec<(String, DecCoinValue)>> {
+        let mut dec_coin_values = Vec::new();
+
+        for delegation_reward in &self.rewards {
+            let validator_address = delegation_reward.validator_address.clone();
+            for dec_coin in &delegation_reward.reward {
+                let dec_coin_value = DecCoinValue::from_dec_coin(dec_coin, querier, usdc_denom)?;
+                dec_coin_values.push((validator_address.clone(), dec_coin_value));
+            }
+        }
+
+        Ok(dec_coin_values)
+    }
+}
+
+impl MasterchefUserPendingRewardResponse {
+    pub fn to_coin_values(
+        &self,
+        querier: &ElysQuerier<'_>,
+        usdc_denom: &String,
+    ) -> StdResult<(HashMap<u64, Vec<CoinValue>>, Vec<CoinValue>)> {
+        Ok((
+            self.rewards_to_coins(querier, usdc_denom)?,
+            self.total_rewards_to_coin(querier, usdc_denom)?,
+        ))
+    }
+
+    fn rewards_to_coins(
+        &self,
+        querier: &ElysQuerier<'_>,
+        usdc_denom: &String,
+    ) -> StdResult<HashMap<u64, Vec<CoinValue>>> {
+        let mut dec_coin_values = HashMap::new();
+        for MasterchefUserPendingRewardData { reward, pool_id } in &self.rewards {
+            let coin = {
+                dec_coin_values.entry(*pool_id).or_insert_with(|| vec![])
+            };
+            coin.extend(
+                reward
+                    .iter()
+                    .map(|v| CoinValue::from_coin(v, querier, usdc_denom).unwrap_or_default()),
+            );
+        }
+        Ok(dec_coin_values)
+    }
+
+    fn total_rewards_to_coin(
+        &self,
+        querier: &ElysQuerier<'_>,
+        usdc_denom: &String,
+    ) -> StdResult<Vec<CoinValue>> {
+        let mut dec_coin_values = Vec::new();
+        for reward in &self.total_rewards {
+            dec_coin_values.push(CoinValue::from_coin(reward, querier, usdc_denom)?);
+        }
+        Ok(dec_coin_values)
+    }
+}
+
+#[cw_serde]
+pub struct QueryPoolAprsResponse {
+    pub data: Vec<PoolApr>,
+}
+
+impl QueryPoolAprsResponse {
+    pub fn to_decimal(&self) -> Vec<PoolApr> {
+        let mut aprs: Vec<PoolApr> = Vec::new();
+        for apr in self.data.clone().iter_mut() {
+            aprs.push(PoolApr {
+                pool_id: apr.pool_id,
+                eden_apr: apr.eden_apr * Decimal::from_str("100").unwrap(),
+                usdc_apr: apr.usdc_apr * Decimal::from_str("100").unwrap(),
+                total_apr: apr.total_apr * Decimal::from_str("100").unwrap(),
+            })
+        }
+
+        aprs
+    }
+}
+
+#[cw_serde]
+pub struct PoolApr {
+    pub pool_id: u64,
+    pub eden_apr: Decimal,
+    pub usdc_apr: Decimal,
+    pub total_apr: Decimal,
+}
+
+#[cw_serde]
+pub struct QueryStableStakeAprResponse {
+    pub apr: Int128,
 }

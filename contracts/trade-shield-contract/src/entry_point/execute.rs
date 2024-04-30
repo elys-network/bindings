@@ -210,6 +210,8 @@ pub fn execute(
 
         EstakingWithdrawElysStakingRewards {} => estaking_withdraw_elys_staking_rewards(info, deps),
 
+        MasterchefClaimRewards { pool_ids } => masterchef_claim_rewards(info, pool_ids),
+
         EstakingWithdrawReward {
             validator_address
         } => estaking_withdraw_reward(info, deps, validator_address)

@@ -48,3 +48,10 @@ pub struct MsgJoinPoolResponse {
 pub struct MsgExitPoolResponse {
     pub token_out: Vec<Coin>,
 }
+
+#[cw_serde]
+pub struct GetMasterchefClaimRewardsResponse {
+    pub code: u64,
+    pub result: String,
+}
+

@@ -116,11 +116,13 @@ pub enum ExecuteMsg {
         limit_process_order: Option<u128>, // set to zero set the limit to None
     },
 
-
     EstakingWithdrawElysStakingRewards {},
+
+    MasterchefClaimRewards {
+        pool_ids: Vec<u64>,
+    },
 
     EstakingWithdrawReward {
         validator_address: String
-    }
-
+    },
 }
