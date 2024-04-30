@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr};
 
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
@@ -789,6 +789,22 @@ impl MasterchefUserPendingRewardResponse {
 #[cw_serde]
 pub struct QueryPoolAprsResponse {
     pub data: Vec<PoolApr>,
+}
+
+impl QueryPoolAprsResponse {
+    pub fn to_decimal(&self) -> Vec<PoolApr> {
+        let mut aprs: Vec<PoolApr> = Vec::new();
+        for apr in self.data.clone().iter_mut() {
+            aprs.push(PoolApr {
+                pool_id: apr.pool_id,
+                eden_apr: apr.eden_apr * Decimal::from_str("100").unwrap(),
+                usdc_apr: apr.usdc_apr * Decimal::from_str("100").unwrap(),
+                total_apr: apr.total_apr * Decimal::from_str("100").unwrap(),
+            })
+        }
+
+        aprs
+    }
 }
 
 #[cw_serde]

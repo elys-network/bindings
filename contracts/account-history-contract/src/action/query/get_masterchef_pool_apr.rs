@@ -9,5 +9,5 @@ pub fn get_masterchef_pool_apr(
 
     let resp = querier.get_masterchef_pool_apr(pool_ids)?;
 
-    Ok(MasterChefPoolAprResponse { data: resp.data })
+    Ok(MasterChefPoolAprResponse { data: resp.to_decimal() })
 }
