@@ -208,6 +208,8 @@ pub fn execute(
             Ok(Response::new())
         }
 
+        MasterchefClaimRewards { pool_ids } => masterchef_claim_rewards(info, pool_ids),
+        
         EstakingWithdrawReward {
             validator_address
         } => estaking_withdraw_reward(info, deps, validator_address)
