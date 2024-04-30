@@ -34,3 +34,8 @@ elys-bindings = { path = "../../bindings", features = ["testing"] }
 elys-bindings-test = { path = "../../bindings-test" }
 anyhow = "1"
 account-history-contract = { path = ".", features = ["debug"] }
+
+[dev-dependencies.cargo-husky]
+version = "1"
+default-features = false # Disable features which are enabled by default
+features = ["precommit-hook", "run-cargo-fmt"]
