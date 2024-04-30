@@ -717,12 +717,63 @@ pub struct EstakingRewardsResponse {
 }
 
 #[cw_serde]
+#[derive(Default)]
 pub struct DelegationDelegatorReward {
     pub validator_address: String,
     pub reward: Vec<DecCoin>,
 }
 
+pub enum Validator {
+    EdenBoost,
+    Eden
+}
+
+impl Validator {
+    pub fn to_string(&self) -> String {
+        match self {
+            Validator::EdenBoost => "elysvaloper1wajd6ekh9u37hyghyw4mme59qmjllzuyaceanm".to_string(),
+            Validator::Eden => "elysvaloper1gnmpr8vvslp3shcq6e922xr0uq4aa2w5gdzht0".to_string()
+        }
+    }
+}
+
+
 impl EstakingRewardsResponse {
+    pub fn get_elys_validators(&self) -> Self {
+        let excluded_validator_addresses = vec![
+            Validator::EdenBoost.to_string(),
+            Validator::Eden.to_string(),
+        ];
+    
+        let rewards = self
+            .rewards
+            .iter()
+            .filter(|delegation_reward| {
+                !excluded_validator_addresses.contains(&delegation_reward.validator_address)
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+    
+        EstakingRewardsResponse {
+            rewards,
+            total: self.total.clone(),
+        }
+    }
+
+    pub fn get_validator_rewards(&self, validator: Validator) -> Self {
+        let rewards = self.
+            rewards
+            .iter()
+            .find(|delegation_reward| delegation_reward.validator_address == validator.to_string())
+            .cloned()
+            .unwrap_or_default();
+
+        EstakingRewardsResponse {
+            rewards: [rewards].to_vec(),
+            total: self.total.clone()
+        }
+    }
+
     pub fn to_dec_coin_values(
         &self,
         querier: &ElysQuerier<'_>,
@@ -815,6 +866,7 @@ pub struct PoolApr {
     pub total_apr: Decimal,
 }
 
+#[derive(Default)]
 #[cw_serde]
 pub struct QueryStableStakeAprResponse {
     pub apr: Int128,

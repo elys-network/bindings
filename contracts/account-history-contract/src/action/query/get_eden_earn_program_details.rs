@@ -2,9 +2,10 @@ use super::*;
 use crate::msg::query_resp::earn::GetEdenEarnProgramResp;
 use cosmwasm_std::{Decimal, Deps, Uint128};
 use elys_bindings::account_history::types::earn_program::EdenEarnProgram;
-use elys_bindings::account_history::types::{AprElys, BalanceReward, ElysDenom};
+use elys_bindings::account_history::types::{AprElys, ElysDenom};
+use elys_bindings::query_resp::Validator;
 use elys_bindings::types::BalanceAvailable;
-use elys_bindings::{query_resp::QueryAprResponse, types::EarnType, ElysQuerier, ElysQuery};
+use elys_bindings::{query_resp::QueryAprResponse, ElysQuerier, ElysQuery};
 
 pub fn get_eden_earn_program_details(
     deps: &Deps<ElysQuery>,
@@ -17,6 +18,7 @@ pub fn get_eden_earn_program_details(
     eden_apr: QueryAprResponse,
     edenb_apr: QueryAprResponse,
 ) -> Result<GetEdenEarnProgramResp, ContractError> {
+    let bonding_period = 0;
     let denom = ElysDenom::Eden.as_str();
     if asset != denom.to_string() {
         return Err(ContractError::AssetDenomError {});
@@ -27,21 +29,15 @@ pub fn get_eden_earn_program_details(
     let resp = GetEdenEarnProgramResp {
         data: match address {
             Some(addr) => {
-                let uusdc_rewards = querier.get_sub_bucket_rewards_balance(
-                    addr.clone(),
-                    usdc_denom.clone(),
-                    EarnType::EdenProgram as i32,
-                )?;
-                let ueden_rewards = querier.get_sub_bucket_rewards_balance(
-                    addr.clone(),
-                    ElysDenom::Eden.as_str().to_string(),
-                    EarnType::EdenProgram as i32,
-                )?;
-                let uedenb_rewards = querier.get_sub_bucket_rewards_balance(
-                    addr.clone(),
-                    ElysDenom::EdenBoost.as_str().to_string(),
-                    EarnType::EdenProgram as i32,
-                )?;
+                let all_rewards = querier.get_estaking_rewards(addr.clone()).unwrap_or_default();
+                let program_rewards = all_rewards
+                    .get_validator_rewards(Validator::Eden)
+                    .to_dec_coin_values(&querier, &usdc_denom.clone())
+                    .unwrap_or_default()
+                    .into_iter()
+                    .map(|coin| coin.1)
+                    .collect();
+
                 let mut available = querier.get_balance(addr.clone(), asset.clone())?;
                 let staked = querier.get_staked_balance(addr.clone(), asset.clone())?;
                 let vesting_info = querier.get_vesting_info(addr.clone())?;
@@ -58,24 +54,8 @@ pub fn get_eden_earn_program_details(
                     .map_or(Decimal::zero(), |res| res);
                 available.usd_amount = available_in_usd;
 
-                // have value in usd
-                let mut ueden_rewards_in_usd = uelys_price_in_uusdc
-                    .checked_mul(
-                        Decimal::from_atomics(ueden_rewards.amount, 0)
-                            .map_or(Decimal::zero(), |res| res),
-                    )
-                    .map_or(Decimal::zero(), |res| res);
-                ueden_rewards_in_usd = ueden_rewards_in_usd
-                    .checked_mul(uusdc_usd_price)
-                    .map_or(Decimal::zero(), |res| res);
-
-                let uusdc_rewards_in_usd = uusdc_rewards
-                    .usd_amount
-                    .checked_mul(uusdc_usd_price)
-                    .map_or(Decimal::zero(), |res| res);
-
                 EdenEarnProgram {
-                    bonding_period: 0,
+                    bonding_period,
                     apr: AprElys {
                         uusdc: usdc_apr.apr,
                         ueden: eden_apr.apr,
@@ -83,29 +63,13 @@ pub fn get_eden_earn_program_details(
                     },
                     available: Some(available),
                     staked: Some(staked),
-                    rewards: Some(vec![
-                        BalanceReward {
-                            asset: ElysDenom::Usdc.as_str().to_string(),
-                            amount: uusdc_rewards.amount,
-                            usd_amount: Some(uusdc_rewards_in_usd),
-                        },
-                        BalanceReward {
-                            asset: ElysDenom::Eden.as_str().to_string(),
-                            amount: ueden_rewards.amount,
-                            usd_amount: Some(ueden_rewards_in_usd),
-                        },
-                        BalanceReward {
-                            asset: ElysDenom::EdenBoost.as_str().to_string(),
-                            amount: uedenb_rewards.amount,
-                            usd_amount: None,
-                        },
-                    ]),
+                    rewards: Some(program_rewards),
                     vesting: vesting_info.vesting,
                     vesting_details: vesting_info.vesting_details,
                 }
             }
             None => EdenEarnProgram {
-                bonding_period: 90,
+                bonding_period,
                 apr: AprElys {
                     uusdc: usdc_apr.apr,
                     ueden: eden_apr.apr,

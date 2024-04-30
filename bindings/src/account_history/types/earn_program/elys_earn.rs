@@ -1,5 +1,5 @@
 use crate::{
-    account_history::types::{AprElys, BalanceReward},
+    account_history::types::{AprElys, DecCoinValue},
     query_resp::StakedAvailable,
     types::{BalanceAvailable, StakedPosition, UnstakedPosition},
 };
@@ -21,7 +21,7 @@ pub struct ElysEarnProgram {
     // The rewards the user currently has on the Elys Earn Program.
     // It should be in the response only if the address is in the request object.
     // rewards are either USDC, EDEN or EDEN Boost.
-    pub rewards: Option<Vec<BalanceReward>>,
+    pub rewards: Option<Vec<DecCoinValue>>,
     // All the positions the user has staked on the ELYS program.
     // It should be in the response only if the address is in the request object.
     pub staked_positions: Option<Vec<StakedPosition>>,

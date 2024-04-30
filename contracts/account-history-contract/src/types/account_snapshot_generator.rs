@@ -436,13 +436,9 @@ impl AccountSnapshotGenerator {
         let usdc_details = get_usdc_earn_program_details(
             deps,
             Some(address.to_owned()),
-            ElysDenom::Usdc.as_str().to_string(),
             self.metadata.usdc_denom.to_owned(),
             self.metadata.usdc_base_denom.to_owned(),
-            self.metadata.uusdc_usd_price,
-            self.metadata.uelys_price_in_uusdc,
-            self.metadata.usdc_apr_usdc.to_owned(),
-            self.metadata.eden_apr_usdc.to_owned(),
+            self.metadata.uusdc_usd_price
         )
         .unwrap_or_default();
 
@@ -528,8 +524,6 @@ impl AccountSnapshotGenerator {
             Some(address.to_owned()),
             ElysDenom::EdenBoost.as_str().to_string(),
             self.metadata.usdc_denom.to_owned(),
-            self.metadata.uusdc_usd_price,
-            self.metadata.uelys_price_in_uusdc,
             self.metadata.usdc_apr_edenb.to_owned(),
             self.metadata.eden_apr_edenb.to_owned(),
         )
