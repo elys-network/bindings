@@ -6,17 +6,17 @@ pub mod sudo {
 pub mod query {
     mod get_liquid_assets;
     use crate::error::ContractError;
+    mod exit_pool_estimation;
     mod get_membership_tier;
     mod get_perpetual_asset;
     mod get_pool_balances;
     mod get_pools;
     mod get_pools_apr;
-    mod join_pool_estimation;
-    mod pool_asset_estimation;
-    mod exit_pool_estimation;
     mod get_portfolio;
     mod get_rewards;
     mod get_total_balance;
+    mod join_pool_estimation;
+    mod pool_asset_estimation;
 
     #[cfg(feature = "debug")]
     mod all;
@@ -40,12 +40,12 @@ pub mod query {
     #[cfg(feature = "debug")]
     pub use user_value::user_value;
 
+    pub use exit_pool_estimation::exit_pool_estimation;
     pub use get_pool_balances::get_pool_balances;
     pub use get_pools::get_pools;
     pub use get_pools_apr::get_pools_apr;
     pub use join_pool_estimation::join_pool_estimation;
     pub use pool_asset_estimation::pool_asset_estimation;
-    pub use exit_pool_estimation::exit_pool_estimation;
     mod get_eden_boost_earn_program_details;
     pub use get_eden_boost_earn_program_details::get_eden_boost_earn_program_details;
     pub use get_liquid_assets::get_liquid_assets;

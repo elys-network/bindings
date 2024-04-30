@@ -13,7 +13,7 @@ pub struct Portfolio {
     pub perpetual_assets_usd: Decimal256,
     pub usdc_earn_usd: Decimal256,
     pub borrows_usd: Decimal256,
-    pub stake_balance_breakdown: StakeAssetBalanceBreakdown
+    pub stake_balance_breakdown: StakeAssetBalanceBreakdown,
 }
 
 // implement zero

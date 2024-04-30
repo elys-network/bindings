@@ -6,9 +6,15 @@ impl LiquidityPosition {
         LiquidityPosition {
             pool_id: 0,
             pool_rate_percent: vec![
-                Rate{denom:"atom".to_string(), percent: Decimal::from_atomics(Uint128::new(50), 0).unwrap()},
-                Rate{denom:"usdc".to_string(), percent: Decimal::from_atomics(Uint128::new(50), 0).unwrap()}
-                ],
+                Rate {
+                    denom: "atom".to_string(),
+                    percent: Decimal::from_atomics(Uint128::new(50), 0).unwrap(),
+                },
+                Rate {
+                    denom: "usdc".to_string(),
+                    percent: Decimal::from_atomics(Uint128::new(50), 0).unwrap(),
+                },
+            ],
             apr_usd: Decimal::from_atomics(Uint128::new(0), 0).unwrap(),
             inflationary_eden_rewards: 0,
             external_rewards_apr_usd: Decimal::from_atomics(Uint128::new(0), 0).unwrap(),
@@ -24,9 +30,15 @@ impl LiquidityPosition {
         vec![LiquidityPosition {
             pool_id: 0,
             pool_rate_percent: vec![
-                Rate{denom:"atom".to_string(), percent: Decimal::from_atomics(Uint128::new(50), 0).unwrap()},
-                Rate{denom:"usdc".to_string(), percent: Decimal::from_atomics(Uint128::new(50), 0).unwrap()}
-                ],
+                Rate {
+                    denom: "atom".to_string(),
+                    percent: Decimal::from_atomics(Uint128::new(50), 0).unwrap(),
+                },
+                Rate {
+                    denom: "usdc".to_string(),
+                    percent: Decimal::from_atomics(Uint128::new(50), 0).unwrap(),
+                },
+            ],
             apr_usd: Decimal::from_atomics(Uint128::new(0), 0).unwrap(),
             inflationary_eden_rewards: 0,
             external_rewards_apr_usd: Decimal::from_atomics(Uint128::new(0), 0).unwrap(),

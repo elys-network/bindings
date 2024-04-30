@@ -1,7 +1,7 @@
-use std::collections::HashMap;
-use cosmwasm_std::{Deps, StdResult, StdError, Decimal, DecCoin, Decimal256};
-use elys_bindings::{ElysQuerier, ElysQuery};
+use cosmwasm_std::{DecCoin, Decimal, Decimal256, Deps, StdError, StdResult};
 use elys_bindings::query_resp::{PoolFilterType, QueryPoolAssetEstimationResponse};
+use elys_bindings::{ElysQuerier, ElysQuery};
+use std::collections::HashMap;
 
 /**
  * Given an asset and a pool, determine the quantity of every other asset in the pool
@@ -11,12 +11,13 @@ use elys_bindings::query_resp::{PoolFilterType, QueryPoolAssetEstimationResponse
 pub fn pool_asset_estimation(
     deps: Deps<ElysQuery>,
     pool_id: u64,
-    asset: DecCoin
+    asset: DecCoin,
 ) -> StdResult<QueryPoolAssetEstimationResponse> {
     let querier = ElysQuerier::new(&deps.querier);
     let asset_denom = asset.denom.to_string();
 
-    let pool_response = querier.get_all_pools(Some(vec![pool_id]), PoolFilterType::FilterAll as i32, None)?;
+    let pool_response =
+        querier.get_all_pools(Some(vec![pool_id]), PoolFilterType::FilterAll as i32, None)?;
     let pool = match pool_response.pools {
         Some(pools) => {
             if let Some(pool) = pools.first() {
@@ -28,7 +29,9 @@ pub fn pool_asset_estimation(
         None => return Err(StdError::generic_err("Failed to fetch pool")),
     };
 
-    let asset_usd_price = querier.get_asset_price(asset.denom).unwrap_or(Decimal::zero());
+    let asset_usd_price = querier
+        .get_asset_price(asset.denom)
+        .unwrap_or(Decimal::zero());
     let asset_in_usd = asset.amount * Decimal256::from(asset_usd_price);
 
     // Ensure the current_pool_ratio is populated
@@ -39,7 +42,7 @@ pub fn pool_asset_estimation(
 
     let asset_ratio = Decimal256::from(current_pool_ratio.get(&asset_denom).unwrap().clone());
     let total_in_usd = asset_in_usd / asset_ratio;
-    
+
     let mut estimations = HashMap::new();
     for (denom, _) in current_pool_ratio.iter() {
         if denom.to_string() != asset_denom {
@@ -54,5 +57,7 @@ pub fn pool_asset_estimation(
     }
 
     // Return the result
-    Ok(QueryPoolAssetEstimationResponse { amounts: estimations })
+    Ok(QueryPoolAssetEstimationResponse {
+        amounts: estimations,
+    })
 }

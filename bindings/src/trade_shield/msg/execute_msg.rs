@@ -117,6 +117,6 @@ pub enum ExecuteMsg {
     },
 
     EstakingWithdrawReward {
-        validator_address: String
-    }
+        validator_address: String,
+    },
 }

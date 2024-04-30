@@ -468,7 +468,7 @@ pub struct QueryPoolAssetEstimationResponse {
 
 #[cw_serde]
 pub struct QueryExitPoolEstimationResponse {
-    pub amounts_out: Vec<Coin>
+    pub amounts_out: Vec<Coin>,
 }
 
 #[cw_serde]
@@ -632,7 +632,6 @@ pub struct LeveragelpWhitelistResponseRaw {
     pub whitelist: Option<Vec<String>>,
     pub pagination: Option<PageResponse>,
 }
-
 
 #[cw_serde]
 pub struct LeveragelpWhitelistResponse {

@@ -78,7 +78,7 @@ pub enum ElysMsg {
         denom: String,
     },
     CommitmentClaimVesting {
-        sender: String
+        sender: String,
     },
     IncentiveWithdrawRewards {
         delegator_address: String,
@@ -118,8 +118,8 @@ pub enum ElysMsg {
     },
     EstakingWithdrawReward {
         validator_address: String,
-        delegator_address: String
-    }
+        delegator_address: String,
+    },
 }
 
 impl ElysMsg {
@@ -274,7 +274,7 @@ impl ElysMsg {
 
     pub fn eden_claim_vesting(sender: String) -> Self {
         Self::CommitmentClaimVesting {
-            sender: sender.to_owned()
+            sender: sender.to_owned(),
         }
     }
 
@@ -356,7 +356,7 @@ impl ElysMsg {
     pub fn estaking_withdraw_reward(delegator_address: String, validator_address: String) -> Self {
         Self::EstakingWithdrawReward {
             delegator_address,
-            validator_address
+            validator_address,
         }
     }
 }

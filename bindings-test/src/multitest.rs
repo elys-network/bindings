@@ -949,7 +949,7 @@ impl Module for ElysModule {
             }
             ElysMsg::CommitmentClaimVesting { .. } => {
                 let data = to_json_binary(&MsgResponse {
-                    result: "Ok".to_string()
+                    result: "Ok".to_string(),
                 })?;
                 Ok(AppResponse {
                     events: vec![],

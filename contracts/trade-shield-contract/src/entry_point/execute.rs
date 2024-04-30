@@ -208,8 +208,8 @@ pub fn execute(
             Ok(Response::new())
         }
 
-        EstakingWithdrawReward {
-            validator_address
-        } => estaking_withdraw_reward(info, deps, validator_address)
+        EstakingWithdrawReward { validator_address } => {
+            estaking_withdraw_reward(info, deps, validator_address)
+        }
     }
 }

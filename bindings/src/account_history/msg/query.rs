@@ -5,9 +5,10 @@ use super::query_resp::*;
 #[allow(unused_imports)]
 use crate::query_resp::{
     AuthAddressesResponse, BalanceBorrowed, PoolFilterType, QueryEarnPoolResponse,
-    QueryIncentivePoolAprsResponse, QueryJoinPoolEstimationResponse, QueryExitPoolEstimationResponse,
-    QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryUserPoolResponse,
-    QueryVestingInfoResponse, StableStakeParamsData, StakedAvailable, QueryPoolAssetEstimationResponse
+    QueryExitPoolEstimationResponse, QueryIncentivePoolAprsResponse,
+    QueryJoinPoolEstimationResponse, QueryPoolAssetEstimationResponse, QueryStakedPositionResponse,
+    QueryUnstakedPositionResponse, QueryUserPoolResponse, QueryVestingInfoResponse,
+    StableStakeParamsData, StakedAvailable,
 };
 #[allow(unused_imports)]
 use crate::types::{BalanceAvailable, PageRequest};
@@ -49,27 +50,19 @@ pub enum QueryMsg {
     },
 
     #[returns(QueryIncentivePoolAprsResponse)]
-    GetLiquidityPoolsApr {
-        pool_ids: Option<Vec<u64>>
-    },
+    GetLiquidityPoolsApr { pool_ids: Option<Vec<u64>> },
 
     #[returns(QueryJoinPoolEstimationResponse)]
-    JoinPoolEstimation {
-        pool_id: u64,
-        amounts_in: Vec<Coin> 
-    },
-    
+    JoinPoolEstimation { pool_id: u64, amounts_in: Vec<Coin> },
+
     #[returns(QueryExitPoolEstimationResponse)]
     ExitPoolEstimation {
         pool_id: u64,
-        exit_fiat_amount: Decimal
+        exit_fiat_amount: Decimal,
     },
 
     #[returns(QueryPoolAssetEstimationResponse)]
-    PoolAssetEstimation {
-        pool_id: u64,
-        amount: DecCoin
-    },
+    PoolAssetEstimation { pool_id: u64, amount: DecCoin },
 
     // debug only
     #[cfg(feature = "debug")]

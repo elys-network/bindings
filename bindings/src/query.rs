@@ -116,7 +116,11 @@ pub enum ElysQuery {
     #[returns(QueryJoinPoolEstimationResponse)]
     AmmJoinPoolEstimation { pool_id: u64, amounts_in: Vec<Coin> },
     #[returns(QueryExitPoolEstimationResponse)]
-    AmmExitPoolEstimation{ pool_id: u64, share_amount_in: Uint128, token_out_denom: String },
+    AmmExitPoolEstimation {
+        pool_id: u64,
+        share_amount_in: Uint128,
+        token_out_denom: String,
+    },
     #[returns(LeveragelpParamsResponse)]
     LeveragelpParams {},
     #[returns(LeveragelpPositionsResponse)]
@@ -373,11 +377,15 @@ impl ElysQuery {
             amounts_in,
         }
     }
-    pub fn exit_pool_estimation(pool_id: u64, share_amount_in: Uint128, token_out_denom: String) -> Self {
+    pub fn exit_pool_estimation(
+        pool_id: u64,
+        share_amount_in: Uint128,
+        token_out_denom: String,
+    ) -> Self {
         ElysQuery::AmmExitPoolEstimation {
             pool_id,
             share_amount_in,
-            token_out_denom
+            token_out_denom,
         }
     }
 }
