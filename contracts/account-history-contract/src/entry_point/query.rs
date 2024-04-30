@@ -1,6 +1,6 @@
-use crate::action::query::{
-    get_estaking_rewards, get_liquid_assets, get_masterchef_pending_rewards, get_masterchef_pool_apr, get_masterchef_stable_stake_apr, get_membership_tier, get_perpetuals_assets, get_pool_balances, get_portfolio, get_rewards, get_staked_assets, get_total_balance
-};
+use crate::{action::query::{
+    get_eden_boost_earn_program_details, get_eden_earn_program_details, get_elys_earn_program_details, get_estaking_rewards, get_liquid_assets, get_masterchef_pending_rewards, get_masterchef_pool_apr, get_masterchef_stable_stake_apr, get_membership_tier, get_perpetuals_assets, get_pool_balances, get_portfolio, get_rewards, get_staked_assets, get_total_balance, get_usdc_earn_program_details
+}, types::AccountSnapshotGenerator};
 
 #[cfg(feature = "debug")]
 use crate::action::query::{
@@ -9,7 +9,7 @@ use crate::action::query::{
 };
 
 use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult};
-use elys_bindings::{ElysQuerier, ElysQuery};
+use elys_bindings::{account_history::types::ElysDenom, ElysQuerier, ElysQuery};
 
 use crate::msg::QueryMsg;
 
@@ -156,6 +156,70 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         AmmPriceByDenom { token_in, discount } => {
             let querier = ElysQuerier::new(&deps.querier);
             to_json_binary(&querier.get_amm_price_by_denom(token_in, discount)?)
+        }
+        #[cfg(feature = "debug")]
+        GetEdenEarnProgramDetails { address } => {
+            let generator = AccountSnapshotGenerator::new(&deps)?;
+            
+            let program = get_eden_earn_program_details(
+                &deps,
+                Some(address.to_owned()),
+                ElysDenom::Eden.as_str().to_string(),
+                generator.metadata.usdc_denom.to_owned(),
+                generator.metadata.uusdc_usd_price,
+                generator.metadata.uelys_price_in_uusdc,
+                generator.metadata.usdc_apr_eden.to_owned(),
+                generator.metadata.eden_apr_eden.to_owned(),
+                generator.metadata.edenb_apr_eden.to_owned(),
+            ).unwrap_or_default();
+            to_json_binary(&program)
+        }
+        #[cfg(feature = "debug")]
+        GetEdenBoostEarnProgramDetails { address } => {
+            let generator = AccountSnapshotGenerator::new(&deps)?;
+            let program = get_eden_boost_earn_program_details(
+                &deps,
+                Some(address.to_owned()),
+                ElysDenom::EdenBoost.as_str().to_string(),
+                generator.metadata.usdc_denom.to_owned(),
+                generator.metadata.usdc_apr_edenb.to_owned(),
+                generator.metadata.eden_apr_edenb.to_owned(),
+            )
+            .unwrap_or_default();
+
+            to_json_binary(&program)
+        }
+        #[cfg(feature = "debug")]
+        GetElysEarnProgramDetails { address } => {
+            let generator = AccountSnapshotGenerator::new(&deps)?;
+            let program = get_elys_earn_program_details(
+                &deps,
+                Some(address.to_owned()),
+                ElysDenom::Elys.as_str().to_string(),
+                generator.metadata.usdc_denom.to_owned(),
+                generator.metadata.uusdc_usd_price,
+                generator.metadata.uelys_price_in_uusdc,
+                generator.metadata.usdc_apr_elys.to_owned(),
+                generator.metadata.eden_apr_elys.to_owned(),
+                generator.metadata.edenb_apr_elys.to_owned(),
+            )
+            .unwrap_or_default();
+
+            to_json_binary(&program)
+        }
+        #[cfg(feature = "debug")]
+        GetUsdcEarnProgramDetails { address } => {
+            let generator = AccountSnapshotGenerator::new(&deps)?;
+            let program = get_usdc_earn_program_details(
+                &deps,
+                Some(address.to_owned()),
+                generator.metadata.usdc_denom.to_owned(),
+                generator.metadata.usdc_base_denom.to_owned(),
+                generator.metadata.uusdc_usd_price
+            )
+            .unwrap_or_default();
+
+            to_json_binary(&program)
         }
     }
 }

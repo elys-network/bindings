@@ -1,5 +1,6 @@
 #[allow(unused_imports)]
 use super::super::types::{PerpetualAssets, PortfolioBalanceSnapshot};
+use super::query_resp::earn::*;
 use super::query_resp::estaking::*;
 use super::query_resp::masterchef::*;
 
@@ -141,4 +142,20 @@ pub enum QueryMsg {
     #[cfg(feature = "debug")]
     #[returns(Decimal)]
     AmmPriceByDenom { token_in: Coin, discount: Decimal },
+
+    #[cfg(feature = "debug")]
+    #[returns(GetEdenEarnProgramResp)]
+    GetEdenEarnProgramDetails { address: String },
+
+    #[cfg(feature = "debug")]
+    #[returns(GetEdenBoostEarnProgramResp)]
+    GetEdenBoostEarnProgramDetails { address: String },
+
+    #[cfg(feature = "debug")]
+    #[returns(GetElysEarnProgramResp)]
+    GetElysEarnProgramDetails { address: String },
+
+    #[cfg(feature = "debug")]
+    #[returns(GetUsdcEarnProgramResp)]
+    GetUsdcEarnProgramDetails { address: String }
 }
