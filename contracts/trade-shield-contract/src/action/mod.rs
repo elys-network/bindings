@@ -59,6 +59,7 @@ pub mod execute {
 
     mod close_leveragelp_position_request;
     mod open_leveragelp_position_request;
+    mod masterchef_claim_rewards;
 
     mod estaking_withdraw_reward;
 
@@ -85,7 +86,7 @@ pub mod execute {
     pub use open_leveragelp_position_request::open_leveragelp_position_request;
     pub use stake_request::stake_request;
     pub use unstake_request::unstake_request;
-
+    pub use masterchef_claim_rewards::masterchef_claim_rewards;
     pub use estaking_withdraw_reward::estaking_withdraw_reward;
 }
 

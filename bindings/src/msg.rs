@@ -116,6 +116,7 @@ pub enum ElysMsg {
         id: u64,
         lp_amount: Int128,
     },
+    MasterchefClaimRewards { sender: String, pool_ids: Vec<u64> },
     EstakingWithdrawReward {
         validator_address: String,
         delegator_address: String
@@ -357,6 +358,13 @@ impl ElysMsg {
         Self::EstakingWithdrawReward {
             delegator_address,
             validator_address
+        }
+    }
+
+    pub fn get_masterchef_claim_rewards(address: String, pool_ids: Vec<u64>) -> Self {
+        Self::MasterchefClaimRewards {
+            sender: address,
+            pool_ids,
         }
     }
 }

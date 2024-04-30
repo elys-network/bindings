@@ -1,13 +1,18 @@
 #[allow(unused_imports)]
 use super::super::types::{PerpetualAssets, PortfolioBalanceSnapshot};
+use super::query_resp::estaking::*;
+use super::query_resp::masterchef::*;
+
 #[allow(unused_imports)]
 use super::query_resp::*;
+use crate::query_resp::QueryStableStakeAprResponse;
 #[allow(unused_imports)]
 use crate::query_resp::{
-    AuthAddressesResponse, BalanceBorrowed, PoolFilterType, QueryEarnPoolResponse,
-    QueryIncentivePoolAprsResponse, QueryJoinPoolEstimationResponse, QueryExitPoolEstimationResponse,
-    QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryUserPoolResponse,
-    QueryVestingInfoResponse, StableStakeParamsData, StakedAvailable, QueryPoolAssetEstimationResponse
+    AuthAddressesResponse, BalanceBorrowed, EstakingRewardsResponse, PoolFilterType,
+    QueryEarnPoolResponse, QueryExitPoolEstimationResponse, QueryIncentivePoolAprsResponse,
+    QueryJoinPoolEstimationResponse, QueryPoolAssetEstimationResponse, QueryStakedPositionResponse,
+    QueryUnstakedPositionResponse, QueryUserPoolResponse, QueryVestingInfoResponse,
+    StableStakeParamsData, StakedAvailable
 };
 #[allow(unused_imports)]
 use crate::types::{BalanceAvailable, PageRequest};
@@ -49,28 +54,33 @@ pub enum QueryMsg {
     },
 
     #[returns(QueryIncentivePoolAprsResponse)]
-    GetLiquidityPoolsApr {
-        pool_ids: Option<Vec<u64>>
-    },
+    GetLiquidityPoolsApr { pool_ids: Option<Vec<u64>> },
 
     #[returns(QueryJoinPoolEstimationResponse)]
-    JoinPoolEstimation {
-        pool_id: u64,
-        amounts_in: Vec<Coin> 
-    },
-    
+    JoinPoolEstimation { pool_id: u64, amounts_in: Vec<Coin> },
+
     #[returns(QueryExitPoolEstimationResponse)]
     ExitPoolEstimation {
         pool_id: u64,
-        exit_fiat_amount: Decimal
+        exit_fiat_amount: Decimal,
     },
 
     #[returns(QueryPoolAssetEstimationResponse)]
-    PoolAssetEstimation {
-        pool_id: u64,
-        amount: DecCoin
-    },
+    PoolAssetEstimation { pool_id: u64, amount: DecCoin },
 
+    #[returns(GetEstakingRewardsResponse)]
+    GetEstakingRewards { address: String },
+
+    #[returns(GetMasterchefUserPendingRewardResponse)]
+    GetMasterchefPendingRewards { address: String },
+
+    #[returns(QueryStableStakeAprResponse)]
+    GetMasterchefStableStakeApr { denom: String },
+
+    #[returns(MasterChefPoolAprResponse)]
+    GetMasterChefPoolApr {
+        pool_ids: Vec<u64>,
+    },
     // debug only
     #[cfg(feature = "debug")]
     #[returns(ParamsResp)]
