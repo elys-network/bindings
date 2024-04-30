@@ -55,7 +55,7 @@ pub mod query_resp {
         mod get_masterchef_pool_apr_response;
         mod get_masterchef_stable_stake_response;
         pub use get_masterchef_pending_rewards::GetMasterchefUserPendingRewardResponse;
-        pub use get_masterchef_pool_apr_response::{MasterChefPoolAprResponse, PoolAprValue};
+        pub use get_masterchef_pool_apr_response::MasterChefPoolAprResponse;
         pub use get_masterchef_stable_stake_response::StableStakeAprResponse;
     }
 }

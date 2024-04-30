@@ -6,10 +6,7 @@ use cosmwasm_std::{
 };
 
 use crate::{
-    account_history::{
-        msg::query_resp::masterchef::PoolAprValue,
-        types::{CoinValue, DecCoinValue},
-    },
+    account_history::types::{CoinValue, DecCoinValue},
     trade_shield::types::{
         AmmPool, AmmPoolRaw, PerpetualPosition, PoolExtraInfo, StakedPositionRaw,
     },
@@ -797,24 +794,9 @@ pub struct QueryPoolAprsResponse {
 #[cw_serde]
 pub struct PoolApr {
     pub pool_id: u64,
-    pub eden_apr: DecCoin,
-    pub usdc_apr: DecCoin,
-    pub total_apr: DecCoin,
-}
-
-impl PoolApr {
-    pub fn to_dec_coin_value(
-        &self,
-        querier: &ElysQuerier<'_>,
-        usdc_denom: &String,
-    ) -> StdResult<PoolAprValue> {
-        Ok(PoolAprValue {
-            pool_id: self.pool_id,
-            eden_apr: DecCoinValue::from_dec_coin(&self.eden_apr, querier, usdc_denom)?,
-            usdc_apr: DecCoinValue::from_dec_coin(&self.usdc_apr, querier, usdc_denom)?,
-            total_apr: DecCoinValue::from_dec_coin(&self.total_apr, querier, usdc_denom)?,
-        })
-    }
+    pub eden_apr: Decimal,
+    pub usdc_apr: Decimal,
+    pub total_apr: Decimal,
 }
 
 #[cw_serde]

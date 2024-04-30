@@ -152,7 +152,7 @@ pub enum ElysQuery {
     #[returns(EstakingRewardsResponse)]
     EstakingRewards { address: String },
     #[returns(QueryPoolAprsResponse)]
-    MasterchefPoolApr { pool_ids: Vec<u64> },
+    MasterchefPoolAprs { pool_ids: Vec<u64> },
     #[returns(QueryStableStakeAprResponse)]
     MasterchefStableStakeApr { denom: String },
 }
@@ -401,7 +401,7 @@ impl ElysQuery {
         Self::MasterchefUserPendingReward { user: address }
     }
     pub fn get_masterchef_pool_apr(pool_ids: Vec<u64>) -> Self {
-        Self::MasterchefPoolApr { pool_ids }
+        Self::MasterchefPoolAprs { pool_ids }
     }
     pub fn query_estaking_rewards(address: String) -> Self {
         ElysQuery::EstakingRewards { address }

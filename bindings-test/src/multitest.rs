@@ -629,7 +629,7 @@ impl Module for ElysModule {
                 Ok(to_json_binary(&resp)?)
             }
             ElysQuery::MasterchefUserPendingReward { .. } => todo!("MasterchefUserPendingReward"),
-            ElysQuery::MasterchefPoolApr { .. } => todo!("MasterchefPoolApr"),
+            ElysQuery::MasterchefPoolAprs { .. } => todo!("MasterchefPoolApr"),
             ElysQuery::MasterchefStableStakeApr { .. } => todo!("MasterchefStableStakeApr"),
         }
     }
