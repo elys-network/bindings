@@ -14,7 +14,7 @@ use elys_bindings::trade_shield::{
 use msg::QueryMsg;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, ContractError> {
+pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> Result<Binary, ContractError> {
     use action::query;
     use QueryMsg::*;
     let querier = ElysQuerier::new(&deps.querier);
@@ -213,5 +213,6 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
             }
             Ok(to_json_binary(&GetSortedOrderListResp { orders_states })?)
         }
+        GetStat {} => Ok(to_json_binary(&query::get_stat(deps, env)?)?),
     }
 }

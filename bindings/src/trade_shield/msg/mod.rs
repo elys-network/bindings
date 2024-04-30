@@ -22,6 +22,7 @@ pub mod query_resp {
     mod get_sorted_order_list_resp;
     mod get_spot_order_resp;
     mod get_spot_orders_resp;
+    mod get_stat_response;
     mod number_of_pending_order;
     mod params_resp;
 
@@ -34,6 +35,7 @@ pub mod query_resp {
     pub use get_sorted_order_list_resp::*;
     pub use get_spot_order_resp::GetSpotOrderResp;
     pub use get_spot_orders_resp::GetSpotOrdersResp;
+    pub use get_stat_response::GetStatResponse;
     pub use number_of_pending_order::NumberOfPendingOrderResp;
     pub use params_resp::TradeShieldParamsResponse;
 }
