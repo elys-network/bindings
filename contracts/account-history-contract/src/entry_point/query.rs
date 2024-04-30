@@ -1,12 +1,11 @@
 use crate::action::query::{
-    get_liquid_assets, get_membership_tier, get_perpetuals_assets, get_pool_balances,
-    get_portfolio, get_rewards, get_staked_assets, get_total_balance,
+    get_estaking_rewards, get_liquid_assets, get_masterchef_pending_rewards, get_masterchef_pool_apr, get_masterchef_stable_stake_apr, get_membership_tier, get_perpetuals_assets, get_pool_balances, get_portfolio, get_rewards, get_staked_assets, get_total_balance
 };
 
 #[cfg(feature = "debug")]
 use crate::action::query::{
-    all, get_pools, get_pools_apr, join_pool_estimation, last_snapshot, params, user_snapshots, user_value,
-    pool_asset_estimation, exit_pool_estimation
+    all, exit_pool_estimation, get_pools, get_pools_apr, join_pool_estimation, last_snapshot,
+    params, pool_asset_estimation, user_snapshots, user_value,
 };
 
 use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult};
@@ -58,23 +57,20 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
             pagination,
         } => to_json_binary(&get_pools(deps, pool_ids, filter_type, pagination)?),
 
-        GetLiquidityPoolsApr {
-            pool_ids
-        } => to_json_binary(&get_pools_apr(deps, pool_ids)?),
+        GetLiquidityPoolsApr { pool_ids } => to_json_binary(&get_pools_apr(deps, pool_ids)?),
 
         JoinPoolEstimation {
             pool_id,
-            amounts_in
+            amounts_in,
         } => to_json_binary(&join_pool_estimation(deps, pool_id, amounts_in)?),
 
-        PoolAssetEstimation {
-            pool_id,
-            amount
-        } => to_json_binary(&pool_asset_estimation(deps, pool_id, amount)?),
+        PoolAssetEstimation { pool_id, amount } => {
+            to_json_binary(&pool_asset_estimation(deps, pool_id, amount)?)
+        }
 
         ExitPoolEstimation {
             pool_id,
-            exit_fiat_amount
+            exit_fiat_amount,
         } => to_json_binary(&exit_pool_estimation(deps, pool_id, exit_fiat_amount)?),
 
         GetAssetPriceFromDenomInToDenomOut {
@@ -85,6 +81,20 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
             to_json_binary(
                 &querier.get_asset_price_from_denom_in_to_denom_out(denom_in, denom_out)?,
             )
+        }
+
+        GetEstakingRewards { address } => to_json_binary(&get_estaking_rewards(deps, address)?),
+
+        GetMasterchefPendingRewards { address } => {
+            to_json_binary(&get_masterchef_pending_rewards(deps, address)?)
+        }
+
+        GetMasterChefPoolApr { pool_ids } => {
+            to_json_binary(&get_masterchef_pool_apr(deps, pool_ids)?)
+        }
+
+        GetMasterchefStableStakeApr { denom } => {
+            to_json_binary(&get_masterchef_stable_stake_apr(deps, denom)?)
         }
 
         // debug only

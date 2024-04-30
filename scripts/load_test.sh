@@ -75,7 +75,7 @@ send_uelys() {
     while IFS= read -r line; do
         ACCOUNT_NAME=$(echo $line | cut -d ' ' -f 1)
         ACCOUNT_ADDRESS=$(echo $line | cut -d ' ' -f 2)
-        txhash=$(elysd tx bank send $user_address $ACCOUNT_ADDRESS 1000000000uelys --node $NODE --from=$NAME --fees=100000uelys -y | extract_txhash)
+        txhash=$(elysd tx bank send $user_address $ACCOUNT_ADDRESS 1000000uelys --node $NODE --from=$NAME --fees=100000uelys -y | extract_txhash)
         wait_for_tx $txhash
         echo "Sent 1000000000uelys to $ACCOUNT_NAME ($ACCOUNT_ADDRESS)"
     done < $OUTPUT_FILE
@@ -88,7 +88,7 @@ broadcast_transactions() {
     while IFS= read -r line; do
         ACCOUNT_NAME=$(echo $line | cut -d ' ' -f 1)
         ACCOUNT_ADDRESS=$(echo $line | cut -d ' ' -f 2)
-        elysd tx wasm exec --from=$ACCOUNT_NAME --node $NODE --gas auto --gas-adjustment=1.3 --fees 100000uelys -b async -y --amount 10000000uelys "$TS_CONTRACT_ADDRESS" '{
+        elysd tx wasm exec --from=$ACCOUNT_NAME --node $NODE --gas auto --gas-adjustment=1.3 --fees 100000uelys -b async -y --amount 100000uelys "$TS_CONTRACT_ADDRESS" '{
             "create_spot_order": {
                 "order_type": "market_buy",
                 "order_target_denom": "'$ATOM_DENOM'",
