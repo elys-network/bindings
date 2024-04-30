@@ -2,7 +2,8 @@ use std::collections::HashMap;
 use std::str::FromStr;
 
 use cosmwasm_std::{
-    coin, to_json_vec, Binary, Coin, ContractResult, Decimal, QuerierWrapper, QueryRequest, SignedDecimal, SignedDecimal256, StdError, StdResult, SystemResult, Uint128
+    coin, to_json_vec, Binary, Coin, ContractResult, Decimal, QuerierWrapper, QueryRequest,
+    SignedDecimal, SignedDecimal256, StdError, StdResult, SystemResult, Uint128,
 };
 
 use crate::{
@@ -592,7 +593,7 @@ impl<'a> ElysQuerier<'a> {
     pub fn exit_pool_estimation(
         &self,
         pool_id: u64,
-        share_amount_in: Uint128
+        share_amount_in: Uint128,
     ) -> StdResult<QueryExitPoolEstimationResponse> {
         let query = ElysQuery::exit_pool_estimation(pool_id, share_amount_in, "".to_string());
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
@@ -850,6 +851,43 @@ impl<'a> ElysQuerier<'a> {
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
         let resp: EstakingRewardsResponse = self.querier.query(&request)?;
         Ok(resp)
+    }
+
+    /// This function retrieves pending rewards for a user from the Masterchef contract.
+    ///
+    /// Arguments:
+    ///
+    /// * `address`: The `address` parameter in the `get_masterchef_pending_rewards` function is a
+    /// String type that represents the address for which you want to retrieve pending rewards from the
+    /// Masterchef contract.
+    ///
+    /// Returns:
+    ///
+    /// The function `get_masterchef_pending_rewards` returns a `StdResult` containing a
+    /// `MasterchefUserPendingRewardResponse`.
+    pub fn get_masterchef_pending_rewards(
+        &self,
+        address: String,
+    ) -> StdResult<MasterchefUserPendingRewardResponse> {
+        self.querier.query(&QueryRequest::Custom(
+            ElysQuery::masterchef_pending_rewards(address),
+        ))
+    }
+
+    pub fn get_masterchef_pool_apr(&self, pool_ids: Vec<u64>) -> StdResult<QueryPoolAprsResponse> {
+        self.querier
+            .query(&QueryRequest::Custom(ElysQuery::get_masterchef_pool_apr(
+                pool_ids,
+            )))
+    }
+
+    pub fn get_masterchef_stable_stake_apr(
+        &self,
+        denom: String,
+    ) -> StdResult<QueryStableStakeAprResponse> {
+        self.querier.query(&QueryRequest::Custom(
+            ElysQuery::get_masterchef_stable_stake_apr(denom),
+        ))
     }
 
     pub fn leveragelp_params(&self) -> StdResult<LeveragelpParamsResponse> {

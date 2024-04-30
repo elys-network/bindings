@@ -116,7 +116,11 @@ pub enum ElysQuery {
     #[returns(QueryJoinPoolEstimationResponse)]
     AmmJoinPoolEstimation { pool_id: u64, amounts_in: Vec<Coin> },
     #[returns(QueryExitPoolEstimationResponse)]
-    AmmExitPoolEstimation{ pool_id: u64, share_amount_in: Uint128, token_out_denom: String },
+    AmmExitPoolEstimation {
+        pool_id: u64,
+        share_amount_in: Uint128,
+        token_out_denom: String,
+    },
     #[returns(LeveragelpParamsResponse)]
     LeveragelpParams {},
     #[returns(LeveragelpPositionsResponse)]
@@ -143,10 +147,14 @@ pub enum ElysQuery {
     LeveragelpPools { pagination: Option<PageRequest> },
     #[returns(LeveragelpPositionResponse)]
     LeveragelpPosition { address: String, id: u64 },
+    #[returns(MasterchefUserPendingRewardResponse)]
+    MasterchefUserPendingReward { user: String },
     #[returns(EstakingRewardsResponse)]
-    EstakingRewards {
-        address: String
-    }
+    EstakingRewards { address: String },
+    #[returns(QueryPoolAprsResponse)]
+    MasterchefPoolAprs { pool_ids: Vec<u64> },
+    #[returns(QueryStableStakeAprResponse)]
+    MasterchefStableStakeApr { denom: String },
 }
 
 impl CustomQuery for ElysQuery {}
@@ -377,16 +385,31 @@ impl ElysQuery {
             amounts_in,
         }
     }
-    pub fn exit_pool_estimation(pool_id: u64, share_amount_in: Uint128, token_out_denom: String) -> Self {
+    pub fn exit_pool_estimation(
+        pool_id: u64,
+        share_amount_in: Uint128,
+        token_out_denom: String,
+    ) -> Self {
         ElysQuery::AmmExitPoolEstimation {
             pool_id,
             share_amount_in,
-            token_out_denom
+            token_out_denom,
         }
     }
+
+    pub fn masterchef_pending_rewards(address: String) -> Self {
+        Self::MasterchefUserPendingReward { user: address }
+    }
+
+    pub fn get_masterchef_pool_apr(pool_ids: Vec<u64>) -> Self {
+        Self::MasterchefPoolAprs { pool_ids }
+    }
+
     pub fn query_estaking_rewards(address: String) -> Self {
-        ElysQuery::EstakingRewards {
-            address
-        }
+        ElysQuery::EstakingRewards { address }
+    }
+
+    pub fn get_masterchef_stable_stake_apr(denom: String) -> Self {
+        Self::MasterchefStableStakeApr { denom }
     }
 }
