@@ -83,7 +83,7 @@ pub fn create_spot_order(
     )?;
 
     SPOT_ORDER.save(deps.storage, new_order.order_id, &new_order)?;
-    
+
     if new_order.order_type != SpotOrderType::MarketBuy {
         PENDING_SPOT_ORDER.save(deps.storage, new_order.order_id, &new_order)?;
         let key = new_order.gen_key()?;
@@ -151,9 +151,12 @@ fn create_resp(
     let resp = Response::new().add_event(
         Event::new("create_spot_order").add_attribute("order_id", new_order.order_id.to_string()),
     );
+    // if it is not market order, return response directly
     if new_order.order_type != SpotOrderType::MarketBuy {
         return Ok(resp);
     }
+
+    // if it is market order, create a swap msg
 
     let reply_info_max_id = MAX_REPLY_ID.load(storage)?;
 

@@ -113,9 +113,13 @@ pub enum ElysMsg {
     },
     LeveragelpClose {
         creator: String,
-        position_id: u64,
-        amount: Int128,
+        id: u64,
+        lp_amount: Int128,
     },
+    EstakingWithdrawReward {
+        validator_address: String,
+        delegator_address: String
+    }
 }
 
 impl ElysMsg {
@@ -332,20 +336,27 @@ impl ElysMsg {
         stop_loss_price: SignedDecimal,
     ) -> Self {
         Self::LeveragelpOpen {
-            creator: creator,
-            collateral_asset: collateral_asset,
-            collateral_amount: collateral_amount,
-            amm_pool_id: amm_pool_id,
-            leverage: leverage,
-            stop_loss_price: stop_loss_price,
+            creator,
+            collateral_asset,
+            collateral_amount,
+            amm_pool_id,
+            leverage,
+            stop_loss_price,
         }
     }
 
-    pub fn leveragelp_close_position(creator: String, position_id: u64, amount: Int128) -> Self {
+    pub fn leveragelp_close_position(creator: String, id: u64, lp_amount: Int128) -> Self {
         Self::LeveragelpClose {
-            creator: creator,
-            position_id: position_id,
-            amount: amount,
+            creator,
+            id,
+            lp_amount,
+        }
+    }
+
+    pub fn estaking_withdraw_reward(delegator_address: String, validator_address: String) -> Self {
+        Self::EstakingWithdrawReward {
+            delegator_address,
+            validator_address
         }
     }
 }

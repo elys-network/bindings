@@ -66,7 +66,9 @@ impl Metadata {
             .get_asset_profile(ElysDenom::Eden.as_str().to_string())
             .map_err(|_| StdError::generic_err("an error occurred while getting eden denom"))?;
 
-        let aprs = querier.get_incentive_aprs()?;
+        let aprs = querier
+            .get_incentive_aprs()
+            .map_err(|_| StdError::generic_err("APRS NOT FOUND??"))?;
 
         Ok(Self {
             usdc_denom,

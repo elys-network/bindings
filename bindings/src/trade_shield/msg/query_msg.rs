@@ -61,6 +61,32 @@ pub enum QueryMsg {
         address: String,
         pagination: Option<PageRequest>,
     },
+    #[returns(LeveragelpParamsResponse)]
+    LeveragelpParams {},
+    #[returns(LeveragelpPositionsResponse)]
+    LeveragelpQueryPositions { pagination: Option<PageRequest> },
+    #[returns(LeveragelpPositionsResponse)]
+    LeveragelpQueryPositionsByPool {
+        amm_pool_id: u64,
+        pagination: Option<PageRequest>,
+    },
+    #[returns(LeveragelpStatusReponse)]
+    LeveragelpGetStatus {},
+    #[returns(LeveragelpPositionsResponse)]
+    LeveragelpQueryPositionsForAddress {
+        address: String,
+        pagination: Option<PageRequest>,
+    },
+    #[returns(LeveragelpWhitelistResponse)]
+    LeveragelpGetWhitelist { pagination: Option<PageRequest> },
+    #[returns(LeveragelpIsWhitelistedResponse)]
+    LeveragelpIsWhitelisted { address: String },
+    #[returns(LeveragelpPoolResponse)]
+    LeveragelpPool { index: u64 },
+    #[returns(LeveragelpPoolsResponse)]
+    LeveragelpPools { pagination: Option<PageRequest> },
+    #[returns(LeveragelpPositionResponse)]
+    LeveragelpPosition { address: String, id: u64 },
     #[returns(TradeShieldParamsResponse)]
     GetParams {},
     #[returns(NumberOfPendingOrderResp)]

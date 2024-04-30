@@ -1,7 +1,7 @@
 use crate::helper::get_mut_discount;
 
 use super::*;
-use cosmwasm_std::{Int128, StdError, SubMsg};
+use cosmwasm_std::{Int128, StdError};
 use elys_bindings::trade_shield::states::{
     LEVERAGE_ENABLED, LIMIT_PROCESS_ORDER, MARKET_ORDER_ENABLED, PARAMS_ADMIN, PERPETUAL_ENABLED,
     PROCESS_ORDERS_ENABLED, REWARD_ENABLED, STAKE_ENABLED, SWAP_ENABLED,
@@ -136,12 +136,10 @@ pub fn execute(
                 token_in: info.funds[0].clone(),
                 token_out_min_amount: Int128::zero(),
                 discount: get_mut_discount(deps.storage, deps.querier, info.sender.to_string())?,
-                recipient: info.sender.into_string(),
+                recipient: "".to_string(),
             };
 
-            let sub_msg = SubMsg::reply_always(msg, 1);
-
-            Ok(Response::new().add_submessage(sub_msg))
+            Ok(Response::new().add_message(msg))
         }
 
         LeveragelpOpen {
@@ -209,5 +207,9 @@ pub fn execute(
             }
             Ok(Response::new())
         }
+
+        EstakingWithdrawReward {
+            validator_address
+        } => estaking_withdraw_reward(info, deps, validator_address)
     }
 }
