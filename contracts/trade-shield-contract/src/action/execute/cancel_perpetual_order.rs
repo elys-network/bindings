@@ -44,6 +44,9 @@ pub fn cancel_perpetual_order(
 
     remove_perpetual_order(order_id, Status::Canceled, deps.storage)?;
 
+    let number_of_pending_order = NUMBER_OF_PENDING_ORDER.load(deps.storage)? - 1;
+    NUMBER_OF_PENDING_ORDER.save(deps.storage, &number_of_pending_order)?;
+
     if order_type == PerpetualOrderType::LimitOpen {
         Ok(resp.add_message(CosmosMsg::Bank(refund_msg)))
     } else {

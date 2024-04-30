@@ -153,9 +153,14 @@ fn create_resp(
     );
     // if it is not market order, return response directly
     if new_order.order_type != SpotOrderType::MarketBuy {
+        let number_of_pending_order = NUMBER_OF_PENDING_ORDER.load(storage)? + 1;
+        NUMBER_OF_PENDING_ORDER.save(storage, &number_of_pending_order)?;
+
         return Ok(resp);
     }
 
+    let number_of_executed_order = NUMBER_OF_EXECUTED_ORDER.load(storage)? + 1;
+    NUMBER_OF_EXECUTED_ORDER.save(storage, &number_of_executed_order)?;
     // if it is market order, create a swap msg
 
     let reply_info_max_id = MAX_REPLY_ID.load(storage)?;

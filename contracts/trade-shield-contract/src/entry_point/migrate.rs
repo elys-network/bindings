@@ -3,9 +3,11 @@ use elys_bindings::trade_shield::{
     msg::MigrateMsg,
     states::{
         ACCOUNT_HISTORY_ADDRESS, LEVERAGE_ENABLED, LIMIT_PROCESS_ORDER, MARKET_ORDER_ENABLED,
-        PARAMS_ADMIN, PENDING_SPOT_ORDER, PERPETUAL_ENABLED, PROCESS_ORDERS_ENABLED,
-        REWARD_ENABLED, SORTED_PENDING_SPOT_ORDER, STAKE_ENABLED, SWAP_ENABLED,
+        NUMBER_OF_EXECUTED_ORDER, NUMBER_OF_PENDING_ORDER, PARAMS_ADMIN, PENDING_PERPETUAL_ORDER,
+        PENDING_SPOT_ORDER, PERPETUAL_ENABLED, PERPETUAL_ORDER, PROCESS_ORDERS_ENABLED,
+        REWARD_ENABLED, SORTED_PENDING_SPOT_ORDER, SPOT_ORDER, STAKE_ENABLED, SWAP_ENABLED,
     },
+    types::Status,
 };
 
 use super::*;
@@ -48,6 +50,44 @@ pub fn migrate(
         }
         SORTED_PENDING_SPOT_ORDER.save(deps.storage, key.as_str(), &existing)?;
     }
+    let number_of_pending_order = PENDING_SPOT_ORDER
+        .prefix_range(deps.storage, None, None, Order::Ascending)
+        .filter_map(|res| res.ok())
+        .count() as u64
+        + PENDING_PERPETUAL_ORDER
+            .prefix_range(deps.storage, None, None, Order::Ascending)
+            .filter_map(|res| res.ok())
+            .count() as u64;
 
+    let number_of_executed_order = SPOT_ORDER
+        .prefix_range(deps.storage, None, None, Order::Ascending)
+        .filter_map(|res| {
+            if let Some((_, order)) = res.ok() {
+                if order.status == Status::Executed {
+                    Some(order)
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        })
+        .count() as u64
+        + PERPETUAL_ORDER
+            .prefix_range(deps.storage, None, None, Order::Ascending)
+            .filter_map(|res| {
+                if let Some((_, order)) = res.ok() {
+                    if order.status == Status::Executed {
+                        Some(order)
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            })
+            .count() as u64;
+    NUMBER_OF_PENDING_ORDER.save(deps.storage, &number_of_pending_order)?;
+    NUMBER_OF_EXECUTED_ORDER.save(deps.storage, &number_of_executed_order)?;
     Ok(Response::new())
 }

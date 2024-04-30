@@ -41,5 +41,8 @@ pub fn cancel_spot_order(
 
     remove_spot_order(order.order_id, Status::Canceled, deps.storage)?;
 
+    let number_of_pending_order = NUMBER_OF_PENDING_ORDER.load(deps.storage)? - 1;
+    NUMBER_OF_PENDING_ORDER.save(deps.storage, &number_of_pending_order)?;
+
     Ok(resp)
 }

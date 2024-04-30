@@ -81,6 +81,10 @@ pub fn cancel_perpetual_orders(
 
     let order_ids: Vec<u64> = orders.iter().map(|order| order.order_id).collect();
 
+    let number_of_pending_order =
+        NUMBER_OF_PENDING_ORDER.load(deps.storage)? - order_ids.len() as u64;
+    NUMBER_OF_PENDING_ORDER.save(deps.storage, &number_of_pending_order)?;
+
     let refund_msg = make_refund_msg(orders, info.sender.to_string());
 
     Ok(Response::new()
