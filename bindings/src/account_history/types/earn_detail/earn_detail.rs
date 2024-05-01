@@ -94,7 +94,7 @@ pub struct StakingValidator {
     // Voting power percentage for this validator.
     pub voting_power: Decimal,
     // commission percentage for the validator.
-    pub commission: Decimal
+    pub commission: Decimal,
 }
 
 // implement default
@@ -105,7 +105,7 @@ impl Default for StakingValidator {
             address: "".to_string(),
             name: "".to_string(),
             voting_power: Decimal::zero(),
-            commission: Decimal::zero()
+            commission: Decimal::zero(),
         }
     }
 }

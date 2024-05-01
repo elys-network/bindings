@@ -598,7 +598,8 @@ fn get_staked_assets() {
         }]
         .iter()
         .fold(Decimal::zero(), |acc, item| {
-            acc.checked_add(item.unstaked.usd_amount).unwrap_or_default()
+            acc.checked_add(item.unstaked.usd_amount)
+                .unwrap_or_default()
         }),
         staked: Decimal::from_str("9171.647735246481815781").unwrap(),
     };

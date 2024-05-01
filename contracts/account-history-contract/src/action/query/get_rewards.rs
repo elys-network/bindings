@@ -15,7 +15,7 @@ pub fn get_rewards(
 
     let resp = GetRewardsResp {
         rewards_map: rewards_response.rewards_map.clone(),
-        rewards: rewards_response.rewards.clone()
+        rewards: rewards_response.rewards.clone(),
     };
 
     Ok(resp)

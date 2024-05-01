@@ -116,7 +116,7 @@ pub fn get_eden_earn_program_details(
                 rewards: None,
                 vesting: BalanceAvailable {
                     amount: Uint128::zero(),
-                    usd_amount: Decimal::zero()
+                    usd_amount: Decimal::zero(),
                 },
                 vesting_details: None,
             },

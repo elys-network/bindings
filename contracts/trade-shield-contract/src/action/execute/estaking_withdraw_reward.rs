@@ -10,7 +10,7 @@ use super::*;
 pub fn estaking_withdraw_reward(
     info: MessageInfo,
     deps: DepsMut<ElysQuery>,
-    validator_address: String
+    validator_address: String,
 ) -> Result<Response<ElysMsg>, ContractError> {
     if REWARD_ENABLED.load(deps.storage)? == false {
         return Err(StdError::generic_err("reward endpoint are disabled").into());

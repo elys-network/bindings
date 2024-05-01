@@ -8,11 +8,11 @@ use super::query_resp::*;
 use crate::query_resp::QueryStableStakeAprResponse;
 #[allow(unused_imports)]
 use crate::query_resp::{
-    AuthAddressesResponse, BalanceBorrowed, EstakingRewardsResponse, PoolFilterType,
-    QueryEarnPoolResponse, QueryExitPoolEstimationResponse, QueryIncentivePoolAprsResponse,
+    AuthAddressesResponse, BalanceBorrowed, PoolFilterType, QueryEarnPoolResponse,
+    QueryExitPoolEstimationResponse, QueryIncentivePoolAprsResponse,
     QueryJoinPoolEstimationResponse, QueryPoolAssetEstimationResponse, QueryStakedPositionResponse,
     QueryUnstakedPositionResponse, QueryUserPoolResponse, QueryVestingInfoResponse,
-    StableStakeParamsData, StakedAvailable
+    StableStakeParamsData, StakedAvailable,
 };
 #[allow(unused_imports)]
 use crate::types::{BalanceAvailable, PageRequest};
@@ -78,9 +78,7 @@ pub enum QueryMsg {
     GetMasterchefStableStakeApr { denom: String },
 
     #[returns(MasterChefPoolAprResponse)]
-    GetMasterChefPoolApr {
-        pool_ids: Vec<u64>,
-    },
+    GetMasterChefPoolApr { pool_ids: Vec<u64> },
     // debug only
     #[cfg(feature = "debug")]
     #[returns(ParamsResp)]
