@@ -505,7 +505,7 @@ impl<'a> ElysQuerier<'a> {
                         total_amount: vesting_token.total_amount.clone(),
                         claimed_amount: vesting_token.claimed_amount.clone(),
                         num_blocks: vesting_token.num_blocks.clone().unwrap_or(0),
-                        start_blocks: vesting_token.start_blocks.clone().unwrap_or(0),
+                        start_block: vesting_token.start_block.clone().unwrap_or(0),
                         vest_started_timestamp: vesting_token
                             .vest_started_timestamp
                             .clone()

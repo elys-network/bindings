@@ -390,7 +390,7 @@ pub struct VestingTokensRaw {
     pub total_amount: Int128,
     pub claimed_amount: Int128,
     pub num_blocks: Option<i64>,
-    pub start_blocks: Option<i64>,
+    pub start_block: Option<i64>,
     pub vest_started_timestamp: Option<i64>,
 }
 
@@ -400,7 +400,7 @@ pub struct VestingTokens {
     pub total_amount: Int128,
     pub claimed_amount: Int128,
     pub num_blocks: i64,
-    pub start_blocks: i64,
+    pub start_block: i64,
     pub vest_started_timestamp: i64,
 }
 

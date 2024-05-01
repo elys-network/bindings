@@ -42,7 +42,7 @@ impl Module for ElysModuleWrapper {
                             denom: "uelys".to_string(),
                             total_amount: Int128::new(2000),
                             num_blocks: None,
-                            start_blocks: None,
+                            start_block: None,
                             vest_started_timestamp: Some(8),
                             claimed_amount: Int128::zero(),
                         }]),
@@ -137,7 +137,7 @@ fn get_commitments_missing_field() {
         vest_started_timestamp: 8,
         claimed_amount: Int128::zero(),
         num_blocks: 0,
-        start_blocks: 0,
+        start_block: 0,
     };
 
     assert_eq!(vesting, vesting_dummy);
