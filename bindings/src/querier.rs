@@ -655,40 +655,37 @@ impl<'a> ElysQuerier<'a> {
                 // and current Pool ratio
                 let pools_with_usd_values = pools
                     .into_iter()
-                    .map(|pool| {
-                        let mut updated_pool = pool.clone();
-
+                    .map(|mut pool| {
                         if let Some(apr) = aprs_map.get(&pool.pool_id.to_string()) {
-                            updated_pool.apr = Some(*apr);
+                            pool.apr = Some(*apr);
                         } else {
-                            updated_pool.apr = Some(Decimal::zero());
+                            pool.apr = Some(Decimal::zero());
                         }
 
-                        updated_pool.assets = pool
+                        pool.assets = pool
                             .assets
                             .into_iter()
                             .map(|asset| {
                                 let price = self
                                     .get_asset_price(asset.token.denom.clone())
-                                    .unwrap_or(Decimal::from_str("0").unwrap());
+                                    .unwrap_or(Decimal::zero());
+                                let usd_value = Decimal::from_atomics(asset.token.amount, 6)
+                                    .map_or(Decimal::zero(), |res| res * price);
+
                                 PoolAsset {
                                     token: asset.token.clone(),
                                     weight: asset.weight,
-                                    usd_value: Some(
-                                        Decimal::from_atomics(asset.token.amount, 6)
-                                            .map_or(Decimal::zero(), |res| res)
-                                            * price,
-                                    ),
+                                    usd_value: Some(usd_value),
                                 }
                             })
-                            .collect::<Vec<PoolAsset>>();
+                            .collect::<Vec<_>>();
 
-                        updated_pool.current_pool_ratio =
-                            Some(self.get_current_pool_ratio(&updated_pool));
+                        pool.current_pool_ratio = Some(self.get_current_pool_ratio(&pool));
 
-                        updated_pool.share_usd_price = Some(
+                        pool.share_usd_price = Some(
                             match pool.tvl.checked_div(
-                                Decimal::from_atomics(pool.total_shares.amount, 18).unwrap(),
+                                Decimal::from_atomics(pool.total_shares.amount, 18)
+                                    .unwrap_or(Decimal::zero()),
                             ) {
                                 Ok(resp) => resp,
                                 Err(_) => Decimal::zero(),
@@ -696,61 +693,48 @@ impl<'a> ElysQuerier<'a> {
                         );
 
                         // Add USD value to every reward coin returned from chain
-                        match &usdc_entry {
-                            Ok(entry) => {
-                                updated_pool.fiat_rewards = Some(
-                                    updated_pool
-                                        .reward_coins
-                                        .clone()
-                                        .into_iter()
-                                        .map(|coin| {
-                                            CoinValue::from_coin(&coin, self, &entry.entry.denom)
-                                                .unwrap()
-                                        })
-                                        .collect(),
-                                );
-                            }
-                            _ => {}
+                        if let Ok(entry) = &usdc_entry {
+                            pool.fiat_rewards = Some(
+                                pool.reward_coins
+                                    .iter()
+                                    .map(|coin| {
+                                        CoinValue::from_coin(&coin, self, &entry.entry.denom)
+                                            .unwrap()
+                                    })
+                                    .collect(),
+                            );
                         }
 
-                        // Sort results. USDC should be always last asset.
-                        match &usdc_entry {
-                            Ok(usdc_entry) => {
-                                if let Some(index) = updated_pool
-                                    .assets
-                                    .iter()
-                                    .position(|asset| asset.token.denom == usdc_entry.entry.denom)
-                                {
-                                    let usdc_asset = updated_pool.assets.remove(index);
-                                    updated_pool.assets.push(usdc_asset);
+                        // Sort results. USDC should always be the last asset.
+                        if let Ok(usdc_entry) = &usdc_entry {
+                            if let Some(index) = pool
+                                .assets
+                                .iter()
+                                .position(|asset| asset.token.denom == usdc_entry.entry.denom)
+                            {
+                                let usdc_asset = pool.assets.remove(index);
+                                pool.assets.push(usdc_asset);
 
-                                    updated_pool.current_pool_ratio_string = {
-                                        let mut ratio_string = String::new();
-                                        if let Some(current_pool_ratio) =
-                                            &updated_pool.current_pool_ratio
-                                        {
-                                            for (index, asset) in
-                                                updated_pool.assets.iter().enumerate()
+                                pool.current_pool_ratio_string = {
+                                    let mut ratio_string = String::new();
+                                    if let Some(current_pool_ratio) = &pool.current_pool_ratio {
+                                        for (index, asset) in pool.assets.iter().enumerate() {
+                                            if let Some(ratio) =
+                                                current_pool_ratio.get(&asset.token.denom)
                                             {
-                                                if let Some(ratio) =
-                                                    current_pool_ratio.get(&asset.token.denom)
-                                                {
-                                                    ratio_string.push_str(&ratio.to_string());
-                                                    if index < updated_pool.assets.len() - 1 {
-                                                        ratio_string.push(':');
-                                                    }
+                                                ratio_string.push_str(&ratio.to_string());
+                                                if index < pool.assets.len() - 1 {
+                                                    ratio_string.push(':');
                                                 }
                                             }
                                         }
-
-                                        Some(ratio_string)
                                     }
-                                }
+                                    Some(ratio_string)
+                                };
                             }
-                            _ => {}
                         }
 
-                        updated_pool
+                        pool
                     })
                     .collect::<Vec<PoolResp>>();
 
