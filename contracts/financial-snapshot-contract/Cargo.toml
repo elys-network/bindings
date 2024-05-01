@@ -23,8 +23,5 @@ elys-bindings = { path = "../../bindings" }
 cw-multi-test = "0.13.4"
 elys-bindings = { path = "../../bindings", features = ["testing"] }
 elys-bindings-test = { path = "../../bindings-test" }
+cargo-husky.workspace = true
 
-[dev-dependencies.cargo-husky]
-version = "1"
-default-features = false # Disable features which are enabled by default
-features = ["precommit-hook", "run-cargo-fmt"]

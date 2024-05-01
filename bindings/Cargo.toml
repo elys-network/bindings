@@ -16,7 +16,5 @@ cw-storage-plus = "1.2.0"
 cosmwasm-schema = "1.1.4"
 cw-utils = "0.13"
 
-[dev-dependencies.cargo-husky]
-version = "1"
-default-features = false # Disable features which are enabled by default
-features = ["precommit-hook", "run-cargo-fmt"]
+[dev-dependencies]
+cargo-husky.workspace = true
