@@ -161,7 +161,7 @@ impl Module for ElysModuleWrapper {
                     available_liquidity: coin(95841644452, &denom_in),
                     weight_balance_ratio: SignedDecimal::zero(),
                     price_impact: SignedDecimal::zero(),
-                    slippage: Decimal::zero()
+                    slippage: Decimal::zero(),
                 };
 
                 Ok(to_json_binary(&resp)?)

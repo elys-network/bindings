@@ -1,6 +1,6 @@
 mod mock {
+    pub mod execute;
     #[allow(dead_code, unused)]
     pub mod instantiate;
-    pub mod execute;
 }
 mod get_commitments;

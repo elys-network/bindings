@@ -33,5 +33,5 @@ pub enum ContractError {
     #[error("cannot cancel order: {order_id}, status: {status:?}")]
     CancelStatusError { order_id: u64, status: Status },
     #[error("{balance} is smaller than {amount}")]
-    InsufficientBalanceError {balance: u128, amount: u64},
+    InsufficientBalanceError { balance: u128, amount: u64 },
 }

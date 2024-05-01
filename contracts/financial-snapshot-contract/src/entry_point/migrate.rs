@@ -1,7 +1,5 @@
+use cosmwasm_std::entry_point;
 use cosmwasm_std::Empty;
-use cosmwasm_std::{
-    entry_point,
-};
 
 use super::*;
 use elys_bindings::*;
