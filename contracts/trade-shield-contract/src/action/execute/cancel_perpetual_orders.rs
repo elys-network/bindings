@@ -1,6 +1,4 @@
-use std::collections::HashMap;
-
-use cosmwasm_std::{to_json_binary, Coin, StdError};
+use cosmwasm_std::{to_json_binary, StdError};
 
 use crate::helper::remove_perpetual_order;
 
@@ -76,15 +74,24 @@ pub fn cancel_perpetual_orders(
     let mut orders = filter_order_by_type(orders, order_type)?;
 
     for order in orders.iter_mut() {
-        remove_perpetual_order(order.order_id, Status::Canceled, deps.storage)?;
+        remove_perpetual_order(order.order_id, Status::Canceled, deps.storage, None)?;
     }
 
     let order_ids: Vec<u64> = orders.iter().map(|order| order.order_id).collect();
 
-    let refund_msg = make_refund_msg(orders, info.sender.to_string());
+    let bank_msgs: Vec<BankMsg> = order_ids
+        .iter()
+        .map(|id| {
+            remove_perpetual_order(*id, Status::Canceled, deps.storage, None)
+                .map(|bank_msg| bank_msg)
+        })
+        .collect::<Result<Vec<Option<BankMsg>>, StdError>>()?
+        .iter()
+        .filter_map(|bank_msg| bank_msg.to_owned())
+        .collect();
 
     Ok(Response::new()
-        .add_message(refund_msg)
+        .add_messages(bank_msgs)
         .set_data(to_json_binary(&order_ids)?))
 }
 
@@ -109,35 +116,5 @@ fn filter_order_by_type(
         )))
     } else {
         Ok(filtered_order)
-    }
-}
-
-fn make_refund_msg(orders: Vec<PerpetualOrder>, user: String) -> BankMsg {
-    let orders_amount: Vec<Coin> = orders
-        .into_iter()
-        .filter_map(|order| {
-            if order.order_type == PerpetualOrderType::LimitOpen {
-                Some(order.collateral)
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    let mut merged_amounts: HashMap<String, Coin> = HashMap::new();
-
-    for order_amount in orders_amount {
-        if let Some(entry) = merged_amounts.get_mut(&order_amount.denom) {
-            entry.amount += order_amount.amount;
-        } else {
-            merged_amounts.insert(order_amount.denom.clone(), order_amount);
-        }
-    }
-
-    let merged_amounts: Vec<Coin> = merged_amounts.values().cloned().collect();
-
-    BankMsg::Send {
-        to_address: user,
-        amount: merged_amounts,
     }
 }

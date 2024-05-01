@@ -203,7 +203,7 @@ fn process_perpetual_order(
             {
                 Some(mtp) => mtp,
                 None => {
-                    remove_perpetual_order(id, Status::Canceled, storage)?;
+                    remove_perpetual_order(id, Status::Canceled, storage, None)?;
                     continue;
                 }
             };

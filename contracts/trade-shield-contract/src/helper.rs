@@ -106,6 +106,7 @@ pub fn remove_perpetual_order(
     order_id: u64,
     new_status: Status,
     storage: &mut dyn Storage,
+    position_id: Option<u64>,
 ) -> StdResult<Option<BankMsg>> {
     let mut order = PENDING_PERPETUAL_ORDER.load(storage, order_id)?;
     let key = order.gen_key()?;
@@ -117,6 +118,9 @@ pub fn remove_perpetual_order(
     }
     if index >= size_of_vec {
         return Err(cosmwasm_std::StdError::generic_err("overflow error"));
+    }
+    if new_status == Status::Executed {
+        order.position_id = position_id
     }
     vec.remove(index);
     SORTED_PENDING_PERPETUAL_ORDER.save(storage, key.as_str(), &vec)?;

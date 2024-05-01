@@ -30,7 +30,7 @@ pub fn cancel_perpetual_order(
         });
     }
 
-    let bank_msg = remove_perpetual_order(order_id, Status::Canceled, deps.storage)?;
+    let bank_msg = remove_perpetual_order(order_id, Status::Canceled, deps.storage, None)?;
 
     let resp = Response::new().add_event(
         Event::new("cancel_perpetual_order")

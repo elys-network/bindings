@@ -1,6 +1,4 @@
-use std::collections::HashMap;
-
-use cosmwasm_std::{to_json_binary, Coin, StdError};
+use cosmwasm_std::{to_json_binary, StdError};
 
 use super::*;
 use crate::helper::remove_spot_order;
@@ -77,10 +75,15 @@ pub fn cancel_spot_orders(
 
     let order_ids: Vec<u64> = orders.iter().map(|order| order.order_id).collect();
 
-    let refund_msg = make_refund_msg(orders, info.sender.to_string());
+    let bank_msgs = order_ids
+        .iter()
+        .map(|id| {
+            remove_spot_order(*id, Status::Canceled, deps.storage).map(|bank_msg| bank_msg.unwrap())
+        })
+        .collect::<Result<Vec<BankMsg>, StdError>>()?;
 
     Ok(Response::new()
-        .add_message(refund_msg)
+        .add_messages(bank_msgs)
         .set_data(to_json_binary(&order_ids)?))
 }
 
