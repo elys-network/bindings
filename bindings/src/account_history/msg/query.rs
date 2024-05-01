@@ -1,7 +1,11 @@
 #[allow(unused_imports)]
 use super::super::types::{PerpetualAssets, PortfolioBalanceSnapshot};
+use super::query_resp::estaking::*;
+use super::query_resp::masterchef::*;
+
 #[allow(unused_imports)]
 use super::query_resp::*;
+use crate::query_resp::QueryStableStakeAprResponse;
 #[allow(unused_imports)]
 use crate::query_resp::{
     AuthAddressesResponse, BalanceBorrowed, PoolFilterType, QueryEarnPoolResponse,
@@ -64,6 +68,20 @@ pub enum QueryMsg {
     #[returns(QueryPoolAssetEstimationResponse)]
     PoolAssetEstimation { pool_id: u64, amount: DecCoin },
 
+    #[returns(GetEstakingRewardsResponse)]
+    GetEstakingRewards { address: String },
+
+    #[returns(GetMasterchefUserPendingRewardResponse)]
+    GetMasterchefPendingRewards { address: String },
+
+
+    #[returns(QueryStableStakeAprResponse)]
+    GetMasterchefStableStakeApr { denom: String },
+
+    #[returns(MasterChefPoolAprResponse)]
+    GetMasterChefPoolApr {
+        pool_ids: Vec<u64>,
+    },
     // debug only
     #[cfg(feature = "debug")]
     #[returns(ParamsResp)]

@@ -842,6 +842,51 @@ impl<'a> ElysQuerier<'a> {
             ))
         })
     }
+    /// This function retrieves pending rewards for a user from the Masterchef contract.
+    ///
+    /// Arguments:
+    ///
+    /// * `address`: The `address` parameter in the `get_masterchef_pending_rewards` function is a
+    /// String type that represents the address for which you want to retrieve pending rewards from the
+    /// Masterchef contract.
+    ///
+    /// Returns:
+    ///
+    /// The function `get_masterchef_pending_rewards` returns a `StdResult` containing a
+    /// `MasterchefUserPendingRewardResponse`.
+    pub fn get_masterchef_pending_rewards(
+        &self,
+        address: String,
+    ) -> StdResult<MasterchefUserPendingRewardResponse> {
+        self.querier.query(&QueryRequest::Custom(
+            ElysQuery::masterchef_pending_rewards(address),
+        ))
+    }
+
+    pub fn get_masterchef_pool_apr(&self, pool_ids: Vec<u64>) -> StdResult<QueryPoolAprsResponse> {
+        self.querier
+            .query(&QueryRequest::Custom(ElysQuery::get_masterchef_pool_apr(
+                pool_ids,
+            )))
+    }
+
+    pub fn get_estaking_rewards(&self, address: String) -> StdResult<EstakingRewardsResponse> {
+        let query = ElysQuery::EstakingRewards {
+            address: address.to_owned(),
+        };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
+        self.querier.query(&request)
+    }
+
+    pub fn get_masterchef_stable_stake_apr(
+        &self,
+        denom: String,
+    ) -> StdResult<QueryStableStakeAprResponse> {
+        self.querier.query(&QueryRequest::Custom(
+            ElysQuery::get_masterchef_stable_stake_apr(denom),
+        ))
+    }
+
     pub fn leveragelp_params(&self) -> StdResult<LeveragelpParamsResponse> {
         let req = QueryRequest::Custom(ElysQuery::leveragelp_params());
         let raw_resp: LeveragelpParamsResponseRaw = self.querier.query(&req)?;
@@ -977,6 +1022,7 @@ impl<'a> ElysQuerier<'a> {
         let req = QueryRequest::Custom(ElysQuery::leveragelp_position(address.into(), id));
         self.querier.query(&req)
     }
+
     #[allow(dead_code)]
     #[cfg(feature = "debug")]
     fn query_binary(&self, request: &QueryRequest<ElysQuery>) -> StdResult<Binary> {
