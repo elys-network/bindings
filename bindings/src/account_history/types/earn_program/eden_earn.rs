@@ -43,7 +43,7 @@ impl Default for EdenEarnProgram {
             rewards: None,
             vesting: BalanceAvailable {
                 amount: Uint128::zero(),
-                usd_amount: Decimal::zero()
+                usd_amount: Decimal::zero(),
             },
             vesting_details: None,
         }

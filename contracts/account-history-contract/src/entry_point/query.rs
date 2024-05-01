@@ -1,6 +1,13 @@
-use crate::{action::query::{
-    get_eden_boost_earn_program_details, get_eden_earn_program_details, get_elys_earn_program_details, get_estaking_rewards, get_liquid_assets, get_masterchef_pending_rewards, get_masterchef_pool_apr, get_masterchef_stable_stake_apr, get_membership_tier, get_perpetuals_assets, get_pool_balances, get_portfolio, get_rewards, get_staked_assets, get_total_balance, get_usdc_earn_program_details
-}, types::AccountSnapshotGenerator};
+use crate::{
+    action::query::{
+        get_eden_boost_earn_program_details, get_eden_earn_program_details,
+        get_elys_earn_program_details, get_estaking_rewards, get_liquid_assets,
+        get_masterchef_pending_rewards, get_masterchef_pool_apr, get_masterchef_stable_stake_apr,
+        get_membership_tier, get_perpetuals_assets, get_pool_balances, get_portfolio, get_rewards,
+        get_staked_assets, get_total_balance, get_usdc_earn_program_details,
+    },
+    types::AccountSnapshotGenerator,
+};
 
 #[cfg(feature = "debug")]
 use crate::action::query::{
@@ -160,7 +167,7 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         #[cfg(feature = "debug")]
         GetEdenEarnProgramDetails { address } => {
             let generator = AccountSnapshotGenerator::new(&deps)?;
-            
+
             let program = get_eden_earn_program_details(
                 &deps,
                 Some(address.to_owned()),
@@ -171,7 +178,8 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
                 generator.metadata.usdc_apr_eden.to_owned(),
                 generator.metadata.eden_apr_eden.to_owned(),
                 generator.metadata.edenb_apr_eden.to_owned(),
-            ).unwrap_or_default();
+            )
+            .unwrap_or_default();
             to_json_binary(&program)
         }
         #[cfg(feature = "debug")]
@@ -215,7 +223,7 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
                 Some(address.to_owned()),
                 generator.metadata.usdc_denom.to_owned(),
                 generator.metadata.usdc_base_denom.to_owned(),
-                generator.metadata.uusdc_usd_price
+                generator.metadata.uusdc_usd_price,
             )
             .unwrap_or_default();
 

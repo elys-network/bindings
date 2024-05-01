@@ -129,9 +129,7 @@ impl AccountSnapshotGenerator {
                     .total_liquid_asset_balance
                     .amount
                     .clone(),
-                staked_committed_usd: Decimal256::from(
-                    staked_assets_response.total_balance,
-                ),
+                staked_committed_usd: Decimal256::from(staked_assets_response.total_balance),
                 liquidity_positions_usd: total_liquidity_position_balance,
                 leverage_lp_usd: Decimal256::zero(),
                 perpetual_assets_usd: perpetual_response
@@ -438,7 +436,7 @@ impl AccountSnapshotGenerator {
             Some(address.to_owned()),
             self.metadata.usdc_denom.to_owned(),
             self.metadata.usdc_base_denom.to_owned(),
-            self.metadata.uusdc_usd_price
+            self.metadata.uusdc_usd_price,
         )
         .unwrap_or_default();
 

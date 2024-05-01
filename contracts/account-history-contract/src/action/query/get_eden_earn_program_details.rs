@@ -28,7 +28,9 @@ pub fn get_eden_earn_program_details(
     let resp = GetEdenEarnProgramResp {
         data: match address {
             Some(addr) => {
-                let all_rewards = querier.get_estaking_rewards(addr.clone()).unwrap_or_default();
+                let all_rewards = querier
+                    .get_estaking_rewards(addr.clone())
+                    .unwrap_or_default();
                 let program_rewards = all_rewards
                     .get_validator_rewards(Validator::Eden)
                     .to_dec_coin_values(&querier, &usdc_denom.clone())

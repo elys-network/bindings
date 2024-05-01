@@ -636,7 +636,6 @@ pub struct LeveragelpWhitelistResponseRaw {
     pub pagination: Option<PageResponse>,
 }
 
-
 #[cw_serde]
 pub struct LeveragelpWhitelistResponse {
     pub whitelist: Vec<String>,
@@ -725,18 +724,19 @@ pub struct DelegationDelegatorReward {
 
 pub enum Validator {
     EdenBoost,
-    Eden
+    Eden,
 }
 
 impl Validator {
     pub fn to_string(&self) -> String {
         match self {
-            Validator::EdenBoost => "elysvaloper1wajd6ekh9u37hyghyw4mme59qmjllzuyaceanm".to_string(),
-            Validator::Eden => "elysvaloper1gnmpr8vvslp3shcq6e922xr0uq4aa2w5gdzht0".to_string()
+            Validator::EdenBoost => {
+                "elysvaloper1wajd6ekh9u37hyghyw4mme59qmjllzuyaceanm".to_string()
+            }
+            Validator::Eden => "elysvaloper1gnmpr8vvslp3shcq6e922xr0uq4aa2w5gdzht0".to_string(),
         }
     }
 }
-
 
 impl EstakingRewardsResponse {
     pub fn get_elys_validators(&self) -> Self {
@@ -744,7 +744,7 @@ impl EstakingRewardsResponse {
             Validator::EdenBoost.to_string(),
             Validator::Eden.to_string(),
         ];
-    
+
         let rewards = self
             .rewards
             .iter()
@@ -753,7 +753,7 @@ impl EstakingRewardsResponse {
             })
             .cloned()
             .collect::<Vec<_>>();
-    
+
         EstakingRewardsResponse {
             rewards,
             total: self.total.clone(),
@@ -761,13 +761,13 @@ impl EstakingRewardsResponse {
     }
 
     pub fn get_validator_rewards(&self, validator: Validator) -> Self {
-        let rewards = self.
-            rewards
+        let rewards = self
+            .rewards
             .iter()
             .find(|delegation_reward| delegation_reward.validator_address == validator.to_string())
             .cloned()
             .unwrap_or_default();
-    
+
         EstakingRewardsResponse {
             rewards: vec![rewards],
             total: self.total.clone(),
@@ -812,9 +812,7 @@ impl MasterchefUserPendingRewardResponse {
     ) -> StdResult<HashMap<u64, Vec<CoinValue>>> {
         let mut dec_coin_values = HashMap::new();
         for MasterchefUserPendingRewardData { reward, pool_id } in &self.rewards {
-            let coin = {
-                dec_coin_values.entry(*pool_id).or_insert_with(|| vec![])
-            };
+            let coin = { dec_coin_values.entry(*pool_id).or_insert_with(|| vec![]) };
             coin.extend(
                 reward
                     .iter()

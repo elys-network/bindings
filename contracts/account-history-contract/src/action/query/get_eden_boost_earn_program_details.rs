@@ -3,7 +3,7 @@ use crate::msg::query_resp::earn::GetEdenBoostEarnProgramResp;
 use cosmwasm_std::Deps;
 use elys_bindings::{
     account_history::types::{
-        earn_detail::earn_detail::AprEdenBoost, earn_program::EdenBoostEarnProgram, ElysDenom
+        earn_detail::earn_detail::AprEdenBoost, earn_program::EdenBoostEarnProgram, ElysDenom,
     },
     query_resp::{QueryAprResponse, Validator},
     ElysQuerier, ElysQuery,
@@ -28,7 +28,9 @@ pub fn get_eden_boost_earn_program_details(
     let resp = GetEdenBoostEarnProgramResp {
         data: match address {
             Some(addr) => {
-                let all_rewards = querier.get_estaking_rewards(addr.clone()).unwrap_or_default();
+                let all_rewards = querier
+                    .get_estaking_rewards(addr.clone())
+                    .unwrap_or_default();
                 let program_rewards = all_rewards
                     .get_validator_rewards(Validator::EdenBoost)
                     .to_dec_coin_values(&querier, &usdc_denom.clone())
@@ -48,7 +50,7 @@ pub fn get_eden_boost_earn_program_details(
                     },
                     available: Some(available.amount),
                     staked: Some(staked.amount),
-                    rewards: Some(program_rewards)
+                    rewards: Some(program_rewards),
                 }
             }
             None => EdenBoostEarnProgram::default(),

@@ -28,7 +28,9 @@ pub fn get_elys_earn_program_details(
     let resp = GetElysEarnProgramResp {
         data: match address {
             Some(addr) => {
-                let all_rewards = querier.get_estaking_rewards(addr.clone()).unwrap_or_default();
+                let all_rewards = querier
+                    .get_estaking_rewards(addr.clone())
+                    .unwrap_or_default();
                 let program_rewards = all_rewards
                     .get_elys_validators()
                     .to_dec_coin_values(&querier, &usdc_denom.clone())

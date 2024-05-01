@@ -9,7 +9,7 @@ use crate::types::AccountSnapshotGenerator;
  */
 pub fn get_estaking_rewards(
     deps: Deps<ElysQuery>,
-    address: String
+    address: String,
 ) -> StdResult<GetEstakingRewardsResponse> {
     let querier = ElysQuerier::new(&deps.querier);
 
@@ -23,6 +23,6 @@ pub fn get_estaking_rewards(
 
     Ok(GetEstakingRewardsResponse {
         rewards: fiat_coins,
-        total: response.total
+        total: response.total,
     })
 }
