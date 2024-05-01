@@ -107,24 +107,3 @@ fn filter_order_by_type(
         Ok(filtered_order)
     }
 }
-
-fn make_refund_msg(orders: Vec<SpotOrder>, user: String) -> BankMsg {
-    let orders_amount: Vec<Coin> = orders.into_iter().map(|order| order.order_amount).collect();
-
-    let mut merged_amounts: HashMap<String, Coin> = HashMap::new();
-
-    for order_amount in orders_amount {
-        if let Some(entry) = merged_amounts.get_mut(&order_amount.denom) {
-            entry.amount += order_amount.amount;
-        } else {
-            merged_amounts.insert(order_amount.denom.clone(), order_amount);
-        }
-    }
-
-    let merged_amounts: Vec<Coin> = merged_amounts.values().cloned().collect();
-
-    BankMsg::Send {
-        to_address: user,
-        amount: merged_amounts,
-    }
-}

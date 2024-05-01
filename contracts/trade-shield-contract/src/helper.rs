@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-    from_json, Decimal, Deps, QuerierWrapper, Response, StdResult, Storage, SubMsgResult,
+    from_json, BankMsg, Decimal, Deps, QuerierWrapper, Response, StdResult, Storage, SubMsgResult,
 };
 use elys_bindings::account_history::msg::query_resp::MembershipTierResponse;
 use elys_bindings::account_history::msg::QueryMsg as AccountHistoryQueryMsg;
@@ -7,7 +7,7 @@ use elys_bindings::trade_shield::states::{
     PENDING_PERPETUAL_ORDER, PENDING_SPOT_ORDER, PERPETUAL_ORDER, SORTED_PENDING_PERPETUAL_ORDER,
     SORTED_PENDING_SPOT_ORDER, SPOT_ORDER,
 };
-use elys_bindings::trade_shield::types::{PerpetualOrder, SpotOrder, Status};
+use elys_bindings::trade_shield::types::{PerpetualOrder, PerpetualOrderType, SpotOrder, Status};
 use elys_bindings::ElysQuery;
 use elys_bindings::{trade_shield::states::ACCOUNT_HISTORY_ADDRESS, ElysMsg};
 
@@ -74,7 +74,7 @@ pub fn remove_spot_order(
     order_id: u64,
     new_status: Status,
     storage: &mut dyn Storage,
-) -> StdResult<()> {
+) -> StdResult<Option<BankMsg>> {
     let mut order = PENDING_SPOT_ORDER.load(storage, order_id)?;
     let key = order.gen_key()?;
     let mut vec: Vec<u64> = SORTED_PENDING_SPOT_ORDER.load(storage, key.as_str())?;
@@ -91,14 +91,22 @@ pub fn remove_spot_order(
     order.status = new_status;
     SPOT_ORDER.save(storage, order.order_id, &order)?;
     PENDING_SPOT_ORDER.remove(storage, order.order_id);
-    Ok(())
+    let bank_msg = if order.status == Status::Canceled {
+        Some(BankMsg::Send {
+            to_address: order.owner_address.to_string(),
+            amount: vec![order.order_amount.clone()],
+        })
+    } else {
+        None
+    };
+    Ok(bank_msg)
 }
 
 pub fn remove_perpetual_order(
     order_id: u64,
     new_status: Status,
     storage: &mut dyn Storage,
-) -> StdResult<()> {
+) -> StdResult<Option<BankMsg>> {
     let mut order = PENDING_PERPETUAL_ORDER.load(storage, order_id)?;
     let key = order.gen_key()?;
     let mut vec: Vec<u64> = SORTED_PENDING_PERPETUAL_ORDER.load(storage, key.as_str())?;
@@ -115,5 +123,14 @@ pub fn remove_perpetual_order(
     order.status = new_status;
     PERPETUAL_ORDER.save(storage, order.order_id, &order)?;
     PENDING_PERPETUAL_ORDER.remove(storage, order.order_id);
-    Ok(())
+    let bank_msg =
+        if order.status == Status::Canceled && order.order_type == PerpetualOrderType::LimitOpen {
+            Some(BankMsg::Send {
+                to_address: order.owner.to_string(),
+                amount: vec![order.collateral.clone()],
+            })
+        } else {
+            None
+        };
+    Ok(bank_msg)
 }
