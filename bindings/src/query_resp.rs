@@ -760,9 +760,7 @@ impl MasterchefUserPendingRewardResponse {
     ) -> StdResult<HashMap<u64, Vec<CoinValue>>> {
         let mut dec_coin_values = HashMap::new();
         for MasterchefUserPendingRewardData { reward, pool_id } in &self.rewards {
-            let coin = {
-                dec_coin_values.entry(*pool_id).or_insert_with(|| vec![])
-            };
+            let coin = { dec_coin_values.entry(*pool_id).or_insert_with(|| vec![]) };
             coin.extend(
                 reward
                     .iter()

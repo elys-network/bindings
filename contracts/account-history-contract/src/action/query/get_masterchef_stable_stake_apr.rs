@@ -8,6 +8,6 @@ pub fn get_masterchef_stable_stake_apr(
     let querier = ElysQuerier::new(&deps.querier);
 
     let resp = querier.get_masterchef_stable_stake_apr(denom)?;
-    
+
     Ok(resp)
 }
