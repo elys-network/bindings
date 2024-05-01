@@ -767,10 +767,10 @@ impl EstakingRewardsResponse {
             .find(|delegation_reward| delegation_reward.validator_address == validator.to_string())
             .cloned()
             .unwrap_or_default();
-
+    
         EstakingRewardsResponse {
-            rewards: [rewards].to_vec(),
-            total: self.total.clone()
+            rewards: vec![rewards],
+            total: self.total.clone(),
         }
     }
 

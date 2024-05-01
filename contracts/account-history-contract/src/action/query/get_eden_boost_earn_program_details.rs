@@ -1,6 +1,6 @@
 use super::*;
 use crate::msg::query_resp::earn::GetEdenBoostEarnProgramResp;
-use cosmwasm_std::{Decimal, Deps};
+use cosmwasm_std::Deps;
 use elys_bindings::{
     account_history::types::{
         earn_detail::earn_detail::AprEdenBoost, earn_program::EdenBoostEarnProgram, ElysDenom
@@ -38,7 +38,7 @@ pub fn get_eden_boost_earn_program_details(
                     .collect();
 
                 let available = querier.get_balance(addr.clone(), asset.clone())?;
-                let staked = querier.get_staked_balance(addr.clone(), asset.clone())?;
+                let staked = querier.get_staked_balance(addr, asset)?;
 
                 EdenBoostEarnProgram {
                     bonding_period,
@@ -51,16 +51,7 @@ pub fn get_eden_boost_earn_program_details(
                     rewards: Some(program_rewards)
                 }
             }
-            None => EdenBoostEarnProgram {
-                bonding_period,
-                apr: AprEdenBoost {
-                    uusdc: usdc_apr.apr.to_owned(),
-                    ueden: eden_apr.apr.to_owned(),
-                },
-                available: None,
-                staked: None,
-                rewards: None,
-            },
+            None => EdenBoostEarnProgram::default(),
         },
     };
 

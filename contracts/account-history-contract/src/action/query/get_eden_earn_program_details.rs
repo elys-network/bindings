@@ -1,10 +1,9 @@
 use super::*;
 use crate::msg::query_resp::earn::GetEdenEarnProgramResp;
-use cosmwasm_std::{Decimal, Deps, Uint128};
+use cosmwasm_std::{Decimal, Deps};
 use elys_bindings::account_history::types::earn_program::EdenEarnProgram;
 use elys_bindings::account_history::types::{AprElys, ElysDenom};
 use elys_bindings::query_resp::Validator;
-use elys_bindings::types::BalanceAvailable;
 use elys_bindings::{query_resp::QueryAprResponse, ElysQuerier, ElysQuery};
 
 pub fn get_eden_earn_program_details(
@@ -68,22 +67,7 @@ pub fn get_eden_earn_program_details(
                     vesting_details: vesting_info.vesting_details,
                 }
             }
-            None => EdenEarnProgram {
-                bonding_period,
-                apr: AprElys {
-                    uusdc: usdc_apr.apr,
-                    ueden: eden_apr.apr,
-                    uedenb: edenb_apr.apr,
-                },
-                available: None,
-                staked: None,
-                rewards: None,
-                vesting: BalanceAvailable {
-                    amount: Uint128::zero(),
-                    usd_amount: Decimal::zero()
-                },
-                vesting_details: None,
-            },
+            None => EdenEarnProgram::default(),
         },
     };
 

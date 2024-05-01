@@ -35,7 +35,7 @@ pub fn get_usdc_earn_program_details(
                     .map_or(Decimal::zero(), |res| res);
 
                 let mut staked =
-                    querier.get_staked_balance(addr.clone(), usdc_base_denom.clone())?;
+                    querier.get_staked_balance(addr, usdc_base_denom)?;
 
                 let mut borrowed = querier.get_borrowed_balance()?;
                 borrowed.usd_amount = borrowed
@@ -57,17 +57,7 @@ pub fn get_usdc_earn_program_details(
                     borrowed: Some(borrowed),
                 }
             }
-            None => UsdcEarnProgram {
-                bonding_period,
-                apr: AprUsdc {
-                    uusdc: usdc_apr.apr.to_owned(),
-                    ueden: eden_apr.apr.to_owned(),
-                },
-                available: None,
-                staked: None,
-                rewards: None,
-                borrowed: None,
-            },
+            None => UsdcEarnProgram::default(),
         },
     };
 

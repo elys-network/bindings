@@ -38,10 +38,10 @@ pub fn get_elys_earn_program_details(
                     .collect();
 
                 let mut available = querier.get_balance(addr.clone(), asset.clone())?;
-                let staked = querier.get_staked_balance(addr.clone(), asset.clone())?;
+                let staked = querier.get_staked_balance(addr.clone(), asset)?;
 
                 let staked_positions = querier.get_staked_positions(addr.clone())?;
-                let unstaked_positions = querier.get_unstaked_positions(addr.clone())?;
+                let unstaked_positions = querier.get_unstaked_positions(addr)?;
 
                 // have value in usd
                 let mut available_in_usd = uelys_price_in_uusdc
@@ -69,19 +69,7 @@ pub fn get_elys_earn_program_details(
                     unstaked_positions: unstaked_positions.unstaked_position,
                 }
             }
-            None => ElysEarnProgram {
-                bonding_period,
-                apr: AprElys {
-                    uusdc: usdc_apr.apr,
-                    ueden: eden_apr.apr,
-                    uedenb: edenb_apr.apr,
-                },
-                available: None,
-                staked: None,
-                rewards: None,
-                staked_positions: None,
-                unstaked_positions: None,
-            },
+            None => ElysEarnProgram::default(),
         },
     };
 
