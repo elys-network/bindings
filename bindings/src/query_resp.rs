@@ -2,11 +2,12 @@ use std::{collections::HashMap, str::FromStr};
 
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    Coin, DecCoin, Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, StdResult, Uint128,
+    Coin, DecCoin, Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, StdError,
+    StdResult, Uint128,
 };
 
 use crate::{
-    account_history::types::{CoinValue, DecCoinValue},
+    account_history::types::{CoinValue, DecCoinValue, ElysDenom},
     trade_shield::types::{
         AmmPool, AmmPoolRaw, PerpetualPosition, PoolExtraInfo, StakedPositionRaw,
     },
@@ -784,7 +785,21 @@ impl EstakingRewardsResponse {
         for delegation_reward in &self.rewards {
             let validator_address = delegation_reward.validator_address.clone();
             for dec_coin in &delegation_reward.reward {
-                let dec_coin_value = DecCoinValue::from_dec_coin(dec_coin, querier, usdc_denom)?;
+                if dec_coin.denom == ElysDenom::EdenBoost.as_str() {
+                    let eden_boost_coin = DecCoinValue::new(
+                        dec_coin.denom.clone(),
+                        dec_coin.amount,
+                        Decimal::zero(),
+                        Decimal256::zero(),
+                    );
+                    dec_coin_values.push((validator_address.clone(), eden_boost_coin));
+                    continue;
+                }
+
+                let dec_coin_value = DecCoinValue::from_dec_coin(dec_coin, querier, usdc_denom)
+                    .map_err(|e| {
+                        StdError::generic_err(format!("Failed to convert to DecCoinValue {}", e))
+                    })?;
                 dec_coin_values.push((validator_address.clone(), dec_coin_value));
             }
         }

@@ -103,6 +103,20 @@ impl CoinValue {
 }
 
 impl DecCoinValue {
+    pub fn new(
+        denom: String,
+        amount_token: Decimal256,
+        price: Decimal,
+        amount_usd: Decimal256,
+    ) -> Self {
+        Self {
+            denom,
+            amount_token,
+            amount_usd,
+            price,
+        }
+    }
+
     pub fn from_dec_coin(
         balance: &DecCoin,
         querier: &ElysQuerier<'_>,

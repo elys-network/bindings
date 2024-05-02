@@ -1,4 +1,4 @@
-use cosmwasm_std::{Deps, StdResult};
+use cosmwasm_std::{Deps, StdError, StdResult};
 use elys_bindings::account_history::msg::query_resp::estaking::GetEstakingRewardsResponse;
 use elys_bindings::{ElysQuerier, ElysQuery};
 
@@ -17,12 +17,20 @@ pub fn get_estaking_rewards(
 
     let response = querier.get_estaking_rewards(address).unwrap_or_default();
 
-    let fiat_coins = response
-        .to_dec_coin_values(&querier, &generator.metadata.usdc_denom)
-        .unwrap_or_default();
+    let fiat_coins = response.to_dec_coin_values(&querier, &generator.metadata.usdc_denom);
+
+    match fiat_coins {
+        Err(e) => {
+            return Err(StdError::generic_err(format!(
+                "Failed to convert to DecCoinValue {}",
+                e
+            )))
+        }
+        _ => {}
+    }
 
     Ok(GetEstakingRewardsResponse {
-        rewards: fiat_coins,
+        rewards: fiat_coins.unwrap_or_default(),
         total: response.total,
     })
 }
