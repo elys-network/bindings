@@ -1,6 +1,6 @@
 use super::*;
 use crate::msg::query_resp::earn::GetEdenBoostEarnProgramResp;
-use cosmwasm_std::Deps;
+use cosmwasm_std::{Deps, StdResult};
 use elys_bindings::{
     account_history::types::{
         earn_detail::earn_detail::AprEdenBoost, earn_program::EdenBoostEarnProgram, ElysDenom,
@@ -25,37 +25,34 @@ pub fn get_eden_boost_earn_program_details(
 
     let querier = ElysQuerier::new(&deps.querier);
 
-    let resp = GetEdenBoostEarnProgramResp {
-        data: match address {
-            Some(addr) => {
-                let all_rewards = querier
-                    .get_estaking_rewards(addr.clone())
-                    .unwrap_or_default();
-                let program_rewards = all_rewards
-                    .get_validator_rewards(Validator::EdenBoost)
-                    .to_dec_coin_values(&querier, &usdc_denom.clone())
-                    .unwrap_or_default()
-                    .into_iter()
-                    .map(|coin| coin.1)
-                    .collect();
+    let data = address.map_or(
+        Ok(EdenBoostEarnProgram::default()),
+        |addr| -> StdResult<EdenBoostEarnProgram> {
+            let all_rewards = querier
+                .get_estaking_rewards(addr.clone())
+                .unwrap_or_default();
+            let program_rewards = all_rewards
+                .get_validator_rewards(Validator::EdenBoost)
+                .to_dec_coin_values(&querier, &usdc_denom.clone())
+                .unwrap_or_default()
+                .into_iter()
+                .map(|coin| coin.1)
+                .collect();
+            let available = querier.get_balance(addr.clone(), asset.clone())?;
+            let staked = querier.get_staked_balance(addr, asset)?;
 
-                let available = querier.get_balance(addr.clone(), asset.clone())?;
-                let staked = querier.get_staked_balance(addr, asset)?;
-
-                EdenBoostEarnProgram {
-                    bonding_period,
-                    apr: AprEdenBoost {
-                        uusdc: usdc_apr.apr.to_owned(),
-                        ueden: eden_apr.apr.to_owned(),
-                    },
-                    available: Some(available.amount),
-                    staked: Some(staked.amount),
-                    rewards: Some(program_rewards),
-                }
-            }
-            None => EdenBoostEarnProgram::default(),
+            Ok(EdenBoostEarnProgram {
+                bonding_period,
+                apr: AprEdenBoost {
+                    uusdc: usdc_apr.apr.to_owned(),
+                    ueden: eden_apr.apr.to_owned(),
+                },
+                available: Some(available.amount),
+                staked: Some(staked.amount),
+                rewards: Some(program_rewards),
+            })
         },
-    };
+    )?;
 
-    Ok(resp)
+    Ok(GetEdenBoostEarnProgramResp { data })
 }
