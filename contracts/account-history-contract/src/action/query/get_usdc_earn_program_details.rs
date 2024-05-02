@@ -1,6 +1,6 @@
 use super::*;
 use crate::msg::query_resp::earn::GetUsdcEarnProgramResp;
-use cosmwasm_std::{Decimal, Deps};
+use cosmwasm_std::{Decimal, Deps, StdResult};
 use elys_bindings::{
     account_history::types::{earn_program::UsdcEarnProgram, AprUsdc, ElysDenom},
     ElysQuerier, ElysQuery,
@@ -25,48 +25,45 @@ pub fn get_usdc_earn_program_details(
         .get_masterchef_stable_stake_apr(ElysDenom::Usdc.as_str().to_string())
         .unwrap_or_default();
 
-    let resp = GetUsdcEarnProgramResp {
-        data: match address {
-            Some(addr) => {
-                let rewards = querier
-                    .get_masterchef_pending_rewards(addr.clone())
-                    .unwrap_or_default();
-                let coin_values_rewards = rewards
-                    .to_coin_values(&querier, &usdc_denom.clone())
-                    .unwrap_or_default();
-                let pool_rewards = coin_values_rewards.0[&pool_id].clone();
+    let data = address.map_or(
+        Ok(UsdcEarnProgram::default()),
+        |addr| -> StdResult<UsdcEarnProgram> {
+            let rewards = querier
+                .get_masterchef_pending_rewards(addr.clone())
+                .unwrap_or_default();
+            let coin_values_rewards = rewards
+                .to_coin_values(&querier, &usdc_denom)
+                .unwrap_or_default();
+            let pool_rewards = coin_values_rewards.0[&pool_id].clone();
 
-                let mut available = querier.get_balance(addr.clone(), usdc_denom.clone())?;
-                available.usd_amount = available
-                    .usd_amount
-                    .checked_mul(uusdc_usd_price)
-                    .map_or(Decimal::zero(), |res| res);
+            let mut available = querier.get_balance(addr.clone(), usdc_denom)?;
+            available.usd_amount = available
+                .usd_amount
+                .checked_mul(uusdc_usd_price)
+                .unwrap_or_default();
 
-                let mut staked = querier.get_staked_balance(addr, usdc_base_denom)?;
+            let mut staked = querier.get_staked_balance(addr, usdc_base_denom)?;
 
-                let mut borrowed = querier.get_borrowed_balance()?;
-                borrowed.usd_amount = borrowed
-                    .usd_amount
-                    .checked_mul(uusdc_usd_price)
-                    .map_or(Decimal::zero(), |res| res);
+            let mut borrowed = querier.get_borrowed_balance()?;
+            borrowed.usd_amount = borrowed
+                .usd_amount
+                .checked_mul(uusdc_usd_price)
+                .unwrap_or_default();
 
-                staked.lockups = None;
+            staked.lockups = None;
 
-                UsdcEarnProgram {
-                    bonding_period,
-                    apr: AprUsdc {
-                        uusdc: usdc_apr.apr,
-                        ueden: eden_apr.apr,
-                    },
-                    available: Some(available),
-                    staked: Some(staked),
-                    rewards: Some(pool_rewards),
-                    borrowed: Some(borrowed),
-                }
-            }
-            None => UsdcEarnProgram::default(),
+            Ok(UsdcEarnProgram {
+                bonding_period,
+                apr: AprUsdc {
+                    uusdc: usdc_apr.apr,
+                    ueden: eden_apr.apr,
+                },
+                available: Some(available),
+                staked: Some(staked),
+                rewards: Some(pool_rewards),
+                borrowed: Some(borrowed),
+            })
         },
-    };
-
-    Ok(resp)
+    )?;
+    Ok(GetUsdcEarnProgramResp { data })
 }
