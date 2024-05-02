@@ -2,8 +2,7 @@ use std::collections::HashMap;
 
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    coin, Coin, DecCoin, Decimal, Decimal256, Deps, Env, QuerierWrapper, StdError, StdResult,
-    Uint128,
+    Coin, DecCoin, Decimal, Decimal256, Deps, Env, QuerierWrapper, StdError, StdResult, Uint128,
 };
 use cw_utils::Expiration;
 use elys_bindings::{
@@ -11,7 +10,7 @@ use elys_bindings::{
         msg::query_resp::{GetRewardsResp, StakeAssetBalanceBreakdown, StakedAssetsResponse},
         types::{
             earn_program::{EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram},
-            AccountSnapshot, BalanceReward, CoinValue, ElysDenom, LiquidAsset, Metadata,
+            AccountSnapshot, CoinValue, DecCoinValue, ElysDenom, LiquidAsset, Metadata,
             PerpetualAsset, PerpetualAssets, PoolBalances, Portfolio, PortfolioBalanceSnapshot,
             Reward, StakedAssets, TotalBalance,
         },
@@ -654,165 +653,83 @@ impl AccountSnapshotGenerator {
         address: &String,
     ) -> StdResult<GetRewardsResp> {
         let querier = ElysQuerier::new(&deps.querier);
-        let commitments = querier.get_commitments(address.to_string())?;
+        let rewards_response = querier.get_all_program_rewards(address.to_string())?;
 
-        let denom_usdc_entry = querier.get_asset_profile(ElysDenom::Usdc.as_str().to_string())?;
-        let denom_uusdc = denom_usdc_entry.entry.denom;
-        let usdc_display_denom = denom_usdc_entry.entry.display_name;
+        // Concatenate all staking reward vectors into one
+        let all_staking_rewards: Vec<DecCoin> = rewards_response
+            .usdc_staking_rewards
+            .iter()
+            .chain(&rewards_response.elys_staking_rewards)
+            .chain(&rewards_response.eden_staking_rewards)
+            .chain(&rewards_response.edenb_staking_rewards)
+            .cloned()
+            .collect();
 
-        let denom_uelys = ElysDenom::Elys.as_str().to_string();
-        let denom_ueden = ElysDenom::Eden.as_str().to_string();
-        let denom_uedenb = ElysDenom::EdenBoost.as_str().to_string();
+        // Group the staking rewards by denomination and convert them to DecCoinValue
+        let mut reward_map: HashMap<String, DecCoinValue> = HashMap::new();
 
-        let usdc_oracle_price = querier.get_oracle_price(
-            usdc_display_denom.clone(),
-            ElysDenom::AnySource.as_str().to_string(),
-            0,
-        )?;
-        let usdc_price = usdc_oracle_price
-            .price
-            .price
-            .checked_div(Decimal::from_atomics(Uint128::new(1000000), 0).unwrap())
-            .unwrap_or_default();
+        // Iterate over all_staking_rewards and accumulate DecCoinValue for each denomination
+        for coin in all_staking_rewards {
+            let denom = coin.denom.clone();
+            let dec_coin_value = if denom != ElysDenom::EdenBoost.as_str().to_string() {
+                DecCoinValue::from_dec_coin(&coin, &querier, &self.metadata.usdc_denom)
+                    .unwrap_or_default()
+            } else {
+                DecCoinValue::new(coin.denom, coin.amount, Decimal::zero(), Decimal256::zero())
+            };
 
-        let mut balance_rewards: Vec<BalanceReward> = vec![];
-        let mut rewards = Reward {
-            usdc_usd: Decimal::zero(),
-            eden_usd: Decimal::zero(),
-            eden_boost: Uint128::zero(),
-            other_usd: Decimal::zero(),
-            total_usd: Decimal::zero(),
-        };
+            let entry = reward_map.entry(denom).or_insert_with(|| {
+                DecCoinValue::new(
+                    dec_coin_value.denom,
+                    Decimal256::zero(),
+                    dec_coin_value.price,
+                    Decimal256::zero(),
+                )
+            });
+            // Add the current DecCoinValue to the existing entry, or assign it if it's a new entry
+            entry.amount_usd += dec_coin_value.amount_usd;
+            entry.amount_token += dec_coin_value.amount_token;
+        }
 
-        match commitments.commitments.rewards_unclaimed {
-            Some(rewards_unclaimed) => {
-                for reward in rewards_unclaimed {
-                    // uusdc
-                    if reward.denom == denom_uusdc {
-                        let usdc_rewards =
-                            Decimal::from_atomics(reward.amount, 0).unwrap_or_default();
-                        let rewards_in_usd = usdc_rewards.checked_mul(usdc_price)?;
+        let total_usd: Decimal256 = reward_map.values().map(|v| v.amount_usd).sum();
 
-                        balance_rewards.push(BalanceReward {
-                            asset: denom_usdc_entry.entry.base_denom.clone(),
-                            amount: reward.amount,
-                            usd_amount: Some(rewards_in_usd),
-                        });
-
-                        rewards.usdc_usd = rewards_in_usd;
-                        rewards.total_usd = rewards
-                            .total_usd
-                            .checked_add(rewards.usdc_usd)
-                            .unwrap_or_default();
-
-                        continue;
-                    }
-
-                    // ueden
-                    if reward.denom == denom_ueden {
-                        // if it is eden, we should elys denom instead of ueden as it is not available in LP pool and has the same value with elys.
-                        let reward_in_elys = coin(reward.amount.u128(), denom_uelys.to_owned());
-                        let price = querier.get_asset_price(reward_in_elys.denom)?;
-
-                        let amount = coin(
-                            (price
-                                .checked_mul(
-                                    Decimal::from_atomics(reward_in_elys.amount, 0).map_err(
-                                        |_| {
-                                            StdError::generic_err(format!(
-                                                "failed to convert to decimal"
-                                            ))
-                                        },
-                                    )?,
-                                )
-                                .map_err(|e| {
-                                    StdError::generic_err(format!(
-                                        "failed to get_asset_price: {}",
-                                        e
-                                    ))
-                                })?)
-                            .to_uint_floor()
-                            .u128(),
-                            &denom_uusdc,
-                        );
-                        let rewards_in_usdc =
-                            Decimal::from_atomics(amount.amount, 0).unwrap_or_default();
-                        let rewards_in_usd =
-                            rewards_in_usdc.checked_mul(usdc_price).unwrap_or_default();
-
-                        balance_rewards.push(BalanceReward {
-                            asset: denom_ueden.clone(),
-                            amount: reward.amount,
-                            usd_amount: Some(rewards_in_usd),
-                        });
-
-                        rewards.eden_usd = rewards_in_usd;
-                        rewards.total_usd = rewards
-                            .total_usd
-                            .checked_add(rewards.eden_usd)
-                            .unwrap_or_default();
-                        continue;
-                    }
-
-                    // uedenb - we don't value eden boost in usd.
-                    if reward.denom == denom_uedenb {
-                        balance_rewards.push(BalanceReward {
-                            asset: denom_uedenb.clone(),
-                            amount: reward.amount,
-                            usd_amount: None,
-                        });
-                        rewards.eden_boost = reward.amount;
-                        continue;
-                    }
-
-                    // We accumulate other denoms in a single usd.
-                    let price = querier.get_asset_price(reward.denom)?;
-
-                    let amount = coin(
-                        (price
-                            .checked_mul(Decimal::from_atomics(reward.amount, 0).map_err(|_| {
-                                StdError::generic_err(format!("failed to convert to decimal"))
-                            })?)
-                            .map_err(|e| {
-                                StdError::generic_err(format!("failed to get_asset_price: {}", e))
-                            })?)
-                        .to_uint_floor()
-                        .u128(),
-                        &denom_uusdc,
-                    );
-                    let rewards_in_usdc =
-                        Decimal::from_atomics(amount.amount, 0).unwrap_or_default();
-                    let rewards_in_usd =
-                        rewards_in_usdc.checked_mul(usdc_price).unwrap_or_default();
-
-                    rewards.other_usd = rewards
-                        .other_usd
-                        .checked_add(rewards_in_usd)
-                        .unwrap_or_default();
-                    rewards.total_usd = rewards
-                        .total_usd
-                        .checked_add(rewards_in_usd)
-                        .unwrap_or_default();
-
-                    balance_rewards.push(BalanceReward {
-                        asset: amount.denom,
-                        amount: reward.amount,
-                        usd_amount: Some(rewards_in_usd),
-                    });
-                }
-            }
-            None => {
-                return Ok(GetRewardsResp {
-                    rewards_map: AccountSnapshot::zero(&denom_uusdc).reward,
-                    rewards: balance_rewards,
-                });
+        // Calculate other_usd as the sum of all amount_usd values in reward_map
+        // excluding USDC, Eden, and EdenBoost
+        let mut other_usd: Decimal256 = Decimal256::zero();
+        for (denom, value) in &reward_map {
+            if denom != &self.metadata.usdc_denom
+                && denom != &ElysDenom::Eden.as_str().to_string()
+                && denom != &ElysDenom::EdenBoost.as_str().to_string()
+            {
+                other_usd += value.amount_usd;
             }
         }
 
-        let resp = GetRewardsResp {
-            rewards_map: rewards,
-            rewards: balance_rewards,
+        let reward = Reward {
+            usdc_usd: reward_map
+                .entry(self.metadata.usdc_denom.clone())
+                .or_default()
+                .amount_usd,
+            eden_usd: reward_map
+                .entry(ElysDenom::Eden.as_str().to_string())
+                .or_default()
+                .amount_usd,
+            eden_boost: reward_map
+                .entry(ElysDenom::EdenBoost.as_str().to_string())
+                .or_default()
+                .amount_token,
+            other_usd,
+            total_usd,
         };
+
+        // Construct rewards_vec as the values of all rewards_map entries
+        let rewards_vec: Vec<DecCoinValue> = reward_map.into_iter().map(|(_, v)| v).collect();
+
+        let resp = GetRewardsResp {
+            rewards_map: reward,
+            rewards: rewards_vec,
+        };
+
         Ok(resp)
     }
 }

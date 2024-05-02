@@ -107,6 +107,7 @@ impl Module for ElysModule {
         request: Self::QueryT,
     ) -> AnyResult<cosmwasm_std::Binary> {
         match request {
+            ElysQuery::IncentiveAllProgramRewards { .. } => todo!("IncentiveAllProgramRewards"),
             ElysQuery::LeveragelpParams { .. } => {
                 let resp = LeveragelpParamsResponse {
                     params: Some(LeveragelpParams {

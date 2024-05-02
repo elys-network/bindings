@@ -103,6 +103,8 @@ pub enum ElysQuery {
     CommitmentRewardsBalanceOfDenom { address: String, denom: String },
     #[returns(QueryShowCommitmentsResponse)]
     CommitmentShowCommitments { creator: String },
+    #[returns(QueryAllProgramRewardsResponse)]
+    IncentiveAllProgramRewards { address: String },
     #[returns(QueryVestingInfoResponse)]
     CommitmentVestingInfo { address: String },
     #[returns(QueryEarnPoolResponse)]
