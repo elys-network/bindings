@@ -2,7 +2,8 @@ use super::*;
 use cosmwasm_std::{coin, Addr, Decimal, Order, StdError, Timestamp};
 use elys_bindings::trade_shield::{
     msg::query_resp::{
-        GetSortedOrderListResp, NumberOfPendingOrderResp, OrdersStates, TradeShieldParamsResponse,
+        GetSortedOrderListResp, GetSpotOrderStatesResp, NumberOfPendingOrderResp, OrdersStates,
+        TradeShieldParamsResponse,
     },
     states::{
         LEVERAGE_ENABLED, LIMIT_PROCESS_ORDER, MARKET_ORDER_ENABLED, PARAMS_ADMIN,
@@ -212,6 +213,24 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
                 }
             }
             Ok(to_json_binary(&GetSortedOrderListResp { orders_states })?)
+        }
+        GetSpotOrderStates { order_id } => {
+            let order = SPOT_ORDER.load(deps.storage, order_id)?;
+            let is_in_pending = PENDING_SPOT_ORDER
+                .may_load(deps.storage, order_id)?
+                .is_some();
+            let sorted_id_list =
+                SORTED_PENDING_SPOT_ORDER.may_load(deps.storage, order.gen_key()?.as_str())?;
+            let is_in_pending_sorted_array = match sorted_id_list {
+                Some(list) => list.iter().find(|&id| *id == order_id).is_some(),
+                None => false,
+            };
+
+            Ok(to_json_binary(&GetSpotOrderStatesResp {
+                order,
+                is_in_pending,
+                is_in_pending_sorted_array,
+            })?)
         }
     }
 }
