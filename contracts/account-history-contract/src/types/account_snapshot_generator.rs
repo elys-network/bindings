@@ -665,30 +665,33 @@ impl AccountSnapshotGenerator {
             .cloned()
             .collect();
 
-        // Group the staking rewards by denomination and convert them to DecCoinValue
-        let mut reward_map: HashMap<String, DecCoinValue> = HashMap::new();
+        // Accumulate amounts for each denomination
+        let mut denom_amounts: HashMap<String, Decimal256> = HashMap::new();
+        for coin in &all_staking_rewards {
+            let amount = denom_amounts
+                .entry(coin.denom.clone())
+                .or_insert_with(Decimal256::zero);
+            *amount += coin.amount;
+        }
 
-        // Iterate over all_staking_rewards and accumulate DecCoinValue for each denomination
-        for coin in all_staking_rewards {
-            let denom = coin.denom.clone();
+        // Convert accumulated amounts to DecCoinValue instances
+        let mut reward_map: HashMap<String, DecCoinValue> = HashMap::new();
+        for (denom, amount) in denom_amounts {
             let dec_coin_value = if denom != ElysDenom::EdenBoost.as_str().to_string() {
-                DecCoinValue::from_dec_coin(&coin, &querier, &self.metadata.usdc_denom)
-                    .unwrap_or_default()
+                DecCoinValue::from_dec_coin(
+                    &DecCoin {
+                        denom: denom.clone(),
+                        amount,
+                    },
+                    &querier,
+                    &self.metadata.usdc_denom,
+                )
+                .unwrap_or_default()
             } else {
-                DecCoinValue::new(coin.denom, coin.amount, Decimal::zero(), Decimal256::zero())
+                DecCoinValue::new(denom.clone(), amount, Decimal::zero(), Decimal256::zero())
             };
 
-            let entry = reward_map.entry(denom).or_insert_with(|| {
-                DecCoinValue::new(
-                    dec_coin_value.denom,
-                    Decimal256::zero(),
-                    dec_coin_value.price,
-                    Decimal256::zero(),
-                )
-            });
-            // Add the current DecCoinValue to the existing entry, or assign it if it's a new entry
-            entry.amount_usd += dec_coin_value.amount_usd;
-            entry.amount_token += dec_coin_value.amount_token;
+            reward_map.insert(denom, dec_coin_value);
         }
 
         let total_usd: Decimal256 = reward_map.values().map(|v| v.amount_usd).sum();
