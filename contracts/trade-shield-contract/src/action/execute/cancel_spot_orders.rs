@@ -67,11 +67,7 @@ pub fn cancel_spot_orders(
         orders
     };
 
-    let mut orders = filter_order_by_type(orders, order_type)?;
-
-    for order in orders.iter_mut() {
-        remove_spot_order(order.order_id, Status::Canceled, deps.storage)?;
-    }
+    let orders = filter_order_by_type(orders, order_type)?;
 
     let order_ids: Vec<u64> = orders.iter().map(|order| order.order_id).collect();
 
