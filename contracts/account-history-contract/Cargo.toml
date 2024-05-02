@@ -34,3 +34,4 @@ elys-bindings = { path = "../../bindings", features = ["testing"] }
 elys-bindings-test = { path = "../../bindings-test" }
 anyhow = "1"
 account-history-contract = { path = ".", features = ["debug"] }
+cargo-husky.workspace = true

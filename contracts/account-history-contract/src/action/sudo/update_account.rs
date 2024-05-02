@@ -42,7 +42,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
                 // skip if the account has been updated today
                 continue;
             } else {
-                histories.push((address,Some(history)));
+                histories.push((address, Some(history)));
             }
         } else {
             histories.push((address, None));
@@ -52,8 +52,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     let generator = AccountSnapshotGenerator::new(&deps.as_ref())?;
 
     for (address, history) in histories.iter_mut() {
-
-        let history_data= history.get_or_insert(HashMap::new());
+        let history_data = history.get_or_insert(HashMap::new());
 
         clean_up_history(history_data, &env.block, &generator.expiration);
 
@@ -63,7 +62,6 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             &env,
             address,
         )?;
-
 
         history_data.insert(today.clone(), new_part);
         HISTORY.save(deps.storage, &address, &history_data)?;
@@ -78,7 +76,7 @@ fn clean_up_history(
     expiration: &Expiration,
 ) {
     if history.is_empty() {
-        return 
+        return;
     }
     let expiration = match expiration {
         Expiration::AtHeight(h) => Timestamp::from_seconds(h * 3), // since a block is created every 3 seconds
@@ -87,7 +85,7 @@ fn clean_up_history(
     };
 
     if expiration > block_info.time {
-        return 
+        return;
     }
 
     let expired_date = block_info.time.minus_seconds(expiration.seconds());

@@ -390,7 +390,7 @@ pub struct VestingTokensRaw {
     pub total_amount: Int128,
     pub claimed_amount: Int128,
     pub num_blocks: Option<i64>,
-    pub start_blocks: Option<i64>,
+    pub start_block: Option<i64>,
     pub vest_started_timestamp: Option<i64>,
 }
 
@@ -400,7 +400,7 @@ pub struct VestingTokens {
     pub total_amount: Int128,
     pub claimed_amount: Int128,
     pub num_blocks: i64,
-    pub start_blocks: i64,
+    pub start_block: i64,
     pub vest_started_timestamp: i64,
 }
 
@@ -636,7 +636,6 @@ pub struct LeveragelpWhitelistResponseRaw {
     pub pagination: Option<PageResponse>,
 }
 
-
 #[cw_serde]
 pub struct LeveragelpWhitelistResponse {
     pub whitelist: Vec<String>,
@@ -761,9 +760,7 @@ impl MasterchefUserPendingRewardResponse {
     ) -> StdResult<HashMap<u64, Vec<CoinValue>>> {
         let mut dec_coin_values = HashMap::new();
         for MasterchefUserPendingRewardData { reward, pool_id } in &self.rewards {
-            let coin = {
-                dec_coin_values.entry(*pool_id).or_insert_with(|| vec![])
-            };
+            let coin = { dec_coin_values.entry(*pool_id).or_insert_with(|| vec![]) };
             coin.extend(
                 reward
                     .iter()

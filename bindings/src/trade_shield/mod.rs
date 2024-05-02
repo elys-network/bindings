@@ -1,3 +1,3 @@
 pub mod msg;
-pub mod types;
 pub mod states;
+pub mod types;

@@ -19,6 +19,6 @@ pub fn get_staked_assets(
         ),
         staked_assets: staked_assets_response.staked_assets.to_owned(),
         total_balance: staked_assets_response.total_balance,
-        balance_break_down: staked_assets_response.balance_break_down
+        balance_break_down: staked_assets_response.balance_break_down,
     })
 }

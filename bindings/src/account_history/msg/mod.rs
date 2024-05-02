@@ -19,7 +19,6 @@ pub mod query_resp {
     mod total_value_per_asset_resp;
     mod user_value_response;
 
-
     pub use get_all_resp::GetAllResp;
     pub use get_portfolio_resp::GetPortfolioResp;
     pub use get_rewards_resp::GetRewardsResp;

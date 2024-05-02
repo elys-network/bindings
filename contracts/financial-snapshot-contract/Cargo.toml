@@ -23,3 +23,5 @@ elys-bindings = { path = "../../bindings" }
 cw-multi-test = "0.13.4"
 elys-bindings = { path = "../../bindings", features = ["testing"] }
 elys-bindings-test = { path = "../../bindings-test" }
+cargo-husky.workspace = true
+
