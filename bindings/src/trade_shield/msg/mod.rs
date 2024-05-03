@@ -14,6 +14,7 @@ pub use sudo_msg::SudoMsg;
 
 pub mod query_resp {
     mod get_all_prices_resp;
+    mod get_order_states_resp;
     mod get_perpetual_order_resp;
     mod get_perpetual_orders_resp;
     mod get_perpetual_position_resp;
@@ -26,6 +27,7 @@ pub mod query_resp {
     mod params_resp;
 
     pub use get_all_prices_resp::GetAllPricesResponse;
+    pub use get_order_states_resp::GetSpotOrderStatesResp;
     pub use get_perpetual_order_resp::GetPerpetualOrderResp;
     pub use get_perpetual_orders_resp::GetPerpetualOrdersResp;
     pub use get_perpetual_position_resp::GetPerpetualPositionResp;

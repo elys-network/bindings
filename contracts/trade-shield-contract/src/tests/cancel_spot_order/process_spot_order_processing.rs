@@ -1,4 +1,5 @@
 use super::*;
+use cancel_spot_order::test_order_status::test_spot_order_status;
 use cosmwasm_std::{coins, Coin, Timestamp};
 
 #[test]
@@ -35,7 +36,7 @@ fn process_spot_order_processing() {
     // Create a mock message to instantiate the contract with the dummy order.
     let instantiate_msg = InstantiateMockMsg {
         account_history_address: None,
-        spot_orders: vec![dummy_order],
+        spot_orders: vec![dummy_order.clone()],
         perpetual_orders: vec![],
     };
 
@@ -50,6 +51,13 @@ fn process_spot_order_processing() {
             None,
         )
         .unwrap();
+
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        dummy_order.order_id,
+        Status::Executed,
+    );
 
     // Verify the swap occurred.
 
@@ -90,11 +98,18 @@ fn process_spot_order_processing() {
     let err = app
         .execute_contract(
             Addr::unchecked("user"),
-            addr,
+            addr.clone(),
             &ExecuteMsg::CancelSpotOrder { order_id: 0 },
             &vec![],
         )
         .unwrap_err();
+
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        dummy_order.order_id,
+        Status::Executed,
+    );
 
     assert_eq!(
         ContractError::CancelStatusError {

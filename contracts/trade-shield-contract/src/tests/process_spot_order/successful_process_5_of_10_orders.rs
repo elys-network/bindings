@@ -2,6 +2,7 @@ use crate::tests::read_processed_order_id::read_processed_order_id;
 
 use super::*;
 use cosmwasm_std::{Coin, Timestamp};
+use process_spot_order::test_order_status::test_spot_order_status;
 
 #[test]
 fn successful_process_5_of_10_orders() {
@@ -43,7 +44,7 @@ fn successful_process_5_of_10_orders() {
 
     let instantiate_msg = InstantiateMockMsg {
         account_history_address: None,
-        spot_orders,
+        spot_orders: spot_orders.clone(),
         perpetual_orders: vec![],
     };
 
@@ -62,6 +63,67 @@ fn successful_process_5_of_10_orders() {
 
     app.init_modules(|router, _, store| router.custom.set_prices(store, &prices_at_t0))
         .unwrap();
+
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[0].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[1].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[2].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[3].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[4].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[5].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[6].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[7].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[8].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[9].order_id,
+        Status::Pending,
+    );
 
     // Execute the order processing.
     let resp = app.wasm_sudo(addr.clone(), &sudo_msg).unwrap();
@@ -122,75 +184,73 @@ fn successful_process_5_of_10_orders() {
         0
     );
 
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[0].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[1].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[2].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[3].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[4].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[5].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[6].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[7].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[8].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[9].order_id,
+        Status::Pending,
+    );
+
     let order_ids: Vec<u64> = read_processed_order_id(resp);
 
     assert!(order_ids.is_empty());
 
     app.init_modules(|router, _, store| router.custom.set_prices(store, &prices_at_t1))
         .unwrap();
-
-    // Execute the order processing.
-    let resp = app.wasm_sudo(addr.clone(), &sudo_msg).unwrap();
-
-    assert_eq!(
-        app.wrap()
-            .query_balance(&addr, "btc")
-            .unwrap()
-            .amount
-            .u128(),
-        5
-    );
-    assert_eq!(
-        app.wrap()
-            .query_balance(&addr, "eth")
-            .unwrap()
-            .amount
-            .u128(),
-        3
-    );
-    assert_eq!(
-        app.wrap()
-            .query_balance(
-                &addr,
-                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-            )
-            .unwrap()
-            .amount
-            .u128(),
-        0
-    );
-
-    assert_eq!(
-        app.wrap()
-            .query_balance("user", "btc")
-            .unwrap()
-            .amount
-            .u128(),
-        0
-    );
-    assert_eq!(
-        app.wrap()
-            .query_balance("user", "eth")
-            .unwrap()
-            .amount
-            .u128(),
-        0
-    );
-    assert_eq!(
-        app.wrap()
-            .query_balance(
-                "user",
-                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-            )
-            .unwrap()
-            .amount
-            .u128(),
-        190200
-    );
-
-    let order_ids: Vec<u64> = read_processed_order_id(resp);
-
-    assert!(order_ids.is_empty());
 
     // Execute the order processing.
     app.wasm_sudo(addr.clone(), &sudo_msg).unwrap();
@@ -249,6 +309,187 @@ fn successful_process_5_of_10_orders() {
             .amount
             .u128(),
         190200
+    );
+
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[0].order_id,
+        Status::Executed,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[1].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[2].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[3].order_id,
+        Status::Executed,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[4].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[5].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[6].order_id,
+        Status::Executed,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[7].order_id,
+        Status::Executed,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[8].order_id,
+        Status::Executed,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[9].order_id,
+        Status::Pending,
+    );
+
+    // Execute the order processing.
+    app.wasm_sudo(addr.clone(), &sudo_msg).unwrap();
+
+    assert_eq!(
+        app.wrap()
+            .query_balance(&addr, "btc")
+            .unwrap()
+            .amount
+            .u128(),
+        5
+    );
+    assert_eq!(
+        app.wrap()
+            .query_balance(&addr, "eth")
+            .unwrap()
+            .amount
+            .u128(),
+        3
+    );
+    assert_eq!(
+        app.wrap()
+            .query_balance(
+                &addr,
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+            )
+            .unwrap()
+            .amount
+            .u128(),
+        0
+    );
+
+    assert_eq!(
+        app.wrap()
+            .query_balance("user", "btc")
+            .unwrap()
+            .amount
+            .u128(),
+        0
+    );
+    assert_eq!(
+        app.wrap()
+            .query_balance("user", "eth")
+            .unwrap()
+            .amount
+            .u128(),
+        0
+    );
+    assert_eq!(
+        app.wrap()
+            .query_balance(
+                "user",
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+            )
+            .unwrap()
+            .amount
+            .u128(),
+        190200
+    );
+
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[0].order_id,
+        Status::Executed,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[1].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[2].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[3].order_id,
+        Status::Executed,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[4].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[5].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[6].order_id,
+        Status::Executed,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[7].order_id,
+        Status::Executed,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[8].order_id,
+        Status::Executed,
+    );
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        spot_orders[9].order_id,
+        Status::Pending,
     );
 }
 

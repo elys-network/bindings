@@ -1,4 +1,5 @@
 use super::*;
+use cancel_spot_order::test_order_status::test_spot_order_status;
 use get_order_id_from_events::get_order_id_from_events;
 
 // This test case verifies the successful cancellation of a created order in the contract.
@@ -61,6 +62,8 @@ fn successful_cancel_order_with_created_order() {
     // Retrieve the order ID from the events emitted during order creation.
     let id = get_order_id_from_events(&resp.events).unwrap();
 
+    test_spot_order_status(&app.wrap(), addr.to_string(), id, Status::Pending);
+
     // User "user" cancels the created order.
     app.execute_contract(
         Addr::unchecked("user"),
@@ -69,6 +72,8 @@ fn successful_cancel_order_with_created_order() {
         &[],
     )
     .unwrap();
+
+    test_spot_order_status(&app.wrap(), addr.to_string(), id, Status::Canceled);
 
     // Verify that the "user" now has a balance of 150 ETH, and the contract address has 0 ETH.
     assert_eq!(
