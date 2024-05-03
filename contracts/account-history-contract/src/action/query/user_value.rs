@@ -1,23 +1,22 @@
-use crate::{msg::query_resp::UserValueResponse, states::HISTORY};
-use cosmwasm_std::{Deps, StdError, StdResult};
-use elys_bindings::{account_history::types::PortfolioBalanceSnapshot, ElysQuery};
+use crate::msg::query_resp::UserValueResponse;
+use cosmwasm_std::{Deps, Env, StdError, StdResult};
+use elys_bindings::ElysQuery;
 
-pub fn user_value(deps: Deps<ElysQuery>, user_address: String) -> StdResult<UserValueResponse> {
-    let user_history: Vec<PortfolioBalanceSnapshot> =
-        match HISTORY.may_load(deps.storage, &user_address)? {
-            Some(history) => history,
-            None => return Err(StdError::not_found(format!("user :{user_address}"))),
-        }
-        .values()
-        .cloned()
-        .collect();
+use super::user_snapshots;
 
-    match user_history
+pub fn user_value(
+    env: Env,
+    deps: Deps<ElysQuery>,
+    user_address: String,
+) -> StdResult<UserValueResponse> {
+    let user_snapshots_list = user_snapshots(env, deps, user_address.clone())?;
+
+    match user_snapshots_list
         .iter()
-        .min_by_key(|snapshot| snapshot.total_balance_usd)
+        .min_by_key(|&portfolio| portfolio.total_balance_usd)
     {
-        Some(lowest_value) => Ok(UserValueResponse {
-            value: lowest_value.to_owned(),
+        Some(portfolio) => Ok(UserValueResponse {
+            value: portfolio.to_owned(),
         }),
         None => Err(StdError::not_found(format!("user :{user_address}"))),
     }

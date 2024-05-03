@@ -1,25 +1,23 @@
-use crate::{msg::query_resp::MembershipTierResponse, states::HISTORY};
-use cosmwasm_std::{Deps, StdResult};
-use elys_bindings::{account_history::types::PortfolioBalanceSnapshot, ElysQuery};
+use crate::msg::query_resp::MembershipTierResponse;
+use cosmwasm_std::{Deps, Env, StdResult};
+use elys_bindings::ElysQuery;
+
+use super::user_snapshots;
 
 pub fn get_membership_tier(
+    env: Env,
     deps: Deps<ElysQuery>,
     user_address: String,
 ) -> StdResult<MembershipTierResponse> {
-    let user_history: Vec<PortfolioBalanceSnapshot> =
-        match HISTORY.may_load(deps.storage, &user_address)? {
-            Some(history) => history,
-            None => return Ok(MembershipTierResponse::zero()),
-        }
-        .values()
-        .cloned()
-        .collect();
+    let user_snapshots_list = user_snapshots(env, deps, user_address)?;
 
-    match user_history
+    match user_snapshots_list
         .iter()
-        .min_by_key(|snapshot| snapshot.total_balance_usd)
+        .min_by_key(|&snapshot| snapshot.total_balance_usd)
     {
-        Some(snapshot) => Ok(MembershipTierResponse::calc(snapshot.total_balance_usd)),
+        Some(snapshot) => Ok(MembershipTierResponse::calc(
+            snapshot.total_balance_usd.to_owned(),
+        )),
         None => return Ok(MembershipTierResponse::zero()),
     }
 }

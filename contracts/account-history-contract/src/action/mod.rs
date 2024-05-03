@@ -71,3 +71,8 @@ pub mod query {
     pub use get_staked_assets::get_staked_assets;
     pub use get_total_balance::get_total_balance;
 }
+
+pub mod execute {
+    mod add_user_address_to_queue;
+    pub use add_user_address_to_queue::add_user_address_to_queue;
+}

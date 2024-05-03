@@ -2,10 +2,9 @@ use cosmwasm_std::{entry_point, DepsMut, Env, Response, StdResult, Timestamp};
 use cw_utils::Expiration;
 use elys_bindings::account_history::msg::MigrationMsg;
 // use elys_bindings::account_history::types::Metadata;
-use elys_bindings::types::PageRequest;
 use elys_bindings::{ElysMsg, /*ElysQuerier,*/ ElysQuery};
 
-use crate::states::{EXPIRATION, /*METADATA,*/ PAGINATION, TRADE_SHIELD_ADDRESS};
+use crate::states::{EXPIRATION, /*METADATA,*/ PROCESSED_ACCOUNT_PER_BLOCK, TRADE_SHIELD_ADDRESS,};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(
@@ -24,22 +23,13 @@ pub fn migrate(
         &Expiration::AtTime(Timestamp::from_seconds(3 * 24 * 60 * 60)),
     )?;
 
-    // PAGINATION
+    // PROCESSED_ACCOUNT_PER_BLOCK
     let limit = match msg.limit {
         Some(limit) => limit,
         None => 1,
     };
 
-    PAGINATION.save(
-        deps.storage,
-        &PageRequest {
-            key: None,
-            limit,
-            reverse: false,
-            offset: None,
-            count_total: false,
-        },
-    )?;
+    PROCESSED_ACCOUNT_PER_BLOCK.save(deps.storage, &limit)?;
 
     // METADATA
     // let querier = ElysQuerier::new(&deps.querier);

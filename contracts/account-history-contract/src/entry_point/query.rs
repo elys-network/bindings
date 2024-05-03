@@ -1,8 +1,11 @@
-use crate::action::query::{
-    get_estaking_rewards, get_liquid_assets, get_masterchef_pending_rewards,
-    get_masterchef_pool_apr, get_masterchef_stable_stake_apr, get_membership_tier,
-    get_perpetuals_assets, get_pool_balances, get_portfolio, get_rewards, get_staked_assets,
-    get_total_balance,
+use crate::{
+    action::query::{
+        get_estaking_rewards, get_liquid_assets, get_masterchef_pending_rewards,
+        get_masterchef_pool_apr, get_masterchef_stable_stake_apr, get_membership_tier,
+        get_perpetuals_assets, get_pool_balances, get_portfolio, get_rewards, get_staked_assets,
+        get_total_balance,
+    },
+    states::USER_ADDRESS_QUEUE,
 };
 
 #[cfg(feature = "debug")]
@@ -11,7 +14,7 @@ use crate::action::query::{
     params, pool_asset_estimation, user_snapshots, user_value,
 };
 
-use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult};
+use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult, Uint128};
 use elys_bindings::{ElysQuerier, ElysQuery};
 
 use crate::msg::QueryMsg;
@@ -44,7 +47,7 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         GetRewards { user_address } => to_json_binary(&get_rewards(deps, user_address, env)?),
 
         GetMembershipTier { user_address } => {
-            to_json_binary(&get_membership_tier(deps, user_address)?)
+            to_json_binary(&get_membership_tier(env, deps, user_address)?)
         }
         GetPerpetualAssets { user_address } => {
             to_json_binary(&get_perpetuals_assets(deps, user_address, env)?)
@@ -106,11 +109,11 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         #[cfg(feature = "debug")]
         All { pagination } => to_json_binary(&all(deps, pagination)?),
         #[cfg(feature = "debug")]
-        UserSnapshots { user_address } => to_json_binary(&user_snapshots(deps, user_address)?),
+        UserSnapshots { user_address } => to_json_binary(&user_snapshots(env, deps, user_address)?),
         #[cfg(feature = "debug")]
         LastSnapshot { user_address } => to_json_binary(&last_snapshot(deps, user_address, env)?),
         #[cfg(feature = "debug")]
-        UserValue { user_address } => to_json_binary(&user_value(deps, user_address)?),
+        UserValue { user_address } => to_json_binary(&user_value(env, deps, user_address)?),
         #[cfg(feature = "debug")]
         CommitmentStakedPositions { delegator_address } => {
             let querier = ElysQuerier::new(&deps.querier);
@@ -159,6 +162,16 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         AmmPriceByDenom { token_in, discount } => {
             let querier = ElysQuerier::new(&deps.querier);
             to_json_binary(&querier.get_amm_price_by_denom(token_in, discount)?)
+        }
+        #[cfg(feature = "debug")]
+        AddressQueueSize {} => {
+            let user_address_queue: Vec<String> = USER_ADDRESS_QUEUE
+                .prefix_range(deps.storage, None, None, cosmwasm_std::Order::Descending)
+                .filter_map(|res| res.ok().map(|(addr, _)| addr))
+                .collect();
+            let size = Uint128::new(user_address_queue.len() as u128);
+
+            to_json_binary(&size)
         }
     }
 }
