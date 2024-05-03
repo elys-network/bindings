@@ -1,3 +1,5 @@
+use create_spot_order::test_order_status::test_spot_order_status;
+
 use crate::msg::query_resp::GetSpotOrdersResp;
 
 use super::*;
@@ -96,5 +98,10 @@ fn successful_create_market_buy_order() {
         )
         .unwrap();
 
-    assert_eq!(res.orders[0].status, Status::Executed);
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        res.orders[0].order_id,
+        Status::Executed,
+    );
 }

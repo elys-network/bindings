@@ -1,14 +1,17 @@
-use elys_bindings::trade_shield::{
-    msg::{
-        query_resp::{GetSpotOrderResp, GetSpotOrderStatesResp},
-        QueryMsg,
+use cosmwasm_std::QuerierWrapper;
+use elys_bindings::{
+    trade_shield::{
+        msg::{
+            query_resp::{GetSpotOrderResp, GetSpotOrderStatesResp},
+            QueryMsg,
+        },
+        types::Status,
     },
-    types::Status,
+    ElysQuery,
 };
-use elys_bindings_test::ElysApp;
 
 pub fn test_spot_order_status(
-    app: &ElysApp,
+    query_app: &QuerierWrapper<ElysQuery>,
     contract_addr: String,
     order_id: u64,
     status: Status,
@@ -16,8 +19,7 @@ pub fn test_spot_order_status(
     let is_in_pending = status == Status::Pending;
 
     // Get Order State
-    let order_states: GetSpotOrderStatesResp = app
-        .wrap()
+    let order_states: GetSpotOrderStatesResp = query_app
         .query_wasm_smart(
             contract_addr.clone(),
             &QueryMsg::GetSpotOrderStates { order_id },
@@ -25,8 +27,7 @@ pub fn test_spot_order_status(
         .unwrap();
 
     // Get Order
-    let GetSpotOrderResp { order }: GetSpotOrderResp = app
-        .wrap()
+    let GetSpotOrderResp { order }: GetSpotOrderResp = query_app
         .query_wasm_smart(contract_addr.clone(), &QueryMsg::GetSpotOrder { order_id })
         .unwrap();
 

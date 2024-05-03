@@ -62,7 +62,7 @@ fn successful_cancel_order_with_created_order() {
     // Retrieve the order ID from the events emitted during order creation.
     let id = get_order_id_from_events(&resp.events).unwrap();
 
-    test_spot_order_status(&app, addr.to_string(), id, Status::Pending);
+    test_spot_order_status(&app.wrap(), addr.to_string(), id, Status::Pending);
 
     // User "user" cancels the created order.
     app.execute_contract(
@@ -73,7 +73,7 @@ fn successful_cancel_order_with_created_order() {
     )
     .unwrap();
 
-    test_spot_order_status(&app, addr.to_string(), id, Status::Canceled);
+    test_spot_order_status(&app.wrap(), addr.to_string(), id, Status::Canceled);
 
     // Verify that the "user" now has a balance of 150 ETH, and the contract address has 0 ETH.
     assert_eq!(

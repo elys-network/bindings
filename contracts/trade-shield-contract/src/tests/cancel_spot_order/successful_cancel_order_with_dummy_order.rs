@@ -38,7 +38,7 @@ fn successful_cancel_order_with_dummy_order() {
         .unwrap();
 
     test_spot_order_status(
-        &app,
+        &app.wrap(),
         addr.to_string(),
         dummy_order.order_id,
         Status::Pending,
@@ -56,7 +56,7 @@ fn successful_cancel_order_with_dummy_order() {
     .unwrap();
 
     test_spot_order_status(
-        &app,
+        &app.wrap(),
         addr.to_string(),
         dummy_order.order_id,
         Status::Canceled,

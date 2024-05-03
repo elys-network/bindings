@@ -53,7 +53,7 @@ fn process_spot_order_processing() {
         .unwrap();
 
     test_spot_order_status(
-        &app,
+        &app.wrap(),
         addr.to_string(),
         dummy_order.order_id,
         Status::Executed,
@@ -105,7 +105,7 @@ fn process_spot_order_processing() {
         .unwrap_err();
 
     test_spot_order_status(
-        &app,
+        &app.wrap(),
         addr.to_string(),
         dummy_order.order_id,
         Status::Executed,

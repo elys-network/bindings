@@ -105,25 +105,25 @@ fn successfully_cancel_orders_ids() {
         .unwrap();
 
     test_spot_order_status(
-        &app,
+        &app.wrap(),
         addr.to_string(),
         spot_orders[0].order_id,
         Status::Pending,
     );
     test_spot_order_status(
-        &app,
+        &app.wrap(),
         addr.to_string(),
         spot_orders[1].order_id,
         Status::Pending,
     );
     test_spot_order_status(
-        &app,
+        &app.wrap(),
         addr.to_string(),
         spot_orders[2].order_id,
         Status::Pending,
     );
     test_spot_order_status(
-        &app,
+        &app.wrap(),
         addr.to_string(),
         spot_orders[3].order_id,
         Status::Pending,
@@ -170,25 +170,25 @@ fn successfully_cancel_orders_ids() {
         .unwrap();
 
     test_spot_order_status(
-        &app,
+        &app.wrap(),
         addr.to_string(),
         spot_orders[0].order_id,
         Status::Pending,
     );
     test_spot_order_status(
-        &app,
+        &app.wrap(),
         addr.to_string(),
         spot_orders[1].order_id,
         Status::Canceled,
     );
     test_spot_order_status(
-        &app,
+        &app.wrap(),
         addr.to_string(),
         spot_orders[2].order_id,
         Status::Pending,
     );
     test_spot_order_status(
-        &app,
+        &app.wrap(),
         addr.to_string(),
         spot_orders[3].order_id,
         Status::Canceled,
