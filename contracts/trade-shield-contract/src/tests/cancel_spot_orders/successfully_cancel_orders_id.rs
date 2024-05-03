@@ -1,3 +1,4 @@
+use cancel_spot_orders::test_order_status::test_spot_order_status;
 use cosmwasm_std::{to_json_binary, Coin, Timestamp};
 
 use super::*;
@@ -85,7 +86,7 @@ fn successfully_cancel_orders_ids() {
     // Create a mock message to instantiate the contract with an empty list of orders.
     let instantiate_msg = InstantiateMockMsg {
         account_history_address: None,
-        spot_orders,
+        spot_orders: spot_orders.clone(),
         perpetual_orders: vec![],
     };
 
@@ -102,6 +103,31 @@ fn successfully_cancel_orders_ids() {
             None,
         )
         .unwrap();
+
+    test_spot_order_status(
+        &app,
+        addr.to_string(),
+        spot_orders[0].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app,
+        addr.to_string(),
+        spot_orders[1].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app,
+        addr.to_string(),
+        spot_orders[2].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app,
+        addr.to_string(),
+        spot_orders[3].order_id,
+        Status::Pending,
+    );
 
     assert_eq!(
         app.wrap().query_balance(&addr, "btc").unwrap(),
@@ -142,6 +168,31 @@ fn successfully_cancel_orders_ids() {
             &[],
         )
         .unwrap();
+
+    test_spot_order_status(
+        &app,
+        addr.to_string(),
+        spot_orders[0].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app,
+        addr.to_string(),
+        spot_orders[1].order_id,
+        Status::Canceled,
+    );
+    test_spot_order_status(
+        &app,
+        addr.to_string(),
+        spot_orders[2].order_id,
+        Status::Pending,
+    );
+    test_spot_order_status(
+        &app,
+        addr.to_string(),
+        spot_orders[3].order_id,
+        Status::Canceled,
+    );
 
     assert_eq!(resp.data.unwrap(), to_json_binary(&vec![1, 3]).unwrap());
 

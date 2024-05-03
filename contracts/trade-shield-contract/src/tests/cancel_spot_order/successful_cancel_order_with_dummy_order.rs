@@ -1,3 +1,5 @@
+use cancel_spot_order::test_order_status::test_spot_order_status;
+
 use super::*;
 
 // This test case verifies a successful order cancellation in the contract using a dummy order.
@@ -35,6 +37,13 @@ fn successful_cancel_order_with_dummy_order() {
         )
         .unwrap();
 
+    test_spot_order_status(
+        &app,
+        addr.to_string(),
+        dummy_order.order_id,
+        Status::Pending,
+    );
+
     // User "user" cancels the dummy order.
     app.execute_contract(
         Addr::unchecked("user"),
@@ -45,6 +54,13 @@ fn successful_cancel_order_with_dummy_order() {
         &[],
     )
     .unwrap();
+
+    test_spot_order_status(
+        &app,
+        addr.to_string(),
+        dummy_order.order_id,
+        Status::Canceled,
+    );
 
     // Verify that the "user" now has a balance of 1000 BTC, and the contract address has 200 BTC.
     assert_eq!(

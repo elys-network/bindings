@@ -592,6 +592,16 @@ function get_masterchef_stable_stake_apr() {
     }'
 }
 
+function get_spot_order_states() {
+    order_id=$1
+    printf "\n# Get Spot Order State"
+    query_contract "$ts_contract_address" '{
+        "get_spot_order_states": {
+             "order_id": '$order_id'
+        }
+    }'
+}
+
 # function(s) to run based on the provided argument
 case "$2" in
 "ah_params")
@@ -782,6 +792,9 @@ case "$2" in
     ;;
 "get_masterchef_stable_stake_apr")
     get_masterchef_stable_stake_apr $3
+    ;;
+"get_spot_order_states")
+    get_spot_order_states $3
     ;;
 *)
     # Default case: run all functions
