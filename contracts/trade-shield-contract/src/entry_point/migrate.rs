@@ -64,6 +64,7 @@ pub fn migrate(
                         key.as_str(),
                         &filtered_ids,
                     )?;
+                    cancel_order(&mut order, deps.storage)?;
                 }
             } else {
                 cancel_order(&mut order, deps.storage)?;
