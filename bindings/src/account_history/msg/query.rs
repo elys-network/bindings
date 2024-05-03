@@ -20,6 +20,8 @@ use crate::query_resp::{
 #[allow(unused_imports)]
 use crate::types::{BalanceAvailable, PageRequest};
 use cosmwasm_schema::{cw_serde, QueryResponses};
+#[allow(unused_imports)]
+use cosmwasm_std::Uint128;
 #[cfg(feature = "debug")]
 use cosmwasm_std::{Coin, DecCoin, Decimal};
 
@@ -142,4 +144,7 @@ pub enum QueryMsg {
     #[cfg(feature = "debug")]
     #[returns(Decimal)]
     AmmPriceByDenom { token_in: Coin, discount: Decimal },
+    #[cfg(feature = "debug")]
+    #[returns(Uint128)]
+    AddressQueueSize {},
 }
