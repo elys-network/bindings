@@ -1,8 +1,10 @@
+mod execute;
 mod instantiate;
 mod migration;
 mod query;
 mod sudo;
 
+pub use execute::ExecuteMsg;
 pub use instantiate::InstantiateMsg;
 pub use migration::MigrationMsg;
 pub use query::QueryMsg;
