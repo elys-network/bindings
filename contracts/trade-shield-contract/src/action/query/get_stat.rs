@@ -3,11 +3,11 @@ use super::*;
 pub fn get_stat(deps: Deps<ElysQuery>, env: Env) -> Result<GetStatResponse, ContractError> {
     let querier = ElysQuerier::new(&deps.querier);
 
-    let height = env.block.height;
+    let _height = env.block.height;
     let AuthAddressesResponse {
         pagination:
             PageResponse {
-                total: number_of_address_on_the_chain,
+                total: _number_of_address_on_the_chain,
                 ..
             },
         ..
@@ -19,8 +19,8 @@ pub fn get_stat(deps: Deps<ElysQuery>, env: Env) -> Result<GetStatResponse, Cont
         reverse: true,
     }))?;
 
-    let number_of_pending_order = NUMBER_OF_PENDING_ORDER.load(deps.storage)?;
-    let number_of_executed_order = NUMBER_OF_EXECUTED_ORDER.load(deps.storage)?;
+    let _number_of_pending_order = NUMBER_OF_PENDING_ORDER.load(deps.storage)?;
+    let _number_of_executed_order = NUMBER_OF_EXECUTED_ORDER.load(deps.storage)?;
 
     unimplemented!()
 }

@@ -110,7 +110,7 @@ pub fn remove_perpetual_order(
     storage: &mut dyn Storage,
     position_id: Option<u64>,
 ) -> StdResult<Option<BankMsg>> {
-    let mut order = PENDING_PERPETUAL_ORDER.load(storage, order_id)?;
+    let mut order = PENDING_PERPETUAL_ORDER.load(storage, order_id).unwrap();
     let key = order.gen_key()?;
     let mut vec: Vec<u64> = SORTED_PENDING_PERPETUAL_ORDER.load(storage, key.as_str())?;
     let mut index = PerpetualOrder::binary_search(&order.trigger_price, storage, &vec)?;
