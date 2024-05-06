@@ -7,5 +7,4 @@ pub struct GetStatResponse {
     pub number_of_executed_order: u64,
     pub number_of_pending_order: u64,
     pub number_of_address_in_commitment: u64,
-    pub number_of_address_in_incentive: u64,
 }

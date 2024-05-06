@@ -29,7 +29,6 @@ pub fn get_stat(deps: Deps<ElysQuery>, env: Env) -> Result<GetStatResponse, Cont
         number_of_executed_order,
         number_of_pending_order,
         number_of_address_in_commitment: 0,
-        number_of_address_in_incentive: 0,
     };
 
     Ok(resp)
