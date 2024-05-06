@@ -1,5 +1,7 @@
 use cosmwasm_std::{Deps, StdResult};
-use elys_bindings::{account_history::msg::query_resp::masterchef::MasterChefPoolAprResponse, ElysQuerier, ElysQuery};
+use elys_bindings::{
+    account_history::msg::query_resp::masterchef::MasterChefPoolAprResponse, ElysQuerier, ElysQuery,
+};
 
 pub fn get_masterchef_pool_apr(
     deps: Deps<ElysQuery>,
@@ -9,5 +11,7 @@ pub fn get_masterchef_pool_apr(
 
     let resp = querier.get_masterchef_pool_apr(pool_ids)?;
 
-    Ok(MasterChefPoolAprResponse { data: resp.to_decimal() })
+    Ok(MasterChefPoolAprResponse {
+        data: resp.to_decimal(),
+    })
 }

@@ -14,8 +14,7 @@ pub fn get_masterchef_pending_rewards(
 
     let resp = querier.get_masterchef_pending_rewards(address)?;
 
-    let (rewards, total_rewards) =
-        resp.to_coin_values(&querier, &generator.metadata.usdc_denom)?;
+    let (rewards, total_rewards) = resp.to_coin_values(&querier, &generator.metadata.usdc_denom)?;
 
     Ok(GetMasterchefUserPendingRewardResponse {
         rewards,

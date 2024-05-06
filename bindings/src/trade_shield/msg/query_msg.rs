@@ -99,4 +99,6 @@ pub enum QueryMsg {
     },
     #[returns(GetStatResponse)]
     GetStat {},
+    #[returns(GetSpotOrderStatesResp)]
+    GetSpotOrderStates { order_id: u64 },
 }

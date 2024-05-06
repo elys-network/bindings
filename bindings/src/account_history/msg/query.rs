@@ -1,22 +1,27 @@
 #[allow(unused_imports)]
 use super::super::types::{PerpetualAssets, PortfolioBalanceSnapshot};
+#[allow(unused_imports)]
 use super::query_resp::estaking::*;
+#[allow(unused_imports)]
 use super::query_resp::masterchef::*;
 
 #[allow(unused_imports)]
 use super::query_resp::*;
+#[allow(unused_imports)]
 use crate::query_resp::QueryStableStakeAprResponse;
 #[allow(unused_imports)]
 use crate::query_resp::{
-    AuthAddressesResponse, BalanceBorrowed, EstakingRewardsResponse, PoolFilterType,
-    QueryEarnPoolResponse, QueryExitPoolEstimationResponse, QueryIncentivePoolAprsResponse,
+    AuthAddressesResponse, BalanceBorrowed, PoolFilterType, QueryEarnPoolResponse,
+    QueryExitPoolEstimationResponse, QueryIncentivePoolAprsResponse,
     QueryJoinPoolEstimationResponse, QueryPoolAssetEstimationResponse, QueryStakedPositionResponse,
     QueryUnstakedPositionResponse, QueryUserPoolResponse, QueryVestingInfoResponse,
-    StableStakeParamsData, StakedAvailable
+    StableStakeParamsData, StakedAvailable,
 };
 #[allow(unused_imports)]
 use crate::types::{BalanceAvailable, PageRequest};
 use cosmwasm_schema::{cw_serde, QueryResponses};
+#[allow(unused_imports)]
+use cosmwasm_std::Uint128;
 #[cfg(feature = "debug")]
 use cosmwasm_std::{Coin, DecCoin, Decimal};
 
@@ -78,9 +83,7 @@ pub enum QueryMsg {
     GetMasterchefStableStakeApr { denom: String },
 
     #[returns(MasterChefPoolAprResponse)]
-    GetMasterChefPoolApr {
-        pool_ids: Vec<u64>,
-    },
+    GetMasterChefPoolApr { pool_ids: Vec<u64> },
     // debug only
     #[cfg(feature = "debug")]
     #[returns(ParamsResp)]
@@ -141,4 +144,7 @@ pub enum QueryMsg {
     #[cfg(feature = "debug")]
     #[returns(Decimal)]
     AmmPriceByDenom { token_in: Coin, discount: Decimal },
+    #[cfg(feature = "debug")]
+    #[returns(Uint128)]
+    AddressQueueSize {},
 }

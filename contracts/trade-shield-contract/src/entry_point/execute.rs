@@ -1,10 +1,12 @@
 use crate::helper::get_mut_discount;
 
 use super::*;
-use cosmwasm_std::{Int128, StdError};
+use cosmwasm_std::{CosmosMsg, Int128, StdError, WasmMsg};
+use elys_bindings::account_history::msg::ExecuteMsg as AccountHistoryMsg;
 use elys_bindings::trade_shield::states::{
-    LEVERAGE_ENABLED, LIMIT_PROCESS_ORDER, MARKET_ORDER_ENABLED, PARAMS_ADMIN, PERPETUAL_ENABLED,
-    PROCESS_ORDERS_ENABLED, REWARD_ENABLED, STAKE_ENABLED, SWAP_ENABLED,
+    ACCOUNT_HISTORY_ADDRESS, LEVERAGE_ENABLED, LIMIT_PROCESS_ORDER, MARKET_ORDER_ENABLED,
+    PARAMS_ADMIN, PERPETUAL_ENABLED, PROCESS_ORDERS_ENABLED, REWARD_ENABLED, STAKE_ENABLED,
+    SWAP_ENABLED,
 };
 use msg::ExecuteMsg;
 
@@ -18,7 +20,10 @@ pub fn execute(
     use action::execute::*;
     use ExecuteMsg::*;
 
-    match msg {
+    let account_history_address = ACCOUNT_HISTORY_ADDRESS.load(deps.storage)?;
+    let user_address = info.sender.to_string();
+
+    let resp = match msg {
         CreateSpotOrder {
             order_type,
             order_source_denom,
@@ -207,11 +212,23 @@ pub fn execute(
             }
             Ok(Response::new())
         }
+        EstakingWithdrawElysStakingRewards {} => estaking_withdraw_elys_staking_rewards(info, deps),
 
         MasterchefClaimRewards { pool_ids } => masterchef_claim_rewards(info, pool_ids),
-        
-        EstakingWithdrawReward {
-            validator_address
-        } => estaking_withdraw_reward(info, deps, validator_address)
-    }
+
+        EstakingWithdrawReward { validator_address } => {
+            estaking_withdraw_reward(info, deps, validator_address)
+        }
+    }?;
+
+    let resp = if let Some(account_history_address) = account_history_address {
+        resp.add_message(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: account_history_address,
+            msg: to_json_binary(&AccountHistoryMsg::AddUserAddressToQueue { user_address })?,
+            funds: vec![],
+        }))
+    } else {
+        resp
+    };
+    Ok(resp)
 }

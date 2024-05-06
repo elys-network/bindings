@@ -23,7 +23,8 @@ pub fn instantiate(
 ) -> StdResult<Response<ElysMsg>> {
     let mut user_spot_orders: HashMap<String, Vec<u64>> = HashMap::new();
     let mut user_perpetual_orders: HashMap<String, Vec<u64>> = HashMap::new();
-
+    let mut number_of_pending_order = 0;
+    let mut number_of_executed_order = 0;
     for order in msg.spot_orders.iter() {
         let owner = order.owner_address.to_string();
 
@@ -42,6 +43,7 @@ pub fn instantiate(
                 vec.insert(index, order.order_id);
             }
             SORTED_PENDING_SPOT_ORDER.save(deps.storage, key.as_str(), &vec)?;
+            number_of_pending_order += 1;
         }
         let mut ids = match user_spot_orders.get(&owner) {
             Some(ids) => ids.to_owned(),
@@ -49,6 +51,9 @@ pub fn instantiate(
         };
         ids.push(order.order_id);
         user_spot_orders.insert(owner, ids);
+        if order.status == Status::Executed {
+            number_of_executed_order += 1;
+        }
     }
     for order in msg.perpetual_orders.iter() {
         let owner = order.owner.clone();
@@ -69,6 +74,7 @@ pub fn instantiate(
                 vec.insert(index, order.order_id);
             }
             SORTED_PENDING_PERPETUAL_ORDER.save(deps.storage, key.as_str(), &vec)?;
+            number_of_pending_order += 1;
         }
         let mut ids = match user_perpetual_orders.get(&owner) {
             Some(ids) => ids.to_owned(),
@@ -76,6 +82,9 @@ pub fn instantiate(
         };
         ids.push(order.order_id);
         user_perpetual_orders.insert(owner, ids);
+        if order.status == Status::Executed {
+            number_of_executed_order += 1;
+        }
     }
     MAX_REPLY_ID.save(deps.storage, &0)?;
     SPOT_ORDER_MAX_ID.save(
@@ -85,6 +94,8 @@ pub fn instantiate(
             None => 0,
         },
     )?;
+    NUMBER_OF_PENDING_ORDER.save(deps.storage, &number_of_pending_order)?;
+    NUMBER_OF_EXECUTED_ORDER.save(deps.storage, &number_of_executed_order)?;
     ACCOUNT_HISTORY_ADDRESS.save(deps.storage, &msg.account_history_address)?;
     user_spot_orders
         .into_iter()

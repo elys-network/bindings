@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
 use crate::entry_point::{execute, query, sudo};
+use crate::tests::test_order_status::test_spot_order_status;
 use anyhow::{bail, Result as AnyResult};
 use cosmwasm_std::{
     coin, to_json_binary, Addr, BankMsg, BlockInfo, Decimal, Empty, Int64, SignedDecimal, StdError,
@@ -13,8 +14,7 @@ use elys_bindings::msg_resp::AmmSwapExactAmountInResp;
 use elys_bindings::query_resp::{
     AmmSwapEstimationByDenomResponse, Entry, QueryGetEntryResponse, QueryGetPriceResponse,
 };
-use elys_bindings::trade_shield::msg::query_resp::GetSpotOrderResp;
-use elys_bindings::trade_shield::msg::{QueryMsg, SudoMsg};
+use elys_bindings::trade_shield::msg::SudoMsg;
 use elys_bindings::trade_shield::types::{OrderPrice, SpotOrder, SpotOrderType, Status};
 use elys_bindings::types::{Price, SwapAmountInRoute, SwapAmountOutRoute};
 use elys_bindings::{ElysMsg, ElysQuery};
@@ -165,7 +165,7 @@ impl Module for ElysModuleWrapper {
                     available_liquidity: coin(95841644452, &denom_in),
                     weight_balance_ratio: SignedDecimal::zero(),
                     price_impact: SignedDecimal::zero(),
-                    slippage: Decimal::zero()
+                    slippage: Decimal::zero(),
                 };
 
                 Ok(to_json_binary(&resp)?)
@@ -365,7 +365,7 @@ fn process_limit_buy_order_with_executed_status_scenario_2() {
     // Create a mock message to instantiate the contract with the dummy order.
     let instantiate_msg = InstantiateMockMsg {
         account_history_address: None,
-        spot_orders: vec![order],
+        spot_orders: vec![order.clone()],
         perpetual_orders: vec![],
     };
 
@@ -390,15 +390,22 @@ fn process_limit_buy_order_with_executed_status_scenario_2() {
     })
     .unwrap();
 
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        order.order_id,
+        Status::Pending,
+    );
+
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();
 
-    let o: GetSpotOrderResp = app
-        .wrap()
-        .query_wasm_smart(addr.clone(), &QueryMsg::GetSpotOrder { order_id: 0 })
-        .unwrap();
-
-    assert_eq!(o.order.status, Status::Pending);
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        order.order_id,
+        Status::Pending,
+    );
 
     app.init_modules(|_, _, store| {
         SPOT_PRICE.save(
@@ -413,12 +420,12 @@ fn process_limit_buy_order_with_executed_status_scenario_2() {
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();
 
-    let o: GetSpotOrderResp = app
-        .wrap()
-        .query_wasm_smart(addr.clone(), &QueryMsg::GetSpotOrder { order_id: 0 })
-        .unwrap();
-
-    assert_eq!(o.order.status, Status::Executed);
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        order.order_id,
+        Status::Executed,
+    );
 
     assert_eq!(
         app.wrap()

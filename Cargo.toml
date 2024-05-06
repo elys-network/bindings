@@ -4,3 +4,6 @@ resolver = "2"
 
 [profile.release]
 rpath = false
+
+[workspace.dependencies]
+cargo-husky={version = "1", default-features = false, features = ["precommit-hook", "run-cargo-fmt"]}
