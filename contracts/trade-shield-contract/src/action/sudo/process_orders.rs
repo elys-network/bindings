@@ -121,8 +121,9 @@ pub fn process_orders(
         let (order_position_type, order_type, base_denom, quote_denom) =
             PerpetualOrder::from_key(key.as_str())?;
 
+        //get the price in usdc
         let market_price =
-            match querier.get_asset_price_from_denom_in_to_denom_out(&base_denom, &quote_denom) {
+            match querier.get_asset_price_from_denom_in_to_denom_out(&quote_denom, &base_denom) {
                 Ok(market_price) => market_price,
                 Err(_) => {
                     cancel_perpetual_orders(deps.storage, key, &order_ids, None)?;
