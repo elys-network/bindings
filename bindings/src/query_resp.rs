@@ -256,6 +256,7 @@ pub struct QueryAprResponse {
     pub apr: Uint128,
 }
 
+#[derive(Default)]
 #[cw_serde]
 pub struct QueryAprsResponse {
     pub usdc_apr_usdc: Uint128,

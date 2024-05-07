@@ -13,8 +13,8 @@ use super::query_resp::*;
 use crate::query_resp::QueryStableStakeAprResponse;
 #[allow(unused_imports)]
 use crate::query_resp::{
-    AuthAddressesResponse, BalanceBorrowed, PoolFilterType, QueryEarnPoolResponse,
-    QueryExitPoolEstimationResponse, QueryIncentivePoolAprsResponse,
+    AuthAddressesResponse, BalanceBorrowed, PoolFilterType, QueryAprsResponse,
+    QueryEarnPoolResponse, QueryExitPoolEstimationResponse, QueryIncentivePoolAprsResponse,
     QueryJoinPoolEstimationResponse, QueryPoolAssetEstimationResponse, QueryStakedPositionResponse,
     QueryUnstakedPositionResponse, QueryUserPoolResponse, QueryVestingInfoResponse,
     StableStakeParamsData, StakedAvailable,
@@ -160,4 +160,8 @@ pub enum QueryMsg {
     #[cfg(feature = "debug")]
     #[returns(GetUsdcEarnProgramResp)]
     GetUsdcEarnProgramDetails { address: String },
+
+    #[cfg(feature = "debug")]
+    #[returns(QueryAprsResponse)]
+    IncentiveAprs {},
 }

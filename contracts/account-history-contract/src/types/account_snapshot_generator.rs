@@ -15,7 +15,10 @@ use elys_bindings::{
             Reward, StakedAssets, TotalBalance,
         },
     },
-    query_resp::{CommittedTokens, PoolFilterType, PoolResp, QueryUserPoolResponse, UserPoolResp},
+    query_resp::{
+        CommittedTokens, PoolFilterType, PoolResp, QueryAprResponse, QueryUserPoolResponse,
+        UserPoolResp,
+    },
     trade_shield::{
         msg::{
             query_resp::{
@@ -426,6 +429,10 @@ impl AccountSnapshotGenerator {
         deps: &Deps<ElysQuery>,
         address: &String,
     ) -> StdResult<StakedAssetsResponse> {
+        let querier = ElysQuerier::new(&deps.querier);
+
+        let aprs = querier.get_incentive_aprs().unwrap_or_default();
+
         // create staked_assets variable that is a StakedAssets struct
         let mut staked_assets = StakedAssets::default();
         let mut total_staked_balance = Decimal::zero();
@@ -459,9 +466,15 @@ impl AccountSnapshotGenerator {
             self.metadata.usdc_denom.to_owned(),
             self.metadata.uusdc_usd_price,
             self.metadata.uelys_price_in_uusdc,
-            self.metadata.usdc_apr_elys.to_owned(),
-            self.metadata.eden_apr_elys.to_owned(),
-            self.metadata.edenb_apr_elys.to_owned(),
+            QueryAprResponse {
+                apr: aprs.usdc_apr_elys,
+            },
+            QueryAprResponse {
+                apr: aprs.eden_apr_elys,
+            },
+            QueryAprResponse {
+                apr: aprs.edenb_apr_elys,
+            },
         )
         .unwrap_or_default();
 
@@ -497,9 +510,15 @@ impl AccountSnapshotGenerator {
             self.metadata.usdc_denom.to_owned(),
             self.metadata.uusdc_usd_price,
             self.metadata.uelys_price_in_uusdc,
-            self.metadata.usdc_apr_eden.to_owned(),
-            self.metadata.eden_apr_eden.to_owned(),
-            self.metadata.edenb_apr_eden.to_owned(),
+            QueryAprResponse {
+                apr: aprs.usdc_apr_eden,
+            },
+            QueryAprResponse {
+                apr: aprs.eden_apr_eden,
+            },
+            QueryAprResponse {
+                apr: aprs.edenb_apr_eden,
+            },
         )
         .unwrap_or_default();
 
@@ -521,8 +540,12 @@ impl AccountSnapshotGenerator {
             Some(address.to_owned()),
             ElysDenom::EdenBoost.as_str().to_string(),
             self.metadata.usdc_denom.to_owned(),
-            self.metadata.usdc_apr_edenb.to_owned(),
-            self.metadata.eden_apr_edenb.to_owned(),
+            QueryAprResponse {
+                apr: aprs.usdc_apr_edenb,
+            },
+            QueryAprResponse {
+                apr: aprs.eden_apr_edenb,
+            },
         )
         .unwrap_or_default();
 

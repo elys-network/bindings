@@ -16,7 +16,9 @@ use crate::action::query::{
 };
 
 use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult};
-use elys_bindings::{account_history::types::ElysDenom, ElysQuerier, ElysQuery};
+use elys_bindings::{
+    account_history::types::ElysDenom, query_resp::QueryAprResponse, ElysQuerier, ElysQuery,
+};
 
 use crate::msg::QueryMsg;
 
@@ -166,8 +168,10 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         }
         #[cfg(feature = "debug")]
         GetEdenEarnProgramDetails { address } => {
-            let generator = AccountSnapshotGenerator::new(&deps)?;
+            let querier = ElysQuerier::new(&deps.querier);
+            let aprs = querier.get_incentive_aprs().unwrap_or_default();
 
+            let generator = AccountSnapshotGenerator::new(&deps)?;
             let program = get_eden_earn_program_details(
                 &deps,
                 Some(address.to_owned()),
@@ -175,23 +179,36 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
                 generator.metadata.usdc_denom.to_owned(),
                 generator.metadata.uusdc_usd_price,
                 generator.metadata.uelys_price_in_uusdc,
-                generator.metadata.usdc_apr_eden.to_owned(),
-                generator.metadata.eden_apr_eden.to_owned(),
-                generator.metadata.edenb_apr_eden.to_owned(),
+                QueryAprResponse {
+                    apr: aprs.usdc_apr_eden,
+                },
+                QueryAprResponse {
+                    apr: aprs.eden_apr_eden,
+                },
+                QueryAprResponse {
+                    apr: aprs.edenb_apr_eden,
+                },
             )
             .unwrap_or_default();
             to_json_binary(&program)
         }
         #[cfg(feature = "debug")]
         GetEdenBoostEarnProgramDetails { address } => {
+            let querier = ElysQuerier::new(&deps.querier);
+            let aprs = querier.get_incentive_aprs().unwrap_or_default();
+
             let generator = AccountSnapshotGenerator::new(&deps)?;
             let program = get_eden_boost_earn_program_details(
                 &deps,
                 Some(address.to_owned()),
                 ElysDenom::EdenBoost.as_str().to_string(),
                 generator.metadata.usdc_denom.to_owned(),
-                generator.metadata.usdc_apr_edenb.to_owned(),
-                generator.metadata.eden_apr_edenb.to_owned(),
+                QueryAprResponse {
+                    apr: aprs.usdc_apr_edenb,
+                },
+                QueryAprResponse {
+                    apr: aprs.eden_apr_edenb,
+                },
             )
             .unwrap_or_default();
 
@@ -199,6 +216,9 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         }
         #[cfg(feature = "debug")]
         GetElysEarnProgramDetails { address } => {
+            let querier = ElysQuerier::new(&deps.querier);
+            let aprs = querier.get_incentive_aprs().unwrap_or_default();
+
             let generator = AccountSnapshotGenerator::new(&deps)?;
             let program = get_elys_earn_program_details(
                 &deps,
@@ -207,9 +227,15 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
                 generator.metadata.usdc_denom.to_owned(),
                 generator.metadata.uusdc_usd_price,
                 generator.metadata.uelys_price_in_uusdc,
-                generator.metadata.usdc_apr_elys.to_owned(),
-                generator.metadata.eden_apr_elys.to_owned(),
-                generator.metadata.edenb_apr_elys.to_owned(),
+                QueryAprResponse {
+                    apr: aprs.usdc_apr_elys,
+                },
+                QueryAprResponse {
+                    apr: aprs.eden_apr_elys,
+                },
+                QueryAprResponse {
+                    apr: aprs.edenb_apr_elys,
+                },
             )
             .unwrap_or_default();
 
@@ -228,6 +254,13 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
             .unwrap_or_default();
 
             to_json_binary(&program)
+        }
+        #[cfg(feature = "debug")]
+        IncentiveAprs { .. } => {
+            let querier = ElysQuerier::new(&deps.querier);
+            let response = querier.get_incentive_aprs().unwrap_or_default();
+
+            to_json_binary(&response)
         }
     }
 }
