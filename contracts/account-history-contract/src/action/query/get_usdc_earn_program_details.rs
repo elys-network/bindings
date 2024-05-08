@@ -45,7 +45,7 @@ pub fn get_usdc_earn_program_details(
             let mut staked = querier.get_staked_balance(addr, usdc_base_denom)?;
 
             let mut borrowed = querier.get_borrowed_balance()?;
-            borrowed.usd_amount =borrowed
+            borrowed.usd_amount = borrowed
                 .usd_amount
                 .checked_mul(uusdc_usd_price)
                 .unwrap_or_default();
