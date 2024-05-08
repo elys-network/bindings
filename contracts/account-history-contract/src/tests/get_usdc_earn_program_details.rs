@@ -51,8 +51,8 @@ impl Module for ElysModuleWrapper {
                         "user",
                         "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
                     ) => BalanceAvailable {
-                        amount: Uint128::new(5333229342748),
-                        usd_amount: Decimal::from_str("5333229342748").unwrap(),
+                        amount: Uint128::new(1234),
+                        usd_amount: Decimal::from_str("1234").unwrap(),
                     },
                     ("user", "uelys") => BalanceAvailable {
                         amount: Uint128::new(45666543),
@@ -303,8 +303,8 @@ fn get_usdc_earn_program_details() {
                 ueden: Int128::zero(),
             },
             available: Some(BalanceAvailable {
-                amount: Uint128::new(5333229342748),
-                usd_amount: Decimal::from_atomics(Uint128::new(5333229342748), 0).unwrap(),
+                amount: Uint128::new(1234),
+                usd_amount: Decimal::from_str("0.001234").unwrap(),
             }),
             staked: Some(StakedAvailable {
                 usd_amount: Decimal::from_atomics(Uint128::new(100130012), 3).unwrap(),
@@ -318,7 +318,7 @@ fn get_usdc_earn_program_details() {
                 amount_usd: Decimal::from_str("0.000070616020135353").unwrap(),
             }]),
             borrowed: Some(BalanceBorrowed {
-                usd_amount: Decimal::from_atomics(Uint128::new(3265035180871), 10).unwrap(),
+                usd_amount: Decimal::from_str("0.0003265035180871").unwrap(),
                 percentage: Decimal::from_atomics(Uint128::new(0000238391578776388), 18).unwrap(),
             }),
         },

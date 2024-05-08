@@ -36,16 +36,16 @@ pub fn get_usdc_earn_program_details(
                 .unwrap_or_default();
             let pool_rewards = coin_values_rewards.0[&pool_id].clone();
 
-            let available = querier.get_balance(addr.clone(), usdc_denom)?;
-            available
+            let mut available = querier.get_balance(addr.clone(), usdc_denom)?;
+            available.usd_amount = available
                 .usd_amount
                 .checked_mul(uusdc_usd_price)
                 .unwrap_or_default();
 
             let mut staked = querier.get_staked_balance(addr, usdc_base_denom)?;
 
-            let borrowed = querier.get_borrowed_balance()?;
-            borrowed
+            let mut borrowed = querier.get_borrowed_balance()?;
+            borrowed.usd_amount =borrowed
                 .usd_amount
                 .checked_mul(uusdc_usd_price)
                 .unwrap_or_default();
