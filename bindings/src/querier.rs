@@ -1022,7 +1022,12 @@ impl<'a> ElysQuerier<'a> {
         let req = QueryRequest::Custom(ElysQuery::leveragelp_position(address.into(), id));
         self.querier.query(&req)
     }
-
+    pub fn commitment_number_of_commitments(
+        &self,
+    ) -> StdResult<CommitmentNumberOfCommitmentsResponse> {
+        let req = QueryRequest::Custom(ElysQuery::commitment_number_of_commitments());
+        self.querier.query(&req)
+    }
     #[allow(dead_code)]
     #[cfg(feature = "debug")]
     fn query_binary(&self, request: &QueryRequest<ElysQuery>) -> StdResult<Binary> {

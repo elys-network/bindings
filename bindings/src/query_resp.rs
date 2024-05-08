@@ -816,3 +816,8 @@ pub struct PoolApr {
 pub struct QueryStableStakeAprResponse {
     pub apr: Int128,
 }
+
+#[cw_serde]
+pub struct CommitmentNumberOfCommitmentsResponse {
+    pub number: i64,
+}

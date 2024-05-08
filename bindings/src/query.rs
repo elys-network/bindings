@@ -155,6 +155,8 @@ pub enum ElysQuery {
     MasterchefPoolAprs { pool_ids: Vec<u64> },
     #[returns(QueryStableStakeAprResponse)]
     MasterchefStableStakeApr { denom: String },
+    #[returns(CommitmentNumberOfCommitmentsResponse)]
+    CommitmentNumberOfCommitments {},
 }
 
 impl CustomQuery for ElysQuery {}
@@ -408,5 +410,8 @@ impl ElysQuery {
     }
     pub fn get_masterchef_stable_stake_apr(denom: String) -> Self {
         Self::MasterchefStableStakeApr { denom }
+    }
+    pub fn commitment_number_of_commitments() -> Self {
+        Self::CommitmentNumberOfCommitments {}
     }
 }
