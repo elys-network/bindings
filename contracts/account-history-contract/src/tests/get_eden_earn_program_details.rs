@@ -211,7 +211,7 @@ impl Module for ElysModuleWrapper {
 }
 
 #[test]
-fn get_usdc_earn_program_details() {
+fn get_eden_earn_program_details() {
     // Create a wallet for the "user" with an initial balance of 100 usdc
     let wallet = vec![(
         "user",

@@ -11,13 +11,14 @@ use cosmwasm_std::{
     Timestamp, Uint128,
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
-use elys_bindings::account_history::msg::query_resp::earn::GetElysEarnProgramResp;
-use elys_bindings::account_history::types::earn_program::ElysEarnProgram;
-use elys_bindings::account_history::types::{AprElys, DecCoinValue};
+use elys_bindings::account_history::msg::query_resp::earn::GetEdenBoostEarnProgramResp;
+use elys_bindings::account_history::types::earn_detail::earn_detail::AprEdenBoost;
+use elys_bindings::account_history::types::earn_program::EdenBoostEarnProgram;
+use elys_bindings::account_history::types::DecCoinValue;
 use elys_bindings::query_resp::{
     BalanceBorrowed, DelegationDelegatorReward, EstakingRewardsResponse,
     MasterchefUserPendingRewardData, MasterchefUserPendingRewardResponse,
-    QueryAllProgramRewardsResponse, QueryStableStakeAprResponse, StakedAvailable,
+    QueryAllProgramRewardsResponse, QueryStableStakeAprResponse, StakedAvailable, Validator,
 };
 use elys_bindings::types::BalanceAvailable;
 use elys_bindings::{ElysMsg, ElysQuery};
@@ -47,16 +48,16 @@ impl Module for ElysModuleWrapper {
         match request {
             ElysQuery::AmmBalance { address, denom } => {
                 let resp = match (address.as_str(), denom.as_str()) {
+                    ("user", "uedenb") => BalanceAvailable {
+                        amount: Uint128::new(21798000),
+                        usd_amount: Decimal::from_str("21798000").unwrap(),
+                    },
                     (
                         "user",
                         "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
                     ) => BalanceAvailable {
-                        amount: Uint128::new(1234),
-                        usd_amount: Decimal::from_str("1234").unwrap(),
-                    },
-                    ("user", "uelys") => BalanceAvailable {
-                        amount: Uint128::new(45666543),
-                        usd_amount: Decimal::from_str("45666543").unwrap(),
+                        amount: Uint128::new(5333229342748),
+                        usd_amount: Decimal::from_str("5333229342748").unwrap(),
                     },
                     _ => BalanceAvailable {
                         amount: Uint128::zero(),
@@ -126,14 +127,14 @@ impl Module for ElysModuleWrapper {
             ElysQuery::EstakingRewards { .. } => {
                 let resp = EstakingRewardsResponse {
                     rewards: vec![DelegationDelegatorReward {
-                        validator_address: "validator".to_string(),
+                        validator_address: Validator::EdenBoost.to_string(),
                         reward: vec![DecCoin {
                             denom: "ueden".to_string(),
                             amount: Decimal256::from_str("1.21").unwrap(),
                         }],
                     }],
                     total: vec![DecCoin {
-                        denom: "ueden".to_string(),
+                        denom: "uedenb".to_string(),
                         amount: Decimal256::from_str("1.21").unwrap(),
                     }],
                 };
@@ -210,7 +211,7 @@ impl Module for ElysModuleWrapper {
 }
 
 #[test]
-fn get_elys_earn_program_details() {
+fn get_eden_boost_earn_program_details() {
     // Create a wallet for the "user" with an initial balance of 100 usdc
     let wallet = vec![(
         "user",
@@ -285,41 +286,31 @@ fn get_elys_earn_program_details() {
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();
 
-    let resp: GetElysEarnProgramResp = app
+    let resp: GetEdenBoostEarnProgramResp = app
         .wrap()
         .query_wasm_smart(
             &addr,
-            &QueryMsg::GetElysEarnProgramDetails {
+            &QueryMsg::GetEdenBoostEarnProgramDetails {
                 address: "user".to_string(),
             },
         )
         .unwrap();
 
-    let expected = GetElysEarnProgramResp {
-        data: ElysEarnProgram {
-            bonding_period: 14,
-            apr: AprElys {
+    let expected = GetEdenBoostEarnProgramResp {
+        data: EdenBoostEarnProgram {
+            bonding_period: 0,
+            apr: AprEdenBoost {
                 uusdc: Uint128::zero(),
                 ueden: Uint128::zero(),
-                uedenb: Uint128::zero(),
             },
-            available: Some(BalanceAvailable {
-                amount: Uint128::new(45666543),
-                usd_amount: Decimal::from_str("161.239475999999978995").unwrap(),
-            }),
-            staked: Some(StakedAvailable {
-                usd_amount: Decimal::from_atomics(Uint128::new(100130012), 3).unwrap(),
-                amount: Uint128::new(100120000000),
-                lockups: None,
-            }),
+            available: Some(Uint128::new(21798000)),
+            staked: Some(Uint128::new(100120000000)),
             rewards: Some(vec![DecCoinValue {
                 denom: "ueden".to_string(),
                 amount_token: Decimal256::from_str("1.21").unwrap(),
                 price: Decimal::from_atomics(Uint128::new(35308010067676894), 16).unwrap(),
                 amount_usd: Decimal256::from_str("4.272269218188904174").unwrap(),
             }]),
-            staked_positions: None,
-            unstaked_positions: None,
         },
     };
 
