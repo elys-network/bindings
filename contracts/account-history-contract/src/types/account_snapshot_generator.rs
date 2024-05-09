@@ -156,62 +156,64 @@ impl AccountSnapshotGenerator {
         &self,
         deps: &Deps<ElysQuery>,
         address: &String,
-    ) -> (Decimal, HashMap<String, BalanceAvailable>) {
+        pools: Vec<PoolResp>,
+    ) -> (Decimal, HashMap<String, CoinValue>) {
         let querier = ElysQuerier::new(&deps.querier);
 
-        let usdc_rewards = querier.get_sub_bucket_rewards_balance(
-            address.clone(),
-            self.metadata.usdc_denom.to_owned(),
-            EarnType::LiquidityMiningProgram as i32,
-        );
-        let eden_rewards = querier.get_sub_bucket_rewards_balance(
-            address.clone(),
-            ElysDenom::Eden.as_str().to_string(),
-            EarnType::LiquidityMiningProgram as i32,
-        );
+        let all_rewards = querier
+            .get_masterchef_pending_rewards(address.clone())
+            .unwrap_or_default();
+        let coin_values_rewards = all_rewards
+            .rewards_to_coins(&querier, &self.metadata.usdc_denom)
+            .unwrap_or_default();
 
         let mut total = Decimal::zero();
-        let mut breakdown: HashMap<String, BalanceAvailable> = HashMap::new();
-        match usdc_rewards {
-            Ok(reward) => {
-                let decimal_reward = Decimal::from_atomics(reward.amount, 6).unwrap();
-                // usd_value is not being converted on chain
-                let fiat_reward = decimal_reward * self.metadata.uusdc_usd_price;
+        let mut breakdown: HashMap<String, CoinValue> = HashMap::new();
+        pools.iter().for_each(|pool| {
+            let pool_rewards = coin_values_rewards.get(&(pool.pool_id as u64));
 
-                total = total
-                    .checked_add(fiat_reward)
-                    .map_or(Decimal::zero(), |res| res);
-                breakdown.insert(
-                    self.metadata.usdc_denom.to_owned(),
-                    BalanceAvailable {
-                        amount: reward.amount,
-                        usd_amount: fiat_reward,
-                    },
-                );
-            }
-            Err(_) => {}
-        };
+            match pool_rewards {
+                Some(rewards) => {
+                    rewards.iter().for_each(|reward| {
+                        total = total.checked_add(reward.amount_usd).unwrap_or_default();
 
-        match eden_rewards {
-            Ok(reward) => {
-                let decimal_reward = Decimal::from_atomics(reward.amount, 6).unwrap();
-                // usd_value is not being converted on chain.
-                // uelys_price_in_uusdc incorrectly named, it should be usd...
-                let fiat_reward = decimal_reward * self.metadata.uelys_price_in_uusdc;
+                        if let Some(breakdown_reward) = breakdown.get_mut(&reward.denom) {
+                            // Update the amounts
+                            breakdown_reward.amount_token = breakdown_reward
+                                .amount_token
+                                .checked_add(reward.amount_token)
+                                .unwrap_or_default();
+                            breakdown_reward.amount_usd = breakdown_reward
+                                .amount_usd
+                                .checked_add(reward.amount_usd)
+                                .unwrap_or_default();
+                        } else {
+                            // Create a new default reward if it doesn't exist
+                            let default_reward = CoinValue::new(
+                                reward.denom.clone(),
+                                Decimal::zero(),
+                                reward.price,
+                                Decimal::zero(),
+                            );
+                            let breakdown_reward = breakdown
+                                .entry(reward.denom.clone())
+                                .or_insert(default_reward);
 
-                total = total
-                    .checked_add(fiat_reward)
-                    .map_or(Decimal::zero(), |res| res);
-                breakdown.insert(
-                    ElysDenom::Eden.as_str().to_string(),
-                    BalanceAvailable {
-                        amount: reward.amount,
-                        usd_amount: fiat_reward,
-                    },
-                );
-            }
-            Err(_) => {}
-        };
+                            // Update the amounts
+                            breakdown_reward.amount_token = breakdown_reward
+                                .amount_token
+                                .checked_add(reward.amount_token)
+                                .unwrap_or_default();
+                            breakdown_reward.amount_usd = breakdown_reward
+                                .amount_usd
+                                .checked_add(reward.amount_usd)
+                                .unwrap_or_default();
+                        }
+                    });
+                }
+                None => {}
+            };
+        });
 
         (total, breakdown)
     }
@@ -304,7 +306,12 @@ impl AccountSnapshotGenerator {
             });
         }
 
-        let (rewards, rewards_breakdown) = self.get_pools_user_rewards(&deps, address);
+        let pools: Vec<PoolResp> = pool_resp
+            .iter()
+            .map(|user_pool| user_pool.pool.clone())
+            .collect();
+
+        let (rewards, rewards_breakdown) = self.get_pools_user_rewards(&deps, address, pools);
 
         Ok(QueryUserPoolResponse {
             pools: pool_resp,

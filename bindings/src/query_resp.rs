@@ -489,7 +489,7 @@ pub struct QueryUserPoolResponse {
     // Total Rewards in fiat
     pub rewards: Decimal,
     // Each reward including the fiat amount
-    pub rewards_breakdown: HashMap<String, BalanceAvailable>,
+    pub rewards_breakdown: HashMap<String, CoinValue>,
     pub pools: Vec<UserPoolResp>,
 }
 
@@ -829,7 +829,7 @@ impl MasterchefUserPendingRewardResponse {
         ))
     }
 
-    fn rewards_to_coins(
+    pub fn rewards_to_coins(
         &self,
         querier: &ElysQuerier<'_>,
         usdc_denom: &String,
