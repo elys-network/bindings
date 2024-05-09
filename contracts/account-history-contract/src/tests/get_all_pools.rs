@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::str::FromStr;
 
 use crate::entry_point::instantiate;
@@ -329,6 +330,9 @@ fn get_all_pools() {
         )
         .unwrap();
 
+    let mut current_pool_ratio = HashMap::new();
+    current_pool_ratio.insert("uelys".to_string(), Decimal::one());
+
     let expected = QueryEarnPoolResponse {
         pools: Some(vec![PoolResp {
             pool_id: 1,
@@ -342,7 +346,7 @@ fn get_all_pools() {
                 usd_value: Some(Decimal::from_str("0.000353080100676768").unwrap()),
             }],
             pool_ratio: "".to_string(),
-            current_pool_ratio: None,
+            current_pool_ratio: Some(current_pool_ratio),
             current_pool_ratio_string: None,
             rewards_apr: Decimal::from_str("1").unwrap(),
             rewards_usd: Decimal::from_str("10").unwrap(),
