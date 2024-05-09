@@ -1,3 +1,4 @@
+mod get_all_pools;
 mod get_eden_boost_earn_program_details;
 mod get_eden_earn_program_details;
 mod get_elys_earn_program_detail;

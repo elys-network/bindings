@@ -11,14 +11,14 @@ use cosmwasm_std::{
     Timestamp, Uint128,
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
-use elys_bindings::account_history::msg::query_resp::GetRewardsResp;
-use elys_bindings::account_history::types::{DecCoinValue, Reward};
+use elys_bindings::account_history::types::CoinValue;
 use elys_bindings::query_resp::{
-    DelegationDelegatorReward, EstakingRewardsResponse, MasterchefUserPendingRewardData,
-    MasterchefUserPendingRewardResponse, QueryAllProgramRewardsResponse,
+    DelegationDelegatorReward, EstakingRewardsResponse, IncentivePoolApr,
+    MasterchefUserPendingRewardData, MasterchefUserPendingRewardResponse, PoolFilterType, PoolResp,
+    QueryAllProgramRewardsResponse, QueryEarnPoolResponse, QueryIncentivePoolAprsResponse,
     QueryStableStakeAprResponse, Validator,
 };
-use elys_bindings::types::BalanceAvailable;
+use elys_bindings::types::{BalanceAvailable, PoolAsset};
 use elys_bindings::{ElysMsg, ElysQuery};
 use elys_bindings_test::{
     ElysModule, ACCOUNT, ASSET_INFO, LAST_MODULE_USED, PERPETUAL_OPENED_POSITION, PRICES,
@@ -146,6 +146,52 @@ impl Module for ElysModuleWrapper {
                 };
                 Ok(to_json_binary(&resp)?)
             }
+            ElysQuery::AmmEarnMiningPoolAll { .. } => {
+                let resp = QueryEarnPoolResponse {
+                    pools: Some(vec![PoolResp {
+                        pool_id: 1,
+                        apr: Some(Decimal::from_str("10").unwrap()),
+                        assets: vec![PoolAsset {
+                            token: Coin {
+                                denom: "uelys".to_string(),
+                                amount: Uint128::new(100),
+                            },
+                            weight: Uint128::new(1),
+                            usd_value: Some(Decimal::from_str("353.08010067676894").unwrap()),
+                        }],
+                        pool_ratio: "".to_string(),
+                        current_pool_ratio: None,
+                        current_pool_ratio_string: None,
+                        rewards_apr: Decimal::one(),
+                        rewards_usd: Decimal::from_str("10").unwrap(),
+                        reward_coins: vec![Coin {
+                            denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(), 
+                            amount: Uint128::new(10),
+                        }],
+                        fiat_rewards: None,
+                        borrow_apr: Decimal::from_str("2").unwrap(),
+                        leverage_lp: Decimal::zero(),
+                        perpetual: Decimal::zero(),
+                        lp_token_price: None,
+                        tvl: Decimal::zero(),
+                        total_shares: Coin { denom: "uelys".to_string(), amount: Uint128::new(1000) },
+                        share_usd_price: Some(Decimal::from_str("3530.8010067676894").unwrap()),
+                        swap_fee: Decimal::from_str("0.1").unwrap(),
+                        fee_denom: "uelys".to_string(),
+                        use_oracle: Some(true),
+                    }]),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::IncentivePoolAprs { .. } => {
+                let resp = QueryIncentivePoolAprsResponse {
+                    data: Some(vec![IncentivePoolApr {
+                        apr: Decimal::from_str("100").unwrap(),
+                        pool_id: 2,
+                    }]),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
 
             _ => self.0.query(api, storage, querier, block, request),
         }
@@ -196,7 +242,7 @@ impl Module for ElysModuleWrapper {
 }
 
 #[test]
-fn get_rewards() {
+fn get_all_pools() {
     // Create a wallet for the "user" with an initial balance of 100 usdc
     let wallet = vec![(
         "user",
@@ -271,60 +317,62 @@ fn get_rewards() {
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();
 
-    let resp: GetRewardsResp = app
+    let resp: QueryEarnPoolResponse = app
         .wrap()
         .query_wasm_smart(
             &addr,
-            &QueryMsg::GetRewards {
-                user_address: "user".to_string(),
+            &QueryMsg::GetLiquidityPools {
+                pool_ids: None,
+                filter_type: PoolFilterType::FilterAll,
+                pagination: None,
             },
         )
         .unwrap();
 
-    let rewards_map = Reward {
-        usdc_usd: Decimal256::from_str("10").unwrap(),
-        eden_usd: Decimal256::from_str("35.308010067676894").unwrap(),
-        eden_boost: Decimal256::from_str("10").unwrap(),
-        other_usd: Decimal256::from_str("35.308010067676894").unwrap(),
-        total_usd: Decimal256::from_str("80.616020135353788").unwrap(),
+    let expected = QueryEarnPoolResponse {
+        pools: Some(vec![PoolResp {
+            pool_id: 1,
+            apr: Some(Decimal::zero()),
+            assets: vec![PoolAsset {
+                token: Coin {
+                    amount: Uint128::new(100),
+                    denom: "uelys".to_string(),
+                },
+                weight: Uint128::new(1),
+                usd_value: Some(Decimal::from_str("0.000353080100676768").unwrap()),
+            }],
+            pool_ratio: "".to_string(),
+            current_pool_ratio: None,
+            current_pool_ratio_string: None,
+            rewards_apr: Decimal::from_str("1").unwrap(),
+            rewards_usd: Decimal::from_str("10").unwrap(),
+            reward_coins: vec![Coin {
+                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                amount: Uint128::new(10),
+            }],
+            fiat_rewards: Some(vec![CoinValue {
+                denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                amount_token: Decimal::from_str("0.00001").unwrap(),
+                price: Decimal::from_str("1").unwrap(),
+                amount_usd: Decimal::from_str("0.00001").unwrap(),
+            }]),
+            borrow_apr: Decimal::from_str("2").unwrap(),
+            leverage_lp: Decimal::zero(),
+            perpetual: Decimal::zero(),
+            lp_token_price: None,
+            tvl: Decimal::zero(),
+            total_shares: Coin {
+                amount: Uint128::new(1000),
+                denom: "uelys".to_string(),
+            },
+            share_usd_price: Some(Decimal::zero()),
+            swap_fee: Decimal::from_str("0.1").unwrap(),
+            fee_denom: "uelys".to_string(),
+            use_oracle: Some(true),
+        }]),
     };
 
-    assert_eq!(resp.rewards_map, rewards_map);
-    assert_eq!(
-        resp.rewards.contains(&DecCoinValue {
-            denom: "uelys".to_string(),
-            amount_token: Decimal256::from_str("10").unwrap(),
-            price: Decimal::from_str("3.5308010067676894").unwrap(),
-            amount_usd: Decimal256::from_str("35.308010067676894").unwrap(),
-        }),
-        true
-    );
-    assert_eq!(
-        resp.rewards.contains(&DecCoinValue {
-            denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                .to_string(),
-            amount_token: Decimal256::from_str("10").unwrap(),
-            price: Decimal::from_str("1").unwrap(),
-            amount_usd: Decimal256::from_str("10").unwrap(),
-        }),
-        true
-    );
-    assert_eq!(
-        resp.rewards.contains(&DecCoinValue {
-            denom: "ueden".to_string(),
-            amount_token: Decimal256::from_str("10").unwrap(),
-            price: Decimal::from_str("3.5308010067676894").unwrap(),
-            amount_usd: Decimal256::from_str("35.308010067676894").unwrap(),
-        }),
-        true
-    );
-    assert_eq!(
-        resp.rewards.contains(&DecCoinValue {
-            denom: "uedenb".to_string(),
-            amount_token: Decimal256::from_str("10").unwrap(),
-            price: Decimal::from_str("0").unwrap(),
-            amount_usd: Decimal256::from_str("0").unwrap(),
-        }),
-        true
-    );
+    assert_eq!(resp, expected);
 }
