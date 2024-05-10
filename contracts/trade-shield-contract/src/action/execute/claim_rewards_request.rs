@@ -1,19 +1,74 @@
 use super::*;
 use cosmwasm_std::StdError;
-use elys_bindings::types::EarnType;
+use elys_bindings::query_resp::Validator;
 
 pub fn claim_rewards_request(
     info: MessageInfo,
     deps: DepsMut<ElysQuery>,
-    withdraw_type: EarnType,
 ) -> Result<Response<ElysMsg>, ContractError> {
     if REWARD_ENABLED.load(deps.storage)? == false {
         return Err(StdError::generic_err("reward endpoint are disable").into());
     }
 
-    let msg = ElysMsg::withdraw_rewards(info.sender.into_string(), withdraw_type);
+    let mut msgs: Vec<ElysMsg> = vec![];
+    let querier = ElysQuerier::new(&deps.querier);
 
-    let resp = Response::new().add_message(msg);
+    // estaking withdraw elys staking rewards
+    msgs.push(ElysMsg::estaking_withdraw_elys_staking_rewards(
+        info.sender.to_string(),
+    ));
+
+    // estaking withdraw reward
+    let esteking_reward: query_resp::EstakingRewardsResponse =
+        querier.get_estaking_rewards(info.sender.to_string())?;
+
+    if esteking_reward
+        .get_validator_rewards(Validator::Eden)
+        .rewards
+        .is_empty()
+        == false
+    {
+        msgs.push(ElysMsg::estaking_withdraw_reward(
+            info.sender.to_string(),
+            Validator::Eden.to_string(),
+        ));
+    }
+
+    if esteking_reward
+        .get_validator_rewards(Validator::EdenBoost)
+        .rewards
+        .is_empty()
+        == false
+    {
+        msgs.push(ElysMsg::estaking_withdraw_reward(
+            info.sender.to_string(),
+            Validator::EdenBoost.to_string(),
+        ));
+    }
+
+    let master_chef_pending_rewards =
+        querier.get_masterchef_pending_rewards(info.sender.to_string())?;
+
+    if master_chef_pending_rewards.total_rewards.is_empty() == false {
+        let pools_ids_to_claim: Vec<u64> = master_chef_pending_rewards
+            .rewards
+            .iter()
+            .filter_map(|reward| {
+                if reward.reward.is_empty() {
+                    None
+                } else {
+                    Some(reward.pool_id)
+                }
+            })
+            .collect();
+
+        msgs.push(ElysMsg::get_masterchef_claim_rewards(
+            info.sender.to_string(),
+            pools_ids_to_claim,
+        ));
+    }
+
+    let resp = Response::new().add_messages(msgs);
 
     Ok(resp)
 }

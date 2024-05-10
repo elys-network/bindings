@@ -449,6 +449,16 @@ function eden_claim_vesting_request() {
         wasm-eden_claim_vesting_request
 }
 
+function claim_rewards_request() {
+    printf "\n# claim_rewards_request\n"
+    execute_message \
+    "$ts_contract_address" \
+    '{
+        "claim_rewards_request": {}
+    }' \
+    "wasm-claim_rewards_request"
+}
+
 function masterchef_claim_rewards() {
     pool_ids=$1
     printf "\n# Eden Claim Vesting Request\n"
@@ -533,7 +543,9 @@ case "$1" in
 "masterchef_claim_rewards")
     masterchef_claim_rewards $2
     ;;
-
+"claim_rewards_request")
+    claim_rewards_request
+    ;;
 *)
     # Default case: run all functions
     all_spot_orders
