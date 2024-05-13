@@ -113,6 +113,11 @@ mod stake_error_handling {
     mod unstake_request;
 }
 
+mod claim_rewards_request {
+    use super::*;
+    mod claim_rewards_request;
+}
+
 pub use mock::instantiate::*;
 mod mock {
     pub mod instantiate;

@@ -24,7 +24,8 @@ pub fn claim_rewards_request(
 
     if estaking_reward
         .get_validator_rewards(Validator::Eden)
-        .rewards
+        .rewards[0]
+        .reward
         .is_empty()
         == false
     {
@@ -36,7 +37,8 @@ pub fn claim_rewards_request(
 
     if estaking_reward
         .get_validator_rewards(Validator::EdenBoost)
-        .rewards
+        .rewards[0]
+        .reward
         .is_empty()
         == false
     {
