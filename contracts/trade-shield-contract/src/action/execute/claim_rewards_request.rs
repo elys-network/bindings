@@ -19,10 +19,10 @@ pub fn claim_rewards_request(
     ));
 
     // estaking withdraw reward
-    let esteking_reward: query_resp::EstakingRewardsResponse =
+    let estaking_reward: query_resp::EstakingRewardsResponse =
         querier.get_estaking_rewards(info.sender.to_string())?;
 
-    if esteking_reward
+    if estaking_reward
         .get_validator_rewards(Validator::Eden)
         .rewards
         .is_empty()
@@ -34,7 +34,7 @@ pub fn claim_rewards_request(
         ));
     }
 
-    if esteking_reward
+    if estaking_reward
         .get_validator_rewards(Validator::EdenBoost)
         .rewards
         .is_empty()
