@@ -13,11 +13,11 @@ use super::query_resp::*;
 use crate::query_resp::QueryStableStakeAprResponse;
 #[allow(unused_imports)]
 use crate::query_resp::{
-    AuthAddressesResponse, BalanceBorrowed, PoolFilterType, QueryAprsResponse,
-    QueryEarnPoolResponse, QueryExitPoolEstimationResponse, QueryIncentivePoolAprsResponse,
-    QueryJoinPoolEstimationResponse, QueryPoolAssetEstimationResponse, QueryStakedPositionResponse,
-    QueryUnstakedPositionResponse, QueryUserPoolResponse, QueryVestingInfoResponse,
-    StableStakeParamsData, StakedAvailable,
+    AuthAddressesResponse, BalanceBorrowed, PoolFilterType, QueryAllProgramRewardsResponse,
+    QueryAprsResponse, QueryEarnPoolResponse, QueryExitPoolEstimationResponse,
+    QueryIncentivePoolAprsResponse, QueryJoinPoolEstimationResponse,
+    QueryPoolAssetEstimationResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
+    QueryUserPoolResponse, QueryVestingInfoResponse, StableStakeParamsData, StakedAvailable,
 };
 #[allow(unused_imports)]
 use crate::types::{BalanceAvailable, PageRequest};
@@ -164,4 +164,8 @@ pub enum QueryMsg {
     #[cfg(feature = "debug")]
     #[returns(QueryAprsResponse)]
     IncentiveAprs {},
+
+    #[cfg(feature = "debug")]
+    #[returns(QueryAllProgramRewardsResponse)]
+    IncentiveAllProgramRewards { address: String },
 }
