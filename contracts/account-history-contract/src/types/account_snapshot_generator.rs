@@ -28,7 +28,6 @@ use elys_bindings::{
         },
         types::{PerpetualOrder, PerpetualOrderPlus, PerpetualOrderType, SpotOrder, Status},
     },
-    types::{BalanceAvailable, EarnType},
     ElysQuerier, ElysQuery,
 };
 
@@ -714,7 +713,6 @@ impl AccountSnapshotGenerator {
                         amount,
                     },
                     &querier,
-                    &self.metadata.usdc_denom,
                 )
                 .unwrap_or_default()
             } else {

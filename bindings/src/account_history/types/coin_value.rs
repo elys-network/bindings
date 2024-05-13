@@ -117,27 +117,19 @@ impl DecCoinValue {
         }
     }
 
-    pub fn from_dec_coin(
-        balance: &DecCoin,
-        querier: &ElysQuerier<'_>,
-        usdc_denom: &String,
-    ) -> StdResult<Self> {
-        if &balance.denom == usdc_denom {
-            let price = querier.get_asset_price(usdc_denom)?;
-            let amount_usd = balance
-                .amount
-                .checked_mul(Decimal256::from(price.clone()))
-                .map_err(|e| {
-                    StdError::generic_err(format!("failed to convert amount to amount_usd: {}", e))
-                })?;
-
-            return Ok(Self {
-                denom: balance.denom.clone(),
-                amount_usd,
-                price,
-                amount_token: balance.amount,
+    pub fn from_dec_coin(balance: &DecCoin, querier: &ElysQuerier<'_>) -> StdResult<Self> {
+        let OracleAssetInfoResponse { asset_info } = querier
+            .asset_info(balance.denom.clone())
+            .unwrap_or(OracleAssetInfoResponse {
+                asset_info: OracleAssetInfo {
+                    denom: balance.denom.clone(),
+                    display: balance.denom.clone(),
+                    band_ticker: balance.denom.clone(),
+                    elys_ticker: balance.denom.clone(),
+                    decimal: 6,
+                },
             });
-        }
+        let decimal_point_token = asset_info.decimal.into();
 
         let price = querier
             .get_asset_price(balance.denom.clone())
@@ -145,6 +137,13 @@ impl DecCoinValue {
 
         let amount_usd = balance
             .amount
+            .checked_div(Decimal256::new(decimal_point_token))
+            .map_err(|e| {
+                StdError::generic_err(format!(
+                    "failed to convert amount_usd_base to Decimal: {}",
+                    e
+                ))
+            })?
             .checked_mul(Decimal256::from(price.clone()))
             .map_err(|e| {
                 StdError::generic_err(format!(

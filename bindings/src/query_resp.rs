@@ -787,7 +787,7 @@ impl EstakingRewardsResponse {
     pub fn to_dec_coin_values(
         &self,
         querier: &ElysQuerier<'_>,
-        usdc_denom: &String,
+        _usdc_denom: &String,
     ) -> StdResult<Vec<(String, DecCoinValue)>> {
         let mut dec_coin_values = Vec::new();
 
@@ -805,8 +805,8 @@ impl EstakingRewardsResponse {
                     continue;
                 }
 
-                let dec_coin_value = DecCoinValue::from_dec_coin(dec_coin, querier, usdc_denom)
-                    .map_err(|e| {
+                let dec_coin_value =
+                    DecCoinValue::from_dec_coin(dec_coin, querier).map_err(|e| {
                         StdError::generic_err(format!("Failed to convert to DecCoinValue {}", e))
                     })?;
                 dec_coin_values.push((validator_address.clone(), dec_coin_value));
