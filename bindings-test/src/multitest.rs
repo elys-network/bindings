@@ -964,16 +964,6 @@ impl Module for ElysModule {
                     data: Some(data),
                 })
             }
-            ElysMsg::IncentiveWithdrawRewards { .. } => {
-                LAST_MODULE_USED.save(storage, &Some("Incentive".to_string()))?;
-                let data = to_json_binary(&MsgResponse {
-                    result: "Ok".to_string(),
-                })?;
-                Ok(AppResponse {
-                    events: vec![],
-                    data: Some(data),
-                })
-            }
             ElysMsg::IncentiveWithdrawValidatorCommission { .. } => {
                 LAST_MODULE_USED.save(storage, &Some("Incentive".to_string()))?;
                 let data = to_json_binary(&MsgResponse {

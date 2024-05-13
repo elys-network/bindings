@@ -715,8 +715,8 @@ pub struct MasterchefUserPendingRewardResponse {
 #[cw_serde]
 #[derive(Default)]
 pub struct MasterchefUserPendingRewardData {
-    pool_id: u64,
-    reward: Vec<Coin>,
+    pub pool_id: u64,
+    pub reward: Vec<Coin>,
 }
 #[cw_serde]
 #[derive(Default)]
