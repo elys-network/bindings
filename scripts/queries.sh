@@ -602,6 +602,13 @@ function get_spot_order_states() {
     }'
 }
 
+function get_ts_stat {
+    printf "\n# Get Spot Order State"
+    query_contract "$ts_contract_address" '{
+        "get_stat": {}
+    }'
+}
+
 # function(s) to run based on the provided argument
 case "$2" in
 "ah_params")
@@ -795,6 +802,9 @@ case "$2" in
     ;;
 "get_spot_order_states")
     get_spot_order_states $3
+    ;;
+"get_ts_stat")
+    get_ts_stat
     ;;
 *)
     # Default case: run all functions
