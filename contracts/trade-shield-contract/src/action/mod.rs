@@ -11,6 +11,7 @@ pub mod query {
     mod get_perpetual_position;
     mod get_perpetual_positions;
     mod get_spot_order;
+    mod get_spot_order_states;
     mod get_spot_orders;
     mod perpetual_get_position_for_address;
     mod perpetual_open_estimation;
@@ -29,6 +30,7 @@ pub mod query {
     pub use get_perpetual_position::get_perpetual_position;
     pub use get_perpetual_positions::get_perpetual_positions;
     pub use get_spot_order::get_spot_order;
+    pub use get_spot_order_states::get_spot_order_states;
     pub use get_spot_orders::get_spot_orders;
     pub use perpetual_get_position_for_address::perpetual_get_position_for_address;
     pub use perpetual_open_estimation::perpetual_open_estimation;

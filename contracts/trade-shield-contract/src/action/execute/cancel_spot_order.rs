@@ -30,16 +30,11 @@ pub fn cancel_spot_order(
         });
     }
 
-    let refund_msg = BankMsg::Send {
-        to_address: order.owner_address.to_string(),
-        amount: vec![order.order_amount.clone()],
-    };
+    let refund_msg = remove_spot_order(order.order_id, Status::Canceled, deps.storage)?.unwrap();
 
     let resp = Response::new()
         .add_message(CosmosMsg::Bank(refund_msg))
         .add_event(Event::new("cancel_spot_order").add_attribute("order_id", order_id.to_string()));
-
-    remove_spot_order(order.order_id, Status::Canceled, deps.storage)?;
 
     Ok(resp)
 }
