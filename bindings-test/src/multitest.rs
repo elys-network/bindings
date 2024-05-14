@@ -21,14 +21,15 @@ use elys_bindings::{
     },
     query_resp::{
         AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse,
-        BalanceBorrowed, Commitments, Entry, LeveragelpIsWhitelistedResponse, LeveragelpParams,
-        LeveragelpParamsResponse, LeveragelpStatusReponse, LeveragelpWhitelistResponse,
+        BalanceBorrowed, Commitments, Entry, EstakingRewardsResponse,
+        LeveragelpIsWhitelistedResponse, LeveragelpParams, LeveragelpParamsResponse,
+        LeveragelpStatusReponse, LeveragelpWhitelistResponse, MasterchefUserPendingRewardResponse,
         OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
         PerpetualOpenEstimationRawResponse, PerpetualQueryPositionsResponse, PoolApr,
         QueryAprResponse, QueryAprsResponse, QueryGetEntryAllResponse, QueryGetEntryResponse,
         QueryGetPriceResponse, QueryPoolAprsResponse, QueryShowCommitmentsResponse,
-        QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryVestingInfoResponse,
-        StableStakeParamsData, StableStakeParamsResp,
+        QueryStableStakeAprResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
+        QueryVestingInfoResponse, StableStakeParamsData, StableStakeParamsResp,
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
@@ -124,7 +125,10 @@ impl Module for ElysModule {
                 Ok(to_json_binary(&resp)?)
             }
 
-            ElysQuery::EstakingRewards { .. } => todo!("QueryEstakingRewards"),
+            ElysQuery::EstakingRewards { .. } => {
+                // TODO: remove default instead proper mock
+                Ok(to_json_binary(&EstakingRewardsResponse::default())?)
+            }
             ElysQuery::LeveragelpQueryPositions { .. } => todo!("LeveragelpQueryPositions"),
             ElysQuery::LeveragelpQueryPositionsByPool { .. } => {
                 todo!("LeveragelpQueryPositionsByPool")
@@ -631,7 +635,12 @@ impl Module for ElysModule {
                 };
                 Ok(to_json_binary(&resp)?)
             }
-            ElysQuery::MasterchefUserPendingReward { .. } => todo!("MasterchefUserPendingReward"),
+            ElysQuery::MasterchefUserPendingReward { .. } => {
+                // TODO: remove default instead proper mock
+                Ok(to_json_binary(
+                    &MasterchefUserPendingRewardResponse::default(),
+                )?)
+            }
             ElysQuery::MasterchefPoolAprs { pool_ids } => {
                 let resp = QueryPoolAprsResponse {
                     data: pool_ids
@@ -644,7 +653,12 @@ impl Module for ElysModule {
                 };
                 Ok(to_json_binary(&resp)?)
             }
-            ElysQuery::MasterchefStableStakeApr { .. } => todo!("MasterchefStableStakeApr"),
+            ElysQuery::MasterchefStableStakeApr { .. } => {
+                // TODO: remove default instead proper mock
+                Ok(to_json_binary(&QueryStableStakeAprResponse {
+                    apr: Int128::default(),
+                })?)
+            }
         }
     }
 
