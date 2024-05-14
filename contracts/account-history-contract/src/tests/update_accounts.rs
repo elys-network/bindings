@@ -405,7 +405,6 @@ fn history() {
             None,
         )
         .unwrap();
-
     let update_msg = SudoMsg::ClockEndBlock {};
 
     // t0
