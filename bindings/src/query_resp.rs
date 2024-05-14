@@ -783,7 +783,7 @@ impl EstakingRewardsResponse {
             total: self.total.clone(),
         }
     }
-
+    // TODO: to coinvalue
     pub fn to_dec_coin_values(
         &self,
         querier: &ElysQuerier<'_>,
