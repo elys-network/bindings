@@ -24,10 +24,11 @@ use elys_bindings::{
         BalanceBorrowed, Commitments, Entry, LeveragelpIsWhitelistedResponse, LeveragelpParams,
         LeveragelpParamsResponse, LeveragelpStatusReponse, LeveragelpWhitelistResponse,
         OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
-        PerpetualOpenEstimationRawResponse, PerpetualQueryPositionsResponse, QueryAprResponse,
-        QueryAprsResponse, QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse,
-        QueryShowCommitmentsResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
-        QueryVestingInfoResponse, StableStakeParamsData, StableStakeParamsResp,
+        PerpetualOpenEstimationRawResponse, PerpetualQueryPositionsResponse, PoolApr,
+        QueryAprResponse, QueryAprsResponse, QueryGetEntryAllResponse, QueryGetEntryResponse,
+        QueryGetPriceResponse, QueryPoolAprsResponse, QueryShowCommitmentsResponse,
+        QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryVestingInfoResponse,
+        StableStakeParamsData, StableStakeParamsResp,
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
@@ -35,6 +36,7 @@ use elys_bindings::{
     },
     ElysMsg, ElysQuery,
 };
+use itertools::Itertools;
 use std::cmp::max;
 
 pub const PRICES: Item<Vec<Price>> = Item::new("prices");
@@ -630,7 +632,18 @@ impl Module for ElysModule {
                 Ok(to_json_binary(&resp)?)
             }
             ElysQuery::MasterchefUserPendingReward { .. } => todo!("MasterchefUserPendingReward"),
-            ElysQuery::MasterchefPoolAprs { .. } => todo!("MasterchefPoolApr"),
+            ElysQuery::MasterchefPoolAprs { pool_ids } => {
+                let resp = QueryPoolAprsResponse {
+                    data: pool_ids
+                        .iter()
+                        .map(|v| PoolApr {
+                            pool_id: *v,
+                            ..Default::default()
+                        })
+                        .collect_vec(),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
             ElysQuery::MasterchefStableStakeApr { .. } => todo!("MasterchefStableStakeApr"),
         }
     }
@@ -956,16 +969,6 @@ impl Module for ElysModule {
                 })
             }
             ElysMsg::CommitmentClaimVesting { .. } => {
-                let data = to_json_binary(&MsgResponse {
-                    result: "Ok".to_string(),
-                })?;
-                Ok(AppResponse {
-                    events: vec![],
-                    data: Some(data),
-                })
-            }
-            ElysMsg::IncentiveWithdrawRewards { .. } => {
-                LAST_MODULE_USED.save(storage, &Some("Incentive".to_string()))?;
                 let data = to_json_binary(&MsgResponse {
                     result: "Ok".to_string(),
                 })?;

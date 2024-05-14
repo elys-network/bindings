@@ -256,6 +256,7 @@ pub struct QueryAprResponse {
     pub apr: Uint128,
 }
 
+#[derive(Default)]
 #[cw_serde]
 pub struct QueryAprsResponse {
     pub usdc_apr_usdc: Uint128,
@@ -488,14 +489,14 @@ pub struct QueryUserPoolResponse {
     // Total Rewards in fiat
     pub rewards: Decimal,
     // Each reward including the fiat amount
-    pub rewards_breakdown: HashMap<String, BalanceAvailable>,
+    pub rewards_breakdown: HashMap<String, CoinValue>,
     pub pools: Vec<UserPoolResp>,
 }
 
 #[cw_serde]
 pub struct PoolResp {
     pub pool_id: i64,
-    pub apr: Option<Decimal>,
+    pub apr: Option<PoolApr>,
     pub assets: Vec<PoolAsset>, // eg : [{{"denom":"uatom", "amount":"1000"}, "weight":"10"}, {{"denom":"uusdc", "amount":"100"}, "weight":"1"}, ...]
     // Expected pool ratio
     pub pool_ratio: String,
@@ -523,7 +524,7 @@ impl Default for PoolResp {
     fn default() -> Self {
         Self {
             pool_id: 0,
-            apr: Some(Decimal::zero()),
+            apr: Some(PoolApr::default()),
             assets: vec![],
             pool_ratio: "".to_string(),
             current_pool_ratio: Some(HashMap::new()),
@@ -828,7 +829,7 @@ impl MasterchefUserPendingRewardResponse {
         ))
     }
 
-    fn rewards_to_coins(
+    pub fn rewards_to_coins(
         &self,
         querier: &ElysQuerier<'_>,
         usdc_denom: &String,
@@ -859,6 +860,7 @@ impl MasterchefUserPendingRewardResponse {
 }
 
 #[cw_serde]
+#[derive(Default)]
 pub struct QueryPoolAprsResponse {
     pub data: Vec<PoolApr>,
 }
@@ -879,6 +881,7 @@ impl QueryPoolAprsResponse {
     }
 }
 
+#[derive(Default)]
 #[cw_serde]
 pub struct PoolApr {
     pub pool_id: u64,

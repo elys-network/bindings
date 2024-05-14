@@ -640,26 +640,29 @@ impl<'a> ElysQuerier<'a> {
         filter_type: i32,
         pagination: Option<PageRequest>,
     ) -> StdResult<QueryEarnPoolResponse> {
-        let pools_response: QueryEarnPoolResponse =
-            self.get_all_pools_apr(pool_ids.clone(), filter_type, pagination)?;
-        let aprs_response = self.get_pools_apr(pool_ids)?;
+        let pools_response = self.get_all_pools_apr(pool_ids.clone(), filter_type, pagination)?;
+        let aprs_response =
+            self.get_masterchef_pool_apr(pool_ids.or(Some([].to_vec())).unwrap())?;
 
         match (pools_response.pools, aprs_response.data) {
-            (Some(pools), Some(aprs)) => {
+            (Some(pools), aprs) => {
                 // Create a map from pool_id to APR for efficient lookup
-                let aprs_map: HashMap<String, Decimal> = aprs
+                let aprs_map: HashMap<String, PoolApr> = aprs
                     .into_iter()
-                    .map(|apr_response| (apr_response.pool_id.to_string(), apr_response.apr))
+                    .map(|apr| (apr.pool_id.to_string(), apr))
                     .collect();
 
                 // Update the APR field for each pool, pool share price, add asset usd value
                 // and current Pool ratio
                 let pools_with_usd_values = pools
                     .into_iter()
-                    .map(|mut pool| {
-                        pool.apr = aprs_map
-                            .get(&pool.pool_id.to_string())
-                            .map_or(Some(Decimal::zero()), |apr| Some(apr.clone()));
+                    .map(|mut pool: PoolResp| {
+                        pool.apr = Some(
+                            aprs_map
+                                .get(&pool.pool_id.to_string())
+                                .expect("APR is not present for given pool id")
+                                .clone(),
+                        );
 
                         pool.assets = pool
                             .assets
@@ -678,8 +681,6 @@ impl<'a> ElysQuerier<'a> {
                                 }
                             })
                             .collect::<Vec<_>>();
-
-                        println!("{:#?}", pool);
 
                         pool.current_pool_ratio = Some(self.get_current_pool_ratio(&pool));
 
@@ -740,7 +741,7 @@ impl<'a> ElysQuerier<'a> {
                     pools: Some(pools_with_usd_values),
                 })
             }
-            (None, _) | (_, None) => {
+            (None, _) => {
                 // Return default response if either pools or APR data is missing
                 Ok(QueryEarnPoolResponse {
                     pools: Some(Vec::new()), // or None, depending on how you define default
@@ -846,10 +847,28 @@ impl<'a> ElysQuerier<'a> {
     }
 
     pub fn get_masterchef_pool_apr(&self, pool_ids: Vec<u64>) -> StdResult<QueryPoolAprsResponse> {
-        self.querier
-            .query(&QueryRequest::Custom(ElysQuery::get_masterchef_pool_apr(
-                pool_ids,
-            )))
+        let query = ElysQuery::get_masterchef_pool_apr(pool_ids);
+        let request = QueryRequest::Custom(query);
+        let mut response: QueryPoolAprsResponse = self.querier.query(&request).unwrap_or_default();
+
+        for pool_apr in response.data.iter_mut() {
+            let multiplier = Decimal::from_str("100").unwrap();
+
+            pool_apr.eden_apr = pool_apr
+                .eden_apr
+                .checked_mul(multiplier)
+                .unwrap_or_default();
+            pool_apr.usdc_apr = pool_apr
+                .usdc_apr
+                .checked_mul(multiplier)
+                .unwrap_or_default();
+            pool_apr.total_apr = pool_apr
+                .total_apr
+                .checked_mul(multiplier)
+                .unwrap_or_default();
+        }
+
+        Ok(response)
     }
 
     pub fn get_estaking_rewards(&self, address: String) -> StdResult<EstakingRewardsResponse> {

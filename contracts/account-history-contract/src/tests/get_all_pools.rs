@@ -15,9 +15,9 @@ use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Mod
 use elys_bindings::account_history::types::CoinValue;
 use elys_bindings::query_resp::{
     DelegationDelegatorReward, EstakingRewardsResponse, IncentivePoolApr,
-    MasterchefUserPendingRewardData, MasterchefUserPendingRewardResponse, PoolFilterType, PoolResp,
-    QueryAllProgramRewardsResponse, QueryEarnPoolResponse, QueryIncentivePoolAprsResponse,
-    QueryStableStakeAprResponse, Validator,
+    MasterchefUserPendingRewardData, MasterchefUserPendingRewardResponse, PoolApr, PoolFilterType,
+    PoolResp, QueryAllProgramRewardsResponse, QueryEarnPoolResponse,
+    QueryIncentivePoolAprsResponse, QueryStableStakeAprResponse, Validator,
 };
 use elys_bindings::types::{BalanceAvailable, PoolAsset};
 use elys_bindings::{ElysMsg, ElysQuery};
@@ -151,7 +151,7 @@ impl Module for ElysModuleWrapper {
                 let resp = QueryEarnPoolResponse {
                     pools: Some(vec![PoolResp {
                         pool_id: 1,
-                        apr: Some(Decimal::from_str("10").unwrap()),
+                        apr: Some(PoolApr::default()),
                         assets: vec![PoolAsset {
                             token: Coin {
                                 denom: "uelys".to_string(),
@@ -336,7 +336,9 @@ fn get_all_pools() {
     let expected = QueryEarnPoolResponse {
         pools: Some(vec![PoolResp {
             pool_id: 1,
-            apr: Some(Decimal::zero()),
+            apr: Some(PoolApr {
+                ..Default::default()
+            }),
             assets: vec![PoolAsset {
                 token: Coin {
                     amount: Uint128::new(100),

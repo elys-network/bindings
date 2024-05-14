@@ -1,7 +1,6 @@
 use crate::trade_shield::types::{
     OrderPrice, PerpetualOrderType, PerpetualPosition, SpotOrderType, SwapAmountInRoute,
 };
-use crate::types::EarnType;
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Int128, SignedDecimal, SignedDecimal256, Uint128};
 
@@ -71,9 +70,7 @@ pub enum ExecuteMsg {
         amount: u64,
     },
     EdenClaimVestingRequest {},
-    ClaimRewardsRequest {
-        withdraw_type: EarnType,
-    },
+    ClaimRewardsRequest {},
     ClaimValidatorCommissionRequest {
         validator_address: String,
     },
