@@ -1,12 +1,13 @@
 use crate::{
     action::query::{
-        get_eden_boost_earn_program_details, get_eden_earn_program_details, get_estaking_rewards, get_liquid_assets,
+        get_eden_boost_earn_program_details, get_eden_earn_program_details,
+        get_elys_earn_program_details, get_estaking_rewards, get_liquid_assets,
         get_masterchef_pending_rewards, get_masterchef_pool_apr, get_masterchef_stable_stake_apr,
         get_membership_tier, get_perpetuals_assets, get_pool_balances, get_portfolio, get_rewards,
         get_staked_assets, get_total_balance, get_usdc_earn_program_details,
     },
-    types::AccountSnapshotGenerator,
     states::USER_ADDRESS_QUEUE,
+    types::AccountSnapshotGenerator,
 };
 
 #[cfg(feature = "debug")]
@@ -15,11 +16,10 @@ use crate::action::query::{
     params, pool_asset_estimation, user_snapshots, user_value,
 };
 
+use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult, Uint128};
 use elys_bindings::{
     account_history::types::ElysDenom, query_resp::QueryAprResponse, ElysQuerier, ElysQuery,
 };
-use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult, Uint128};
-
 
 use crate::msg::QueryMsg;
 
@@ -269,6 +269,7 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
             let response = querier.get_all_program_rewards(address)?;
 
             to_json_binary(&response)
+        }
 
         AddressQueueSize {} => {
             let user_address_queue: Vec<String> = USER_ADDRESS_QUEUE
@@ -278,7 +279,6 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
             let size = Uint128::new(user_address_queue.len() as u128);
 
             to_json_binary(&size)
-
         }
     }
 }

@@ -8,8 +8,8 @@ use crate::{
 };
 use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
-    coin, coins, to_json_binary, Addr, BlockInfo, Decimal, Decimal256, Empty, SignedDecimal, Int128,
-    SignedDecimal256, StdError, Timestamp, Uint128,
+    coin, coins, to_json_binary, Addr, BlockInfo, Coin, DecCoin, Decimal, Decimal256, Empty,
+    Int128, SignedDecimal, SignedDecimal256, StdError, Timestamp, Uint128,
 };
 use cw_multi_test::{AppResponse, BankSudo, BasicAppBuilder, ContractWrapper, Executor, Module};
 use cw_utils::Expiration;
@@ -232,7 +232,6 @@ impl Module for ElysModuleWrapper {
                     slippage: Decimal::zero(),
                 };
                 Ok(to_json_binary(&resp)?)
-
             }
             ElysQuery::EstakingRewards { .. } => {
                 let resp = EstakingRewardsResponse {

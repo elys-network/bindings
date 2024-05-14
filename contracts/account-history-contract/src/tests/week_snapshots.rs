@@ -8,8 +8,8 @@ use crate::{
 };
 use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
-    coin, coins, to_json_binary, Addr, BlockInfo, Coin, DecCoin, Decimal, Decimal256, Empty, Int128,
-    SignedDecimal, StdError, Timestamp, Uint128,
+    coin, coins, to_json_binary, Addr, BlockInfo, Coin, DecCoin, Decimal, Decimal256, Empty,
+    Int128, SignedDecimal, StdError, Timestamp, Uint128,
 };
 use cw_multi_test::{AppResponse, BankSudo, BasicAppBuilder, ContractWrapper, Executor, Module};
 use cw_utils::Expiration;

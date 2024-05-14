@@ -10,8 +10,7 @@ use elys_bindings_test::{
     ACCOUNT, ASSET_INFO, LAST_MODULE_USED, PERPETUAL_OPENED_POSITION, PRICES,
 };
 use trade_shield_contract::entry_point::{
-    execute as trade_shield_execute, instantiate as trade_shield_init,
-    migrate as trade_shield_migrate, query as trade_shield_query,
+    execute as trade_shield_execute, instantiate as trade_shield_init, query as trade_shield_query,
 };
 use trade_shield_contract::msg as trade_shield_msg;
 use trade_shield_contract::types::{OrderPrice, SpotOrderType};
@@ -368,7 +367,7 @@ fn history() {
     let trade_shield_code =
         ContractWrapper::new(trade_shield_execute, trade_shield_init, trade_shield_query);
     let trade_shield_code_id = app.store_code(Box::new(trade_shield_code));
-    let trade_shield_init = TradeShieldInstantiateMsg {
+    let trade_shield_init = trade_shield_msg::InstantiateMsg {
         account_history_address: None,
     };
     let trade_shield_address = app
@@ -393,7 +392,7 @@ fn history() {
         expiration: Some(cw_utils::Expiration::AtTime(Timestamp::from_seconds(
             604800,
         ))),
-        trade_shield_address: Some(trade_shield_address),
+        trade_shield_address: Some(trade_shield_address.clone()),
     };
 
     // Instantiate the contract with "owner" as the deployer.
@@ -410,7 +409,7 @@ fn history() {
 
     app.migrate_contract(
         Addr::unchecked("admin"),
-        trade_shield_address.clone(),
+        Addr::unchecked(trade_shield_address.clone()),
         &trade_shield_msg::MigrateMsg {
             account_history_address: Some(addr.to_string()),
         },
@@ -420,7 +419,7 @@ fn history() {
 
     app.execute_contract(
         Addr::unchecked("user-a"),
-        trade_shield_address.clone(),
+        Addr::unchecked(trade_shield_address.clone()),
         &trade_shield_msg::ExecuteMsg::CreateSpotOrder {
             order_type: SpotOrderType::StopLoss,
             order_source_denom: "uelys".to_string(),
