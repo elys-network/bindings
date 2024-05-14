@@ -818,6 +818,11 @@ pub struct QueryStableStakeAprResponse {
 }
 
 #[cw_serde]
+pub struct CommitmentNumberOfCommitmentsResponseRaw {
+    pub number: Option<i64>,
+}
+
+#[cw_serde]
 pub struct CommitmentNumberOfCommitmentsResponse {
     pub number: i64,
 }

@@ -1026,7 +1026,10 @@ impl<'a> ElysQuerier<'a> {
         &self,
     ) -> StdResult<CommitmentNumberOfCommitmentsResponse> {
         let req = QueryRequest::Custom(ElysQuery::commitment_number_of_commitments());
-        self.querier.query(&req)
+        let CommitmentNumberOfCommitmentsResponseRaw { number } = self.querier.query(&req)?;
+        Ok(CommitmentNumberOfCommitmentsResponse {
+            number: number.unwrap_or(0),
+        })
     }
     #[allow(dead_code)]
     #[cfg(feature = "debug")]
