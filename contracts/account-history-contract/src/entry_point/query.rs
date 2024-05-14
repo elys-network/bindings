@@ -262,5 +262,12 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
 
             to_json_binary(&response)
         }
+        #[cfg(feature = "debug")]
+        IncentiveAllProgramRewards { address } => {
+            let querier = ElysQuerier::new(&deps.querier);
+            let response = querier.get_all_program_rewards(address)?;
+
+            to_json_binary(&response)
+        }
     }
 }
