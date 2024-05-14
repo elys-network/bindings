@@ -28,7 +28,6 @@ use elys_bindings::{
         },
         types::{PerpetualOrder, PerpetualOrderPlus, PerpetualOrderType, SpotOrder, Status},
     },
-    types::{BalanceAvailable, EarnType},
     ElysQuerier, ElysQuery,
 };
 

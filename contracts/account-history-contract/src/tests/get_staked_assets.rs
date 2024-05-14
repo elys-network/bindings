@@ -8,21 +8,24 @@ use crate::{
 };
 use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
-    coins, to_json_binary, Addr, DecCoin, Decimal, Decimal256, Empty, Int128, StdError, Timestamp,
-    Uint128,
+    coins, to_json_binary, Addr, Coin, DecCoin, Decimal, Decimal256, Empty, Int128, StdError,
+    Timestamp, Uint128,
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::account_history::msg::query_resp::StakeAssetBalanceBreakdown;
+use elys_bindings::account_history::types::earn_detail::earn_detail::AprEdenBoost;
 use elys_bindings::account_history::types::earn_program::{
     EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram,
 };
 use elys_bindings::account_history::types::{
-    AprElys, AprUsdc, BalanceReward, QueryAprResponse, StakedAssets,
+    AprElys, AprUsdc, CoinValue, DecCoinValue, QueryAprResponse, StakedAssets,
 };
 use elys_bindings::query_resp::{
-    BalanceBorrowed, Entry, Lockup, QueryAprsResponse, QueryGetEntryResponse,
-    QueryGetPriceResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
-    QueryVestingInfoResponse, StakedAvailable,
+    BalanceBorrowed, DelegationDelegatorReward, Entry, EstakingRewardsResponse, Lockup,
+    MasterchefUserPendingRewardData, MasterchefUserPendingRewardResponse,
+    QueryAllProgramRewardsResponse, QueryAprsResponse, QueryGetEntryResponse,
+    QueryGetPriceResponse, QueryStableStakeAprResponse, QueryStakedPositionResponse,
+    QueryUnstakedPositionResponse, QueryVestingInfoResponse, StakedAvailable, Validator,
 };
 use elys_bindings::types::{
     BalanceAvailable, Price, StakedPosition, StakingValidator, UnstakedPosition,
@@ -134,6 +137,28 @@ impl Module for ElysModuleWrapper {
                 };
                 Ok(to_json_binary(&spot_price)?)
             }
+            ElysQuery::EstakingRewards { .. } => {
+                let resp = EstakingRewardsResponse {
+                    rewards: vec![DelegationDelegatorReward {
+                        validator_address: Validator::EdenBoost.to_string(),
+                        reward: vec![DecCoin {
+                            denom: "ueden".to_string(),
+                            amount: Decimal256::from_str("1.21").unwrap(),
+                        }],
+                    }],
+                    total: vec![DecCoin {
+                        denom: "uedenb".to_string(),
+                        amount: Decimal256::from_str("1.21").unwrap(),
+                    }],
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::MasterchefStableStakeApr { .. } => {
+                let resp = QueryStableStakeAprResponse {
+                    apr: Int128::new(12),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
             ElysQuery::OraclePrice { asset, .. } => {
                 let resp = match asset.as_str() {
                     "USDC" => QueryGetPriceResponse {
@@ -148,6 +173,22 @@ impl Module for ElysModuleWrapper {
                         },
                     },
                     _ => return Err(Error::new(StdError::not_found(asset))),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::MasterchefUserPendingReward { .. } => {
+                let resp = MasterchefUserPendingRewardResponse {
+                    rewards: vec![MasterchefUserPendingRewardData {
+                        pool_id: 32767u64,
+                        reward: vec![Coin {
+                            denom: "ueden".to_string(),
+                            amount: Uint128::new(20),
+                        }],
+                    }],
+                    total_rewards: vec![Coin {
+                        denom: "ueden".to_string(),
+                        amount: Uint128::new(20),
+                    }],
                 };
                 Ok(to_json_binary(&resp)?)
             }
@@ -444,6 +485,29 @@ impl Module for ElysModuleWrapper {
                 };
                 Ok(to_json_binary(&resp)?)
             }
+            ElysQuery::IncentiveAllProgramRewards { .. } => {
+                let resp = QueryAllProgramRewardsResponse {
+                    usdc_staking_rewards: vec![DecCoin {
+                        denom:
+                            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                                .to_string(),
+                        amount: Decimal256::from_str("10").unwrap(),
+                    }],
+                    elys_staking_rewards: vec![DecCoin {
+                        denom: "uelys".to_string(),
+                        amount: Decimal256::from_str("10").unwrap(),
+                    }],
+                    eden_staking_rewards: vec![DecCoin {
+                        denom: "ueden".to_string(),
+                        amount: Decimal256::from_str("10").unwrap(),
+                    }],
+                    edenb_staking_rewards: vec![DecCoin {
+                        denom: "uedenb".to_string(),
+                        amount: Decimal256::from_str("10").unwrap(),
+                    }],
+                };
+                Ok(to_json_binary(&resp)?)
+            }
             _ => self.0.query(api, storage, querier, block, request),
         }
     }
@@ -614,24 +678,18 @@ fn get_staked_assets() {
         staked_assets: StakedAssets {
             eden_boost_earn_program: EdenBoostEarnProgram {
                 bonding_period: 0,
-                apr: AprUsdc {
+                apr: AprEdenBoost {
                     uusdc: Uint128::zero(),
                     ueden: Uint128::new(29),
                 },
                 available: Some(Uint128::zero()),
                 staked: Some(Uint128::zero()),
-                rewards: Some(vec![
-                    BalanceReward {
-                        asset: "uusdc".to_string(),
-                        amount: Uint128::zero(),
-                        usd_amount: Some(Decimal::zero()),
-                    },
-                    BalanceReward {
-                        asset: "ueden".to_string(),
-                        amount: Uint128::zero(),
-                        usd_amount: Some(Decimal::zero()),
-                    },
-                ]),
+                rewards: Some(vec![DecCoinValue {
+                    denom: "ueden".to_string(),
+                    amount_token: Decimal256::from_str("1.21").unwrap(),
+                    price: Decimal::from_atomics(Uint128::new(35308010067676894), 16).unwrap(),
+                    amount_usd: Decimal256::from_str("4.272269218188904174").unwrap(),
+                }]),
             },
             eden_earn_program: EdenEarnProgram {
                 bonding_period: 0,
@@ -641,7 +699,7 @@ fn get_staked_assets() {
                     uedenb: Uint128::new(100),
                 },
                 available: Some(BalanceAvailable {
-                    amount: Uint128::zero(),
+                    amount: Uint128::new(0),
                     usd_amount: Decimal::zero(),
                 }),
                 staked: Some(StakedAvailable {
@@ -652,28 +710,12 @@ fn get_staked_assets() {
                         unlock_timestamp: 1571797419,
                     }]),
                 }),
-                rewards: Some(vec![
-                    BalanceReward {
-                        asset: "uusdc".to_string(),
-                        amount: Uint128::new(1161),
-                        usd_amount: Some(Decimal::from_str("0.001161").unwrap()),
-                    },
-                    BalanceReward {
-                        asset: "ueden".to_string(),
-                        amount: Uint128::new(2984882),
-                        usd_amount: Some(Decimal::from_str("10.539024370682754271").unwrap()),
-                    },
-                    BalanceReward {
-                        asset: "uedenb".to_string(),
-                        amount: Uint128::new(10155052),
-                        usd_amount: None,
-                    },
-                ]),
+                rewards: Some(vec![]),
                 vesting: BalanceAvailable {
-                    amount: Uint128::zero(),
-                    usd_amount: Decimal::zero(),
+                    amount: Uint128::from_str("0").unwrap(),
+                    usd_amount: Decimal::from_str("0").unwrap(),
                 },
-                vesting_details: Some(vec![]), // FIXME: according to Wari we should have vesting details here
+                vesting_details: Some(vec![]),
             },
             elys_earn_program: ElysEarnProgram {
                 bonding_period: 14,
@@ -691,41 +733,25 @@ fn get_staked_assets() {
                     amount: Uint128::new(10000000),
                     lockups: Some(vec![]),
                 }),
-                rewards: Some(vec![
-                    BalanceReward {
-                        asset: "uusdc".to_string(),
-                        amount: Uint128::zero(),
-                        usd_amount: Some(Decimal::zero()),
-                    },
-                    BalanceReward {
-                        asset: "ueden".to_string(),
-                        amount: Uint128::new(9868),
-                        usd_amount: Some(Decimal::from_str("0.034841944334783558").unwrap()),
-                    },
-                    BalanceReward {
-                        asset: "uedenb".to_string(),
-                        amount: Uint128::new(654083056),
-                        usd_amount: None,
-                    },
-                ]),
+                rewards: Some(vec![]),
                 staked_positions: Some(vec![StakedPosition {
                     id: "2".to_string(),
                     validator: StakingValidator {
-                        id: String::from("1"),
+                        id: "1".to_string(),
                         address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw".to_string(),
                         name: "nirvana".to_string(),
                         voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
                         commission: Decimal::from_str("0.1").unwrap(),
                     },
                     staked: BalanceAvailable {
-                        amount: Uint128::new(10000000),
+                        amount: Uint128::from_str("10000000").unwrap(),
                         usd_amount: Decimal::from_str("35.308010067676894").unwrap(),
                     },
                 }]),
                 unstaked_positions: Some(vec![UnstakedPosition {
                     id: "1".to_string(),
                     validator: StakingValidator {
-                        id: String::from("1"),
+                        id: "1".to_string(),
                         address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw".to_string(),
                         name: "nirvana".to_string(),
                         voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
@@ -733,7 +759,7 @@ fn get_staked_assets() {
                     },
                     remaining_time: 1707328694,
                     unstaked: BalanceAvailable {
-                        amount: Uint128::new(100038144098),
+                        amount: Uint128::from_str("100038144098").unwrap(),
                         usd_amount: Decimal::from_str("353214.779896389585407707").unwrap(),
                     },
                 }]),
@@ -741,8 +767,8 @@ fn get_staked_assets() {
             usdc_earn_program: UsdcEarnProgram {
                 bonding_period: 0,
                 apr: AprUsdc {
-                    uusdc: Uint128::new(100),
-                    ueden: Uint128::new(168),
+                    uusdc: Int128::new(12),
+                    ueden: Int128::new(12),
                 },
                 available: Some(BalanceAvailable {
                     amount: Uint128::new(5333229342748),
@@ -753,18 +779,12 @@ fn get_staked_assets() {
                     amount: Uint128::zero(),
                     lockups: None,
                 }),
-                rewards: Some(vec![
-                    BalanceReward {
-                        asset: "uusdc".to_string(),
-                        amount: Uint128::zero(),
-                        usd_amount: Some(Decimal::zero()),
-                    },
-                    BalanceReward {
-                        asset: "ueden".to_string(),
-                        amount: Uint128::new(349209420),
-                        usd_amount: Some(Decimal::from_str("1232.988971708760890114").unwrap()),
-                    },
-                ]),
+                rewards: Some(vec![CoinValue {
+                    denom: "ueden".to_string(),
+                    amount_token: Decimal::from_atomics(Uint128::new(000002), 5).unwrap(),
+                    price: Decimal::from_atomics(Uint128::new(35308010067676894), 16).unwrap(),
+                    amount_usd: Decimal::from_str("0.000070616020135353").unwrap(),
+                }]),
                 borrowed: Some(BalanceBorrowed {
                     usd_amount: Decimal::from_str("204000.000001").unwrap(),
                     percentage: Decimal::one(),

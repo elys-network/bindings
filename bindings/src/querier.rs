@@ -613,26 +613,21 @@ impl<'a> ElysQuerier<'a> {
 
     pub fn get_current_pool_ratio(&self, pool: &PoolResp) -> HashMap<String, Decimal> {
         let mut current_ratio: HashMap<String, Decimal> = HashMap::new();
-        let mut total_value: Decimal = Decimal::zero();
 
-        // Calculate total value locked (TVL) based on USD valuation
-        for asset in &pool.assets {
-            if let Some(usd_value) = asset.usd_value {
-                total_value += usd_value;
+        let total_value: Decimal = pool.assets.iter().fold(Decimal::zero(), |acc, x| {
+            if let Some(usd_value) = x.usd_value {
+                return acc + usd_value;
             }
-        }
+            return Decimal::zero();
+        });
 
         // Calculate ratio for each asset in the pool
         for asset in &pool.assets {
-            let ratio = if let Some(usd_value) = asset.usd_value {
-                match usd_value.checked_div(total_value) {
-                    Ok(resp) => resp,
-                    Err(_) => Decimal::zero(),
-                }
-            } else {
-                Decimal::zero()
-            };
-
+            let ratio = asset.usd_value.map_or(Decimal::zero(), |usd_value| {
+                usd_value
+                    .checked_div(total_value)
+                    .unwrap_or(Decimal::zero())
+            });
             current_ratio.insert(asset.token.denom.clone(), ratio);
         }
 
@@ -645,14 +640,9 @@ impl<'a> ElysQuerier<'a> {
         filter_type: i32,
         pagination: Option<PageRequest>,
     ) -> StdResult<QueryEarnPoolResponse> {
-        let pools_query = ElysQuery::get_all_pools(pool_ids.clone(), filter_type, pagination);
-        let pools_request: QueryRequest<ElysQuery> = QueryRequest::Custom(pools_query);
-
-        let pools_response: QueryEarnPoolResponse = self.querier.query(&pools_request)?;
+        let pools_response = self.get_all_pools_apr(pool_ids.clone(), filter_type, pagination)?;
         let aprs_response =
             self.get_masterchef_pool_apr(pool_ids.or(Some([].to_vec())).unwrap())?;
-
-        let usdc_entry = self.get_asset_profile("uusdc".to_string());
 
         match (pools_response.pools, aprs_response.data) {
             (Some(pools), aprs) => {
@@ -667,8 +657,12 @@ impl<'a> ElysQuerier<'a> {
                 let pools_with_usd_values = pools
                     .into_iter()
                     .map(|mut pool: PoolResp| {
-                        let apr = aprs_map.get(&pool.pool_id.to_string()).unwrap();
-                        pool.apr = Some(apr.clone());
+                        pool.apr = Some(
+                            aprs_map
+                                .get(&pool.pool_id.to_string())
+                                .expect("APR is not present for given pool id")
+                                .clone(),
+                        );
 
                         pool.assets = pool
                             .assets
@@ -691,14 +685,15 @@ impl<'a> ElysQuerier<'a> {
                         pool.current_pool_ratio = Some(self.get_current_pool_ratio(&pool));
 
                         pool.share_usd_price = Some(
-                            match pool.tvl.checked_div(
-                                Decimal::from_atomics(pool.total_shares.amount, 18)
-                                    .unwrap_or(Decimal::zero()),
-                            ) {
-                                Ok(resp) => resp,
-                                Err(_) => Decimal::zero(),
-                            },
+                            pool.tvl
+                                .checked_div(
+                                    Decimal::from_atomics(pool.total_shares.amount, 18)
+                                        .unwrap_or(Decimal::zero()),
+                                )
+                                .unwrap_or_default(),
                         );
+
+                        let usdc_entry = self.get_asset_profile("uusdc".to_string());
 
                         // Add USD value to every reward coin returned from chain
                         if let Ok(entry) = &usdc_entry {
@@ -711,14 +706,10 @@ impl<'a> ElysQuerier<'a> {
                                     })
                                     .collect(),
                             );
-                        }
-
-                        // Sort results. USDC should always be the last asset.
-                        if let Ok(usdc_entry) = &usdc_entry {
                             if let Some(index) = pool
                                 .assets
                                 .iter()
-                                .position(|asset| asset.token.denom == usdc_entry.entry.denom)
+                                .position(|asset| asset.token.denom == entry.entry.denom)
                             {
                                 let usdc_asset = pool.assets.remove(index);
                                 pool.assets.push(usdc_asset);
@@ -1031,6 +1022,18 @@ impl<'a> ElysQuerier<'a> {
     ) -> StdResult<LeveragelpPositionResponse> {
         let req = QueryRequest::Custom(ElysQuery::leveragelp_position(address.into(), id));
         self.querier.query(&req)
+    }
+
+    pub fn get_all_pools_apr(
+        &self,
+        pool_ids: Option<Vec<u64>>,
+        filter_type: i32,
+        pagination: Option<PageRequest>,
+    ) -> StdResult<QueryEarnPoolResponse> {
+        let pools_query = ElysQuery::get_all_pools(pool_ids, filter_type, pagination);
+        let pools_request: QueryRequest<ElysQuery> = QueryRequest::Custom(pools_query);
+
+        self.querier.query(&pools_request)
     }
 
     #[allow(dead_code)]

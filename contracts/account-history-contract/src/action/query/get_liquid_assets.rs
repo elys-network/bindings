@@ -44,8 +44,10 @@ pub fn get_liquid_assets(
 }
 
 fn get_info(list_info: &Vec<CoinValue>, denom: &String) -> (Decimal, Decimal) {
-    match list_info.iter().find(|info| &info.denom == denom).cloned() {
-        Some(data) => (data.amount_token, data.amount_usd),
-        None => (Decimal::zero(), Decimal::zero()),
-    }
+    list_info
+        .iter()
+        .find(|info| &info.denom == denom)
+        .map_or((Decimal::zero(), Decimal::zero()), |data| {
+            (data.amount_token, data.amount_usd)
+        })
 }

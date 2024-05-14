@@ -8,15 +8,18 @@ use crate::{
 };
 use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
-    coin, to_json_binary, Addr, BlockInfo, Decimal, Decimal256, Empty, SignedDecimal256, StdError,
-    Timestamp, Uint128,
+    coin, to_json_binary, Addr, BlockInfo, Coin, DecCoin, Decimal, Decimal256, Empty, Int128,
+    SignedDecimal, SignedDecimal256, StdError, Timestamp, Uint128,
 };
 use cw_multi_test::{AppResponse, BankSudo, BasicAppBuilder, ContractWrapper, Executor, Module};
 use cw_utils::Expiration;
 use elys_bindings::account_history::msg::query_resp::StakeAssetBalanceBreakdown;
 use elys_bindings::account_history::types::{Portfolio, PortfolioBalanceSnapshot};
 use elys_bindings::query_resp::{
-    Entry, OracleAssetInfoResponse, QueryGetEntryResponse, QueryGetPriceResponse,
+    AmmSwapEstimationByDenomResponse, DelegationDelegatorReward, Entry, EstakingRewardsResponse,
+    MasterchefUserPendingRewardData, MasterchefUserPendingRewardResponse, OracleAssetInfoResponse,
+    QueryAllProgramRewardsResponse, QueryGetEntryResponse, QueryGetPriceResponse,
+    QueryStableStakeAprResponse, Validator,
 };
 use elys_bindings::types::{BalanceAvailable, OracleAssetInfo, Price};
 use elys_bindings::{ElysMsg, ElysQuery};
@@ -207,7 +210,88 @@ impl Module for ElysModuleWrapper {
                 Ok(to_json_binary(&resp)?)
             }
             ElysQuery::AmmSwapEstimationByDenom { .. } => {
-                panic!("not implemented")
+                let resp = AmmSwapEstimationByDenomResponse {
+                    in_route: None,
+                    out_route: None,
+                    spot_price: Decimal::from_str("3.5").unwrap(),
+                    amount: Coin {
+                        denom:
+                            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                                .to_string(),
+                        amount: Uint128::new(100),
+                    },
+                    swap_fee: SignedDecimal::one(),
+                    discount: SignedDecimal::from_str("20").unwrap(),
+                    available_liquidity: Coin {
+                        denom: "uelys".to_string(),
+                        amount: Uint128::new(100000),
+                    },
+                    weight_balance_ratio: SignedDecimal::one(),
+                    price_impact: SignedDecimal::zero(),
+                    slippage: Decimal::zero(),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::EstakingRewards { .. } => {
+                let resp = EstakingRewardsResponse {
+                    rewards: vec![DelegationDelegatorReward {
+                        validator_address: Validator::EdenBoost.to_string(),
+                        reward: vec![DecCoin {
+                            denom: "ueden".to_string(),
+                            amount: Decimal256::from_str("1.21").unwrap(),
+                        }],
+                    }],
+                    total: vec![DecCoin {
+                        denom: "uedenb".to_string(),
+                        amount: Decimal256::from_str("1.21").unwrap(),
+                    }],
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::MasterchefStableStakeApr { .. } => {
+                let resp = QueryStableStakeAprResponse {
+                    apr: Int128::new(12),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::MasterchefUserPendingReward { .. } => {
+                let resp = MasterchefUserPendingRewardResponse {
+                    rewards: vec![MasterchefUserPendingRewardData {
+                        pool_id: 32767u64,
+                        reward: vec![Coin {
+                            denom: "ueden".to_string(),
+                            amount: Uint128::new(20),
+                        }],
+                    }],
+                    total_rewards: vec![Coin {
+                        denom: "ueden".to_string(),
+                        amount: Uint128::new(20),
+                    }],
+                };
+                Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::IncentiveAllProgramRewards { .. } => {
+                let resp = QueryAllProgramRewardsResponse {
+                    usdc_staking_rewards: vec![DecCoin {
+                        denom:
+                            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                                .to_string(),
+                        amount: Decimal256::from_str("10").unwrap(),
+                    }],
+                    elys_staking_rewards: vec![DecCoin {
+                        denom: "uelys".to_string(),
+                        amount: Decimal256::from_str("10").unwrap(),
+                    }],
+                    eden_staking_rewards: vec![DecCoin {
+                        denom: "ueden".to_string(),
+                        amount: Decimal256::from_str("10").unwrap(),
+                    }],
+                    edenb_staking_rewards: vec![DecCoin {
+                        denom: "uedenb".to_string(),
+                        amount: Decimal256::from_str("10").unwrap(),
+                    }],
+                };
+                Ok(to_json_binary(&resp)?)
             }
             _ => self.0.query(api, storage, querier, block, request),
         }
