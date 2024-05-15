@@ -103,9 +103,6 @@ pub fn execute(
         EdenCancelVestRequest { amount } => eden_cancel_vest_request(info, deps, amount),
         EdenClaimVestingRequest {} => eden_claim_vesting_request(info),
         ClaimRewardsRequest {} => claim_rewards_request(info, deps),
-        ClaimValidatorCommissionRequest { validator_address } => {
-            claim_validator_commission_request(info, deps, validator_address)
-        }
         AmmJoinPoolRequest {
             pool_id,
             max_amounts_in,

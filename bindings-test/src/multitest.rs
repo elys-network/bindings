@@ -165,16 +165,12 @@ impl Module for ElysModule {
             ElysQuery::LeveragelpPosition { .. } => todo!("LeveragelpPosition"),
 
             ElysQuery::AmmEarnMiningPoolAll { .. } => todo!("AmmEarnMiningPoolAll"),
-            ElysQuery::IncentivePoolAprs { .. } => todo!("IncentivePoolAprs"),
             ElysQuery::AmmJoinPoolEstimation { .. } => todo!("AmmJoinPoolEstimation"),
             ElysQuery::AmmExitPoolEstimation { .. } => todo!("AmmJoinPoolEstimation"),
             ElysQuery::CommitmentAllValidators { .. } => todo!("CommitmentAllValidators"),
             ElysQuery::CommitmentDelegations { .. } => todo!("CommitmentDelegations"),
             ElysQuery::CommitmentDelegatorValidators { .. } => {
                 todo!("CommitmentDelegatorValidators")
-            }
-            ElysQuery::CommitmentRewardsBalanceOfDenom { .. } => {
-                todo!("CommitmentRewardsBalanceOfDenom")
             }
             ElysQuery::CommitmentShowCommitments { .. } => {
                 let resp = QueryShowCommitmentsResponse {
@@ -983,16 +979,6 @@ impl Module for ElysModule {
                 })
             }
             ElysMsg::CommitmentClaimVesting { .. } => {
-                let data = to_json_binary(&MsgResponse {
-                    result: "Ok".to_string(),
-                })?;
-                Ok(AppResponse {
-                    events: vec![],
-                    data: Some(data),
-                })
-            }
-            ElysMsg::IncentiveWithdrawValidatorCommission { .. } => {
-                LAST_MODULE_USED.save(storage, &Some("Incentive".to_string()))?;
                 let data = to_json_binary(&MsgResponse {
                     result: "Ok".to_string(),
                 })?;

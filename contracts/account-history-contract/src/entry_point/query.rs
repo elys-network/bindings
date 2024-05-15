@@ -12,8 +12,8 @@ use crate::{
 
 #[cfg(feature = "debug")]
 use crate::action::query::{
-    all, exit_pool_estimation, get_pools, get_pools_apr, join_pool_estimation, last_snapshot,
-    params, pool_asset_estimation, user_snapshots, user_value,
+    all, exit_pool_estimation, get_pools, join_pool_estimation, last_snapshot, params,
+    pool_asset_estimation, user_snapshots, user_value,
 };
 
 use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult, Uint128};
@@ -66,8 +66,6 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
             filter_type,
             pagination,
         } => to_json_binary(&get_pools(deps, pool_ids, filter_type, pagination)?),
-
-        GetLiquidityPoolsApr { pool_ids } => to_json_binary(&get_pools_apr(deps, pool_ids)?),
 
         JoinPoolEstimation {
             pool_id,

@@ -14,10 +14,9 @@ use cosmwasm_std::{
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::account_history::types::CoinValue;
 use elys_bindings::query_resp::{
-    DelegationDelegatorReward, EstakingRewardsResponse, IncentivePoolApr,
-    MasterchefUserPendingRewardData, MasterchefUserPendingRewardResponse, PoolApr, PoolFilterType,
-    PoolResp, QueryAllProgramRewardsResponse, QueryEarnPoolResponse,
-    QueryIncentivePoolAprsResponse, QueryStableStakeAprResponse, Validator,
+    DelegationDelegatorReward, EstakingRewardsResponse, MasterchefUserPendingRewardData,
+    MasterchefUserPendingRewardResponse, PoolApr, PoolFilterType, PoolResp,
+    QueryAllProgramRewardsResponse, QueryEarnPoolResponse, QueryStableStakeAprResponse, Validator,
 };
 use elys_bindings::types::{BalanceAvailable, PoolAsset};
 use elys_bindings::{ElysMsg, ElysQuery};
@@ -180,15 +179,6 @@ impl Module for ElysModuleWrapper {
                         swap_fee: Decimal::from_str("0.1").unwrap(),
                         fee_denom: "uelys".to_string(),
                         use_oracle: Some(true),
-                    }]),
-                };
-                Ok(to_json_binary(&resp)?)
-            }
-            ElysQuery::IncentivePoolAprs { .. } => {
-                let resp = QueryIncentivePoolAprsResponse {
-                    data: Some(vec![IncentivePoolApr {
-                        apr: Decimal::from_str("100").unwrap(),
-                        pool_id: 2,
                     }]),
                 };
                 Ok(to_json_binary(&resp)?)
