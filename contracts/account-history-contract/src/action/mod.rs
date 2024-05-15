@@ -16,7 +16,6 @@ pub mod query {
     mod get_pool_balances;
     mod get_pools;
     mod get_rewards;
-    mod get_total_balance;
     mod join_pool_estimation;
     mod pool_asset_estimation;
 
@@ -65,7 +64,6 @@ pub mod query {
     pub use get_perpetual_asset::get_perpetuals_assets;
     pub use get_rewards::get_rewards;
     pub use get_staked_assets::get_staked_assets;
-    pub use get_total_balance::get_total_balance;
 }
 
 pub mod execute {

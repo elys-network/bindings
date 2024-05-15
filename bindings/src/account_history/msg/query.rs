@@ -38,8 +38,6 @@ pub enum QueryMsg {
     GetStakedAssets { user_address: String },
     #[returns(QueryUserPoolResponse)]
     GetPoolBalances { user_address: String },
-    #[returns(GetTotalBalanceResp)]
-    GetTotalBalance { user_address: String },
     #[returns(GetRewardsResp)]
     GetRewards { user_address: String },
     #[returns(MembershipTierResponse)]
