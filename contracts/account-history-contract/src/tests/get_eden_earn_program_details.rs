@@ -13,7 +13,7 @@ use cosmwasm_std::{
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::account_history::msg::query_resp::earn::GetEdenEarnProgramResp;
 use elys_bindings::account_history::types::earn_program::EdenEarnProgram;
-use elys_bindings::account_history::types::{AprElys, DecCoinValue};
+use elys_bindings::account_history::types::{AprElys, Coin256Value};
 use elys_bindings::query_resp::{
     BalanceBorrowed, DelegationDelegatorReward, EstakingRewardsResponse,
     MasterchefUserPendingRewardData, MasterchefUserPendingRewardResponse,
@@ -313,7 +313,7 @@ fn get_eden_earn_program_details() {
                 amount: Uint128::new(100120000000),
                 lockups: None,
             }),
-            rewards: Some(vec![DecCoinValue {
+            rewards: Some(vec![Coin256Value {
                 denom: "ueden".to_string(),
                 amount_token: Decimal256::from_str("1.21").unwrap(),
                 price: Decimal::from_atomics(Uint128::new(35308010067676894), 16).unwrap(),

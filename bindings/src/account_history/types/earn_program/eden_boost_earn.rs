@@ -1,7 +1,7 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::Uint128;
 
-use crate::account_history::types::{earn_detail::earn_detail::AprEdenBoost, DecCoinValue};
+use crate::account_history::types::{earn_detail::earn_detail::AprEdenBoost, Coin256Value};
 
 #[cw_serde]
 pub struct EdenBoostEarnProgram {
@@ -18,7 +18,7 @@ pub struct EdenBoostEarnProgram {
     // The rewards the user currently has on the Eden Boost Earn Program.
     // It should be in the response only if the address is in the request object.
     // rewards are either USDC or EDEN.
-    pub rewards: Option<Vec<DecCoinValue>>,
+    pub rewards: Option<Vec<Coin256Value>>,
 }
 
 // implement default

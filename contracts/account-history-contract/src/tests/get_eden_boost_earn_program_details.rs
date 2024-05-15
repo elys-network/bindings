@@ -14,7 +14,7 @@ use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Mod
 use elys_bindings::account_history::msg::query_resp::earn::GetEdenBoostEarnProgramResp;
 use elys_bindings::account_history::types::earn_detail::earn_detail::AprEdenBoost;
 use elys_bindings::account_history::types::earn_program::EdenBoostEarnProgram;
-use elys_bindings::account_history::types::DecCoinValue;
+use elys_bindings::account_history::types::Coin256Value;
 use elys_bindings::query_resp::{
     BalanceBorrowed, DelegationDelegatorReward, EstakingRewardsResponse,
     MasterchefUserPendingRewardData, MasterchefUserPendingRewardResponse,
@@ -305,7 +305,7 @@ fn get_eden_boost_earn_program_details() {
             },
             available: Some(Uint128::new(21798000)),
             staked: Some(Uint128::new(100120000000)),
-            rewards: Some(vec![DecCoinValue {
+            rewards: Some(vec![Coin256Value {
                 denom: "ueden".to_string(),
                 amount_token: Decimal256::from_str("1.21").unwrap(),
                 price: Decimal::from_atomics(Uint128::new(35308010067676894), 16).unwrap(),

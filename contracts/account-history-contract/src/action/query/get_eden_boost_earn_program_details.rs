@@ -13,7 +13,6 @@ pub fn get_eden_boost_earn_program_details(
     deps: &Deps<ElysQuery>,
     address: Option<String>,
     asset: String,
-    usdc_denom: String,
     usdc_apr: QueryAprResponse,
     eden_apr: QueryAprResponse,
 ) -> Result<GetEdenBoostEarnProgramResp, ContractError> {
@@ -33,7 +32,7 @@ pub fn get_eden_boost_earn_program_details(
                 .unwrap_or_default();
             let program_rewards = all_rewards
                 .get_validator_rewards(Validator::EdenBoost)
-                .to_dec_coin_values(&querier, &usdc_denom.clone())
+                .to_coin256_values(&querier)
                 .unwrap_or_default()
                 .into_iter()
                 .map(|coin| coin.1)

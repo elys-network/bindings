@@ -700,10 +700,7 @@ impl<'a> ElysQuerier<'a> {
                             pool.fiat_rewards = Some(
                                 pool.reward_coins
                                     .iter()
-                                    .map(|coin| {
-                                        CoinValue::from_coin(&coin, self, &entry.entry.denom)
-                                            .unwrap()
-                                    })
+                                    .map(|coin| CoinValue::from_coin(&coin, self).unwrap())
                                     .collect(),
                             );
                             if let Some(index) = pool

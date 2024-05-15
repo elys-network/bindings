@@ -12,7 +12,7 @@ use cosmwasm_std::{
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::account_history::msg::query_resp::GetRewardsResp;
-use elys_bindings::account_history::types::{DecCoinValue, Reward};
+use elys_bindings::account_history::types::{Coin256Value, Reward};
 use elys_bindings::query_resp::{
     DelegationDelegatorReward, EstakingRewardsResponse, MasterchefUserPendingRewardData,
     MasterchefUserPendingRewardResponse, QueryAllProgramRewardsResponse,
@@ -291,7 +291,7 @@ fn get_rewards() {
 
     assert_eq!(resp.rewards_map, rewards_map);
     assert_eq!(
-        resp.rewards.contains(&DecCoinValue {
+        resp.rewards.contains(&Coin256Value {
             denom: "uelys".to_string(),
             amount_token: Decimal256::from_str("10").unwrap(),
             price: Decimal::from_str("3.5308010067676894").unwrap(),
@@ -300,7 +300,7 @@ fn get_rewards() {
         true
     );
     assert_eq!(
-        resp.rewards.contains(&DecCoinValue {
+        resp.rewards.contains(&Coin256Value {
             denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
                 .to_string(),
             amount_token: Decimal256::from_str("10").unwrap(),
@@ -310,7 +310,7 @@ fn get_rewards() {
         true
     );
     assert_eq!(
-        resp.rewards.contains(&DecCoinValue {
+        resp.rewards.contains(&Coin256Value {
             denom: "ueden".to_string(),
             amount_token: Decimal256::from_str("10").unwrap(),
             price: Decimal::from_str("3.5308010067676894").unwrap(),
@@ -319,7 +319,7 @@ fn get_rewards() {
         true
     );
     assert_eq!(
-        resp.rewards.contains(&DecCoinValue {
+        resp.rewards.contains(&Coin256Value {
             denom: "uedenb".to_string(),
             amount_token: Decimal256::from_str("10").unwrap(),
             price: Decimal::from_str("0").unwrap(),

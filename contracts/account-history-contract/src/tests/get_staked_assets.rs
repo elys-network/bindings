@@ -18,7 +18,7 @@ use elys_bindings::account_history::types::earn_program::{
     EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram,
 };
 use elys_bindings::account_history::types::{
-    AprElys, AprUsdc, CoinValue, DecCoinValue, QueryAprResponse, StakedAssets,
+    AprElys, AprUsdc, Coin256Value, CoinValue, QueryAprResponse, StakedAssets,
 };
 use elys_bindings::query_resp::{
     BalanceBorrowed, DelegationDelegatorReward, Entry, EstakingRewardsResponse, Lockup,
@@ -684,7 +684,7 @@ fn get_staked_assets() {
                 },
                 available: Some(Uint128::zero()),
                 staked: Some(Uint128::zero()),
-                rewards: Some(vec![DecCoinValue {
+                rewards: Some(vec![Coin256Value {
                     denom: "ueden".to_string(),
                     amount_token: Decimal256::from_str("1.21").unwrap(),
                     price: Decimal::from_atomics(Uint128::new(35308010067676894), 16).unwrap(),

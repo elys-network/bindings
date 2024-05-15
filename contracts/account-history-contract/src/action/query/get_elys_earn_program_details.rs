@@ -11,7 +11,6 @@ pub fn get_elys_earn_program_details(
     deps: &Deps<ElysQuery>,
     address: Option<String>,
     asset: String,
-    usdc_denom: String,
     uusdc_usd_price: Decimal,
     uelys_price_in_uusdc: Decimal,
     usdc_apr: QueryAprResponse,
@@ -34,7 +33,7 @@ pub fn get_elys_earn_program_details(
                 .unwrap_or_default();
             let program_rewards = all_rewards
                 .get_elys_validators()
-                .to_dec_coin_values(&querier, &usdc_denom.clone())
+                .to_coin256_values(&querier)
                 .unwrap_or_default()
                 .into_iter()
                 .map(|coin| coin.1)

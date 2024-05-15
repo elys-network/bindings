@@ -176,7 +176,6 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
                 &deps,
                 Some(address.to_owned()),
                 ElysDenom::Eden.as_str().to_string(),
-                generator.metadata.usdc_denom.to_owned(),
                 generator.metadata.uusdc_usd_price,
                 generator.metadata.uelys_price_in_uusdc,
                 QueryAprResponse {
@@ -196,13 +195,10 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         GetEdenBoostEarnProgramDetails { address } => {
             let querier = ElysQuerier::new(&deps.querier);
             let aprs = querier.get_incentive_aprs().unwrap_or_default();
-
-            let generator = AccountSnapshotGenerator::new(&deps)?;
             let program = get_eden_boost_earn_program_details(
                 &deps,
                 Some(address.to_owned()),
                 ElysDenom::EdenBoost.as_str().to_string(),
-                generator.metadata.usdc_denom.to_owned(),
                 QueryAprResponse {
                     apr: aprs.usdc_apr_edenb,
                 },
@@ -224,7 +220,6 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
                 &deps,
                 Some(address.to_owned()),
                 ElysDenom::Elys.as_str().to_string(),
-                generator.metadata.usdc_denom.to_owned(),
                 generator.metadata.uusdc_usd_price,
                 generator.metadata.uelys_price_in_uusdc,
                 QueryAprResponse {

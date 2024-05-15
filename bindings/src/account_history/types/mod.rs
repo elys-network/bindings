@@ -11,8 +11,9 @@ mod staked_assets;
 mod total_balance;
 
 pub use account_snapshot::AccountSnapshot;
+pub use coin_value::Coin256;
+pub use coin_value::Coin256Value;
 pub use coin_value::CoinValue;
-pub use coin_value::DecCoinValue;
 pub use metadata::Metadata;
 pub use portfolio_balance_snapshot::PortfolioBalanceSnapshot;
 
