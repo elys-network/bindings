@@ -3,7 +3,7 @@ use crate::{
         get_eden_boost_earn_program_details, get_eden_earn_program_details,
         get_elys_earn_program_details, get_estaking_rewards, get_liquid_assets,
         get_masterchef_pending_rewards, get_masterchef_pool_apr, get_masterchef_stable_stake_apr,
-        get_membership_tier, get_perpetuals_assets, get_pool_balances, get_portfolio, get_rewards,
+        get_membership_tier, get_perpetuals_assets, get_pool_balances, get_rewards,
         get_staked_assets, get_total_balance, get_usdc_earn_program_details,
     },
     states::USER_ADDRESS_QUEUE,
@@ -44,7 +44,6 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         GetPoolBalances { user_address } => {
             to_json_binary(&get_pool_balances(deps, user_address, env)?)
         }
-        GetPortfolio { user_address } => to_json_binary(&get_portfolio(deps, user_address, env)?),
         GetTotalBalance { user_address } => {
             to_json_binary(&get_total_balance(deps, env, user_address)?)
         }

@@ -5,12 +5,13 @@ use crate::msg::SudoMsg;
 use crate::msg::{InstantiateMsg, QueryMsg};
 use cosmwasm_std::{coins, Addr, BlockInfo, Coin, Decimal, Decimal256, Timestamp};
 use cw_multi_test::{BankSudo, BasicAppBuilder, ContractWrapper, Executor, SudoMsg as AppSudo};
-use elys_bindings::types::{OracleAssetInfo, Price};
+use elys_bindings::types::{OracleAssetInfo, Price, SwapAmountInRoute};
 use elys_bindings_test::{
     ACCOUNT, ASSET_INFO, LAST_MODULE_USED, PERPETUAL_OPENED_POSITION, PRICES,
 };
 use trade_shield_contract::entry_point::{
-    execute as trade_shield_execute, instantiate as trade_shield_init, query as trade_shield_query,
+    execute as trade_shield_execute, instantiate as trade_shield_init,
+    migrate as trade_shield_migrate, query as trade_shield_query,
 };
 use trade_shield_contract::msg as trade_shield_msg;
 use trade_shield_contract::types::{OrderPrice, SpotOrderType};
@@ -209,9 +210,12 @@ impl Module for ElysModuleWrapper {
                 };
                 Ok(to_json_binary(&resp)?)
             }
-            ElysQuery::AmmSwapEstimationByDenom { .. } => {
+            ElysQuery::AmmSwapEstimationByDenom { denom_out, .. } => {
                 let resp = AmmSwapEstimationByDenomResponse {
-                    in_route: None,
+                    in_route: Some(vec![SwapAmountInRoute {
+                        pool_id: 1,
+                        token_out_denom: denom_out,
+                    }]),
                     out_route: None,
                     spot_price: Decimal::from_str("3.5").unwrap(),
                     amount: Coin {
@@ -365,7 +369,8 @@ fn history() {
 
     // trade shield deployment
     let trade_shield_code =
-        ContractWrapper::new(trade_shield_execute, trade_shield_init, trade_shield_query);
+        ContractWrapper::new(trade_shield_execute, trade_shield_init, trade_shield_query)
+            .with_migrate(trade_shield_migrate);
     let trade_shield_code_id = app.store_code(Box::new(trade_shield_code));
     let trade_shield_init = trade_shield_msg::InstantiateMsg {
         account_history_address: None,
@@ -454,8 +459,8 @@ fn history() {
     let res: UserValueResponse = app.wrap().query_wasm_smart(&addr, &query_msg).unwrap();
 
     assert_eq!(
-        res.value.portfolio_balance_usd,
-        Decimal256::from_str("400.0010347342").unwrap(),
+        res.value.total_balance_usd,
+        Decimal256::from_str("478.9833147342").unwrap(),
     );
 
     app.sudo(AppSudo::Bank(BankSudo::Mint {
@@ -476,7 +481,7 @@ fn history() {
     let res: UserValueResponse = app.wrap().query_wasm_smart(&addr, &query_msg).unwrap();
 
     assert_eq!(
-        res.value.portfolio_balance_usd,
-        Decimal256::from_str("400.0010347342").unwrap(),
+        res.value.total_balance_usd,
+        Decimal256::from_str("478.9833147342").unwrap(),
     ); // The previous value wasn't removed yet but wasn't read either since it's expired.
 }
