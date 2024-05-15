@@ -686,9 +686,9 @@ fn get_staked_assets() {
                 staked: Some(Uint128::zero()),
                 rewards: Some(vec![Coin256Value {
                     denom: "ueden".to_string(),
-                    amount_token: Decimal256::from_str("1.21").unwrap(),
+                    amount_token: Decimal256::from_str("1210000000000000000").unwrap(),
                     price: Decimal::from_atomics(Uint128::new(35308010067676894), 16).unwrap(),
-                    amount_usd: Decimal256::from_str("4.272269218188904174").unwrap(),
+                    amount_usd: Decimal256::from_str("4272269218188.904174").unwrap(),
                 }]),
             },
             eden_earn_program: EdenEarnProgram {

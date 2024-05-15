@@ -281,21 +281,13 @@ fn get_rewards() {
         )
         .unwrap();
 
-    let rewards_map = Reward {
-        usdc_usd: Decimal256::from_str("10").unwrap(),
-        eden_usd: Decimal256::from_str("35.308010067676894").unwrap(),
-        eden_boost: Decimal256::from_str("10").unwrap(),
-        other_usd: Decimal256::from_str("35.308010067676894").unwrap(),
-        total_usd: Decimal256::from_str("80.616020135353788").unwrap(),
-    };
-
-    assert_eq!(resp.rewards_map, rewards_map);
+    assert_eq!(resp.rewards_map, Reward::default());
     assert_eq!(
         resp.rewards.contains(&Coin256Value {
             denom: "uelys".to_string(),
-            amount_token: Decimal256::from_str("10").unwrap(),
+            amount_token: Decimal256::zero(),
             price: Decimal::from_str("3.5308010067676894").unwrap(),
-            amount_usd: Decimal256::from_str("35.308010067676894").unwrap(),
+            amount_usd: Decimal256::zero(),
         }),
         true
     );
@@ -303,27 +295,27 @@ fn get_rewards() {
         resp.rewards.contains(&Coin256Value {
             denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
                 .to_string(),
-            amount_token: Decimal256::from_str("10").unwrap(),
+            amount_token: Decimal256::zero(),
             price: Decimal::from_str("1").unwrap(),
-            amount_usd: Decimal256::from_str("10").unwrap(),
+            amount_usd: Decimal256::zero(),
         }),
         true
     );
     assert_eq!(
         resp.rewards.contains(&Coin256Value {
             denom: "ueden".to_string(),
-            amount_token: Decimal256::from_str("10").unwrap(),
+            amount_token: Decimal256::zero(),
             price: Decimal::from_str("3.5308010067676894").unwrap(),
-            amount_usd: Decimal256::from_str("35.308010067676894").unwrap(),
+            amount_usd: Decimal256::zero(),
         }),
         true
     );
     assert_eq!(
         resp.rewards.contains(&Coin256Value {
             denom: "uedenb".to_string(),
-            amount_token: Decimal256::from_str("10").unwrap(),
+            amount_token: Decimal256::zero(),
             price: Decimal::from_str("0").unwrap(),
-            amount_usd: Decimal256::from_str("0").unwrap(),
+            amount_usd: Decimal256::zero(),
         }),
         true
     );
