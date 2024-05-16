@@ -1,18 +1,24 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Decimal, Uint128};
+use cosmwasm_std::{Decimal, Int128, Uint128};
 
 #[cw_serde]
-pub struct AprUsdc {
+#[derive(Default)]
+pub struct AprEdenBoost {
     pub uusdc: Uint128,
     pub ueden: Uint128,
+}
+#[cw_serde]
+pub struct AprUsdc {
+    pub uusdc: Int128,
+    pub ueden: Int128,
 }
 
 // implement default
 impl Default for AprUsdc {
     fn default() -> Self {
         Self {
-            uusdc: Uint128::zero(),
-            ueden: Uint128::zero(),
+            uusdc: Int128::zero(),
+            ueden: Int128::zero(),
         }
     }
 }

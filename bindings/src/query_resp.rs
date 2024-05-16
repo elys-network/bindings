@@ -2,11 +2,12 @@ use std::{collections::HashMap, str::FromStr};
 
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    Coin, DecCoin, Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, StdResult, Uint128,
+    Coin, DecCoin, Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, StdError,
+    StdResult, Uint128,
 };
 
 use crate::{
-    account_history::types::{CoinValue, DecCoinValue},
+    account_history::types::{Coin256, Coin256Value, CoinValue, ElysDenom},
     trade_shield::types::{
         AmmPool, AmmPoolRaw, PerpetualPosition, PoolExtraInfo, StakedPositionRaw,
     },
@@ -255,6 +256,7 @@ pub struct QueryAprResponse {
     pub apr: Uint128,
 }
 
+#[derive(Default)]
 #[cw_serde]
 pub struct QueryAprsResponse {
     pub usdc_apr_usdc: Uint128,
@@ -441,6 +443,14 @@ pub struct QueryShowCommitmentsResponse {
 }
 
 #[cw_serde]
+pub struct QueryAllProgramRewardsResponse {
+    pub usdc_staking_rewards: Vec<DecCoin>,
+    pub elys_staking_rewards: Vec<DecCoin>,
+    pub eden_staking_rewards: Vec<DecCoin>,
+    pub edenb_staking_rewards: Vec<DecCoin>,
+}
+
+#[cw_serde]
 pub struct QueryVestingInfoResponse {
     pub vesting: BalanceAvailable,
     pub vesting_details: Option<Vec<VestingDetail>>,
@@ -449,11 +459,6 @@ pub struct QueryVestingInfoResponse {
 #[cw_serde]
 pub struct QueryEarnPoolResponse {
     pub pools: Option<Vec<PoolResp>>,
-}
-
-#[cw_serde]
-pub struct QueryIncentivePoolAprsResponse {
-    pub data: Option<Vec<IncentivePoolApr>>,
 }
 
 #[cw_serde]
@@ -479,14 +484,14 @@ pub struct QueryUserPoolResponse {
     // Total Rewards in fiat
     pub rewards: Decimal,
     // Each reward including the fiat amount
-    pub rewards_breakdown: HashMap<String, BalanceAvailable>,
+    pub rewards_breakdown: HashMap<String, CoinValue>,
     pub pools: Vec<UserPoolResp>,
 }
 
 #[cw_serde]
 pub struct PoolResp {
     pub pool_id: i64,
-    pub apr: Option<Decimal>,
+    pub apr: Option<PoolApr>,
     pub assets: Vec<PoolAsset>, // eg : [{{"denom":"uatom", "amount":"1000"}, "weight":"10"}, {{"denom":"uusdc", "amount":"100"}, "weight":"1"}, ...]
     // Expected pool ratio
     pub pool_ratio: String,
@@ -514,7 +519,7 @@ impl Default for PoolResp {
     fn default() -> Self {
         Self {
             pool_id: 0,
-            apr: Some(Decimal::zero()),
+            apr: Some(PoolApr::default()),
             assets: vec![],
             pool_ratio: "".to_string(),
             current_pool_ratio: Some(HashMap::new()),
@@ -535,12 +540,6 @@ impl Default for PoolResp {
             lp_token_price: None,
         }
     }
-}
-
-#[cw_serde]
-pub struct IncentivePoolApr {
-    pub apr: Decimal,
-    pub pool_id: i64,
 }
 
 #[cw_serde]
@@ -705,8 +704,8 @@ pub struct MasterchefUserPendingRewardResponse {
 #[cw_serde]
 #[derive(Default)]
 pub struct MasterchefUserPendingRewardData {
-    pool_id: u64,
-    reward: Vec<Coin>,
+    pub pool_id: u64,
+    pub reward: Vec<Coin>,
 }
 #[cw_serde]
 #[derive(Default)]
@@ -716,23 +715,91 @@ pub struct EstakingRewardsResponse {
 }
 
 #[cw_serde]
+#[derive(Default)]
 pub struct DelegationDelegatorReward {
     pub validator_address: String,
     pub reward: Vec<DecCoin>,
 }
 
+pub enum Validator {
+    EdenBoost,
+    Eden,
+}
+
+impl Validator {
+    pub fn to_string(&self) -> String {
+        match self {
+            Validator::EdenBoost => {
+                "elysvaloper1wajd6ekh9u37hyghyw4mme59qmjllzuyaceanm".to_string()
+            }
+            Validator::Eden => "elysvaloper1gnmpr8vvslp3shcq6e922xr0uq4aa2w5gdzht0".to_string(),
+        }
+    }
+}
+
 impl EstakingRewardsResponse {
-    pub fn to_dec_coin_values(
+    pub fn get_elys_validators(&self) -> Self {
+        let excluded_validator_addresses = vec![
+            Validator::EdenBoost.to_string(),
+            Validator::Eden.to_string(),
+        ];
+
+        let rewards = self
+            .rewards
+            .iter()
+            .filter(|delegation_reward| {
+                !excluded_validator_addresses.contains(&delegation_reward.validator_address)
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+
+        EstakingRewardsResponse {
+            rewards,
+            total: self.total.clone(),
+        }
+    }
+
+    pub fn get_validator_rewards(&self, validator: Validator) -> Self {
+        let rewards = self
+            .rewards
+            .iter()
+            .find(|delegation_reward| delegation_reward.validator_address == validator.to_string())
+            .cloned()
+            .unwrap_or_default();
+
+        EstakingRewardsResponse {
+            rewards: vec![rewards],
+            total: self.total.clone(),
+        }
+    }
+    // TODO: to coinvalue
+    pub fn to_coin256_values(
         &self,
         querier: &ElysQuerier<'_>,
-        usdc_denom: &String,
-    ) -> StdResult<Vec<(String, DecCoinValue)>> {
+    ) -> StdResult<Vec<(String, Coin256Value)>> {
         let mut dec_coin_values = Vec::new();
 
         for delegation_reward in &self.rewards {
             let validator_address = delegation_reward.validator_address.clone();
             for dec_coin in &delegation_reward.reward {
-                let dec_coin_value = DecCoinValue::from_dec_coin(dec_coin, querier, usdc_denom)?;
+                if dec_coin.denom == ElysDenom::EdenBoost.as_str() {
+                    let eden_boost_coin = Coin256Value::new(
+                        dec_coin.denom.clone(),
+                        Decimal256::from_str(dec_coin.amount.to_string().as_str()).unwrap(),
+                        Decimal::zero(),
+                        Decimal256::zero(),
+                    );
+                    dec_coin_values.push((validator_address.clone(), eden_boost_coin));
+                    continue;
+                }
+
+                let dec_coin_value = Coin256Value::from_coin256(
+                    &Coin256::from(dec_coin.clone()),
+                    querier,
+                )
+                .map_err(|e| {
+                    StdError::generic_err(format!("Failed to convert to Coin256Value {}", e))
+                })?;
                 dec_coin_values.push((validator_address.clone(), dec_coin_value));
             }
         }
@@ -745,18 +812,16 @@ impl MasterchefUserPendingRewardResponse {
     pub fn to_coin_values(
         &self,
         querier: &ElysQuerier<'_>,
-        usdc_denom: &String,
     ) -> StdResult<(HashMap<u64, Vec<CoinValue>>, Vec<CoinValue>)> {
         Ok((
-            self.rewards_to_coins(querier, usdc_denom)?,
-            self.total_rewards_to_coin(querier, usdc_denom)?,
+            self.rewards_to_coins(querier)?,
+            self.total_rewards_to_coin(querier)?,
         ))
     }
 
-    fn rewards_to_coins(
+    pub fn rewards_to_coins(
         &self,
         querier: &ElysQuerier<'_>,
-        usdc_denom: &String,
     ) -> StdResult<HashMap<u64, Vec<CoinValue>>> {
         let mut dec_coin_values = HashMap::new();
         for MasterchefUserPendingRewardData { reward, pool_id } in &self.rewards {
@@ -764,26 +829,23 @@ impl MasterchefUserPendingRewardResponse {
             coin.extend(
                 reward
                     .iter()
-                    .map(|v| CoinValue::from_coin(v, querier, usdc_denom).unwrap_or_default()),
+                    .map(|v| CoinValue::from_coin(v, querier).unwrap_or_default()),
             );
         }
         Ok(dec_coin_values)
     }
 
-    fn total_rewards_to_coin(
-        &self,
-        querier: &ElysQuerier<'_>,
-        usdc_denom: &String,
-    ) -> StdResult<Vec<CoinValue>> {
+    fn total_rewards_to_coin(&self, querier: &ElysQuerier<'_>) -> StdResult<Vec<CoinValue>> {
         let mut dec_coin_values = Vec::new();
         for reward in &self.total_rewards {
-            dec_coin_values.push(CoinValue::from_coin(reward, querier, usdc_denom)?);
+            dec_coin_values.push(CoinValue::from_coin(reward, querier)?);
         }
         Ok(dec_coin_values)
     }
 }
 
 #[cw_serde]
+#[derive(Default)]
 pub struct QueryPoolAprsResponse {
     pub data: Vec<PoolApr>,
 }
@@ -804,6 +866,7 @@ impl QueryPoolAprsResponse {
     }
 }
 
+#[derive(Default)]
 #[cw_serde]
 pub struct PoolApr {
     pub pool_id: u64,
@@ -812,6 +875,7 @@ pub struct PoolApr {
     pub total_apr: Decimal,
 }
 
+#[derive(Default)]
 #[cw_serde]
 pub struct QueryStableStakeAprResponse {
     pub apr: Int128,

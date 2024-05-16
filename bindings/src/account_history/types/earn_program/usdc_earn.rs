@@ -1,5 +1,5 @@
 use crate::{
-    account_history::types::{AprUsdc, BalanceReward},
+    account_history::types::{AprUsdc, CoinValue},
     query_resp::{BalanceBorrowed, StakedAvailable},
     types::BalanceAvailable,
 };
@@ -21,7 +21,7 @@ pub struct UsdcEarnProgram {
     // The rewards the user currently has on the USDC Earn Program.
     // It should be in the response only if the address is in the request object.
     // rewards are either USDC or EDEN.
-    pub rewards: Option<Vec<BalanceReward>>,
+    pub rewards: Option<Vec<CoinValue>>,
     // The amount that has been borrowed from the user staked positions.
     pub borrowed: Option<BalanceBorrowed>,
 }
