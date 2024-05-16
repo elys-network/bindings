@@ -256,7 +256,7 @@ impl Module for ElysModuleWrapper {
                         staked_position: Some(vec![StakedPosition {
                             id: "2".to_string(),
                             validator: StakingValidator {
-                                id: String::from("1"),
+                                id: Some(String::from("1")),
                                 address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw"
                                     .to_string(),
                                 name: "nirvana".to_string(),
@@ -279,7 +279,7 @@ impl Module for ElysModuleWrapper {
                         unstaked_position: Some(vec![UnstakedPosition {
                             id: "1".to_string(),
                             validator: StakingValidator {
-                                id: String::from("1"),
+                                id: Some(String::from("1")),
                                 address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw"
                                     .to_string(),
                                 name: "nirvana".to_string(),
@@ -648,7 +648,7 @@ fn get_staked_assets() {
         unstaking: vec![UnstakedPosition {
             id: "1".to_string(),
             validator: StakingValidator {
-                id: String::from("1"),
+                id: Some(String::from("1")),
                 address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw".to_string(),
                 name: "nirvana".to_string(),
                 voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
@@ -737,7 +737,7 @@ fn get_staked_assets() {
                 staked_positions: Some(vec![StakedPosition {
                     id: "2".to_string(),
                     validator: StakingValidator {
-                        id: "1".to_string(),
+                        id: Some("1".to_string()),
                         address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw".to_string(),
                         name: "nirvana".to_string(),
                         voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
@@ -751,7 +751,7 @@ fn get_staked_assets() {
                 unstaked_positions: Some(vec![UnstakedPosition {
                     id: "1".to_string(),
                     validator: StakingValidator {
-                        id: "1".to_string(),
+                        id: Some("1".to_string()),
                         address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw".to_string(),
                         name: "nirvana".to_string(),
                         voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
