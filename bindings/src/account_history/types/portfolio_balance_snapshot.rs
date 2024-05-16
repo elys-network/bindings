@@ -5,7 +5,6 @@ use cw_utils::Expiration;
 #[cw_serde]
 pub struct PortfolioBalanceSnapshot {
     pub date: Expiration,
-    pub portfolio_balance_usd: Decimal256,
     pub total_balance_usd: Decimal256,
 }
 
@@ -13,7 +12,6 @@ impl PortfolioBalanceSnapshot {
     pub fn zero() -> Self {
         Self {
             date: Expiration::Never {},
-            portfolio_balance_usd: Decimal256::zero(),
             total_balance_usd: Decimal256::zero(),
         }
     }
