@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
     Coin, DecCoin, Decimal, Decimal256, Deps, Env, QuerierWrapper, StdError, StdResult, Uint128,
+    Uint256,
 };
 use cw_utils::Expiration;
 use elys_bindings::{
@@ -10,7 +11,7 @@ use elys_bindings::{
         msg::query_resp::{GetRewardsResp, StakeAssetBalanceBreakdown, StakedAssetsResponse},
         types::{
             earn_program::{EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram},
-            AccountSnapshot, CoinValue, DecCoinValue, ElysDenom, LiquidAsset, Metadata,
+            AccountSnapshot, Coin256, Coin256Value, CoinValue, ElysDenom, LiquidAsset, Metadata,
             PerpetualAsset, PerpetualAssets, PoolBalances, PortfolioBalanceSnapshot, Reward,
             StakedAssets, TotalBalance,
         },
@@ -144,9 +145,7 @@ impl AccountSnapshotGenerator {
         let all_rewards = querier
             .get_masterchef_pending_rewards(address.clone())
             .unwrap_or_default();
-        let coin_values_rewards = all_rewards
-            .rewards_to_coins(&querier, &self.metadata.usdc_denom)
-            .unwrap_or_default();
+        let coin_values_rewards = all_rewards.rewards_to_coins(&querier).unwrap_or_default();
 
         let mut total = Decimal::zero();
         let mut breakdown: HashMap<String, CoinValue> = HashMap::new();
@@ -315,7 +314,6 @@ impl AccountSnapshotGenerator {
             deps,
             Some(address.to_owned()),
             ElysDenom::Eden.as_str().to_string(),
-            self.metadata.usdc_denom.to_owned(),
             self.metadata.uusdc_usd_price,
             self.metadata.uelys_price_in_uusdc,
             self.metadata.usdc_apr_eden.to_owned(),
@@ -332,21 +330,17 @@ impl AccountSnapshotGenerator {
 
         let available_asset_balance: Vec<CoinValue> = account_balances
             .iter()
-            .filter_map(|coin| {
-                match CoinValue::from_coin(coin, querier, &self.metadata.usdc_denom) {
-                    Ok(res) => Some(res),
-                    Err(_) => None,
-                }
+            .filter_map(|coin| match CoinValue::from_coin(coin, querier) {
+                Ok(res) => Some(res),
+                Err(_) => None,
             })
             .collect();
 
         let in_orders_asset_balance: Vec<CoinValue> = orders_balances
             .iter()
-            .filter_map(|coin| {
-                match CoinValue::from_coin(coin, querier, &self.metadata.usdc_denom) {
-                    Ok(res) => Some(res),
-                    Err(_) => None,
-                }
+            .filter_map(|coin| match CoinValue::from_coin(coin, querier) {
+                Ok(res) => Some(res),
+                Err(_) => None,
             })
             .collect();
 
@@ -451,7 +445,6 @@ impl AccountSnapshotGenerator {
             deps,
             Some(address.to_owned()),
             ElysDenom::Elys.as_str().to_string(),
-            self.metadata.usdc_denom.to_owned(),
             self.metadata.uusdc_usd_price,
             self.metadata.uelys_price_in_uusdc,
             QueryAprResponse {
@@ -495,7 +488,6 @@ impl AccountSnapshotGenerator {
             deps,
             Some(address.to_owned()),
             ElysDenom::Eden.as_str().to_string(),
-            self.metadata.usdc_denom.to_owned(),
             self.metadata.uusdc_usd_price,
             self.metadata.uelys_price_in_uusdc,
             QueryAprResponse {
@@ -527,7 +519,6 @@ impl AccountSnapshotGenerator {
             deps,
             Some(address.to_owned()),
             ElysDenom::EdenBoost.as_str().to_string(),
-            self.metadata.usdc_denom.to_owned(),
             QueryAprResponse {
                 apr: aprs.usdc_apr_edenb,
             },
@@ -664,42 +655,47 @@ impl AccountSnapshotGenerator {
         address: &String,
     ) -> StdResult<GetRewardsResp> {
         let querier = ElysQuerier::new(&deps.querier);
+        // TODO: Vec<Coin>
         let rewards_response = querier.get_all_program_rewards(address.to_string())?;
 
         // Concatenate all staking reward vectors into one
-        let all_staking_rewards: Vec<DecCoin> = rewards_response
+        // TODO: Vec<Coin>
+        let all_staking_rewards: Vec<Coin256> = rewards_response
             .usdc_staking_rewards
             .iter()
             .chain(&rewards_response.elys_staking_rewards)
             .chain(&rewards_response.eden_staking_rewards)
             .chain(&rewards_response.edenb_staking_rewards)
-            .cloned()
+            .map(|v| Coin256::from(v.clone()))
             .collect();
 
         // Accumulate amounts for each denomination
-        let mut denom_amounts: HashMap<String, Decimal256> = HashMap::new();
-        for coin in &all_staking_rewards {
-            let amount = denom_amounts
-                .entry(coin.denom.clone())
-                .or_insert_with(Decimal256::zero);
-            *amount += coin.amount;
-        }
+        // TODO: use U128 instead of Decimal
+        let mut denom_amounts: HashMap<String, Uint256> = HashMap::new();
 
-        // Convert accumulated amounts to DecCoinValue instances
-        let mut reward_map: HashMap<String, DecCoinValue> = HashMap::new();
+        all_staking_rewards.iter().for_each(|coin| {
+            denom_amounts.insert(coin.denom.clone(), Uint256::zero());
+        });
+
+        // Convert accumulated amounts to Coin256Value instances
+        let mut reward_map: HashMap<String, Coin256Value> = HashMap::new();
         for (denom, amount) in denom_amounts {
             let dec_coin_value = if denom != ElysDenom::EdenBoost.as_str().to_string() {
-                DecCoinValue::from_dec_coin(
-                    &DecCoin {
+                Coin256Value::from_coin256(
+                    &Coin256 {
                         denom: denom.clone(),
                         amount,
                     },
                     &querier,
-                    &self.metadata.usdc_denom,
                 )
                 .unwrap_or_default()
             } else {
-                DecCoinValue::new(denom.clone(), amount, Decimal::zero(), Decimal256::zero())
+                Coin256Value::new(
+                    denom.clone(),
+                    Decimal256::new(amount),
+                    Decimal::zero(),
+                    Decimal256::zero(),
+                )
             };
 
             reward_map.insert(denom, dec_coin_value);
@@ -737,7 +733,8 @@ impl AccountSnapshotGenerator {
         };
 
         // Construct rewards_vec as the values of all rewards_map entries
-        let rewards_vec: Vec<DecCoinValue> = reward_map.into_iter().map(|(_, v)| v).collect();
+        // TODO: use CoinValue
+        let rewards_vec: Vec<Coin256Value> = reward_map.into_iter().map(|(_, v)| v).collect();
 
         let resp = GetRewardsResp {
             rewards_map: reward,

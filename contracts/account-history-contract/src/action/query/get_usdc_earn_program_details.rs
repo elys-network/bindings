@@ -31,9 +31,7 @@ pub fn get_usdc_earn_program_details(
             let rewards = querier
                 .get_masterchef_pending_rewards(addr.clone())
                 .unwrap_or_default();
-            let coin_values_rewards = rewards
-                .to_coin_values(&querier, &usdc_denom)
-                .unwrap_or_default();
+            let coin_values_rewards = rewards.to_coin_values(&querier).unwrap_or_default();
             let pool_rewards = coin_values_rewards.0[&pool_id].clone();
 
             let mut available = querier.get_balance(addr.clone(), usdc_denom)?;

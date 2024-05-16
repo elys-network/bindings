@@ -7,7 +7,7 @@ use cosmwasm_std::{
 };
 
 use crate::{
-    account_history::types::{CoinValue, DecCoinValue, ElysDenom},
+    account_history::types::{Coin256, Coin256Value, CoinValue, ElysDenom},
     trade_shield::types::{
         AmmPool, AmmPoolRaw, PerpetualPosition, PoolExtraInfo, StakedPositionRaw,
     },
@@ -772,21 +772,20 @@ impl EstakingRewardsResponse {
             total: self.total.clone(),
         }
     }
-
-    pub fn to_dec_coin_values(
+    // TODO: to coinvalue
+    pub fn to_coin256_values(
         &self,
         querier: &ElysQuerier<'_>,
-        usdc_denom: &String,
-    ) -> StdResult<Vec<(String, DecCoinValue)>> {
+    ) -> StdResult<Vec<(String, Coin256Value)>> {
         let mut dec_coin_values = Vec::new();
 
         for delegation_reward in &self.rewards {
             let validator_address = delegation_reward.validator_address.clone();
             for dec_coin in &delegation_reward.reward {
                 if dec_coin.denom == ElysDenom::EdenBoost.as_str() {
-                    let eden_boost_coin = DecCoinValue::new(
+                    let eden_boost_coin = Coin256Value::new(
                         dec_coin.denom.clone(),
-                        dec_coin.amount,
+                        Decimal256::from_str(dec_coin.amount.to_string().as_str()).unwrap(),
                         Decimal::zero(),
                         Decimal256::zero(),
                     );
@@ -794,10 +793,13 @@ impl EstakingRewardsResponse {
                     continue;
                 }
 
-                let dec_coin_value = DecCoinValue::from_dec_coin(dec_coin, querier, usdc_denom)
-                    .map_err(|e| {
-                        StdError::generic_err(format!("Failed to convert to DecCoinValue {}", e))
-                    })?;
+                let dec_coin_value = Coin256Value::from_coin256(
+                    &Coin256::from(dec_coin.clone()),
+                    querier,
+                )
+                .map_err(|e| {
+                    StdError::generic_err(format!("Failed to convert to Coin256Value {}", e))
+                })?;
                 dec_coin_values.push((validator_address.clone(), dec_coin_value));
             }
         }
@@ -810,18 +812,16 @@ impl MasterchefUserPendingRewardResponse {
     pub fn to_coin_values(
         &self,
         querier: &ElysQuerier<'_>,
-        usdc_denom: &String,
     ) -> StdResult<(HashMap<u64, Vec<CoinValue>>, Vec<CoinValue>)> {
         Ok((
-            self.rewards_to_coins(querier, usdc_denom)?,
-            self.total_rewards_to_coin(querier, usdc_denom)?,
+            self.rewards_to_coins(querier)?,
+            self.total_rewards_to_coin(querier)?,
         ))
     }
 
     pub fn rewards_to_coins(
         &self,
         querier: &ElysQuerier<'_>,
-        usdc_denom: &String,
     ) -> StdResult<HashMap<u64, Vec<CoinValue>>> {
         let mut dec_coin_values = HashMap::new();
         for MasterchefUserPendingRewardData { reward, pool_id } in &self.rewards {
@@ -829,20 +829,16 @@ impl MasterchefUserPendingRewardResponse {
             coin.extend(
                 reward
                     .iter()
-                    .map(|v| CoinValue::from_coin(v, querier, usdc_denom).unwrap_or_default()),
+                    .map(|v| CoinValue::from_coin(v, querier).unwrap_or_default()),
             );
         }
         Ok(dec_coin_values)
     }
 
-    fn total_rewards_to_coin(
-        &self,
-        querier: &ElysQuerier<'_>,
-        usdc_denom: &String,
-    ) -> StdResult<Vec<CoinValue>> {
+    fn total_rewards_to_coin(&self, querier: &ElysQuerier<'_>) -> StdResult<Vec<CoinValue>> {
         let mut dec_coin_values = Vec::new();
         for reward in &self.total_rewards {
-            dec_coin_values.push(CoinValue::from_coin(reward, querier, usdc_denom)?);
+            dec_coin_values.push(CoinValue::from_coin(reward, querier)?);
         }
         Ok(dec_coin_values)
     }
