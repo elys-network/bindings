@@ -211,14 +211,14 @@ impl Module for ElysModuleWrapper {
                 let resp = EstakingRewardsResponse {
                     rewards: vec![DelegationDelegatorReward {
                         validator_address: Validator::EdenBoost.to_string(),
-                        reward: vec![DecCoin {
+                        reward: vec![Coin {
                             denom: "ueden".to_string(),
-                            amount: Decimal256::from_str("1.21").unwrap(),
+                            amount: Uint128::from_str("121").unwrap(),
                         }],
                     }],
-                    total: vec![DecCoin {
+                    total: vec![Coin {
                         denom: "uedenb".to_string(),
-                        amount: Decimal256::from_str("1.21").unwrap(),
+                        amount: Uint128::from_str("121").unwrap(),
                     }],
                 };
                 Ok(to_json_binary(&resp)?)
@@ -270,23 +270,23 @@ impl Module for ElysModuleWrapper {
             }
             ElysQuery::IncentiveAllProgramRewards { .. } => {
                 let resp = QueryAllProgramRewardsResponse {
-                    usdc_staking_rewards: vec![DecCoin {
+                    usdc_staking_rewards: vec![Coin {
                         denom:
                             "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
                                 .to_string(),
-                        amount: Decimal256::from_str("10").unwrap(),
+                        amount: Uint128::from_str("10").unwrap(),
                     }],
-                    elys_staking_rewards: vec![DecCoin {
+                    elys_staking_rewards: vec![Coin {
                         denom: "uelys".to_string(),
-                        amount: Decimal256::from_str("10").unwrap(),
+                        amount: Uint128::from_str("10").unwrap(),
                     }],
-                    eden_staking_rewards: vec![DecCoin {
+                    eden_staking_rewards: vec![Coin {
                         denom: "ueden".to_string(),
-                        amount: Decimal256::from_str("10").unwrap(),
+                        amount: Uint128::from_str("10").unwrap(),
                     }],
-                    edenb_staking_rewards: vec![DecCoin {
+                    edenb_staking_rewards: vec![Coin {
                         denom: "uedenb".to_string(),
-                        amount: Decimal256::from_str("10").unwrap(),
+                        amount: Uint128::from_str("10").unwrap(),
                     }],
                 };
                 Ok(to_json_binary(&resp)?)
