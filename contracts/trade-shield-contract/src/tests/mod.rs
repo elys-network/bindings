@@ -9,6 +9,7 @@ use cosmwasm_std::{coin, coins, Addr, Decimal, Event, Uint128};
 use cw_multi_test::ContractWrapper;
 mod get_order_id_from_events;
 mod read_processed_order_id;
+mod test_order_status;
 use cw_multi_test::Executor;
 use elys_bindings_test::*;
 use std::str::FromStr;
@@ -83,13 +84,13 @@ mod cancel_perpetual_order {
     mod unauthorize;
 }
 
-// mod process_perpetual_order {
-//     use super::*;
-//     mod pending_limit_open_long_with_price_met;
-//     mod pending_limit_open_long_with_price_not_met;
-//     mod pending_limit_open_short_with_price_met;
-//     mod pending_limit_open_short_with_price_not_met;
-// }
+mod process_perpetual_order {
+    use super::*;
+    mod pending_limit_open_long_with_price_met;
+    mod pending_limit_open_long_with_price_not_met;
+    mod pending_limit_open_short_with_price_met;
+    mod pending_limit_open_short_with_price_not_met;
+}
 
 mod get_perpetual_order {
     use super::*;
@@ -111,6 +112,11 @@ mod stake_error_handling {
     mod elys_redelegation_request;
     mod stake_request;
     mod unstake_request;
+}
+
+mod claim_rewards_request {
+    use super::*;
+    mod claim_rewards_request;
 }
 
 pub use mock::instantiate::*;

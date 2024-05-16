@@ -1,8 +1,10 @@
+mod execute;
 mod instantiate;
 mod migration;
 mod query;
 mod sudo;
 
+pub use execute::ExecuteMsg;
 pub use instantiate::InstantiateMsg;
 pub use migration::MigrationMsg;
 pub use query::QueryMsg;
@@ -10,9 +12,7 @@ pub use sudo::SudoMsg;
 
 pub mod query_resp {
     mod get_all_resp;
-    mod get_portfolio_resp;
     mod get_rewards_resp;
-    mod get_total_balance_resp;
     mod liquid_asset;
     mod membership_tier_response;
     mod params_resp;
@@ -20,9 +20,7 @@ pub mod query_resp {
     mod user_value_response;
 
     pub use get_all_resp::GetAllResp;
-    pub use get_portfolio_resp::GetPortfolioResp;
     pub use get_rewards_resp::GetRewardsResp;
-    pub use get_total_balance_resp::GetTotalBalanceResp;
     pub use liquid_asset::LiquidAsset;
     pub use membership_tier_response::MembershipTierResponse;
     pub use params_resp::ParamsResp;

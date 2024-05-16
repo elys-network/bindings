@@ -12,8 +12,8 @@ use elys_bindings::{
         types::{
             earn_program::{EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram},
             AccountSnapshot, Coin256, Coin256Value, CoinValue, ElysDenom, LiquidAsset, Metadata,
-            PerpetualAsset, PerpetualAssets, PoolBalances, Portfolio, PortfolioBalanceSnapshot,
-            Reward, StakedAssets, TotalBalance,
+            PerpetualAsset, PerpetualAssets, PoolBalances, PortfolioBalanceSnapshot, Reward,
+            StakedAssets, TotalBalance,
         },
     },
     query_resp::{
@@ -71,7 +71,6 @@ impl AccountSnapshotGenerator {
 
         Ok(PortfolioBalanceSnapshot {
             date: snapshot.date,
-            portfolio_balance_usd: snapshot.portfolio.balance_usd.clone(),
             total_balance_usd: snapshot.total_balance.total_balance.clone(),
         })
     }
@@ -124,23 +123,6 @@ impl AccountSnapshotGenerator {
                 total_balance,
                 portfolio_usd: portfolio_usd.clone(),
                 reward_usd,
-            },
-            portfolio: Portfolio {
-                balance_usd: portfolio_usd,
-                liquid_assets_usd: liquid_assets_response
-                    .total_liquid_asset_balance
-                    .amount
-                    .clone(),
-                staked_committed_usd: Decimal256::from(staked_assets_response.total_balance),
-                liquidity_positions_usd: total_liquidity_position_balance,
-                leverage_lp_usd: Decimal256::zero(),
-                perpetual_assets_usd: perpetual_response
-                    .total_perpetual_asset_balance
-                    .amount
-                    .clone(),
-                usdc_earn_usd: Decimal256::zero(),
-                borrows_usd: Decimal256::zero(),
-                stake_balance_breakdown: staked_assets_response.balance_break_down,
             },
             reward,
             pool_balances: PoolBalances {

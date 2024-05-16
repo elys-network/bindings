@@ -5,14 +5,16 @@ use crate::msg::SudoMsg;
 use crate::msg::{InstantiateMsg, QueryMsg};
 use cosmwasm_std::{coins, Addr, BlockInfo, Coin, Decimal, Decimal256, Timestamp};
 use cw_multi_test::{BankSudo, BasicAppBuilder, ContractWrapper, Executor, SudoMsg as AppSudo};
-use elys_bindings::types::{OracleAssetInfo, Price};
+use elys_bindings::types::{OracleAssetInfo, Price, SwapAmountInRoute};
 use elys_bindings_test::{
     ACCOUNT, ASSET_INFO, LAST_MODULE_USED, PERPETUAL_OPENED_POSITION, PRICES,
 };
 use trade_shield_contract::entry_point::{
-    execute as trade_shield_execute, instantiate as trade_shield_init, query as trade_shield_query,
+    execute as trade_shield_execute, instantiate as trade_shield_init,
+    migrate as trade_shield_migrate, query as trade_shield_query,
 };
-use trade_shield_contract::msg::InstantiateMsg as TradeShieldInstantiateMsg;
+use trade_shield_contract::msg as trade_shield_msg;
+use trade_shield_contract::types::{OrderPrice, SpotOrderType};
 
 use crate::entry_point::instantiate;
 use crate::entry_point::{execute, query, sudo};
@@ -208,9 +210,12 @@ impl Module for ElysModuleWrapper {
                 };
                 Ok(to_json_binary(&resp)?)
             }
-            ElysQuery::AmmSwapEstimationByDenom { .. } => {
+            ElysQuery::AmmSwapEstimationByDenom { denom_out, .. } => {
                 let resp = AmmSwapEstimationByDenomResponse {
-                    in_route: None,
+                    in_route: Some(vec![SwapAmountInRoute {
+                        pool_id: 1,
+                        token_out_denom: denom_out,
+                    }]),
                     out_route: None,
                     spot_price: Decimal::from_str("3.5").unwrap(),
                     amount: Coin {
@@ -364,9 +369,10 @@ fn history() {
 
     // trade shield deployment
     let trade_shield_code =
-        ContractWrapper::new(trade_shield_execute, trade_shield_init, trade_shield_query);
+        ContractWrapper::new(trade_shield_execute, trade_shield_init, trade_shield_query)
+            .with_migrate(trade_shield_migrate);
     let trade_shield_code_id = app.store_code(Box::new(trade_shield_code));
-    let trade_shield_init = TradeShieldInstantiateMsg {
+    let trade_shield_init = trade_shield_msg::InstantiateMsg {
         account_history_address: None,
     };
     let trade_shield_address = app
@@ -376,7 +382,7 @@ fn history() {
             &trade_shield_init,
             &[],
             "Contract",
-            None,
+            Some("admin".to_string()),
         )
         .unwrap()
         .to_string();
@@ -391,7 +397,7 @@ fn history() {
         expiration: Some(cw_utils::Expiration::AtTime(Timestamp::from_seconds(
             604800,
         ))),
-        trade_shield_address: Some(trade_shield_address),
+        trade_shield_address: Some(trade_shield_address.clone()),
     };
 
     // Instantiate the contract with "owner" as the deployer.
@@ -405,6 +411,35 @@ fn history() {
             None,
         )
         .unwrap();
+
+    app.migrate_contract(
+        Addr::unchecked("admin"),
+        Addr::unchecked(trade_shield_address.clone()),
+        &trade_shield_msg::MigrateMsg {
+            account_history_address: Some(addr.to_string()),
+        },
+        trade_shield_code_id,
+    )
+    .unwrap();
+
+    app.execute_contract(
+        Addr::unchecked("user-a"),
+        Addr::unchecked(trade_shield_address.clone()),
+        &trade_shield_msg::ExecuteMsg::CreateSpotOrder {
+            order_type: SpotOrderType::StopLoss,
+            order_source_denom: "uelys".to_string(),
+            order_target_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
+            order_price: Some(OrderPrice {
+                base_denom: "uelys".to_string(),
+                quote_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                rate: Decimal::one(),
+            }),
+        },
+        &coins(100, "uelys"),
+    )
+    .unwrap();
 
     let update_msg = SudoMsg::ClockEndBlock {};
 
@@ -424,7 +459,7 @@ fn history() {
     let res: UserValueResponse = app.wrap().query_wasm_smart(&addr, &query_msg).unwrap();
 
     assert_eq!(
-        res.value.portfolio_balance_usd,
+        res.value.total_balance_usd,
         Decimal256::from_str("400.0010347342").unwrap(),
     );
 
@@ -446,7 +481,7 @@ fn history() {
     let res: UserValueResponse = app.wrap().query_wasm_smart(&addr, &query_msg).unwrap();
 
     assert_eq!(
-        res.value.portfolio_balance_usd,
+        res.value.total_balance_usd,
         Decimal256::from_str("400.0010347342").unwrap(),
     ); // The previous value wasn't removed yet but wasn't read either since it's expired.
 }

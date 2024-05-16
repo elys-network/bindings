@@ -462,11 +462,6 @@ pub struct QueryEarnPoolResponse {
 }
 
 #[cw_serde]
-pub struct QueryIncentivePoolAprsResponse {
-    pub data: Option<Vec<IncentivePoolApr>>,
-}
-
-#[cw_serde]
 pub struct QueryJoinPoolEstimationResponse {
     amounts_in: Vec<Coin>,
     share_amount_out: Coin,
@@ -545,12 +540,6 @@ impl Default for PoolResp {
             lp_token_price: None,
         }
     }
-}
-
-#[cw_serde]
-pub struct IncentivePoolApr {
-    pub apr: Decimal,
-    pub pool_id: i64,
 }
 
 #[cw_serde]

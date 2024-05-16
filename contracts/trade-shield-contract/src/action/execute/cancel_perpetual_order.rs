@@ -17,8 +17,6 @@ pub fn cancel_perpetual_order(
         None => return Err(ContractError::OrderNotFound { order_id }),
     };
 
-    let order_type = order.order_type.clone();
-
     if order.owner != info.sender.to_string() {
         return Err(ContractError::Unauthorized {
             sender: info.sender,
@@ -32,21 +30,17 @@ pub fn cancel_perpetual_order(
         });
     }
 
-    let refund_msg = BankMsg::Send {
-        to_address: order.owner.clone(),
-        amount: vec![order.collateral.clone()],
-    };
+    let bank_msg = remove_perpetual_order(order_id, Status::Canceled, deps.storage, None)?;
 
     let resp = Response::new().add_event(
         Event::new("cancel_perpetual_order")
             .add_attribute("perpetual_order_id", order.order_id.to_string()),
     );
 
-    remove_perpetual_order(order_id, Status::Canceled, deps.storage)?;
+    let resp = match bank_msg {
+        Some(bank_msg) => resp.add_message(bank_msg),
+        None => resp,
+    };
 
-    if order_type == PerpetualOrderType::LimitOpen {
-        Ok(resp.add_message(CosmosMsg::Bank(refund_msg)))
-    } else {
-        Ok(resp)
-    }
+    Ok(resp)
 }

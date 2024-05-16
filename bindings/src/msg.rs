@@ -80,10 +80,6 @@ pub enum ElysMsg {
     CommitmentClaimVesting {
         sender: String,
     },
-    IncentiveWithdrawValidatorCommission {
-        delegator_address: String,
-        validator_address: String,
-    },
     AmmJoinPool {
         sender: String,
         pool_id: u64,
@@ -281,16 +277,6 @@ impl ElysMsg {
     pub fn eden_claim_vesting(sender: String) -> Self {
         Self::CommitmentClaimVesting {
             sender: sender.to_owned(),
-        }
-    }
-
-    pub fn withdraw_validator_commissions(
-        delegator_address: String,
-        validator_address: String,
-    ) -> Self {
-        Self::IncentiveWithdrawValidatorCommission {
-            delegator_address: delegator_address.to_owned(),
-            validator_address: validator_address.to_owned(),
         }
     }
 

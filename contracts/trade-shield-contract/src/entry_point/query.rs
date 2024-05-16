@@ -213,5 +213,8 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
             }
             Ok(to_json_binary(&GetSortedOrderListResp { orders_states })?)
         }
+        GetSpotOrderStates { order_id } => Ok(to_json_binary(&query::get_spot_order_states(
+            deps, order_id,
+        )?)?),
     }
 }

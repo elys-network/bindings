@@ -28,6 +28,12 @@ extract_txhash() {
     awk -F 'txhash: ' '/txhash:/{print $2; exit}'
 }
 
+# Extract response key value from the output of a command
+extract_response_key_value() {
+    response_key=$1
+    awk '/"type": "'$response_key'"/{print "{"; flag=1;next}/]/{if(flag){print $0 "\n}"; exit}flag=0}flag'
+}
+
 # Define a function to query the contract state
 query_contract() {
     local contract_address=$1
@@ -67,8 +73,16 @@ execute_message() {
 
     local end_time=$SECONDS
 
-    elysd q tx $txhash --node "$NODE" --output json | jq | awk '/"type": "'$response_key'"/{print "{"; flag=1;next}/]/{if(flag){print $0 "\n}"; exit}flag=0}flag' | jq
+    # Query the transaction
+    local result=$(elysd q tx $txhash --node "$NODE" --output json)
 
+    # Extract the response key value from the result
+    echo $result | jq | extract_response_key_value $response_key | jq
+
+    # Extract the logs from the result
+    # echo $result | jq '.logs'
+
+    # Calculate the duration
     local duration=$((end_time - start_time))
     echo "Total execution time: $duration seconds."
 }
@@ -472,6 +486,21 @@ function masterchef_claim_rewards() {
         wasm-eden_claim_vesting_request
 }
 
+function stake_request() {
+    validator_address=$1
+    printf "\n# Stake Request\n"
+    execute_message \
+        "$ts_contract_address" \
+        '{
+            "stake_request": {
+                "amount": 100000,
+                "asset": "uelys",
+                "validator_address": "'"$validator_address"'"
+            }
+        }' \
+        delegate
+}
+
 # function(s) to run based on the provided argument
 case "$1" in
 "amm_swap_exact_amount_in")
@@ -545,6 +574,9 @@ case "$1" in
     ;;
 "claim_rewards_request")
     claim_rewards_request
+    ;;
+"stake_request")
+    stake_request $2
     ;;
 *)
     # Default case: run all functions

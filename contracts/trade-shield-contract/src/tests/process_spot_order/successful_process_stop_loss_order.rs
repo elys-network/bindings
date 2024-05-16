@@ -1,6 +1,6 @@
 use super::*;
 use cosmwasm_std::{coins, BlockInfo, Coin, Timestamp};
-use elys_bindings::trade_shield::msg::query_resp::GetSpotOrderResp;
+use process_spot_order::test_order_status::test_spot_order_status;
 // This test case verifies the successful processing of a "stop-loss" order in the contract.
 // The scenario involves a "stop-loss" order created by a user to protect against a decline in BTC price.
 // - Initially, the BTC price is 30,000 USDC, and the trigger price in the order is 20,000 USDC.
@@ -64,7 +64,7 @@ fn successful_process_stop_loss_order() {
     // Create a mock message to instantiate the contract with the dummy order.
     let instantiate_msg = InstantiateMockMsg {
         account_history_address: None,
-        spot_orders: vec![dummy_order],
+        spot_orders: vec![dummy_order.clone()],
         perpetual_orders: vec![],
     };
 
@@ -87,15 +87,22 @@ fn successful_process_stop_loss_order() {
     app.init_modules(|router, _, store| router.custom.set_prices(store, &prices_at_t0))
         .unwrap();
 
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        dummy_order.order_id,
+        Status::Pending,
+    );
+
     // Execute the order processing.
     app.wasm_sudo(addr.clone(), &sudo_msg).unwrap();
 
-    let o: GetSpotOrderResp = app
-        .wrap()
-        .query_wasm_smart(addr.clone(), &QueryMsg::GetSpotOrder { order_id: 0 })
-        .unwrap();
-
-    assert_eq!(o.order.status, Status::Pending);
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        dummy_order.order_id,
+        Status::Pending,
+    );
 
     // Verify the resulting balances after order processing.
     assert_eq!(
@@ -144,12 +151,12 @@ fn successful_process_stop_loss_order() {
     // Execute the order processing.
     app.wasm_sudo(addr.clone(), &sudo_msg).unwrap();
 
-    let o: GetSpotOrderResp = app
-        .wrap()
-        .query_wasm_smart(addr.clone(), &QueryMsg::GetSpotOrder { order_id: 0 })
-        .unwrap();
-
-    assert_eq!(o.order.status, Status::Executed);
+    test_spot_order_status(
+        &app.wrap(),
+        addr.to_string(),
+        dummy_order.order_id,
+        Status::Executed,
+    );
 
     // Verify the resulting balances after order processing.
     assert_eq!(

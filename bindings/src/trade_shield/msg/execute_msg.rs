@@ -71,9 +71,6 @@ pub enum ExecuteMsg {
     },
     EdenClaimVestingRequest {},
     ClaimRewardsRequest {},
-    ClaimValidatorCommissionRequest {
-        validator_address: String,
-    },
     AmmJoinPoolRequest {
         pool_id: u64,
         max_amounts_in: Vec<Coin>,

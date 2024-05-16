@@ -542,20 +542,6 @@ impl<'a> ElysQuerier<'a> {
         Ok(resp)
     }
 
-    pub fn get_rewards_balance(
-        &self,
-        address: String,
-        denom: String,
-    ) -> StdResult<BalanceAvailable> {
-        let rewards_balance_query = ElysQuery::CommitmentRewardsBalanceOfDenom {
-            address: address.to_owned(),
-            denom: denom.to_owned(),
-        };
-        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(rewards_balance_query);
-        let resp: BalanceAvailable = self.querier.query(&request)?;
-        Ok(resp)
-    }
-
     pub fn get_vesting_info(&self, address: String) -> StdResult<QueryVestingInfoResponse> {
         let vesting_info_query = ElysQuery::CommitmentVestingInfo {
             address: address.to_owned(),
@@ -563,30 +549,6 @@ impl<'a> ElysQuerier<'a> {
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(vesting_info_query);
         let resp: QueryVestingInfoResponse = self.querier.query(&request)?;
         Ok(resp)
-    }
-
-    pub fn get_pools_apr(
-        &self,
-        pool_ids: Option<Vec<u64>>,
-    ) -> StdResult<QueryIncentivePoolAprsResponse> {
-        let query = ElysQuery::get_pools_apr(pool_ids);
-        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
-        let response: StdResult<QueryIncentivePoolAprsResponse> = self.querier.query(&request);
-
-        match response {
-            Ok(mut response) => {
-                if let Some(ref mut data) = response.data {
-                    for pool_apr in data.iter_mut() {
-                        pool_apr.apr *= Decimal::from_str("100").unwrap();
-                    }
-                }
-                Ok(response)
-            }
-            Err(_) => {
-                let response = QueryIncentivePoolAprsResponse { data: Some(vec![]) };
-                Ok(response)
-            }
-        }
     }
 
     pub fn join_pool_estimation(

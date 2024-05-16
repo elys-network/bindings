@@ -15,13 +15,15 @@ use crate::query_resp::QueryStableStakeAprResponse;
 use crate::query_resp::{
     AuthAddressesResponse, BalanceBorrowed, PoolFilterType, QueryAllProgramRewardsResponse,
     QueryAprsResponse, QueryEarnPoolResponse, QueryExitPoolEstimationResponse,
-    QueryIncentivePoolAprsResponse, QueryJoinPoolEstimationResponse,
-    QueryPoolAssetEstimationResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
-    QueryUserPoolResponse, QueryVestingInfoResponse, StableStakeParamsData, StakedAvailable,
+    QueryJoinPoolEstimationResponse, QueryPoolAssetEstimationResponse, QueryStakedPositionResponse,
+    QueryUnstakedPositionResponse, QueryUserPoolResponse, QueryVestingInfoResponse,
+    StableStakeParamsData, StakedAvailable,
 };
 #[allow(unused_imports)]
 use crate::types::{BalanceAvailable, PageRequest};
 use cosmwasm_schema::{cw_serde, QueryResponses};
+#[allow(unused_imports)]
+use cosmwasm_std::Uint128;
 #[cfg(feature = "debug")]
 use cosmwasm_std::{Coin, DecCoin, Decimal};
 
@@ -34,12 +36,8 @@ pub enum QueryMsg {
     GetLiquidAssets { user_address: String },
     #[returns(StakedAssetsResponse)]
     GetStakedAssets { user_address: String },
-    #[returns(GetPortfolioResp)]
-    GetPortfolio { user_address: String },
     #[returns(QueryUserPoolResponse)]
     GetPoolBalances { user_address: String },
-    #[returns(GetTotalBalanceResp)]
-    GetTotalBalance { user_address: String },
     #[returns(GetRewardsResp)]
     GetRewards { user_address: String },
     #[returns(MembershipTierResponse)]
@@ -57,9 +55,6 @@ pub enum QueryMsg {
         filter_type: PoolFilterType,
         pagination: Option<PageRequest>,
     },
-
-    #[returns(QueryIncentivePoolAprsResponse)]
-    GetLiquidityPoolsApr { pool_ids: Option<Vec<u64>> },
 
     #[returns(QueryJoinPoolEstimationResponse)]
     JoinPoolEstimation { pool_id: u64, amounts_in: Vec<Coin> },
@@ -168,4 +163,8 @@ pub enum QueryMsg {
     #[cfg(feature = "debug")]
     #[returns(QueryAllProgramRewardsResponse)]
     IncentiveAllProgramRewards { address: String },
+
+    #[cfg(feature = "debug")]
+    #[returns(Uint128)]
+    AddressQueueSize {},
 }

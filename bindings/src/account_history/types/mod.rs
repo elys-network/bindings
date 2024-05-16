@@ -4,7 +4,6 @@ mod liquid_asset;
 mod metadata;
 mod perpetual_assets;
 mod pool_balances;
-mod portfolio;
 mod portfolio_balance_snapshot;
 mod reward;
 mod staked_assets;
@@ -41,7 +40,6 @@ pub mod earn_program {
 pub mod denom;
 pub use denom::ElysDenom;
 
-pub use portfolio::Portfolio;
 pub use total_balance::TotalBalance;
 
 pub use liquid_asset::LiquidAsset;
