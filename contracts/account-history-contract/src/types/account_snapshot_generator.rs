@@ -655,34 +655,35 @@ impl AccountSnapshotGenerator {
         address: &String,
     ) -> StdResult<GetRewardsResp> {
         let querier = ElysQuerier::new(&deps.querier);
-        // TODO: Vec<Coin>
+
         let rewards_response = querier.get_all_program_rewards(address.to_string())?;
 
         // Concatenate all staking reward vectors into one
-        // TODO: Vec<Coin>
-        let all_staking_rewards: Vec<Coin256> = rewards_response
+        let all_staking_rewards: Vec<&Coin> = rewards_response
             .usdc_staking_rewards
             .iter()
             .chain(&rewards_response.elys_staking_rewards)
             .chain(&rewards_response.eden_staking_rewards)
             .chain(&rewards_response.edenb_staking_rewards)
-            .map(|v| Coin256::from(v.clone()))
             .collect();
 
         // Accumulate amounts for each denomination
-        // TODO: use U128 instead of Decimal
-        let mut denom_amounts: HashMap<String, Uint256> = HashMap::new();
-
+        let mut denom_amounts: HashMap<String, Uint128> = HashMap::new();
         all_staking_rewards.iter().for_each(|coin| {
-            denom_amounts.insert(coin.denom.clone(), Uint256::zero());
+            denom_amounts
+                .entry(coin.denom.clone())
+                .and_modify(|amount| {
+                    *amount += coin.amount;
+                })
+                .or_insert(coin.amount);
         });
 
-        // Convert accumulated amounts to Coin256Value instances
-        let mut reward_map: HashMap<String, Coin256Value> = HashMap::new();
+        // Convert accumulated amounts to CoinValue instances
+        let mut reward_map: HashMap<String, CoinValue> = HashMap::new();
         for (denom, amount) in denom_amounts {
             let dec_coin_value = if denom != ElysDenom::EdenBoost.as_str().to_string() {
-                Coin256Value::from_coin256(
-                    &Coin256 {
+                CoinValue::from_coin(
+                    &Coin {
                         denom: denom.clone(),
                         amount,
                     },
@@ -690,22 +691,22 @@ impl AccountSnapshotGenerator {
                 )
                 .unwrap_or_default()
             } else {
-                Coin256Value::new(
+                CoinValue::new(
                     denom.clone(),
-                    Decimal256::new(amount),
+                    Decimal::new(amount),
                     Decimal::zero(),
-                    Decimal256::zero(),
+                    Decimal::zero(),
                 )
             };
 
             reward_map.insert(denom, dec_coin_value);
         }
 
-        let total_usd: Decimal256 = reward_map.values().map(|v| v.amount_usd).sum();
+        let total_usd: Decimal = reward_map.values().map(|v| v.amount_usd).sum();
 
         // Calculate other_usd as the sum of all amount_usd values in reward_map
         // excluding USDC, Eden, and EdenBoost
-        let mut other_usd: Decimal256 = Decimal256::zero();
+        let mut other_usd: Decimal = Decimal::zero();
         for (denom, value) in &reward_map {
             if denom != &self.metadata.usdc_denom
                 && denom != &ElysDenom::Eden.as_str().to_string()
@@ -733,8 +734,7 @@ impl AccountSnapshotGenerator {
         };
 
         // Construct rewards_vec as the values of all rewards_map entries
-        // TODO: use CoinValue
-        let rewards_vec: Vec<Coin256Value> = reward_map.into_iter().map(|(_, v)| v).collect();
+        let rewards_vec: Vec<CoinValue> = reward_map.into_iter().map(|(_, v)| v).collect();
 
         let resp = GetRewardsResp {
             rewards_map: reward,

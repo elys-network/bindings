@@ -444,10 +444,10 @@ pub struct QueryShowCommitmentsResponse {
 
 #[cw_serde]
 pub struct QueryAllProgramRewardsResponse {
-    pub usdc_staking_rewards: Vec<DecCoin>,
-    pub elys_staking_rewards: Vec<DecCoin>,
-    pub eden_staking_rewards: Vec<DecCoin>,
-    pub edenb_staking_rewards: Vec<DecCoin>,
+    pub usdc_staking_rewards: Vec<Coin>,
+    pub elys_staking_rewards: Vec<Coin>,
+    pub eden_staking_rewards: Vec<Coin>,
+    pub edenb_staking_rewards: Vec<Coin>,
 }
 
 #[cw_serde]
