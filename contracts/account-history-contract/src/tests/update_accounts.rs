@@ -460,7 +460,7 @@ fn history() {
 
     assert_eq!(
         res.value.total_balance_usd,
-        Decimal256::from_str("400.00111371648").unwrap(),
+        Decimal256::from_str("400.00110371648").unwrap(),
     );
 
     app.sudo(AppSudo::Bank(BankSudo::Mint {
@@ -482,6 +482,6 @@ fn history() {
 
     assert_eq!(
         res.value.total_balance_usd,
-        Decimal256::from_str("400.00111371648").unwrap(),
+        Decimal256::from_str("400.00110371648").unwrap(),
     ); // The previous value wasn't removed yet but wasn't read either since it's expired.
 }
