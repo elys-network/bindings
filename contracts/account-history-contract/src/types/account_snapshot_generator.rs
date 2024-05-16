@@ -682,23 +682,14 @@ impl AccountSnapshotGenerator {
         // Convert accumulated amounts to CoinValue instances
         let mut reward_map: HashMap<String, CoinValue> = HashMap::new();
         for (denom, amount) in denom_amounts {
-            let dec_coin_value = if denom != ElysDenom::EdenBoost.as_str().to_string() {
-                CoinValue::from_coin(
-                    &Coin {
-                        denom: denom.clone(),
-                        amount,
-                    },
-                    &querier,
-                )
-                .unwrap_or_default()
-            } else {
-                CoinValue::new(
-                    denom.clone(),
-                    Decimal::new(amount),
-                    Decimal::zero(),
-                    Decimal::zero(),
-                )
-            };
+            let dec_coin_value = CoinValue::from_coin(
+                &Coin {
+                    denom: denom.clone(),
+                    amount,
+                },
+                &querier,
+            )
+            .unwrap_or_default();
 
             reward_map.insert(denom, dec_coin_value);
         }

@@ -2,6 +2,8 @@ use crate::{query_resp::OracleAssetInfoResponse, types::OracleAssetInfo, ElysQue
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal, StdError, StdResult};
 
+use super::ElysDenom;
+
 #[cw_serde]
 #[derive(Default)]
 pub struct CoinValue {
@@ -33,17 +35,26 @@ impl CoinValue {
                     decimal: 6,
                 },
             });
-
-        let price = querier
-            .get_asset_price(balance.denom.clone())
-            .map_err(|e| StdError::generic_err(format!("failed to get_asset_price: {}", e)))?;
-
         let decimal_point_usd = asset_info.decimal;
 
         let amount_token = Decimal::from_atomics(balance.amount, decimal_point_usd as u32)
             .map_err(|e| {
                 StdError::generic_err(format!("failed to convert amount to Decimal: {}", e))
             })?;
+
+        // Eden boost does not have Fiat valuation.
+        if balance.denom == ElysDenom::EdenBoost.as_str() {
+            return Ok(Self {
+                amount_token,
+                denom: balance.denom.clone(),
+                amount_usd: Decimal::zero(),
+                price: Decimal::zero(),
+            });
+        }
+
+        let price = querier
+            .get_asset_price(balance.denom.clone())
+            .map_err(|e| StdError::generic_err(format!("failed to get_asset_price: {}", e)))?;
 
         let amount_usd = price
             .clone()

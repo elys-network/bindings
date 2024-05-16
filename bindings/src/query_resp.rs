@@ -7,7 +7,7 @@ use cosmwasm_std::{
 };
 
 use crate::{
-    account_history::types::{CoinValue, ElysDenom},
+    account_history::types::CoinValue,
     trade_shield::types::{
         AmmPool, AmmPoolRaw, PerpetualPosition, PoolExtraInfo, StakedPositionRaw,
     },
@@ -779,17 +779,6 @@ impl EstakingRewardsResponse {
         for delegation_reward in &self.rewards {
             let validator_address = delegation_reward.validator_address.clone();
             for coin in &delegation_reward.reward {
-                if coin.denom == ElysDenom::EdenBoost.as_str() {
-                    let eden_boost_coin = CoinValue::new(
-                        coin.denom.clone(),
-                        Decimal::from_str(coin.amount.to_string().as_str()).unwrap(),
-                        Decimal::zero(),
-                        Decimal::zero(),
-                    );
-                    coin_values.push((validator_address.clone(), eden_boost_coin));
-                    continue;
-                }
-
                 let coin_value = CoinValue::from_coin(&coin.clone(), querier).map_err(|e| {
                     StdError::generic_err(format!("Failed to convert to CoinValue {}", e))
                 })?;
