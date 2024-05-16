@@ -657,15 +657,18 @@ impl AccountSnapshotGenerator {
     ) -> StdResult<GetRewardsResp> {
         let querier = ElysQuerier::new(&deps.querier);
 
-        let rewards_response = querier.get_all_program_rewards(address.to_string())?;
+        // Elys Eden and Eden Boost Program rewards
+        let estaking_rewards = querier
+            .get_estaking_rewards(address.clone())
+            .unwrap_or_default();
+        // All pool rewards including USDC program rewards
+        let masterchef_rewards = querier.get_masterchef_pending_rewards(address.to_string())?;
 
         // Concatenate all staking reward vectors into one
-        let all_staking_rewards: Vec<&Coin> = rewards_response
-            .usdc_staking_rewards
+        let all_staking_rewards: Vec<&Coin> = estaking_rewards
+            .total
             .iter()
-            .chain(&rewards_response.elys_staking_rewards)
-            .chain(&rewards_response.eden_staking_rewards)
-            .chain(&rewards_response.edenb_staking_rewards)
+            .chain(&masterchef_rewards.total_rewards)
             .collect();
 
         // Accumulate amounts for each denomination
