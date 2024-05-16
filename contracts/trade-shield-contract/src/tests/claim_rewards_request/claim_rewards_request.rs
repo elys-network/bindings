@@ -8,7 +8,6 @@ use crate::entry_point::{execute, query};
 use anyhow::{bail, Result as AnyResult};
 use cosmwasm_std::coin;
 use cosmwasm_std::Coin;
-use cosmwasm_std::Decimal256;
 use cosmwasm_std::StdError;
 use cosmwasm_std::Uint128;
 use cosmwasm_std::{to_json_binary, Addr, Empty};
@@ -153,24 +152,7 @@ impl Module for ElysModuleWrapper {
                     .iter_mut()
                     .position(|reward| reward.0 == validator_address)
                 {
-                    let reward_found: Vec<Coin> = rewards[index]
-                        .1
-                        .iter()
-                        .map(|reward| {
-                            coin(
-                                reward.amount.u128()
-                                    / 10u128.pow(
-                                        Decimal256::DECIMAL_PLACES
-                                            - DENOM_INFO
-                                                .iter()
-                                                .find(|denom_info| denom_info.0 == reward.denom)
-                                                .unwrap()
-                                                .1,
-                                    ),
-                                reward.denom.as_str(),
-                            )
-                        })
-                        .collect();
+                    let reward_found: Vec<Coin> = rewards[index].1.clone();
                     rewards.remove(index);
                     reward_found
                 } else {
