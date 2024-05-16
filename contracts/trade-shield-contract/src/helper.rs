@@ -1,11 +1,12 @@
 use cosmwasm_std::{
-    from_json, BankMsg, Decimal, Deps, QuerierWrapper, Response, StdResult, Storage, SubMsgResult,
+    from_json, BankMsg, Decimal, Deps, OverflowError, OverflowOperation, QuerierWrapper, Response,
+    StdError, StdResult, Storage, SubMsgResult,
 };
 use elys_bindings::account_history::msg::query_resp::MembershipTierResponse;
 use elys_bindings::account_history::msg::QueryMsg as AccountHistoryQueryMsg;
 use elys_bindings::trade_shield::states::{
-    PENDING_PERPETUAL_ORDER, PENDING_SPOT_ORDER, PERPETUAL_ORDER, SORTED_PENDING_PERPETUAL_ORDER,
-    SORTED_PENDING_SPOT_ORDER, SPOT_ORDER,
+    NUMBER_OF_EXECUTED_ORDER, NUMBER_OF_PENDING_ORDER, PENDING_PERPETUAL_ORDER, PENDING_SPOT_ORDER,
+    PERPETUAL_ORDER, SORTED_PENDING_PERPETUAL_ORDER, SORTED_PENDING_SPOT_ORDER, SPOT_ORDER,
 };
 use elys_bindings::trade_shield::types::{PerpetualOrder, PerpetualOrderType, SpotOrder, Status};
 use elys_bindings::ElysQuery;
@@ -91,6 +92,7 @@ pub fn remove_spot_order(
     order.status = new_status;
     SPOT_ORDER.save(storage, order.order_id, &order)?;
     PENDING_SPOT_ORDER.remove(storage, order.order_id);
+    change_the_number_of_order(storage, &order.status)?;
     let bank_msg = if order.status == Status::Canceled {
         Some(BankMsg::Send {
             to_address: order.owner_address.to_string(),
@@ -108,7 +110,7 @@ pub fn remove_perpetual_order(
     storage: &mut dyn Storage,
     position_id: Option<u64>,
 ) -> StdResult<Option<BankMsg>> {
-    let mut order = PENDING_PERPETUAL_ORDER.load(storage, order_id)?;
+    let mut order = PENDING_PERPETUAL_ORDER.load(storage, order_id).unwrap();
     let key = order.gen_key()?;
     let mut vec: Vec<u64> = SORTED_PENDING_PERPETUAL_ORDER.load(storage, key.as_str())?;
     let mut index = PerpetualOrder::binary_search(&order.trigger_price, storage, &vec)?;
@@ -127,6 +129,7 @@ pub fn remove_perpetual_order(
     order.status = new_status;
     PERPETUAL_ORDER.save(storage, order.order_id, &order)?;
     PENDING_PERPETUAL_ORDER.remove(storage, order.order_id);
+    change_the_number_of_order(storage, &order.status)?;
     let bank_msg =
         if order.status == Status::Canceled && order.order_type == PerpetualOrderType::LimitOpen {
             Some(BankMsg::Send {
@@ -137,4 +140,29 @@ pub fn remove_perpetual_order(
             None
         };
     Ok(bank_msg)
+}
+
+fn change_the_number_of_order(storage: &mut dyn Storage, status: &Status) -> StdResult<()> {
+    let number_of_pending_order = match NUMBER_OF_PENDING_ORDER.load(storage)?.checked_sub(1) {
+        Some(number) => Ok(number),
+        None => Err(StdError::overflow(OverflowError::new(
+            OverflowOperation::Sub,
+            "number_of_pending_order",
+            1,
+        ))),
+    }?;
+    NUMBER_OF_PENDING_ORDER.save(storage, &number_of_pending_order)?;
+    if status == &Status::Executed {
+        let number_of_executed_order = match NUMBER_OF_EXECUTED_ORDER.load(storage)?.checked_add(1)
+        {
+            Some(number) => Ok(number),
+            None => Err(StdError::overflow(OverflowError::new(
+                OverflowOperation::Add,
+                "number_of_pending_order",
+                1,
+            ))),
+        }?;
+        NUMBER_OF_EXECUTED_ORDER.save(storage, &number_of_executed_order)?;
+    };
+    Ok(())
 }

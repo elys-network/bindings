@@ -488,7 +488,7 @@ pub struct ValidatorDetail {
 
     pub jailed: String,
 
-    pub inactive: String
+    pub inactive: String,
 }
 
 #[cw_serde]

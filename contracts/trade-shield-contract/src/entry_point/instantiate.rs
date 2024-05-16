@@ -25,5 +25,7 @@ pub fn instantiate(
     REWARD_ENABLED.save(deps.storage, &state)?;
     LEVERAGE_ENABLED.save(deps.storage, &state)?;
     LIMIT_PROCESS_ORDER.save(deps.storage, &None)?;
+    NUMBER_OF_PENDING_ORDER.save(deps.storage, &0)?;
+    NUMBER_OF_EXECUTED_ORDER.save(deps.storage, &0)?;
     Ok(Response::new())
 }
