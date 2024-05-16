@@ -13,6 +13,7 @@ pub mod query {
     mod get_spot_order;
     mod get_spot_order_states;
     mod get_spot_orders;
+    mod get_stat;
     mod perpetual_get_position_for_address;
     mod perpetual_open_estimation;
     mod swap_estimation_by_denom;
@@ -32,6 +33,7 @@ pub mod query {
     pub use get_spot_order::get_spot_order;
     pub use get_spot_order_states::get_spot_order_states;
     pub use get_spot_orders::get_spot_orders;
+    pub use get_stat::get_stat;
     pub use perpetual_get_position_for_address::perpetual_get_position_for_address;
     pub use perpetual_open_estimation::perpetual_open_estimation;
     pub use swap_estimation_by_denom::swap_estimation_by_denom;

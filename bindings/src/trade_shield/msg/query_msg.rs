@@ -97,6 +97,8 @@ pub enum QueryMsg {
         base_denom: String,
         quote_denom: String,
     },
+    #[returns(GetStatResponse)]
+    GetStat {},
     #[returns(GetSpotOrderStatesResp)]
     GetSpotOrderStates { order_id: u64 },
 }

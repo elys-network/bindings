@@ -216,8 +216,14 @@ fn create_perpetual_open_order(
     );
 
     if order_type != MarketOpen {
+        let number_of_pending_order = NUMBER_OF_PENDING_ORDER.load(deps.storage)? + 1;
+        NUMBER_OF_PENDING_ORDER.save(deps.storage, &number_of_pending_order)?;
+
         return Ok(resp);
     }
+
+    let number_of_executed_order = NUMBER_OF_EXECUTED_ORDER.load(deps.storage)? + 1;
+    NUMBER_OF_EXECUTED_ORDER.save(deps.storage, &number_of_executed_order)?;
 
     let msg = ElysMsg::perpetual_open_position(
         creator,
@@ -374,8 +380,14 @@ fn create_perpetual_close_order(
     );
 
     if order_type != MarketClose {
+        let number_of_pending_order = NUMBER_OF_PENDING_ORDER.load(deps.storage)? + 1;
+        NUMBER_OF_PENDING_ORDER.save(deps.storage, &number_of_pending_order)?;
+
         return Ok(resp);
     }
+
+    let number_of_executed_order = NUMBER_OF_EXECUTED_ORDER.load(deps.storage)? + 1;
+    NUMBER_OF_EXECUTED_ORDER.save(deps.storage, &number_of_executed_order)?;
 
     let msg =
         ElysMsg::perpetual_close_position(creator, position_id, mtp.custody.i128(), &info.sender);

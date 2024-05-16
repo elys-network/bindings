@@ -655,6 +655,7 @@ impl Module for ElysModule {
                     apr: Int128::default(),
                 })?)
             }
+            ElysQuery::CommitmentNumberOfCommitments {} => todo!("CommitmentNumberOfCommitments"),
         }
     }
 

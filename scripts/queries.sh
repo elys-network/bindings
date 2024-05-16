@@ -86,31 +86,11 @@ function ah_params() {
     }'
 }
 
-# Get total balance
-function total_balance() {
-    printf "\n# Total balance\n"
-    query_contract "$ah_contract_address" '{
-        "get_total_balance": {
-            "user_address": "'"$user_address"'"
-        }
-    }'
-}
-
 # Get membership tier
 function membership_tier() {
     printf "\n# Membership tier\n"
     query_contract "$ah_contract_address" '{
         "get_membership_tier": {
-            "user_address": "'"$user_address"'"
-        }
-    }'
-}
-
-# Get portfolio balance
-function portfolio_balance() {
-    printf "\n# Portfolio balance\n"
-    query_contract "$ah_contract_address" '{
-        "get_portfolio": {
             "user_address": "'"$user_address"'"
         }
     }'
@@ -602,19 +582,20 @@ function get_spot_order_states() {
     }'
 }
 
+function get_ts_stat {
+    printf "\n# Get Spot Order State"
+    query_contract "$ts_contract_address" '{
+        "get_stat": {}
+    }'
+}
+
 # function(s) to run based on the provided argument
 case "$2" in
 "ah_params")
     ah_params
     ;;
-"total_balance")
-    total_balance
-    ;;
 "membership_tier")
     membership_tier
-    ;;
-"portfolio_balance")
-    portfolio_balance
     ;;
 "rewards")
     rewards
@@ -796,13 +777,14 @@ case "$2" in
 "get_spot_order_states")
     get_spot_order_states $3
     ;;
+"get_ts_stat")
+    get_ts_stat
+    ;;
 *)
     # Default case: run all functions
     ah_params
     ts_params
-    total_balance
     membership_tier
-    portfolio_balance
     rewards
     liquid_assets
     staked_assets

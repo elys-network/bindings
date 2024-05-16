@@ -982,7 +982,15 @@ impl<'a> ElysQuerier<'a> {
         let req = QueryRequest::Custom(ElysQuery::leveragelp_position(address.into(), id));
         self.querier.query(&req)
     }
-
+    pub fn commitment_number_of_commitments(
+        &self,
+    ) -> StdResult<CommitmentNumberOfCommitmentsResponse> {
+        let req = QueryRequest::Custom(ElysQuery::commitment_number_of_commitments());
+        let CommitmentNumberOfCommitmentsResponseRaw { number } = self.querier.query(&req)?;
+        Ok(CommitmentNumberOfCommitmentsResponse {
+            number: number.unwrap_or(0),
+        })
+    }
     pub fn get_all_pools_apr(
         &self,
         pool_ids: Option<Vec<u64>>,
