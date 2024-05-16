@@ -8,11 +8,9 @@ use crate::entry_point::{execute, query};
 use anyhow::{bail, Result as AnyResult};
 use cosmwasm_std::coin;
 use cosmwasm_std::Coin;
-use cosmwasm_std::DecCoin;
 use cosmwasm_std::Decimal256;
 use cosmwasm_std::StdError;
 use cosmwasm_std::Uint128;
-use cosmwasm_std::Uint256;
 use cosmwasm_std::{to_json_binary, Addr, Empty};
 use cw_multi_test::BankSudo;
 use cw_multi_test::Executor;
@@ -37,7 +35,7 @@ const DENOM_INFO: [(&str, u32); 2] = [
     ("uelys", 6),
 ];
 
-const ESTAKING_REWARD: Map<&str, Vec<(String, Vec<DecCoin>)>> = Map::new("estaking reward");
+const ESTAKING_REWARD: Map<&str, Vec<(String, Vec<Coin>)>> = Map::new("estaking reward");
 const MASTER_USER_PENDING_REWARD: Map<&str, Vec<(u64, Vec<Coin>)>> =
     Map::new("master user pending reward");
 const MSG_CALLED: Item<Vec<ElysMsg>> = Item::new("msg called");
@@ -68,21 +66,19 @@ impl Module for ElysModuleWrapper {
                         reward: rewards.to_owned(),
                     })
                     .collect();
-                let mut map: HashMap<&str, Decimal256> = HashMap::new();
+                let mut map: HashMap<&str, Uint128> = HashMap::new();
 
-                for (_, deccoins) in rewards.iter() {
-                    for deccoin in deccoins.iter() {
-                        let deccoin_entry = map
-                            .entry(deccoin.denom.as_str())
-                            .or_insert(Decimal256::zero());
-                        *deccoin_entry += deccoin.amount.clone();
+                for (_, coins) in rewards.iter() {
+                    for coin in coins.iter() {
+                        let coin_entry = map.entry(coin.denom.as_str()).or_insert(Uint128::zero());
+                        *coin_entry += coin.amount.clone();
                     }
                 }
 
-                let mut total: Vec<DecCoin> = vec![];
+                let mut total: Vec<Coin> = vec![];
 
                 for (denom, amount) in map {
-                    total.push(DecCoin::new(amount, denom));
+                    total.push(Coin::new(amount.into(), denom));
                 }
 
                 let resp = EstakingRewardsResponse {
@@ -162,9 +158,7 @@ impl Module for ElysModuleWrapper {
                         .iter()
                         .map(|reward| {
                             coin(
-                                Uint128::from_str(reward.amount.atomics().to_string().as_str())
-                                    .unwrap()
-                                    .u128()
+                                reward.amount.u128()
                                     / 10u128.pow(
                                         Decimal256::DECIMAL_PLACES
                                             - DENOM_INFO
@@ -257,8 +251,8 @@ fn claim_rewards_request() {
                     "user",
                     &vec![(
                         Validator::Eden.to_string(),
-                        vec![DecCoin::new(
-                            Decimal256::from_atomics(Uint256::from_u128(24100000), 6).unwrap(),
+                        vec![Coin::new(
+                            Uint128::from_str("24100000").unwrap().u128(),
                             "uelys",
                         )],
                     )],

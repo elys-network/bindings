@@ -7,8 +7,7 @@ use crate::{
 };
 use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
-    coins, to_json_binary, Addr, Coin, DecCoin, Decimal, Decimal256, Empty, Int128, StdError,
-    Timestamp, Uint128,
+    coins, to_json_binary, Addr, Coin, Decimal, Empty, Int128, StdError, Timestamp, Uint128,
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::account_history::msg::query_resp::earn::GetUsdcEarnProgramResp;
@@ -127,35 +126,35 @@ impl Module for ElysModuleWrapper {
                 let resp = EstakingRewardsResponse {
                     rewards: vec![DelegationDelegatorReward {
                         validator_address: "validator".to_string(),
-                        reward: vec![DecCoin {
+                        reward: vec![Coin {
                             denom: "ueden".to_string(),
-                            amount: Decimal256::from_str("1.21").unwrap(),
+                            amount: Uint128::from_str("121").unwrap(),
                         }],
                     }],
-                    total: vec![DecCoin {
+                    total: vec![Coin {
                         denom: "ueden".to_string(),
-                        amount: Decimal256::from_str("1.21").unwrap(),
+                        amount: Uint128::from_str("121").unwrap(),
                     }],
                 };
                 Ok(to_json_binary(&resp)?)
             }
             ElysQuery::IncentiveAllProgramRewards { .. } => {
                 let resp = QueryAllProgramRewardsResponse {
-                    usdc_staking_rewards: vec![DecCoin {
+                    usdc_staking_rewards: vec![Coin {
                         denom: "usdc".to_string(),
-                        amount: Decimal256::from_str("123.1").unwrap(),
+                        amount: Uint128::from_str("1231").unwrap(),
                     }],
-                    elys_staking_rewards: vec![DecCoin {
+                    elys_staking_rewards: vec![Coin {
                         denom: "uelys".to_string(),
-                        amount: Decimal256::zero(),
+                        amount: Uint128::zero(),
                     }],
-                    eden_staking_rewards: vec![DecCoin {
+                    eden_staking_rewards: vec![Coin {
                         denom: "ueden".to_string(),
-                        amount: Decimal256::zero(),
+                        amount: Uint128::zero(),
                     }],
-                    edenb_staking_rewards: vec![DecCoin {
+                    edenb_staking_rewards: vec![Coin {
                         denom: "uedenb".to_string(),
-                        amount: Decimal256::zero(),
+                        amount: Uint128::zero(),
                     }],
                 };
                 Ok(to_json_binary(&resp)?)

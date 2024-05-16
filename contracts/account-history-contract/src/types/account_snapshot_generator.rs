@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
     Coin, DecCoin, Decimal, Decimal256, Deps, Env, QuerierWrapper, StdError, StdResult, Uint128,
-    Uint256,
 };
 use cw_utils::Expiration;
 use elys_bindings::{
@@ -11,9 +10,9 @@ use elys_bindings::{
         msg::query_resp::{GetRewardsResp, StakeAssetBalanceBreakdown, StakedAssetsResponse},
         types::{
             earn_program::{EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram},
-            AccountSnapshot, Coin256, Coin256Value, CoinValue, ElysDenom, LiquidAsset, Metadata,
-            PerpetualAsset, PerpetualAssets, PoolBalances, PortfolioBalanceSnapshot, Reward,
-            StakedAssets, TotalBalance,
+            AccountSnapshot, CoinValue, ElysDenom, LiquidAsset, Metadata, PerpetualAsset,
+            PerpetualAssets, PoolBalances, PortfolioBalanceSnapshot, Reward, StakedAssets,
+            TotalBalance,
         },
     },
     query_resp::{
@@ -145,7 +144,9 @@ impl AccountSnapshotGenerator {
         let all_rewards = querier
             .get_masterchef_pending_rewards(address.clone())
             .unwrap_or_default();
-        let coin_values_rewards = all_rewards.rewards_to_coins(&querier).unwrap_or_default();
+        let coin_values_rewards = all_rewards
+            .rewards_to_coin_values(&querier)
+            .unwrap_or_default();
 
         let mut total = Decimal::zero();
         let mut breakdown: HashMap<String, CoinValue> = HashMap::new();
