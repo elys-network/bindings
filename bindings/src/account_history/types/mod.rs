@@ -4,15 +4,15 @@ mod liquid_asset;
 mod metadata;
 mod perpetual_assets;
 mod pool_balances;
-mod portfolio;
 mod portfolio_balance_snapshot;
 mod reward;
 mod staked_assets;
 mod total_balance;
 
 pub use account_snapshot::AccountSnapshot;
+pub use coin_value::Coin256;
+pub use coin_value::Coin256Value;
 pub use coin_value::CoinValue;
-pub use coin_value::DecCoinValue;
 pub use metadata::Metadata;
 pub use portfolio_balance_snapshot::PortfolioBalanceSnapshot;
 
@@ -40,7 +40,6 @@ pub mod earn_program {
 pub mod denom;
 pub use denom::ElysDenom;
 
-pub use portfolio::Portfolio;
 pub use total_balance::TotalBalance;
 
 pub use liquid_asset::LiquidAsset;

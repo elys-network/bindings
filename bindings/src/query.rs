@@ -99,10 +99,10 @@ pub enum ElysQuery {
     CommitmentAllValidators { delegator_address: String },
     #[returns(QueryDelegatorValidatorsResponse)]
     CommitmentDelegatorValidators { delegator_address: String },
-    #[returns(BalanceAvailable)]
-    CommitmentRewardsBalanceOfDenom { address: String, denom: String },
     #[returns(QueryShowCommitmentsResponse)]
     CommitmentShowCommitments { creator: String },
+    #[returns(QueryAllProgramRewardsResponse)]
+    IncentiveAllProgramRewards { address: String },
     #[returns(QueryVestingInfoResponse)]
     CommitmentVestingInfo { address: String },
     #[returns(QueryEarnPoolResponse)]
@@ -111,8 +111,6 @@ pub enum ElysQuery {
         filter_type: i32,
         pagination: Option<PageRequest>,
     },
-    #[returns(QueryIncentivePoolAprsResponse)]
-    IncentivePoolAprs { pool_ids: Option<Vec<u64>> },
     #[returns(QueryJoinPoolEstimationResponse)]
     AmmJoinPoolEstimation { pool_id: u64, amounts_in: Vec<Coin> },
     #[returns(QueryExitPoolEstimationResponse)]
@@ -310,9 +308,6 @@ impl ElysQuery {
     pub fn get_commitments(address: String) -> Self {
         ElysQuery::CommitmentShowCommitments { creator: address }
     }
-    pub fn get_rewards_balance(address: String, denom: String) -> Self {
-        ElysQuery::CommitmentRewardsBalanceOfDenom { address, denom }
-    }
     pub fn get_vesting_info(address: String) -> Self {
         ElysQuery::CommitmentVestingInfo { address }
     }
@@ -377,9 +372,6 @@ impl ElysQuery {
     }
     pub fn leveragelp_position(address: String, id: u64) -> Self {
         Self::LeveragelpPosition { address, id }
-    }
-    pub fn get_pools_apr(pool_ids: Option<Vec<u64>>) -> Self {
-        ElysQuery::IncentivePoolAprs { pool_ids }
     }
     pub fn join_pool_estimation(pool_id: u64, amounts_in: Vec<Coin>) -> Self {
         ElysQuery::AmmJoinPoolEstimation {

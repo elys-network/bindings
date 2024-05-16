@@ -491,6 +491,16 @@ impl<'a> ElysQuerier<'a> {
         Ok(resp)
     }
 
+    pub fn get_all_program_rewards(
+        &self,
+        address: String,
+    ) -> StdResult<QueryAllProgramRewardsResponse> {
+        let query = ElysQuery::IncentiveAllProgramRewards { address: address };
+        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
+        let response: QueryAllProgramRewardsResponse = self.querier.query(&request)?;
+        Ok(response)
+    }
+
     pub fn get_commitments(&self, address: String) -> StdResult<QueryShowCommitmentsResponse> {
         let commitments_query = ElysQuery::CommitmentShowCommitments {
             creator: address.to_owned(),
@@ -532,20 +542,6 @@ impl<'a> ElysQuerier<'a> {
         Ok(resp)
     }
 
-    pub fn get_rewards_balance(
-        &self,
-        address: String,
-        denom: String,
-    ) -> StdResult<BalanceAvailable> {
-        let rewards_balance_query = ElysQuery::CommitmentRewardsBalanceOfDenom {
-            address: address.to_owned(),
-            denom: denom.to_owned(),
-        };
-        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(rewards_balance_query);
-        let resp: BalanceAvailable = self.querier.query(&request)?;
-        Ok(resp)
-    }
-
     pub fn get_vesting_info(&self, address: String) -> StdResult<QueryVestingInfoResponse> {
         let vesting_info_query = ElysQuery::CommitmentVestingInfo {
             address: address.to_owned(),
@@ -553,30 +549,6 @@ impl<'a> ElysQuerier<'a> {
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(vesting_info_query);
         let resp: QueryVestingInfoResponse = self.querier.query(&request)?;
         Ok(resp)
-    }
-
-    pub fn get_pools_apr(
-        &self,
-        pool_ids: Option<Vec<u64>>,
-    ) -> StdResult<QueryIncentivePoolAprsResponse> {
-        let query = ElysQuery::get_pools_apr(pool_ids);
-        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
-        let response: StdResult<QueryIncentivePoolAprsResponse> = self.querier.query(&request);
-
-        match response {
-            Ok(mut response) => {
-                if let Some(ref mut data) = response.data {
-                    for pool_apr in data.iter_mut() {
-                        pool_apr.apr *= Decimal::from_str("100").unwrap();
-                    }
-                }
-                Ok(response)
-            }
-            Err(_) => {
-                let response = QueryIncentivePoolAprsResponse { data: Some(vec![]) };
-                Ok(response)
-            }
-        }
     }
 
     pub fn join_pool_estimation(
@@ -603,26 +575,21 @@ impl<'a> ElysQuerier<'a> {
 
     pub fn get_current_pool_ratio(&self, pool: &PoolResp) -> HashMap<String, Decimal> {
         let mut current_ratio: HashMap<String, Decimal> = HashMap::new();
-        let mut total_value: Decimal = Decimal::zero();
 
-        // Calculate total value locked (TVL) based on USD valuation
-        for asset in &pool.assets {
-            if let Some(usd_value) = asset.usd_value {
-                total_value += usd_value;
+        let total_value: Decimal = pool.assets.iter().fold(Decimal::zero(), |acc, x| {
+            if let Some(usd_value) = x.usd_value {
+                return acc + usd_value;
             }
-        }
+            return Decimal::zero();
+        });
 
         // Calculate ratio for each asset in the pool
         for asset in &pool.assets {
-            let ratio = if let Some(usd_value) = asset.usd_value {
-                match usd_value.checked_div(total_value) {
-                    Ok(resp) => resp,
-                    Err(_) => Decimal::zero(),
-                }
-            } else {
-                Decimal::zero()
-            };
-
+            let ratio = asset.usd_value.map_or(Decimal::zero(), |usd_value| {
+                usd_value
+                    .checked_div(total_value)
+                    .unwrap_or(Decimal::zero())
+            });
             current_ratio.insert(asset.token.denom.clone(), ratio);
         }
 
@@ -635,122 +602,97 @@ impl<'a> ElysQuerier<'a> {
         filter_type: i32,
         pagination: Option<PageRequest>,
     ) -> StdResult<QueryEarnPoolResponse> {
-        let pools_query = ElysQuery::get_all_pools(pool_ids.clone(), filter_type, pagination);
-        let pools_request: QueryRequest<ElysQuery> = QueryRequest::Custom(pools_query);
-
-        let pools_response: QueryEarnPoolResponse = self.querier.query(&pools_request)?;
-        let aprs_response = self.get_pools_apr(pool_ids)?;
-
-        let usdc_entry = self.get_asset_profile("uusdc".to_string());
+        let pools_response = self.get_all_pools_apr(pool_ids.clone(), filter_type, pagination)?;
+        let aprs_response =
+            self.get_masterchef_pool_apr(pool_ids.or(Some([].to_vec())).unwrap())?;
 
         match (pools_response.pools, aprs_response.data) {
-            (Some(pools), Some(aprs)) => {
+            (Some(pools), aprs) => {
                 // Create a map from pool_id to APR for efficient lookup
-                let aprs_map: HashMap<String, Decimal> = aprs
+                let aprs_map: HashMap<String, PoolApr> = aprs
                     .into_iter()
-                    .map(|apr_response| (apr_response.pool_id.to_string(), apr_response.apr))
+                    .map(|apr| (apr.pool_id.to_string(), apr))
                     .collect();
 
                 // Update the APR field for each pool, pool share price, add asset usd value
                 // and current Pool ratio
                 let pools_with_usd_values = pools
                     .into_iter()
-                    .map(|pool| {
-                        let mut updated_pool = pool.clone();
+                    .map(|mut pool: PoolResp| {
+                        pool.apr = Some(
+                            aprs_map
+                                .get(&pool.pool_id.to_string())
+                                .expect("APR is not present for given pool id")
+                                .clone(),
+                        );
 
-                        if let Some(apr) = aprs_map.get(&pool.pool_id.to_string()) {
-                            updated_pool.apr = Some(*apr);
-                        } else {
-                            updated_pool.apr = Some(Decimal::zero());
-                        }
-
-                        updated_pool.assets = pool
+                        pool.assets = pool
                             .assets
                             .into_iter()
                             .map(|asset| {
                                 let price = self
                                     .get_asset_price(asset.token.denom.clone())
-                                    .unwrap_or(Decimal::from_str("0").unwrap());
+                                    .unwrap_or(Decimal::zero());
+                                let usd_value = Decimal::from_atomics(asset.token.amount, 6)
+                                    .map_or(Decimal::zero(), |res| res * price);
+
                                 PoolAsset {
                                     token: asset.token.clone(),
                                     weight: asset.weight,
-                                    usd_value: Some(
-                                        Decimal::from_atomics(asset.token.amount, 6)
-                                            .map_or(Decimal::zero(), |res| res)
-                                            * price,
-                                    ),
+                                    usd_value: Some(usd_value),
                                 }
                             })
-                            .collect::<Vec<PoolAsset>>();
+                            .collect::<Vec<_>>();
 
-                        updated_pool.current_pool_ratio =
-                            Some(self.get_current_pool_ratio(&updated_pool));
+                        pool.current_pool_ratio = Some(self.get_current_pool_ratio(&pool));
 
-                        updated_pool.share_usd_price = Some(
-                            match pool.tvl.checked_div(
-                                Decimal::from_atomics(pool.total_shares.amount, 18).unwrap(),
-                            ) {
-                                Ok(resp) => resp,
-                                Err(_) => Decimal::zero(),
-                            },
+                        pool.share_usd_price = Some(
+                            pool.tvl
+                                .checked_div(
+                                    Decimal::from_atomics(pool.total_shares.amount, 18)
+                                        .unwrap_or(Decimal::zero()),
+                                )
+                                .unwrap_or_default(),
                         );
 
+                        let usdc_entry = self.get_asset_profile("uusdc".to_string());
+
                         // Add USD value to every reward coin returned from chain
-                        match &usdc_entry {
-                            Ok(entry) => {
-                                updated_pool.fiat_rewards = Some(
-                                    updated_pool
-                                        .reward_coins
-                                        .clone()
-                                        .into_iter()
-                                        .map(|coin| {
-                                            CoinValue::from_coin(&coin, self, &entry.entry.denom)
-                                                .unwrap()
-                                        })
-                                        .collect(),
-                                );
-                            }
-                            _ => {}
-                        }
-
-                        // Sort results. USDC should be always last asset.
-                        match &usdc_entry {
-                            Ok(usdc_entry) => {
-                                if let Some(index) = updated_pool
-                                    .assets
+                        if let Ok(entry) = &usdc_entry {
+                            pool.fiat_rewards = Some(
+                                pool.reward_coins
                                     .iter()
-                                    .position(|asset| asset.token.denom == usdc_entry.entry.denom)
-                                {
-                                    let usdc_asset = updated_pool.assets.remove(index);
-                                    updated_pool.assets.push(usdc_asset);
+                                    .map(|coin| CoinValue::from_coin(&coin, self).unwrap())
+                                    .collect(),
+                            );
+                            if let Some(index) = pool
+                                .assets
+                                .iter()
+                                .position(|asset| asset.token.denom == entry.entry.denom)
+                            {
+                                let usdc_asset = pool.assets.remove(index);
+                                pool.assets.push(usdc_asset);
 
-                                    updated_pool.current_pool_ratio_string = {
-                                        let mut ratio_string = String::new();
-                                        if let Some(current_pool_ratio) =
-                                            &updated_pool.current_pool_ratio
-                                        {
-                                            for (index, asset) in
-                                                updated_pool.assets.iter().enumerate()
+                                pool.current_pool_ratio_string = {
+                                    let mut ratio_string = String::new();
+                                    if let Some(current_pool_ratio) = &pool.current_pool_ratio {
+                                        for (index, asset) in pool.assets.iter().enumerate() {
+                                            if let Some(ratio) =
+                                                current_pool_ratio.get(&asset.token.denom)
                                             {
-                                                if let Some(ratio) =
-                                                    current_pool_ratio.get(&asset.token.denom)
-                                                {
-                                                    ratio_string.push_str(&ratio.to_string());
-                                                    if index < updated_pool.assets.len() - 1 {
-                                                        ratio_string.push(':');
-                                                    }
+                                                ratio_string.push_str(&ratio.to_string());
+                                                if index < pool.assets.len() - 1 {
+                                                    ratio_string.push(':');
                                                 }
                                             }
                                         }
-
-                                        Some(ratio_string)
                                     }
-                                }
+                                    Some(ratio_string)
+                                };
                             }
-                            _ => {}
                         }
 
-                        updated_pool
+                        pool
                     })
                     .collect::<Vec<PoolResp>>();
 
@@ -758,7 +700,7 @@ impl<'a> ElysQuerier<'a> {
                     pools: Some(pools_with_usd_values),
                 })
             }
-            (None, _) | (_, None) => {
+            (None, _) => {
                 // Return default response if either pools or APR data is missing
                 Ok(QueryEarnPoolResponse {
                     pools: Some(Vec::new()), // or None, depending on how you define default
@@ -864,10 +806,28 @@ impl<'a> ElysQuerier<'a> {
     }
 
     pub fn get_masterchef_pool_apr(&self, pool_ids: Vec<u64>) -> StdResult<QueryPoolAprsResponse> {
-        self.querier
-            .query(&QueryRequest::Custom(ElysQuery::get_masterchef_pool_apr(
-                pool_ids,
-            )))
+        let query = ElysQuery::get_masterchef_pool_apr(pool_ids);
+        let request = QueryRequest::Custom(query);
+        let mut response: QueryPoolAprsResponse = self.querier.query(&request).unwrap_or_default();
+
+        for pool_apr in response.data.iter_mut() {
+            let multiplier = Decimal::from_str("100").unwrap();
+
+            pool_apr.eden_apr = pool_apr
+                .eden_apr
+                .checked_mul(multiplier)
+                .unwrap_or_default();
+            pool_apr.usdc_apr = pool_apr
+                .usdc_apr
+                .checked_mul(multiplier)
+                .unwrap_or_default();
+            pool_apr.total_apr = pool_apr
+                .total_apr
+                .checked_mul(multiplier)
+                .unwrap_or_default();
+        }
+
+        Ok(response)
     }
 
     pub fn get_estaking_rewards(&self, address: String) -> StdResult<EstakingRewardsResponse> {
@@ -1031,6 +991,18 @@ impl<'a> ElysQuerier<'a> {
             number: number.unwrap_or(0),
         })
     }
+    pub fn get_all_pools_apr(
+        &self,
+        pool_ids: Option<Vec<u64>>,
+        filter_type: i32,
+        pagination: Option<PageRequest>,
+    ) -> StdResult<QueryEarnPoolResponse> {
+        let pools_query = ElysQuery::get_all_pools(pool_ids, filter_type, pagination);
+        let pools_request: QueryRequest<ElysQuery> = QueryRequest::Custom(pools_query);
+
+        self.querier.query(&pools_request)
+    }
+
     #[allow(dead_code)]
     #[cfg(feature = "debug")]
     fn query_binary(&self, request: &QueryRequest<ElysQuery>) -> StdResult<Binary> {

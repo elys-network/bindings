@@ -1,6 +1,8 @@
 #[allow(unused_imports)]
 use super::super::types::{PerpetualAssets, PortfolioBalanceSnapshot};
 #[allow(unused_imports)]
+use super::query_resp::earn::*;
+#[allow(unused_imports)]
 use super::query_resp::estaking::*;
 #[allow(unused_imports)]
 use super::query_resp::masterchef::*;
@@ -11,8 +13,8 @@ use super::query_resp::*;
 use crate::query_resp::QueryStableStakeAprResponse;
 #[allow(unused_imports)]
 use crate::query_resp::{
-    AuthAddressesResponse, BalanceBorrowed, PoolFilterType, QueryEarnPoolResponse,
-    QueryExitPoolEstimationResponse, QueryIncentivePoolAprsResponse,
+    AuthAddressesResponse, BalanceBorrowed, PoolFilterType, QueryAllProgramRewardsResponse,
+    QueryAprsResponse, QueryEarnPoolResponse, QueryExitPoolEstimationResponse,
     QueryJoinPoolEstimationResponse, QueryPoolAssetEstimationResponse, QueryStakedPositionResponse,
     QueryUnstakedPositionResponse, QueryUserPoolResponse, QueryVestingInfoResponse,
     StableStakeParamsData, StakedAvailable,
@@ -34,12 +36,8 @@ pub enum QueryMsg {
     GetLiquidAssets { user_address: String },
     #[returns(StakedAssetsResponse)]
     GetStakedAssets { user_address: String },
-    #[returns(GetPortfolioResp)]
-    GetPortfolio { user_address: String },
     #[returns(QueryUserPoolResponse)]
     GetPoolBalances { user_address: String },
-    #[returns(GetTotalBalanceResp)]
-    GetTotalBalance { user_address: String },
     #[returns(GetRewardsResp)]
     GetRewards { user_address: String },
     #[returns(MembershipTierResponse)]
@@ -57,9 +55,6 @@ pub enum QueryMsg {
         filter_type: PoolFilterType,
         pagination: Option<PageRequest>,
     },
-
-    #[returns(QueryIncentivePoolAprsResponse)]
-    GetLiquidityPoolsApr { pool_ids: Option<Vec<u64>> },
 
     #[returns(QueryJoinPoolEstimationResponse)]
     JoinPoolEstimation { pool_id: u64, amounts_in: Vec<Coin> },
@@ -144,6 +139,31 @@ pub enum QueryMsg {
     #[cfg(feature = "debug")]
     #[returns(Decimal)]
     AmmPriceByDenom { token_in: Coin, discount: Decimal },
+
+    #[cfg(feature = "debug")]
+    #[returns(GetEdenEarnProgramResp)]
+    GetEdenEarnProgramDetails { address: String },
+
+    #[cfg(feature = "debug")]
+    #[returns(GetEdenBoostEarnProgramResp)]
+    GetEdenBoostEarnProgramDetails { address: String },
+
+    #[cfg(feature = "debug")]
+    #[returns(GetElysEarnProgramResp)]
+    GetElysEarnProgramDetails { address: String },
+
+    #[cfg(feature = "debug")]
+    #[returns(GetUsdcEarnProgramResp)]
+    GetUsdcEarnProgramDetails { address: String },
+
+    #[cfg(feature = "debug")]
+    #[returns(QueryAprsResponse)]
+    IncentiveAprs {},
+
+    #[cfg(feature = "debug")]
+    #[returns(QueryAllProgramRewardsResponse)]
+    IncentiveAllProgramRewards { address: String },
+
     #[cfg(feature = "debug")]
     #[returns(Uint128)]
     AddressQueueSize {},

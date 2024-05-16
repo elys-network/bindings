@@ -52,7 +52,6 @@ pub mod execute {
     mod unstake_request;
 
     mod claim_rewards_request;
-    mod claim_validator_commission_request;
     mod eden_cancel_vest_request;
     mod eden_claim_vesting_request;
     mod eden_vest_request;
@@ -79,7 +78,6 @@ pub mod execute {
     pub use create_spot_order::create_spot_order;
 
     pub use claim_rewards_request::claim_rewards_request;
-    pub use claim_validator_commission_request::claim_validator_commission_request;
     pub use close_leveragelp_position_request::close_leveragelp_position_request;
     pub use eden_cancel_vest_request::eden_cancel_vest_request;
     pub use eden_claim_vesting_request::eden_claim_vesting_request;

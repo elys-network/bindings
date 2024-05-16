@@ -1,6 +1,8 @@
+use std::str::FromStr;
+
 use crate::{query_resp::OracleAssetInfoResponse, types::OracleAssetInfo, ElysQuerier};
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, DecCoin, Decimal, Decimal256, StdError, StdResult};
+use cosmwasm_std::{Coin, DecCoin, Decimal, Decimal256, StdError, StdResult, Uint256};
 
 #[cw_serde]
 #[derive(Default)]
@@ -13,7 +15,7 @@ pub struct CoinValue {
 
 #[cw_serde]
 #[derive(Default)]
-pub struct DecCoinValue {
+pub struct Coin256Value {
     pub denom: String,
     pub amount_token: Decimal256,
     pub price: Decimal,
@@ -30,11 +32,7 @@ impl CoinValue {
         }
     }
 
-    pub fn from_coin(
-        balance: &Coin,
-        querier: &ElysQuerier<'_>,
-        usdc_denom: &String,
-    ) -> StdResult<Self> {
+    pub fn from_coin(balance: &Coin, querier: &ElysQuerier<'_>) -> StdResult<Self> {
         let OracleAssetInfoResponse { asset_info } = querier
             .asset_info(balance.denom.clone())
             .unwrap_or(OracleAssetInfoResponse {
@@ -46,24 +44,6 @@ impl CoinValue {
                     decimal: 6,
                 },
             });
-        let decimal_point_token = asset_info.decimal;
-
-        if &balance.denom == usdc_denom {
-            let amount = Decimal::from_atomics(balance.amount, decimal_point_token as u32)
-                .map_err(|e| {
-                    StdError::generic_err(format!("failed to convert amount to Decimal: {}", e))
-                })?;
-            let price = querier.get_asset_price(usdc_denom)?;
-            let amount_usd = amount.checked_mul(price.clone()).map_err(|e| {
-                StdError::generic_err(format!("failed to convert amount to amount_usd: {}", e))
-            })?;
-            return Ok(Self {
-                denom: balance.denom.clone(),
-                amount_usd,
-                price,
-                amount_token: amount,
-            });
-        }
 
         let price = querier
             .get_asset_price(balance.denom.clone())
@@ -71,7 +51,7 @@ impl CoinValue {
 
         let decimal_point_usd = asset_info.decimal;
 
-        let amount_token = Decimal::from_atomics(balance.amount, decimal_point_token as u32)
+        let amount_token = Decimal::from_atomics(balance.amount, decimal_point_usd as u32)
             .map_err(|e| {
                 StdError::generic_err(format!("failed to convert amount to Decimal: {}", e))
             })?;
@@ -102,35 +82,44 @@ impl CoinValue {
     }
 }
 
-impl DecCoinValue {
-    pub fn from_dec_coin(
-        balance: &DecCoin,
-        querier: &ElysQuerier<'_>,
-        usdc_denom: &String,
-    ) -> StdResult<Self> {
-        if &balance.denom == usdc_denom {
-            let price = querier.get_asset_price(usdc_denom)?;
-            let amount_usd = balance
-                .amount
-                .checked_mul(Decimal256::from(price.clone()))
-                .map_err(|e| {
-                    StdError::generic_err(format!("failed to convert amount to amount_usd: {}", e))
-                })?;
-
-            return Ok(Self {
-                denom: balance.denom.clone(),
-                amount_usd,
-                price,
-                amount_token: balance.amount,
-            });
+impl Coin256Value {
+    pub fn new(
+        denom: String,
+        amount_token: Decimal256,
+        price: Decimal,
+        amount_usd: Decimal256,
+    ) -> Self {
+        Self {
+            denom,
+            amount_token,
+            amount_usd,
+            price,
         }
+    }
 
+    pub fn from_coin256(balance: &Coin256, querier: &ElysQuerier<'_>) -> StdResult<Self> {
+        let OracleAssetInfoResponse { asset_info } = querier
+            .asset_info(balance.denom.clone())
+            .unwrap_or(OracleAssetInfoResponse {
+                asset_info: OracleAssetInfo {
+                    denom: balance.denom.clone(),
+                    display: balance.denom.clone(),
+                    band_ticker: balance.denom.clone(),
+                    elys_ticker: balance.denom.clone(),
+                    decimal: 6,
+                },
+            });
+        let decimal_point_token = asset_info.decimal;
         let price = querier
             .get_asset_price(balance.denom.clone())
             .map_err(|e| StdError::generic_err(format!("failed to get_asset_price: {}", e)))?;
 
-        let amount_usd = balance
-            .amount
+        let amount_token = Decimal256::from_atomics(balance.amount, decimal_point_token as u32)
+            .map_err(|e| {
+                StdError::generic_err(format!("failed to convert amount to Decimal: {}", e))
+            })?;
+
+        let amount_usd = amount_token
             .checked_mul(Decimal256::from(price.clone()))
             .map_err(|e| {
                 StdError::generic_err(format!(
@@ -141,9 +130,24 @@ impl DecCoinValue {
 
         Ok(Self {
             denom: balance.denom.clone(),
-            amount_token: balance.amount.clone(),
+            amount_token: Decimal256::from_str(balance.amount.to_string().as_str())?,
             price,
             amount_usd,
         })
+    }
+}
+#[cw_serde]
+#[derive(Default)]
+pub struct Coin256 {
+    pub denom: String,
+    pub amount: Uint256,
+}
+
+impl From<DecCoin> for Coin256 {
+    fn from(value: DecCoin) -> Self {
+        Coin256 {
+            denom: value.denom,
+            amount: value.amount.atomics(),
+        }
     }
 }

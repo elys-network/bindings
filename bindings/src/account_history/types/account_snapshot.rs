@@ -1,15 +1,12 @@
 use cosmwasm_schema::cw_serde;
 use cw_utils::Expiration;
 
-use super::{
-    LiquidAsset, PerpetualAssets, PoolBalances, Portfolio, Reward, StakedAssets, TotalBalance,
-};
+use super::{LiquidAsset, PerpetualAssets, PoolBalances, Reward, StakedAssets, TotalBalance};
 
 #[cw_serde]
 pub struct AccountSnapshot {
     pub date: Expiration,
     pub total_balance: TotalBalance,
-    pub portfolio: Portfolio,
     pub reward: Reward,
     pub pool_balances: PoolBalances,
     pub liquid_asset: LiquidAsset,
@@ -22,7 +19,6 @@ impl AccountSnapshot {
         Self {
             date: Expiration::Never {},
             total_balance: TotalBalance::zero(value_denom),
-            portfolio: Portfolio::zero(value_denom),
             reward: Reward::default(),
             pool_balances: PoolBalances::default(),
             liquid_asset: LiquidAsset::zero(value_denom),
@@ -38,7 +34,6 @@ impl Default for AccountSnapshot {
         Self {
             date: Expiration::Never {},
             total_balance: TotalBalance::default(),
-            portfolio: Portfolio::default(),
             reward: Reward::default(),
             pool_balances: PoolBalances::default(),
             liquid_asset: LiquidAsset::default(),

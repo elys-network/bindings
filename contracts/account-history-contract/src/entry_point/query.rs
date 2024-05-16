@@ -1,21 +1,25 @@
 use crate::{
     action::query::{
-        get_estaking_rewards, get_liquid_assets, get_masterchef_pending_rewards,
-        get_masterchef_pool_apr, get_masterchef_stable_stake_apr, get_membership_tier,
-        get_perpetuals_assets, get_pool_balances, get_portfolio, get_rewards, get_staked_assets,
-        get_total_balance,
+        get_eden_boost_earn_program_details, get_eden_earn_program_details,
+        get_elys_earn_program_details, get_estaking_rewards, get_liquid_assets,
+        get_masterchef_pending_rewards, get_masterchef_pool_apr, get_masterchef_stable_stake_apr,
+        get_membership_tier, get_perpetuals_assets, get_pool_balances, get_rewards,
+        get_staked_assets, get_usdc_earn_program_details,
     },
     states::USER_ADDRESS_QUEUE,
+    types::AccountSnapshotGenerator,
 };
 
 #[cfg(feature = "debug")]
 use crate::action::query::{
-    all, exit_pool_estimation, get_pools, get_pools_apr, join_pool_estimation, last_snapshot,
-    params, pool_asset_estimation, user_snapshots, user_value,
+    all, exit_pool_estimation, get_pools, join_pool_estimation, last_snapshot, params,
+    pool_asset_estimation, user_snapshots, user_value,
 };
 
 use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult, Uint128};
-use elys_bindings::{ElysQuerier, ElysQuery};
+use elys_bindings::{
+    account_history::types::ElysDenom, query_resp::QueryAprResponse, ElysQuerier, ElysQuery,
+};
 
 use crate::msg::QueryMsg;
 
@@ -40,10 +44,6 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         GetPoolBalances { user_address } => {
             to_json_binary(&get_pool_balances(deps, user_address, env)?)
         }
-        GetPortfolio { user_address } => to_json_binary(&get_portfolio(deps, user_address, env)?),
-        GetTotalBalance { user_address } => {
-            to_json_binary(&get_total_balance(deps, env, user_address)?)
-        }
         GetRewards { user_address } => to_json_binary(&get_rewards(deps, user_address, env)?),
 
         GetMembershipTier { user_address } => {
@@ -62,8 +62,6 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
             filter_type,
             pagination,
         } => to_json_binary(&get_pools(deps, pool_ids, filter_type, pagination)?),
-
-        GetLiquidityPoolsApr { pool_ids } => to_json_binary(&get_pools_apr(deps, pool_ids)?),
 
         JoinPoolEstimation {
             pool_id,
@@ -164,6 +162,104 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
             to_json_binary(&querier.get_amm_price_by_denom(token_in, discount)?)
         }
         #[cfg(feature = "debug")]
+        GetEdenEarnProgramDetails { address } => {
+            let querier = ElysQuerier::new(&deps.querier);
+            let aprs = querier.get_incentive_aprs().unwrap_or_default();
+
+            let generator = AccountSnapshotGenerator::new(&deps)?;
+            let program = get_eden_earn_program_details(
+                &deps,
+                Some(address.to_owned()),
+                ElysDenom::Eden.as_str().to_string(),
+                generator.metadata.uusdc_usd_price,
+                generator.metadata.uelys_price_in_uusdc,
+                QueryAprResponse {
+                    apr: aprs.usdc_apr_eden,
+                },
+                QueryAprResponse {
+                    apr: aprs.eden_apr_eden,
+                },
+                QueryAprResponse {
+                    apr: aprs.edenb_apr_eden,
+                },
+            )
+            .unwrap_or_default();
+            to_json_binary(&program)
+        }
+        #[cfg(feature = "debug")]
+        GetEdenBoostEarnProgramDetails { address } => {
+            let querier = ElysQuerier::new(&deps.querier);
+            let aprs = querier.get_incentive_aprs().unwrap_or_default();
+            let program = get_eden_boost_earn_program_details(
+                &deps,
+                Some(address.to_owned()),
+                ElysDenom::EdenBoost.as_str().to_string(),
+                QueryAprResponse {
+                    apr: aprs.usdc_apr_edenb,
+                },
+                QueryAprResponse {
+                    apr: aprs.eden_apr_edenb,
+                },
+            )
+            .unwrap_or_default();
+
+            to_json_binary(&program)
+        }
+        #[cfg(feature = "debug")]
+        GetElysEarnProgramDetails { address } => {
+            let querier = ElysQuerier::new(&deps.querier);
+            let aprs = querier.get_incentive_aprs().unwrap_or_default();
+
+            let generator = AccountSnapshotGenerator::new(&deps)?;
+            let program = get_elys_earn_program_details(
+                &deps,
+                Some(address.to_owned()),
+                ElysDenom::Elys.as_str().to_string(),
+                generator.metadata.uusdc_usd_price,
+                generator.metadata.uelys_price_in_uusdc,
+                QueryAprResponse {
+                    apr: aprs.usdc_apr_elys,
+                },
+                QueryAprResponse {
+                    apr: aprs.eden_apr_elys,
+                },
+                QueryAprResponse {
+                    apr: aprs.edenb_apr_elys,
+                },
+            )
+            .unwrap_or_default();
+
+            to_json_binary(&program)
+        }
+        #[cfg(feature = "debug")]
+        GetUsdcEarnProgramDetails { address } => {
+            let generator = AccountSnapshotGenerator::new(&deps)?;
+            let program = get_usdc_earn_program_details(
+                &deps,
+                Some(address.to_owned()),
+                generator.metadata.usdc_denom.to_owned(),
+                generator.metadata.usdc_base_denom.to_owned(),
+                generator.metadata.uusdc_usd_price,
+            )
+            .unwrap_or_default();
+
+            to_json_binary(&program)
+        }
+        #[cfg(feature = "debug")]
+        IncentiveAprs { .. } => {
+            let querier = ElysQuerier::new(&deps.querier);
+            let response = querier.get_incentive_aprs().unwrap_or_default();
+
+            to_json_binary(&response)
+        }
+        #[cfg(feature = "debug")]
+        IncentiveAllProgramRewards { address } => {
+            let querier = ElysQuerier::new(&deps.querier);
+            let response = querier.get_all_program_rewards(address)?;
+
+            to_json_binary(&response)
+        }
+
         AddressQueueSize {} => {
             let user_address_queue: Vec<String> = USER_ADDRESS_QUEUE
                 .prefix_range(deps.storage, None, None, cosmwasm_std::Order::Descending)

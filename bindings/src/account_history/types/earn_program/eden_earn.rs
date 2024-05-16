@@ -1,5 +1,5 @@
 use crate::{
-    account_history::types::{AprElys, BalanceReward},
+    account_history::types::{AprElys, Coin256Value},
     query_resp::StakedAvailable,
     trade_shield::types::BalanceAvailable,
     types::VestingDetail,
@@ -24,7 +24,7 @@ pub struct EdenEarnProgram {
     // It should be in the response only if the address is in the request object.
     // rewards are either USDC, EDEN or EDEN Boost.
     // Eden Boost doesnt have USD amount.
-    pub rewards: Option<Vec<BalanceReward>>,
+    pub rewards: Option<Vec<Coin256Value>>,
     // The sum of all the total_vest.
     pub vesting: BalanceAvailable,
     // A list of all the vesting details for the EDEN program.

@@ -5,7 +5,7 @@ use cosmwasm_std::{
 
 use crate::{
     trade_shield::types::default_take_profit_price,
-    types::{EarnType, PerpetualPosition, SwapAmountInRoute},
+    types::{PerpetualPosition, SwapAmountInRoute},
 };
 
 #[cw_serde]
@@ -79,14 +79,6 @@ pub enum ElysMsg {
     },
     CommitmentClaimVesting {
         sender: String,
-    },
-    IncentiveWithdrawRewards {
-        delegator_address: String,
-        withdraw_type: i32,
-    },
-    IncentiveWithdrawValidatorCommission {
-        delegator_address: String,
-        validator_address: String,
     },
     AmmJoinPool {
         sender: String,
@@ -285,23 +277,6 @@ impl ElysMsg {
     pub fn eden_claim_vesting(sender: String) -> Self {
         Self::CommitmentClaimVesting {
             sender: sender.to_owned(),
-        }
-    }
-
-    pub fn withdraw_rewards(delegator_address: String, withdraw_type: EarnType) -> Self {
-        Self::IncentiveWithdrawRewards {
-            delegator_address: delegator_address.to_owned(),
-            withdraw_type: withdraw_type as i32,
-        }
-    }
-
-    pub fn withdraw_validator_commissions(
-        delegator_address: String,
-        validator_address: String,
-    ) -> Self {
-        Self::IncentiveWithdrawValidatorCommission {
-            delegator_address: delegator_address.to_owned(),
-            validator_address: validator_address.to_owned(),
         }
     }
 
