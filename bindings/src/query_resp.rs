@@ -443,14 +443,6 @@ pub struct QueryShowCommitmentsResponse {
 }
 
 #[cw_serde]
-pub struct QueryAllProgramRewardsResponse {
-    pub usdc_staking_rewards: Vec<Coin>,
-    pub elys_staking_rewards: Vec<Coin>,
-    pub eden_staking_rewards: Vec<Coin>,
-    pub edenb_staking_rewards: Vec<Coin>,
-}
-
-#[cw_serde]
 pub struct QueryVestingInfoResponse {
     pub vesting: BalanceAvailable,
     pub vesting_details: Option<Vec<VestingDetail>>,

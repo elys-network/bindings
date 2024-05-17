@@ -16,7 +16,7 @@ use elys_bindings::account_history::types::{AprUsdc, CoinValue};
 use elys_bindings::query_resp::{
     BalanceBorrowed, DelegationDelegatorReward, EstakingRewardsResponse,
     MasterchefUserPendingRewardData, MasterchefUserPendingRewardResponse,
-    QueryAllProgramRewardsResponse, QueryStableStakeAprResponse, StakedAvailable,
+    QueryStableStakeAprResponse, StakedAvailable,
 };
 use elys_bindings::types::BalanceAvailable;
 use elys_bindings::{ElysMsg, ElysQuery};
@@ -134,27 +134,6 @@ impl Module for ElysModuleWrapper {
                     total: vec![Coin {
                         denom: "ueden".to_string(),
                         amount: Uint128::from_str("121").unwrap(),
-                    }],
-                };
-                Ok(to_json_binary(&resp)?)
-            }
-            ElysQuery::IncentiveAllProgramRewards { .. } => {
-                let resp = QueryAllProgramRewardsResponse {
-                    usdc_staking_rewards: vec![Coin {
-                        denom: "usdc".to_string(),
-                        amount: Uint128::from_str("1231").unwrap(),
-                    }],
-                    elys_staking_rewards: vec![Coin {
-                        denom: "uelys".to_string(),
-                        amount: Uint128::zero(),
-                    }],
-                    eden_staking_rewards: vec![Coin {
-                        denom: "ueden".to_string(),
-                        amount: Uint128::zero(),
-                    }],
-                    edenb_staking_rewards: vec![Coin {
-                        denom: "uedenb".to_string(),
-                        amount: Uint128::zero(),
                     }],
                 };
                 Ok(to_json_binary(&resp)?)

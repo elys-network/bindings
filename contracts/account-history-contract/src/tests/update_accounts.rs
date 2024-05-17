@@ -25,8 +25,7 @@ use cw_multi_test::{AppResponse, Module};
 use elys_bindings::query_resp::{
     AmmSwapEstimationByDenomResponse, DelegationDelegatorReward, Entry, EstakingRewardsResponse,
     MasterchefUserPendingRewardData, MasterchefUserPendingRewardResponse, OracleAssetInfoResponse,
-    QueryAllProgramRewardsResponse, QueryGetEntryResponse, QueryGetPriceResponse,
-    QueryStableStakeAprResponse, Validator,
+    QueryGetEntryResponse, QueryGetPriceResponse, QueryStableStakeAprResponse, Validator,
 };
 use elys_bindings::types::BalanceAvailable;
 use elys_bindings::{ElysMsg, ElysQuery};
@@ -270,29 +269,6 @@ impl Module for ElysModuleWrapper {
                     total_rewards: vec![Coin {
                         denom: "ueden".to_string(),
                         amount: Uint128::new(20),
-                    }],
-                };
-                Ok(to_json_binary(&resp)?)
-            }
-            ElysQuery::IncentiveAllProgramRewards { .. } => {
-                let resp = QueryAllProgramRewardsResponse {
-                    usdc_staking_rewards: vec![Coin {
-                        denom:
-                            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                                .to_string(),
-                        amount: Uint128::from_str("10").unwrap(),
-                    }],
-                    elys_staking_rewards: vec![Coin {
-                        denom: "uelys".to_string(),
-                        amount: Uint128::from_str("10").unwrap(),
-                    }],
-                    eden_staking_rewards: vec![Coin {
-                        denom: "ueden".to_string(),
-                        amount: Uint128::from_str("10").unwrap(),
-                    }],
-                    edenb_staking_rewards: vec![Coin {
-                        denom: "uedenb".to_string(),
-                        amount: Uint128::from_str("10").unwrap(),
                     }],
                 };
                 Ok(to_json_binary(&resp)?)
