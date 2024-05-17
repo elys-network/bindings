@@ -34,7 +34,7 @@ pub struct ElysEarnProgram {
 impl Default for ElysEarnProgram {
     fn default() -> Self {
         Self {
-            bonding_period: 0,
+            bonding_period: 14,
             apr: AprElys::default(),
             available: None,
             staked: None,
