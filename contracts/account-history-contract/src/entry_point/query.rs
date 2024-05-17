@@ -157,6 +157,8 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
             to_json_binary(&querier.get_balance(address, denom)?)
         }
         #[cfg(feature = "debug")]
+        AllBalances { address } => to_json_binary(&deps.querier.query_all_balances(address)?),
+        #[cfg(feature = "debug")]
         AmmPriceByDenom { token_in, discount } => {
             let querier = ElysQuerier::new(&deps.querier);
             to_json_binary(&querier.get_amm_price_by_denom(token_in, discount)?)

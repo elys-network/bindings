@@ -136,6 +136,10 @@ pub enum QueryMsg {
     Balance { address: String, denom: String },
 
     #[cfg(feature = "debug")]
+    #[returns(Vec<Coin>)]
+    AllBalances { address: String },
+
+    #[cfg(feature = "debug")]
     #[returns(Decimal)]
     AmmPriceByDenom { token_in: Coin, discount: Decimal },
 
