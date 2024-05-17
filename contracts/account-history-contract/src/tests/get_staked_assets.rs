@@ -638,7 +638,7 @@ fn get_staked_assets() {
         .query_wasm_smart(
             &addr,
             &QueryMsg::GetStakedAssets {
-                user_address: "user".to_string(),
+                user_address: Some("user".to_string()),
             },
         )
         .unwrap();

@@ -35,7 +35,7 @@ pub enum QueryMsg {
     #[returns(GetLiquidAssetsResp)]
     GetLiquidAssets { user_address: String },
     #[returns(StakedAssetsResponse)]
-    GetStakedAssets { user_address: String },
+    GetStakedAssets { user_address: Option<String> },
     #[returns(QueryUserPoolResponse)]
     GetPoolBalances { user_address: String },
     #[returns(GetRewardsResp)]

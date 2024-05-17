@@ -5,12 +5,12 @@ use elys_bindings::ElysQuery;
 
 pub fn get_staked_assets(
     deps: Deps<ElysQuery>,
-    address: String,
+    address: Option<String>,
     _env: Env,
 ) -> StdResult<StakedAssetsResponse> {
     let generator = AccountSnapshotGenerator::new(&deps)?;
 
-    let staked_assets_response = generator.get_staked_assets(&deps, &address)?;
+    let staked_assets_response = generator.get_staked_assets(&deps, address)?;
 
     Ok(StakedAssetsResponse {
         total_staked_balance: DecCoin::new(

@@ -126,6 +126,15 @@ function staked_assets() {
     }'
 }
 
+function staked_assets_no_user() {
+    printf "\n# Staked assets\n"
+    query_contract "$ah_contract_address" '{
+        "get_staked_assets": {
+        }
+    }'
+}
+
+
 # Get perpetual assets
 function perpetual_assets() {
     printf "\n# Perpertual assets\n"
@@ -605,6 +614,9 @@ case "$2" in
     ;;
 "staked_assets")
     staked_assets
+    ;;
+"staked_assets_no_user")
+    staked_assets_no_user
     ;;
 "perpetual_assets")
     perpetual_assets
