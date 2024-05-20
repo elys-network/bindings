@@ -474,9 +474,9 @@ pub struct QueryExitPoolEstimationResponse {
 #[cw_serde]
 pub struct QueryUserPoolResponse {
     // Total Rewards in fiat
-    pub rewards: Decimal,
+    pub total_rewards: Decimal,
     // Each reward including the fiat amount
-    pub rewards_breakdown: HashMap<String, CoinValue>,
+    pub total_rewards_breakdown: HashMap<String, CoinValue>,
     pub pools: Vec<UserPoolResp>,
 }
 

@@ -133,7 +133,7 @@ impl AccountSnapshotGenerator {
         })
     }
 
-    pub fn get_pools_user_rewards(
+    pub fn get_pools_user_total_rewards(
         &self,
         deps: &Deps<ElysQuery>,
         address: &String,
@@ -292,12 +292,13 @@ impl AccountSnapshotGenerator {
             .map(|user_pool| user_pool.pool.clone())
             .collect();
 
-        let (rewards, rewards_breakdown) = self.get_pools_user_rewards(&deps, address, pools);
+        let (total_rewards, total_rewards_breakdown) =
+            self.get_pools_user_total_rewards(&deps, address, pools);
 
         Ok(QueryUserPoolResponse {
             pools: pool_resp,
-            rewards,
-            rewards_breakdown,
+            total_rewards,
+            total_rewards_breakdown,
         })
     }
 
