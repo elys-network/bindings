@@ -383,7 +383,7 @@ impl<'a> ElysQuerier<'a> {
             .map(|stack| StakedPosition {
                 id: stack.id.clone(),
                 validator: StakingValidator {
-                    id: stack.validator.id.clone().map_or("".to_string(), |id| id),
+                    id: Some(stack.validator.id.clone().map_or("".to_string(), |id| id)),
                     address: stack
                         .validator
                         .address

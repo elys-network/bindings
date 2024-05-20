@@ -7,14 +7,13 @@ use crate::{
 };
 use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
-    coins, to_json_binary, Addr, Coin, DecCoin, Decimal, Decimal256, Empty, Int128, StdError,
-    Timestamp, Uint128,
+    coins, to_json_binary, Addr, Coin, Decimal, Empty, Int128, StdError, Timestamp, Uint128,
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::account_history::msg::query_resp::earn::GetEdenBoostEarnProgramResp;
 use elys_bindings::account_history::types::earn_detail::earn_detail::AprEdenBoost;
 use elys_bindings::account_history::types::earn_program::EdenBoostEarnProgram;
-use elys_bindings::account_history::types::Coin256Value;
+use elys_bindings::account_history::types::CoinValue;
 use elys_bindings::query_resp::{
     BalanceBorrowed, DelegationDelegatorReward, EstakingRewardsResponse,
     MasterchefUserPendingRewardData, MasterchefUserPendingRewardResponse,
@@ -128,35 +127,35 @@ impl Module for ElysModuleWrapper {
                 let resp = EstakingRewardsResponse {
                     rewards: vec![DelegationDelegatorReward {
                         validator_address: Validator::EdenBoost.to_string(),
-                        reward: vec![DecCoin {
+                        reward: vec![Coin {
                             denom: "ueden".to_string(),
-                            amount: Decimal256::from_str("1.21").unwrap(),
+                            amount: Uint128::from_str("121").unwrap(),
                         }],
                     }],
-                    total: vec![DecCoin {
+                    total: vec![Coin {
                         denom: "uedenb".to_string(),
-                        amount: Decimal256::from_str("1.21").unwrap(),
+                        amount: Uint128::from_str("121").unwrap(),
                     }],
                 };
                 Ok(to_json_binary(&resp)?)
             }
             ElysQuery::IncentiveAllProgramRewards { .. } => {
                 let resp = QueryAllProgramRewardsResponse {
-                    usdc_staking_rewards: vec![DecCoin {
+                    usdc_staking_rewards: vec![Coin {
                         denom: "usdc".to_string(),
-                        amount: Decimal256::from_str("123.1").unwrap(),
+                        amount: Uint128::from_str("1231").unwrap(),
                     }],
-                    elys_staking_rewards: vec![DecCoin {
+                    elys_staking_rewards: vec![Coin {
                         denom: "uelys".to_string(),
-                        amount: Decimal256::zero(),
+                        amount: Uint128::zero(),
                     }],
-                    eden_staking_rewards: vec![DecCoin {
+                    eden_staking_rewards: vec![Coin {
                         denom: "ueden".to_string(),
-                        amount: Decimal256::zero(),
+                        amount: Uint128::zero(),
                     }],
-                    edenb_staking_rewards: vec![DecCoin {
+                    edenb_staking_rewards: vec![Coin {
                         denom: "uedenb".to_string(),
-                        amount: Decimal256::zero(),
+                        amount: Uint128::zero(),
                     }],
                 };
                 Ok(to_json_binary(&resp)?)
@@ -305,11 +304,11 @@ fn get_eden_boost_earn_program_details() {
             },
             available: Some(Uint128::new(21798000)),
             staked: Some(Uint128::new(100120000000)),
-            rewards: Some(vec![Coin256Value {
+            rewards: Some(vec![CoinValue {
                 denom: "ueden".to_string(),
-                amount_token: Decimal256::from_str("1210000000000000000").unwrap(),
-                price: Decimal::from_atomics(Uint128::new(35308010067676894), 16).unwrap(),
-                amount_usd: Decimal256::from_str("4272269218188.904174").unwrap(),
+                amount_token: Decimal::from_str("0.000121").unwrap(),
+                price: Decimal::from_str("3.5308010067676894").unwrap(),
+                amount_usd: Decimal::from_str("0.00042722692181889").unwrap(),
             }]),
         },
     };

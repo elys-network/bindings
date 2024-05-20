@@ -18,7 +18,7 @@ use elys_bindings::account_history::types::earn_program::{
     EdenBoostEarnProgram, EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram,
 };
 use elys_bindings::account_history::types::{
-    AprElys, AprUsdc, Coin256Value, CoinValue, QueryAprResponse, StakedAssets,
+    AprElys, AprUsdc, CoinValue, QueryAprResponse, StakedAssets,
 };
 use elys_bindings::query_resp::{
     BalanceBorrowed, DelegationDelegatorReward, Entry, EstakingRewardsResponse, Lockup,
@@ -141,14 +141,14 @@ impl Module for ElysModuleWrapper {
                 let resp = EstakingRewardsResponse {
                     rewards: vec![DelegationDelegatorReward {
                         validator_address: Validator::EdenBoost.to_string(),
-                        reward: vec![DecCoin {
+                        reward: vec![Coin {
                             denom: "ueden".to_string(),
-                            amount: Decimal256::from_str("1.21").unwrap(),
+                            amount: Uint128::from_str("121").unwrap(),
                         }],
                     }],
-                    total: vec![DecCoin {
+                    total: vec![Coin {
                         denom: "uedenb".to_string(),
-                        amount: Decimal256::from_str("1.21").unwrap(),
+                        amount: Uint128::from_str("121").unwrap(),
                     }],
                 };
                 Ok(to_json_binary(&resp)?)
@@ -256,7 +256,7 @@ impl Module for ElysModuleWrapper {
                         staked_position: Some(vec![StakedPosition {
                             id: "2".to_string(),
                             validator: StakingValidator {
-                                id: String::from("1"),
+                                id: Some(String::from("1")),
                                 address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw"
                                     .to_string(),
                                 name: "nirvana".to_string(),
@@ -279,7 +279,7 @@ impl Module for ElysModuleWrapper {
                         unstaked_position: Some(vec![UnstakedPosition {
                             id: "1".to_string(),
                             validator: StakingValidator {
-                                id: String::from("1"),
+                                id: Some(String::from("1")),
                                 address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw"
                                     .to_string(),
                                 name: "nirvana".to_string(),
@@ -487,23 +487,23 @@ impl Module for ElysModuleWrapper {
             }
             ElysQuery::IncentiveAllProgramRewards { .. } => {
                 let resp = QueryAllProgramRewardsResponse {
-                    usdc_staking_rewards: vec![DecCoin {
+                    usdc_staking_rewards: vec![Coin {
                         denom:
                             "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
                                 .to_string(),
-                        amount: Decimal256::from_str("10").unwrap(),
+                        amount: Uint128::from_str("10").unwrap(),
                     }],
-                    elys_staking_rewards: vec![DecCoin {
+                    elys_staking_rewards: vec![Coin {
                         denom: "uelys".to_string(),
-                        amount: Decimal256::from_str("10").unwrap(),
+                        amount: Uint128::from_str("10").unwrap(),
                     }],
-                    eden_staking_rewards: vec![DecCoin {
+                    eden_staking_rewards: vec![Coin {
                         denom: "ueden".to_string(),
-                        amount: Decimal256::from_str("10").unwrap(),
+                        amount: Uint128::from_str("10").unwrap(),
                     }],
-                    edenb_staking_rewards: vec![DecCoin {
+                    edenb_staking_rewards: vec![Coin {
                         denom: "uedenb".to_string(),
-                        amount: Decimal256::from_str("10").unwrap(),
+                        amount: Uint128::from_str("10").unwrap(),
                     }],
                 };
                 Ok(to_json_binary(&resp)?)
@@ -648,7 +648,7 @@ fn get_staked_assets() {
         unstaking: vec![UnstakedPosition {
             id: "1".to_string(),
             validator: StakingValidator {
-                id: String::from("1"),
+                id: Some(String::from("1")),
                 address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw".to_string(),
                 name: "nirvana".to_string(),
                 voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
@@ -684,11 +684,11 @@ fn get_staked_assets() {
                 },
                 available: Some(Uint128::zero()),
                 staked: Some(Uint128::zero()),
-                rewards: Some(vec![Coin256Value {
+                rewards: Some(vec![CoinValue {
                     denom: "ueden".to_string(),
-                    amount_token: Decimal256::from_str("1210000000000000000").unwrap(),
+                    amount_token: Decimal::from_str("0.000121").unwrap(),
                     price: Decimal::from_atomics(Uint128::new(35308010067676894), 16).unwrap(),
-                    amount_usd: Decimal256::from_str("4272269218188.904174").unwrap(),
+                    amount_usd: Decimal::from_str("0.00042722692181889").unwrap(),
                 }]),
             },
             eden_earn_program: EdenEarnProgram {
@@ -737,7 +737,7 @@ fn get_staked_assets() {
                 staked_positions: Some(vec![StakedPosition {
                     id: "2".to_string(),
                     validator: StakingValidator {
-                        id: "1".to_string(),
+                        id: Some("1".to_string()),
                         address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw".to_string(),
                         name: "nirvana".to_string(),
                         voting_power: Decimal::from_str("25.6521469796402094").unwrap(),
@@ -751,7 +751,7 @@ fn get_staked_assets() {
                 unstaked_positions: Some(vec![UnstakedPosition {
                     id: "1".to_string(),
                     validator: StakingValidator {
-                        id: "1".to_string(),
+                        id: Some("1".to_string()),
                         address: "elysvaloper1ng8sen6z5xzcfjtyrsedpe43hglymq040x3cpw".to_string(),
                         name: "nirvana".to_string(),
                         voting_power: Decimal::from_str("25.6521469796402094").unwrap(),

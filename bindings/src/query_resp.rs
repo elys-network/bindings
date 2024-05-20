@@ -2,12 +2,12 @@ use std::{collections::HashMap, str::FromStr};
 
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    Coin, DecCoin, Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, StdError,
-    StdResult, Uint128,
+    Coin, Decimal, Decimal256, Int128, SignedDecimal, SignedDecimal256, StdError, StdResult,
+    Uint128,
 };
 
 use crate::{
-    account_history::types::{Coin256, Coin256Value, CoinValue, ElysDenom},
+    account_history::types::CoinValue,
     trade_shield::types::{
         AmmPool, AmmPoolRaw, PerpetualPosition, PoolExtraInfo, StakedPositionRaw,
     },
@@ -444,10 +444,10 @@ pub struct QueryShowCommitmentsResponse {
 
 #[cw_serde]
 pub struct QueryAllProgramRewardsResponse {
-    pub usdc_staking_rewards: Vec<DecCoin>,
-    pub elys_staking_rewards: Vec<DecCoin>,
-    pub eden_staking_rewards: Vec<DecCoin>,
-    pub edenb_staking_rewards: Vec<DecCoin>,
+    pub usdc_staking_rewards: Vec<Coin>,
+    pub elys_staking_rewards: Vec<Coin>,
+    pub eden_staking_rewards: Vec<Coin>,
+    pub edenb_staking_rewards: Vec<Coin>,
 }
 
 #[cw_serde]
@@ -711,14 +711,14 @@ pub struct MasterchefUserPendingRewardData {
 #[derive(Default)]
 pub struct EstakingRewardsResponse {
     pub rewards: Vec<DelegationDelegatorReward>,
-    pub total: Vec<DecCoin>,
+    pub total: Vec<Coin>,
 }
 
 #[cw_serde]
 #[derive(Default)]
 pub struct DelegationDelegatorReward {
     pub validator_address: String,
-    pub reward: Vec<DecCoin>,
+    pub reward: Vec<Coin>,
 }
 
 pub enum Validator {
@@ -772,39 +772,21 @@ impl EstakingRewardsResponse {
             total: self.total.clone(),
         }
     }
-    // TODO: to coinvalue
-    pub fn to_coin256_values(
-        &self,
-        querier: &ElysQuerier<'_>,
-    ) -> StdResult<Vec<(String, Coin256Value)>> {
-        let mut dec_coin_values = Vec::new();
+
+    pub fn to_coin_values(&self, querier: &ElysQuerier<'_>) -> StdResult<Vec<(String, CoinValue)>> {
+        let mut coin_values = Vec::new();
 
         for delegation_reward in &self.rewards {
             let validator_address = delegation_reward.validator_address.clone();
-            for dec_coin in &delegation_reward.reward {
-                if dec_coin.denom == ElysDenom::EdenBoost.as_str() {
-                    let eden_boost_coin = Coin256Value::new(
-                        dec_coin.denom.clone(),
-                        Decimal256::from_str(dec_coin.amount.to_string().as_str()).unwrap(),
-                        Decimal::zero(),
-                        Decimal256::zero(),
-                    );
-                    dec_coin_values.push((validator_address.clone(), eden_boost_coin));
-                    continue;
-                }
-
-                let dec_coin_value = Coin256Value::from_coin256(
-                    &Coin256::from(dec_coin.clone()),
-                    querier,
-                )
-                .map_err(|e| {
-                    StdError::generic_err(format!("Failed to convert to Coin256Value {}", e))
+            for coin in &delegation_reward.reward {
+                let coin_value = CoinValue::from_coin(&coin.clone(), querier).map_err(|e| {
+                    StdError::generic_err(format!("Failed to convert to CoinValue {}", e))
                 })?;
-                dec_coin_values.push((validator_address.clone(), dec_coin_value));
+                coin_values.push((validator_address.clone(), coin_value));
             }
         }
 
-        Ok(dec_coin_values)
+        Ok(coin_values)
     }
 }
 
@@ -814,33 +796,33 @@ impl MasterchefUserPendingRewardResponse {
         querier: &ElysQuerier<'_>,
     ) -> StdResult<(HashMap<u64, Vec<CoinValue>>, Vec<CoinValue>)> {
         Ok((
-            self.rewards_to_coins(querier)?,
+            self.rewards_to_coin_values(querier)?,
             self.total_rewards_to_coin(querier)?,
         ))
     }
 
-    pub fn rewards_to_coins(
+    pub fn rewards_to_coin_values(
         &self,
         querier: &ElysQuerier<'_>,
     ) -> StdResult<HashMap<u64, Vec<CoinValue>>> {
-        let mut dec_coin_values = HashMap::new();
+        let mut coin_values = HashMap::new();
         for MasterchefUserPendingRewardData { reward, pool_id } in &self.rewards {
-            let coin = { dec_coin_values.entry(*pool_id).or_insert_with(|| vec![]) };
+            let coin = { coin_values.entry(*pool_id).or_insert_with(|| vec![]) };
             coin.extend(
                 reward
                     .iter()
                     .map(|v| CoinValue::from_coin(v, querier).unwrap_or_default()),
             );
         }
-        Ok(dec_coin_values)
+        Ok(coin_values)
     }
 
     fn total_rewards_to_coin(&self, querier: &ElysQuerier<'_>) -> StdResult<Vec<CoinValue>> {
-        let mut dec_coin_values = Vec::new();
+        let mut coin_values = Vec::new();
         for reward in &self.total_rewards {
-            dec_coin_values.push(CoinValue::from_coin(reward, querier)?);
+            coin_values.push(CoinValue::from_coin(reward, querier)?);
         }
-        Ok(dec_coin_values)
+        Ok(coin_values)
     }
 }
 

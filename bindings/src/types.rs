@@ -426,8 +426,8 @@ pub struct StakingValidatorRaw {
 
 #[cw_serde]
 pub struct StakingValidator {
-    // The validator Identity.
-    pub id: String,
+    // The validator Identity. Not all of them have the ID current returned by chain.
+    pub id: Option<String>,
     // The validator address.
     pub address: String,
     // The validator name.

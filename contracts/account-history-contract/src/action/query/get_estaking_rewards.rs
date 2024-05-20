@@ -13,12 +13,12 @@ pub fn get_estaking_rewards(
 
     let response = querier.get_estaking_rewards(address).unwrap_or_default();
 
-    let fiat_coins = response.to_coin256_values(&querier);
+    let fiat_coins = response.to_coin_values(&querier);
 
     match fiat_coins {
         Err(e) => {
             return Err(StdError::generic_err(format!(
-                "Failed to convert to Coin256Value {}",
+                "Failed to convert to CoinValue {}",
                 e
             )))
         }

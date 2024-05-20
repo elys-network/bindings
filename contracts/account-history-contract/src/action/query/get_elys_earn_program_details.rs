@@ -33,7 +33,7 @@ pub fn get_elys_earn_program_details(
                 .unwrap_or_default();
             let program_rewards = all_rewards
                 .get_elys_validators()
-                .to_coin256_values(&querier)
+                .to_coin_values(&querier)
                 .unwrap_or_default()
                 .into_iter()
                 .map(|coin| coin.1)

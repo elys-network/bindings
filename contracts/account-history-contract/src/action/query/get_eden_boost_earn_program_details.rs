@@ -32,7 +32,7 @@ pub fn get_eden_boost_earn_program_details(
                 .unwrap_or_default();
             let program_rewards = all_rewards
                 .get_validator_rewards(Validator::EdenBoost)
-                .to_coin256_values(&querier)
+                .to_coin_values(&querier)
                 .unwrap_or_default()
                 .into_iter()
                 .map(|coin| coin.1)

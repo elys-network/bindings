@@ -7,16 +7,14 @@ use crate::{
 };
 use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{
-    coins, to_json_binary, Addr, Coin, DecCoin, Decimal, Decimal256, Empty, Int128, StdError,
-    Timestamp, Uint128,
+    coins, to_json_binary, Addr, Coin, Decimal, Empty, Int128, StdError, Timestamp, Uint128,
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::account_history::msg::query_resp::GetRewardsResp;
-use elys_bindings::account_history::types::{Coin256Value, Reward};
+use elys_bindings::account_history::types::{CoinValue, Reward};
 use elys_bindings::query_resp::{
     DelegationDelegatorReward, EstakingRewardsResponse, MasterchefUserPendingRewardData,
-    MasterchefUserPendingRewardResponse, QueryAllProgramRewardsResponse,
-    QueryStableStakeAprResponse, Validator,
+    MasterchefUserPendingRewardResponse, QueryStableStakeAprResponse, Validator,
 };
 use elys_bindings::types::BalanceAvailable;
 use elys_bindings::{ElysMsg, ElysQuery};
@@ -111,42 +109,18 @@ impl Module for ElysModuleWrapper {
                 let resp = EstakingRewardsResponse {
                     rewards: vec![DelegationDelegatorReward {
                         validator_address: Validator::EdenBoost.to_string(),
-                        reward: vec![DecCoin {
+                        reward: vec![Coin {
                             denom: "ueden".to_string(),
-                            amount: Decimal256::from_str("1.21").unwrap(),
+                            amount: Uint128::from_str("121").unwrap(),
                         }],
                     }],
-                    total: vec![DecCoin {
+                    total: vec![Coin {
                         denom: "uedenb".to_string(),
-                        amount: Decimal256::from_str("1.21").unwrap(),
+                        amount: Uint128::from_str("121").unwrap(),
                     }],
                 };
                 Ok(to_json_binary(&resp)?)
             }
-            ElysQuery::IncentiveAllProgramRewards { .. } => {
-                let resp = QueryAllProgramRewardsResponse {
-                    usdc_staking_rewards: vec![DecCoin {
-                        denom:
-                            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                                .to_string(),
-                        amount: Decimal256::from_str("10").unwrap(),
-                    }],
-                    elys_staking_rewards: vec![DecCoin {
-                        denom: "uelys".to_string(),
-                        amount: Decimal256::from_str("10").unwrap(),
-                    }],
-                    eden_staking_rewards: vec![DecCoin {
-                        denom: "ueden".to_string(),
-                        amount: Decimal256::from_str("10").unwrap(),
-                    }],
-                    edenb_staking_rewards: vec![DecCoin {
-                        denom: "uedenb".to_string(),
-                        amount: Decimal256::from_str("10").unwrap(),
-                    }],
-                };
-                Ok(to_json_binary(&resp)?)
-            }
-
             _ => self.0.query(api, storage, querier, block, request),
         }
     }
@@ -281,41 +255,32 @@ fn get_rewards() {
         )
         .unwrap();
 
-    assert_eq!(resp.rewards_map, Reward::default());
     assert_eq!(
-        resp.rewards.contains(&Coin256Value {
-            denom: "uelys".to_string(),
-            amount_token: Decimal256::zero(),
-            price: Decimal::from_str("3.5308010067676894").unwrap(),
-            amount_usd: Decimal256::zero(),
-        }),
-        true
+        resp.rewards_map,
+        Reward {
+            usdc_usd: Decimal::zero(),
+            eden_usd: Decimal::from_str("0.000070616020135353").unwrap(),
+            eden_boost: Decimal::from_str("0.000121").unwrap(),
+            other_usd: Decimal::zero(),
+            total_usd: Decimal::from_str("0.000070616020135353").unwrap()
+        }
     );
+
     assert_eq!(
-        resp.rewards.contains(&Coin256Value {
-            denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
-                .to_string(),
-            amount_token: Decimal256::zero(),
-            price: Decimal::from_str("1").unwrap(),
-            amount_usd: Decimal256::zero(),
-        }),
-        true
-    );
-    assert_eq!(
-        resp.rewards.contains(&Coin256Value {
+        resp.rewards.contains(&CoinValue {
             denom: "ueden".to_string(),
-            amount_token: Decimal256::zero(),
+            amount_token: Decimal::from_str("0.00002").unwrap(),
             price: Decimal::from_str("3.5308010067676894").unwrap(),
-            amount_usd: Decimal256::zero(),
+            amount_usd: Decimal::from_str("0.000070616020135353").unwrap(),
         }),
         true
     );
     assert_eq!(
-        resp.rewards.contains(&Coin256Value {
+        resp.rewards.contains(&CoinValue {
             denom: "uedenb".to_string(),
-            amount_token: Decimal256::zero(),
-            price: Decimal::from_str("0").unwrap(),
-            amount_usd: Decimal256::zero(),
+            amount_token: Decimal::from_str("0.000121").unwrap(),
+            price: Decimal::zero(),
+            amount_usd: Decimal::zero(),
         }),
         true
     );
