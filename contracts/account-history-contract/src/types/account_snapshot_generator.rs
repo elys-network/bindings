@@ -138,27 +138,33 @@ impl AccountSnapshotGenerator {
         deps: &Deps<ElysQuery>,
         address: &String,
         pools: Vec<PoolResp>,
-    ) -> (Decimal, HashMap<String, CoinValue>) {
+    ) -> (
+        Decimal,
+        HashMap<String, CoinValue>,
+        HashMap<u64, Vec<CoinValue>>,
+    ) {
         let querier = ElysQuerier::new(&deps.querier);
 
         let all_rewards = querier
             .get_masterchef_pending_rewards(address.clone())
             .unwrap_or_default();
-        let coin_values_rewards = all_rewards
+        let rewards_per_pool = all_rewards
             .rewards_to_coin_values(&querier)
             .unwrap_or_default();
 
-        let mut total = Decimal::zero();
-        let mut breakdown: HashMap<String, CoinValue> = HashMap::new();
+        let mut total_rewards = Decimal::zero();
+        let mut total_breakdown: HashMap<String, CoinValue> = HashMap::new();
         pools.iter().for_each(|pool| {
-            let pool_rewards = coin_values_rewards.get(&(pool.pool_id as u64));
+            let pool_rewards = rewards_per_pool.get(&(pool.pool_id as u64));
 
             match pool_rewards {
                 Some(rewards) => {
                     rewards.iter().for_each(|reward| {
-                        total = total.checked_add(reward.amount_usd).unwrap_or_default();
+                        total_rewards = total_rewards
+                            .checked_add(reward.amount_usd)
+                            .unwrap_or_default();
 
-                        if let Some(breakdown_reward) = breakdown.get_mut(&reward.denom) {
+                        if let Some(breakdown_reward) = total_breakdown.get_mut(&reward.denom) {
                             // Update the amounts
                             breakdown_reward.amount_token = breakdown_reward
                                 .amount_token
@@ -176,7 +182,7 @@ impl AccountSnapshotGenerator {
                                 reward.price,
                                 Decimal::zero(),
                             );
-                            let breakdown_reward = breakdown
+                            let breakdown_reward = total_breakdown
                                 .entry(reward.denom.clone())
                                 .or_insert(default_reward);
 
@@ -196,7 +202,7 @@ impl AccountSnapshotGenerator {
             };
         });
 
-        (total, breakdown)
+        (total_rewards, total_breakdown, rewards_per_pool)
     }
 
     pub fn get_pool_balances(
@@ -292,12 +298,14 @@ impl AccountSnapshotGenerator {
             .map(|user_pool| user_pool.pool.clone())
             .collect();
 
-        let (rewards, rewards_breakdown) = self.get_pools_user_rewards(&deps, address, pools);
+        let (total_rewards, total_rewards_breakdown, rewards_per_pool) =
+            self.get_pools_user_rewards(&deps, address, pools);
 
         Ok(QueryUserPoolResponse {
             pools: pool_resp,
-            rewards,
-            rewards_breakdown,
+            total_rewards,
+            total_rewards_breakdown,
+            rewards_per_pool,
         })
     }
 
