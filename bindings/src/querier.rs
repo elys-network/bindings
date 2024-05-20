@@ -491,16 +491,6 @@ impl<'a> ElysQuerier<'a> {
         Ok(resp)
     }
 
-    pub fn get_all_program_rewards(
-        &self,
-        address: String,
-    ) -> StdResult<QueryAllProgramRewardsResponse> {
-        let query = ElysQuery::IncentiveAllProgramRewards { address: address };
-        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
-        let response: QueryAllProgramRewardsResponse = self.querier.query(&request)?;
-        Ok(response)
-    }
-
     pub fn get_commitments(&self, address: String) -> StdResult<QueryShowCommitmentsResponse> {
         let commitments_query = ElysQuery::CommitmentShowCommitments {
             creator: address.to_owned(),

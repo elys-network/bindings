@@ -101,8 +101,6 @@ pub enum ElysQuery {
     CommitmentDelegatorValidators { delegator_address: String },
     #[returns(QueryShowCommitmentsResponse)]
     CommitmentShowCommitments { creator: String },
-    #[returns(QueryAllProgramRewardsResponse)]
-    IncentiveAllProgramRewards { address: String },
     #[returns(QueryVestingInfoResponse)]
     CommitmentVestingInfo { address: String },
     #[returns(QueryEarnPoolResponse)]
