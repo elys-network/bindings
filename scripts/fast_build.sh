@@ -11,6 +11,8 @@ mkdir -p artifacts
 
 rm -rf ./target/wasm32-unknown-unknown/
 
+npm i wasm-opt -g
+
 export RUST_BACKTRACE=1
 
 for example in ./contracts/*/; do
@@ -21,7 +23,7 @@ for example in ./contracts/*/; do
     converted=$(echo "$example" | sed 's/-/_/g')
     filename=$(basename "$converted")
     echo $BASE_DIR
-    cp -f $BASE_DIR/target/wasm32-unknown-unknown/release/$filename.wasm  $BASE_DIR/artifacts/
+    wasm-opt $BASE_DIR/target/wasm32-unknown-unknown/release/$filename.wasm -o $BASE_DIR/artifacts/$filename.wasm
   )
 done
 
