@@ -28,5 +28,5 @@ done
 (
   cd $BASE_DIR/artifacts
   # create hashes
-  sha256sum -- *.wasm | tee checksums.txt
+  shasum -- *.wasm | tee checksums.txt
 )
