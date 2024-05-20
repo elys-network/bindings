@@ -1,6 +1,6 @@
 use super::*;
 use crate::msg::query_resp::earn::GetEdenBoostEarnProgramResp;
-use cosmwasm_std::{Deps, StdResult};
+use cosmwasm_std::Deps;
 use elys_bindings::{
     account_history::types::{
         earn_detail::earn_detail::AprEdenBoost, earn_program::EdenBoostEarnProgram, ElysDenom,
@@ -24,34 +24,32 @@ pub fn get_eden_boost_earn_program_details(
 
     let querier = ElysQuerier::new(&deps.querier);
 
-    let data = address.map_or(
-        Ok(EdenBoostEarnProgram::default()),
-        |addr| -> StdResult<EdenBoostEarnProgram> {
-            let all_rewards = querier
-                .get_estaking_rewards(addr.clone())
-                .unwrap_or_default();
-            let program_rewards = all_rewards
-                .get_validator_rewards(Validator::EdenBoost)
-                .to_coin_values(&querier)
-                .unwrap_or_default()
-                .into_iter()
-                .map(|coin| coin.1)
-                .collect();
-            let available = querier.get_balance(addr.clone(), asset.clone())?;
-            let staked = querier.get_staked_balance(addr, asset)?;
+    let mut data = EdenBoostEarnProgram::default();
 
-            Ok(EdenBoostEarnProgram {
-                bonding_period,
-                apr: AprEdenBoost {
-                    uusdc: usdc_apr.apr.to_owned(),
-                    ueden: eden_apr.apr.to_owned(),
-                },
-                available: Some(available.amount),
-                staked: Some(staked.amount),
-                rewards: Some(program_rewards),
-            })
-        },
-    )?;
+    data.bonding_period = bonding_period;
+    data.apr = AprEdenBoost {
+        uusdc: usdc_apr.apr,
+        ueden: eden_apr.apr,
+    };
+
+    if let Some(addr) = address {
+        let all_rewards = querier
+            .get_estaking_rewards(addr.clone())
+            .unwrap_or_default();
+        let program_rewards = all_rewards
+            .get_validator_rewards(Validator::EdenBoost)
+            .to_coin_values(&querier)
+            .unwrap_or_default()
+            .into_iter()
+            .map(|coin| coin.1)
+            .collect();
+        let available = querier.get_balance(addr.clone(), asset.clone())?;
+        let staked = querier.get_staked_balance(addr, asset)?;
+
+        data.available = Some(available.amount);
+        data.staked = Some(staked.amount);
+        data.rewards = Some(program_rewards);
+    }
 
     Ok(GetEdenBoostEarnProgramResp { data })
 }
