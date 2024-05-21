@@ -21,7 +21,7 @@ This guide provides instructions on how to spin up a new localnet using the Elys
    Navigate into the cloned repository and build the binary using:
 
    ```bash
-   make install
+   git tag -f v999.999.999 && make install
    ```
 
    This command will install the `elysd` daemon.
@@ -31,7 +31,7 @@ This guide provides instructions on how to spin up a new localnet using the Elys
    Get the latest snapshot available for the Elys network by using the following command:
 
    ```bash
-   git tag -f v999.999.999 && rm -rf ~/.elys && curl -o - -L https://snapshots.elys.network/elys-snapshot-main.tar.lz4 | lz4 -c -d - | tar -x -C ~/
+   rm -rf ~/.elys && curl -o - -L https://snapshots.elys.network/elys-snapshot-main.tar.lz4 | lz4 -c -d - | tar -x -C ~/
    ```
 
 4. **Spin Up the Localnet**
