@@ -28,17 +28,19 @@ This guide provides instructions on how to spin up a new localnet using the Elys
 
 3. **Download the Latest Snapshot**
 
-   Grab the latest snapshot available for the Elys testnet from the [snapshots](https://polkachu.com/testnets/elys/snapshots) page.
+   Get the latest snapshot available for the Elys network by using the following command:
+
+   ```bash
+   rm -rf ~/.elys && curl -o - -L https://snapshots.elys.network/elys-snapshot-main.tar.lz4 | lz4 -c -d - | tar -x -C ~/
+   ```
 
 4. **Spin Up the Localnet**
 
-   Use the download snapshot link to spin up your localnet:
+   Use the command below to start the localnet:
 
    ```bash
-   go run ./scripts/upgrade-assure/... <SNAPSHOT_URL> ~/go/bin/elysd ~/go/bin/elysd --skip-proposal
+   elysd start
    ```
-
-   Ensure to replace `<SNAPSHOT_URL>` with the actual URL of the downloaded snapshot, e.g., `https://snapshots.polkachu.com/testnet-snapshots/elys/elys_5789265.tar.lz4`.
 
 ## Deploying Contracts
 
@@ -49,9 +51,10 @@ This guide provides instructions on how to spin up a new localnet using the Elys
    ```bash
    ./scripts/build.sh
    ```
-   ***Note***: For Dev and testing purpose you can use a fast build script which create unoptimized but fast build of contract in terms of time.
-   
-    ```bash
+
+   **_Note_**: For Dev and testing purpose you can use a fast build script which create unoptimized but fast build of contract in terms of time.
+
+   ```bash
    ./scripts/fast_build.sh
    ```
 
