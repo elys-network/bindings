@@ -881,7 +881,7 @@ impl<'a> ElysQuerier<'a> {
             pagination: raw_resp.pagination,
         })
     }
-    pub fn leveragelp_get_status(&self) -> StdResult<LeveragelpStatusReponse> {
+    pub fn leveragelp_get_status(&self) -> StdResult<LeveragelpStatusResponse> {
         let req = QueryRequest::Custom(ElysQuery::leveragelp_get_status());
         self.querier.query(&req)
     }
