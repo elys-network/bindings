@@ -52,7 +52,7 @@ This guide provides instructions on how to spin up a new localnet using the Elys
    ./scripts/build.sh
    ```
 
-   **_Note_**: For Dev and testing purpose you can use a fast build script which create unoptimized but fast build of contract in terms of time.
+   **_Note_**: For Dev and testing purpose you can use a fast build script which creates unoptimized but fast build of contract in terms of time.
 
    ```bash
    ./scripts/fast_build.sh
