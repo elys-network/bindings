@@ -21,7 +21,7 @@ This guide provides instructions on how to spin up a new localnet using the Elys
    Navigate into the cloned repository and build the binary using:
 
    ```bash
-   make install
+   git tag -f v999.999.999 && make install
    ```
 
    This command will install the `elysd` daemon.
