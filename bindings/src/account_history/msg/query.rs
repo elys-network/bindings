@@ -108,14 +108,6 @@ pub enum QueryMsg {
     CommitmentUnStakedPositions { delegator_address: String },
 
     #[cfg(feature = "debug")]
-    #[returns(BalanceAvailable)]
-    CommitmentRewardsSubBucketBalanceOfDenom {
-        address: String,
-        denom: String,
-        program: i32,
-    },
-
-    #[cfg(feature = "debug")]
     #[returns(StakedAvailable)]
     CommitmentStakedBalanceOfDenom { address: String, denom: String },
 

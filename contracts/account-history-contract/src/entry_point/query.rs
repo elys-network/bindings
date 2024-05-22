@@ -123,15 +123,6 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
             to_json_binary(&querier.get_unstaked_positions(delegator_address)?)
         }
         #[cfg(feature = "debug")]
-        CommitmentRewardsSubBucketBalanceOfDenom {
-            address,
-            denom,
-            program,
-        } => {
-            let querier = ElysQuerier::new(&deps.querier);
-            to_json_binary(&querier.get_sub_bucket_rewards_balance(address, denom, program)?)
-        }
-        #[cfg(feature = "debug")]
         CommitmentStakedBalanceOfDenom { address, denom } => {
             let querier = ElysQuerier::new(&deps.querier);
             to_json_binary(&querier.get_staked_balance(address, denom)?)
