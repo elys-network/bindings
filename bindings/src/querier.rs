@@ -883,7 +883,12 @@ impl<'a> ElysQuerier<'a> {
     }
     pub fn leveragelp_get_status(&self) -> StdResult<LeveragelpStatusResponse> {
         let req = QueryRequest::Custom(ElysQuery::leveragelp_get_status());
-        self.querier.query(&req)
+        let raw_resp: LeveragelpStatusResponseRaw = self.querier.query(&req)?;
+        let resp = LeveragelpStatusResponse {
+            open_position_count: raw_resp.open_position_count.unwrap_or(0),
+            lifetime_position_count: raw_resp.lifetime_position_count.unwrap_or(0),
+        };
+        Ok(resp)
     }
     pub fn leveragelp_query_positions_for_address(
         &self,
