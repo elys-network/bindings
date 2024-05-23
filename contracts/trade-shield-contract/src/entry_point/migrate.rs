@@ -8,7 +8,6 @@ use elys_bindings::trade_shield::{
         PENDING_SPOT_ORDER, PERPETUAL_ENABLED, PERPETUAL_ORDER, PROCESS_ORDERS_ENABLED,
         REWARD_ENABLED, SPOT_ORDER, STAKE_ENABLED, SWAP_ENABLED,
     },
-    types::Status,
 };
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -36,42 +35,23 @@ pub fn migrate(
     LIMIT_PROCESS_ORDER.save(deps.storage, &limit_process_order)?;
 
     let number_of_pending_order = PENDING_SPOT_ORDER
-        .prefix_range(deps.storage, None, None, Order::Ascending)
-        .filter_map(|res| res.ok())
+        .keys(deps.storage, None, None, Order::Ascending)
+        .into_iter()
         .count() as u64
         + PENDING_PERPETUAL_ORDER
-            .prefix_range(deps.storage, None, None, Order::Ascending)
-            .filter_map(|res| res.ok())
+            .keys(deps.storage, None, None, Order::Ascending)
+            .into_iter()
             .count() as u64;
 
     let number_of_executed_order = SPOT_ORDER
-        .prefix_range(deps.storage, None, None, Order::Ascending)
-        .filter_map(|res| {
-            if let Some((_, order)) = res.ok() {
-                if order.status == Status::Executed {
-                    Some(order)
-                } else {
-                    None
-                }
-            } else {
-                None
-            }
-        })
+        .keys(deps.storage, None, None, Order::Ascending)
+        .into_iter()
         .count() as u64
         + PERPETUAL_ORDER
-            .prefix_range(deps.storage, None, None, Order::Ascending)
-            .filter_map(|res| {
-                if let Some((_, order)) = res.ok() {
-                    if order.status == Status::Executed {
-                        Some(order)
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                }
-            })
+            .keys(deps.storage, None, None, Order::Ascending)
+            .into_iter()
             .count() as u64;
+
     NUMBER_OF_PENDING_ORDER.save(deps.storage, &number_of_pending_order)?;
     NUMBER_OF_EXECUTED_ORDER.save(deps.storage, &number_of_executed_order)?;
     Ok(Response::new())
