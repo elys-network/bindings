@@ -25,7 +25,7 @@ if [ -n "$CI" ]; then
 
     # set elysd path
     ELYSD=/tmp/elysd
-    URL=https://github.com/elys-network/elys/releases/download/v0.31.0/elysd-v0.31.0-linux-amd64
+    URL=https://github.com/elys-network/elys/releases/download/v0.29.26/elysd-v0.29.26-linux-amd64
 
     # download elysd and binary to path
     wget $URL -O $ELYSD
