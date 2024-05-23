@@ -15,7 +15,7 @@ command_exists() {
 # check if CI variable is set
 if [ -n "$CI" ]; then
     # set environment variables
-    NODE=http://nirvana.elys.network:26657
+    NODE=https://rpc.testnet.elys.network:443
     NAME=contract-initiator
 
     # contract addresses
@@ -71,7 +71,7 @@ echo "account_number: $account_number"
 echo "sequence: $sequence"
 
 # environment variables
-OPTIONS="--from $NAME --gas auto --gas-adjustment 1.3 --fees 300000uelys -y --account-number $account_number -b async"
+OPTIONS="--from $NAME --gas auto --gas-adjustment 1.3 --fees 300000uelys -y --account-number $account_number -b async --log_level trace --trace"
 
 wait_for_tx() {
     local txhash=$1
