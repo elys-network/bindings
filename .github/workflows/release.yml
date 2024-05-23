@@ -17,11 +17,6 @@ jobs:
           # compress artifacts
           tar -zcvf elys-bindings-${{  github.ref_name }}.tar.gz artifacts
 
-      # - name: Create Release
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     files: elys-bindings-${{  github.ref_name }}.tar.gz
-
       - name: Deploy to TestNet
         run: |
           # deploy

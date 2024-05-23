@@ -15,7 +15,7 @@ command_exists() {
 # check if CI variable is set
 if [ -n "$CI" ]; then
     # set environment variables
-    NODE=http://euphoria.elys.network:26657
+    NODE=http://nirvana.elys.network:26657
     NAME=contract-initiator
 
     # contract addresses
