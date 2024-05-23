@@ -32,7 +32,7 @@ pub fn migrate(
     PROCESSED_ACCOUNT_PER_BLOCK.save(deps.storage, &limit)?;
 
     //clear Hitstory since we removed a field from the Snapshot to prevent panic
-    HISTORY.clear(deps.storage);
+    // HISTORY.clear(deps.storage);
 
     // METADATA
     // let querier = ElysQuerier::new(&deps.querier);
