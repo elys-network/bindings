@@ -106,9 +106,11 @@ wait_for_tx $txhash
 codeid=$(elysd q tx $txhash --node $NODE | extract_code_id)
 echo "ts code id: $codeid"
 if [ -n "$TS_CONTRACT_ADDRESS" ]; then
-    txhash=$(elysd tx wasm migrate $OPTIONS --sequence $(($sequence + 4)) $TS_CONTRACT_ADDRESS $codeid '{
+    output=$(elysd tx wasm migrate $OPTIONS --sequence $(($sequence + 4)) $TS_CONTRACT_ADDRESS $codeid '{
         "account_history_address": "'"$AH_CONTRACT_ADDRESS"'"
-    }' | extract_txhash)
+    }')
+    echo "$output"
+    txhash=$(echo "$output" | awk -F 'txhash: ' '/txhash:/{print $2; exit}')
     echo "ts migrate txhash: $txhash"
 else
     # set localnet AH deterministic address as param
