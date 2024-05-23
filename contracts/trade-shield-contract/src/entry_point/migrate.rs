@@ -44,34 +44,33 @@ pub fn migrate(
             .filter_map(|res| res.ok())
             .count() as u64;
 
-    let number_of_executed_order = SPOT_ORDER
-        .prefix_range(deps.storage, None, None, Order::Ascending)
-        .filter_map(|res| {
-            if let Some((_, order)) = res.ok() {
-                if order.status == Status::Executed {
-                    Some(order)
-                } else {
-                    None
-                }
-            } else {
-                None
+    let mut idx = msg.last_order_executed_spot + 1;
+    let mut number_of_executed_order = msg.num_executed_orders;
+    // Spot
+    loop {
+        if let Some(order) = SPOT_ORDER.may_load(deps.storage, idx)? {
+            if order.status == Status::Executed {
+                number_of_executed_order += 1;
             }
-        })
-        .count() as u64
-        + PERPETUAL_ORDER
-            .prefix_range(deps.storage, None, None, Order::Ascending)
-            .filter_map(|res| {
-                if let Some((_, order)) = res.ok() {
-                    if order.status == Status::Executed {
-                        Some(order)
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                }
-            })
-            .count() as u64;
+            idx += 1;
+        } else {
+            break;
+        }
+    }
+
+    // Perp
+    idx = msg.last_order_executed_perp + 1;
+    loop {
+        if let Some(order) = PERPETUAL_ORDER.may_load(deps.storage, idx)? {
+            if order.status == Status::Executed {
+                number_of_executed_order += 1;
+            }
+            idx += 1;
+        } else {
+            break;
+        }
+    }
+
     NUMBER_OF_PENDING_ORDER.save(deps.storage, &number_of_pending_order)?;
     NUMBER_OF_EXECUTED_ORDER.save(deps.storage, &number_of_executed_order)?;
     Ok(Response::new())
