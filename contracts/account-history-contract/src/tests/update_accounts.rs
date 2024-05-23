@@ -393,6 +393,9 @@ fn history() {
         Addr::unchecked(trade_shield_address.clone()),
         &trade_shield_msg::MigrateMsg {
             account_history_address: Some(addr.to_string()),
+            num_executed_orders: 100,
+            last_order_executed_perp: 120,
+            last_order_executed_spot: 50,
         },
         trade_shield_code_id,
     )
