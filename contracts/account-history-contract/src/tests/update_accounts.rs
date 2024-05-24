@@ -388,6 +388,8 @@ fn history() {
         )
         .unwrap();
 
+    std::env::set_var("VERSION", "0.1.0");
+
     app.migrate_contract(
         Addr::unchecked("admin"),
         Addr::unchecked(trade_shield_address.clone()),
