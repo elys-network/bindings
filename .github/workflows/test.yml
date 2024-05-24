@@ -19,7 +19,7 @@ jobs:
 
       - name: Build and test
         run: |
-          VERSION="0.0.0"
+          export VERSION="0.0.0"
           cargo build --verbose
           cargo test --verbose
         working-directory: .
