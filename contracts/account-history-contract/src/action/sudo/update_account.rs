@@ -20,7 +20,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     METADATA.save(deps.storage, &metadata)?;
 
     let today = get_today(&env.block);
-    let user_address_queue: Vec<String> = USER_ADDRESS_QUEUE
+    let mut user_address_queue: Vec<String> = USER_ADDRESS_QUEUE
         .prefix_range(deps.storage, None, None, cosmwasm_std::Order::Descending)
         .filter_map(|res| res.ok().map(|(addr, _)| addr))
         .collect();
@@ -40,8 +40,17 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
 
     let generator = AccountSnapshotGenerator::new(&deps.as_ref())?;
 
-    for i in 0..processed_account_per_block {
-        if today_snapshots.get(&user_address_queue[i]).is_some() {
+    for _ in 0..processed_account_per_block {
+        if user_address_queue.is_empty() == true {
+            break;
+        }
+
+        // remove the first element from the queue
+        let user_address = user_address_queue.remove(0);
+        // remove the user address from the queue
+        USER_ADDRESS_QUEUE.remove(deps.storage, &user_address);
+
+        if today_snapshots.get(&user_address).is_some() {
             // skip if the account has been updated today
             continue;
         }
@@ -50,10 +59,11 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             &querier,
             &deps.as_ref(),
             &env,
-            &user_address_queue[i],
+            &user_address,
         )?;
-        today_snapshots.insert(user_address_queue[i].clone(), new_part);
+        today_snapshots.insert(user_address.clone(), new_part);
     }
+
     HISTORY.save(deps.storage, &today, &today_snapshots)?;
 
     clean_up_history(deps.storage, &env.block, &generator.expiration);
