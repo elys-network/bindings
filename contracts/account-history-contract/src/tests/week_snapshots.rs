@@ -384,7 +384,8 @@ fn get_portfolio() {
         )
         .unwrap();
 
-    std::env::set_var("VERSION", "0.1.0");
+    let new_ver = std::env::var("VERSION").unwrap();
+    std::env::set_var("VERSION", "1".to_string() + &new_ver);
 
     app.migrate_contract(
         Addr::unchecked("admin"),
