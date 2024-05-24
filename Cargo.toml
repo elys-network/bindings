@@ -1,5 +1,5 @@
 [workspace]
-members = ["contracts/*"]
+members = ["contracts/account-history-contract"]
 resolver = "2"
 
 [profile.release]

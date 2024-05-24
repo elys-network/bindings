@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "account-history-contract"
-version = "0.0.0"
+version = "0.2.0"
 dependencies = [
  "account-history-contract",
  "anyhow",
@@ -478,25 +478,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "financial_snapshot_contract"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "cargo-husky",
- "cosmwasm-schema",
- "cosmwasm-std",
- "cw-multi-test",
- "cw-storage-plus 0.15.1",
- "cw-utils",
- "cw2",
- "elys-bindings",
- "elys-bindings-test",
- "schemars",
- "serde",
- "thiserror",
-]
-
-[[package]]
 name = "forward_ref"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -892,7 +873,7 @@ dependencies = [
 
 [[package]]
 name = "trade_shield_contract"
-version = "0.0.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "cargo-husky",
