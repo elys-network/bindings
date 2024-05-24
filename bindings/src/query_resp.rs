@@ -618,9 +618,15 @@ pub struct LeveragelpPositionsResponse {
 }
 
 #[cw_serde]
-pub struct LeveragelpStatusReponse {
+pub struct LeveragelpStatusResponse {
     pub open_position_count: u64,
     pub lifetime_position_count: u64,
+}
+
+#[cw_serde]
+pub struct LeveragelpStatusResponseRaw {
+    pub open_position_count: Option<u64>,
+    pub lifetime_position_count: Option<u64>,
 }
 
 #[cw_serde]
