@@ -5,8 +5,8 @@ use msg::InstantiateMsg;
 
 use cw2::set_contract_version;
 
-const CONTRACT_NAME: &str = "financial-snapshot";
-const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const CONTRACT_NAME: &str = "financial-snapshot";
+pub const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub fn instantiate(
     deps: DepsMut<ElysQuery>,

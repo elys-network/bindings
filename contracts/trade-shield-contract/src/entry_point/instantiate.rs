@@ -4,8 +4,8 @@ use msg::InstantiateMsg;
 
 use cw2::set_contract_version;
 
-const CONTRACT_NAME: &str = "trade-shield";
-const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const CONTRACT_NAME: &str = "trade-shield";
+pub const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
