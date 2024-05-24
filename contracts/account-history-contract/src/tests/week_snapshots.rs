@@ -447,6 +447,27 @@ fn get_portfolio() {
     )
     .unwrap();
 
+    app.execute_contract(
+        Addr::unchecked("user"),
+        trade_shield_address.clone(),
+        &trade_shield_msg::ExecuteMsg::CreateSpotOrder {
+            order_type: SpotOrderType::StopLoss,
+            order_source_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
+            order_target_denom: "uelys".to_string(),
+            order_price: Some(OrderPrice {
+                base_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                quote_denom: "uelys".to_string(),
+                rate: Decimal::one(),
+            }),
+        },
+        &coins(
+            100,
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+        ),
+    )
+    .unwrap();
     // update account
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();
@@ -471,6 +492,27 @@ fn get_portfolio() {
     )
     .unwrap();
 
+    app.execute_contract(
+        Addr::unchecked("user"),
+        trade_shield_address.clone(),
+        &trade_shield_msg::ExecuteMsg::CreateSpotOrder {
+            order_type: SpotOrderType::StopLoss,
+            order_source_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
+            order_target_denom: "uelys".to_string(),
+            order_price: Some(OrderPrice {
+                base_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                quote_denom: "uelys".to_string(),
+                rate: Decimal::one(),
+            }),
+        },
+        &coins(
+            100,
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+        ),
+    )
+    .unwrap();
     // update account
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();
@@ -495,6 +537,27 @@ fn get_portfolio() {
     )
     .unwrap();
 
+    app.execute_contract(
+        Addr::unchecked("user"),
+        trade_shield_address.clone(),
+        &trade_shield_msg::ExecuteMsg::CreateSpotOrder {
+            order_type: SpotOrderType::StopLoss,
+            order_source_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
+            order_target_denom: "uelys".to_string(),
+            order_price: Some(OrderPrice {
+                base_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                quote_denom: "uelys".to_string(),
+                rate: Decimal::one(),
+            }),
+        },
+        &coins(
+            100,
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+        ),
+    )
+    .unwrap();
     // update account
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();
@@ -523,6 +586,28 @@ fn get_portfolio() {
         chain_id: "elys".to_string(),
     });
 
+    app.execute_contract(
+        Addr::unchecked("user"),
+        trade_shield_address.clone(),
+        &trade_shield_msg::ExecuteMsg::CreateSpotOrder {
+            order_type: SpotOrderType::StopLoss,
+            order_source_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
+            order_target_denom: "uelys".to_string(),
+            order_price: Some(OrderPrice {
+                base_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                quote_denom: "uelys".to_string(),
+                rate: Decimal::one(),
+            }),
+        },
+        &coins(
+            100,
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+        ),
+    )
+    .unwrap();
+
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();
 
@@ -549,6 +634,28 @@ fn get_portfolio() {
         chain_id: "elys".to_string(),
     });
 
+    app.execute_contract(
+        Addr::unchecked("user"),
+        trade_shield_address.clone(),
+        &trade_shield_msg::ExecuteMsg::CreateSpotOrder {
+            order_type: SpotOrderType::StopLoss,
+            order_source_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
+            order_target_denom: "uelys".to_string(),
+            order_price: Some(OrderPrice {
+                base_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                quote_denom: "uelys".to_string(),
+                rate: Decimal::one(),
+            }),
+        },
+        &coins(
+            100,
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+        ),
+    )
+    .unwrap();
+
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();
 
@@ -558,6 +665,28 @@ fn get_portfolio() {
         time: Timestamp::from_seconds(24 * 60 * 60 * 5),
         chain_id: "elys".to_string(),
     });
+
+    app.execute_contract(
+        Addr::unchecked("user"),
+        trade_shield_address.clone(),
+        &trade_shield_msg::ExecuteMsg::CreateSpotOrder {
+            order_type: SpotOrderType::StopLoss,
+            order_source_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
+            order_target_denom: "uelys".to_string(),
+            order_price: Some(OrderPrice {
+                base_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                quote_denom: "uelys".to_string(),
+                rate: Decimal::one(),
+            }),
+        },
+        &coins(
+            100,
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+        ),
+    )
+    .unwrap();
 
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();
@@ -569,6 +698,28 @@ fn get_portfolio() {
         chain_id: "elys".to_string(),
     });
 
+    app.execute_contract(
+        Addr::unchecked("user"),
+        trade_shield_address.clone(),
+        &trade_shield_msg::ExecuteMsg::CreateSpotOrder {
+            order_type: SpotOrderType::StopLoss,
+            order_source_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
+            order_target_denom: "uelys".to_string(),
+            order_price: Some(OrderPrice {
+                base_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                quote_denom: "uelys".to_string(),
+                rate: Decimal::one(),
+            }),
+        },
+        &coins(
+            100,
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+        ),
+    )
+    .unwrap();
+
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();
 
@@ -578,6 +729,28 @@ fn get_portfolio() {
         time: Timestamp::from_seconds(24 * 60 * 60 * 7),
         chain_id: "elys".to_string(),
     });
+
+    app.execute_contract(
+        Addr::unchecked("user"),
+        trade_shield_address.clone(),
+        &trade_shield_msg::ExecuteMsg::CreateSpotOrder {
+            order_type: SpotOrderType::StopLoss,
+            order_source_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
+            order_target_denom: "uelys".to_string(),
+            order_price: Some(OrderPrice {
+                base_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                quote_denom: "uelys".to_string(),
+                rate: Decimal::one(),
+            }),
+        },
+        &coins(
+            100,
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+        ),
+    )
+    .unwrap();
 
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();
@@ -601,6 +774,28 @@ fn get_portfolio() {
         time: Timestamp::from_seconds(24 * 60 * 60 * 8),
         chain_id: "elys".to_string(),
     });
+
+    app.execute_contract(
+        Addr::unchecked("user"),
+        trade_shield_address.clone(),
+        &trade_shield_msg::ExecuteMsg::CreateSpotOrder {
+            order_type: SpotOrderType::StopLoss,
+            order_source_denom:
+                "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65".to_string(),
+            order_target_denom: "uelys".to_string(),
+            order_price: Some(OrderPrice {
+                base_denom: "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                    .to_string(),
+                quote_denom: "uelys".to_string(),
+                rate: Decimal::one(),
+            }),
+        },
+        &coins(
+            100,
+            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
+        ),
+    )
+    .unwrap();
 
     app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
         .unwrap();
