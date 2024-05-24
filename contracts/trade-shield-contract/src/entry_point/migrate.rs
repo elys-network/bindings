@@ -1,4 +1,4 @@
-use self::instantiate::{CONTRACT_NAME, CONTRACT_VERSION};
+use self::instantiate::CONTRACT_NAME;
 
 use super::*;
 use cosmwasm_std::StdError;
@@ -38,14 +38,16 @@ pub fn migrate(
 
     let ver = cw2::get_contract_version(deps.storage)?;
     // ensure we are migrating from an allowed contract
-    if ver.contract != CONTRACT_NAME {
-        return Err(StdError::generic_err("Can only upgrade from same type").into());
+    let ver_env = std::env::var("VERSION");
+    if ver_env.is_err() {
+        return Err(StdError::generic_err("version read error"));
     }
-    if ver.version.as_str() >= CONTRACT_VERSION {
+    let contract_version: String = ver_env.unwrap();
+    if ver.version.as_str() >= contract_version.as_str() {
         return Err(StdError::generic_err("Cannot upgrade from a newer version").into());
     }
 
     // set the new version
-    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+    set_contract_version(deps.storage, CONTRACT_NAME, contract_version)?;
     Ok(Response::new())
 }

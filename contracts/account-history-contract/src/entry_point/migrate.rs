@@ -7,7 +7,7 @@ use elys_bindings::{ElysMsg, /*ElysQuerier,*/ ElysQuery};
 
 use crate::states::{EXPIRATION, PROCESSED_ACCOUNT_PER_BLOCK, TRADE_SHIELD_ADDRESS};
 
-use super::instantiate::{CONTRACT_NAME, CONTRACT_VERSION};
+use super::instantiate::CONTRACT_NAME;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(
@@ -48,11 +48,17 @@ pub fn migrate(
     if ver.contract != CONTRACT_NAME {
         return Err(StdError::generic_err("Can only upgrade from same type").into());
     }
-    if ver.version.as_str() >= CONTRACT_VERSION {
+
+    let ver_env = std::env::var("VERSION");
+    if ver_env.is_err() {
+        return Err(StdError::generic_err("version read error"));
+    }
+    let contract_version: String = ver_env.unwrap();
+    if ver.version.as_str() >= contract_version.as_str() {
         return Err(StdError::generic_err("Cannot upgrade from a newer version").into());
     }
 
     // set the new version
-    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+    set_contract_version(deps.storage, CONTRACT_NAME, contract_version)?;
     Ok(Response::new())
 }

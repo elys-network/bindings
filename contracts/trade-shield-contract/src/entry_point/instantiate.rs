@@ -1,11 +1,11 @@
 use super::*;
 use crate::states::*;
+use cosmwasm_std::StdError;
 use msg::InstantiateMsg;
 
 use cw2::set_contract_version;
 
 pub const CONTRACT_NAME: &str = "trade-shield";
-pub const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -14,7 +14,13 @@ pub fn instantiate(
     _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response<ElysMsg>> {
-    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+    let ver = std::env::var("VERSION");
+    if ver.is_err() {
+        return Err(StdError::generic_err("version read error"));
+    }
+    let contract_version: String = ver.unwrap();
+    set_contract_version(deps.storage, CONTRACT_NAME, contract_version)?;
+
     MAX_REPLY_ID.save(deps.storage, &0)?;
     SPOT_ORDER_MAX_ID.save(deps.storage, &0)?;
     ACCOUNT_HISTORY_ADDRESS.save(deps.storage, &msg.account_history_address)?;

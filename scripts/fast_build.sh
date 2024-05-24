@@ -7,6 +7,8 @@ command -v shellcheck > /dev/null && shellcheck "$0"
 # is configured separately.
 BASE_DIR=$(pwd)
 
+export VERSION=$(git describe --tags --match 'v*' --abbrev=8 | sed 's/-g/-/' | sed 's/-[0-9]*-/-/')
+
 mkdir -p artifacts
 
 rm -rf ./target/wasm32-unknown-unknown/
