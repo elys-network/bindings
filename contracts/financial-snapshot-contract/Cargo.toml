@@ -16,6 +16,7 @@ thiserror = "1"
 schemars = "0.8.1"
 cosmwasm-schema = "1.1.4"
 cw-utils = "0.13"
+cw2 = { version = "1.0.1" }
 anyhow = "1"
 elys-bindings = { path = "../../bindings" }
 
