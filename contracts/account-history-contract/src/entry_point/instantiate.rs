@@ -6,7 +6,9 @@ use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, 
 use elys_bindings::{ElysMsg, ElysQuerier, ElysQuery};
 
 use crate::msg::InstantiateMsg;
-use crate::states::{EXPIRATION, METADATA, PROCESSED_ACCOUNT_PER_BLOCK, TRADE_SHIELD_ADDRESS};
+use crate::states::{
+    EXPIRATION, METADATA, PROCESSED_ACCOUNT_PER_BLOCK, TRADE_SHIELD_ADDRESS, UPDATE_ACCOUNT_ENABLED,
+};
 
 // Version info, for migration info
 pub const CONTRACT_NAME: &str = "account-history";
@@ -46,6 +48,8 @@ pub fn instantiate(
     let metadata = Metadata::collect(&querier)?;
 
     METADATA.save(deps.storage, &metadata)?;
+
+    UPDATE_ACCOUNT_ENABLED.save(deps.storage, &true)?;
 
     // RESPONSE
     Ok(Response::new())

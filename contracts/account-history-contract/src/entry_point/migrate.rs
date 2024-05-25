@@ -5,7 +5,10 @@ use elys_bindings::account_history::msg::MigrationMsg;
 // use elys_bindings::account_history::types::Metadata;
 use elys_bindings::{ElysMsg, /*ElysQuerier,*/ ElysQuery};
 
-use crate::states::{EXPIRATION, PROCESSED_ACCOUNT_PER_BLOCK, TRADE_SHIELD_ADDRESS};
+use crate::states::{
+    EXPIRATION, PARAMS_ADMIN, PROCESSED_ACCOUNT_PER_BLOCK, TRADE_SHIELD_ADDRESS,
+    UPDATE_ACCOUNT_ENABLED,
+};
 
 use super::instantiate::{CONTRACT_NAME, CONTRACT_VERSION};
 
@@ -34,6 +37,8 @@ pub fn migrate(
 
     PROCESSED_ACCOUNT_PER_BLOCK.save(deps.storage, &limit)?;
 
+    UPDATE_ACCOUNT_ENABLED.save(deps.storage, &true)?;
+
     // METADATA
     // let querier = ElysQuerier::new(&deps.querier);
 
@@ -52,6 +57,9 @@ pub fn migrate(
     // if ver.version.as_str() >= CONTRACT_VERSION {
     //     return Err(StdError::generic_err("Cannot upgrade from a newer version").into());
     // }
+
+    let admin = "elys16xffmfa6k45j340cx5zyp66lqvuw62a0neaa7w".to_string();
+    PARAMS_ADMIN.save(deps.storage, &admin)?;
 
     // set the new version
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;

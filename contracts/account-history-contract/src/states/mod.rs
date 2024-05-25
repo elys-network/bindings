@@ -1,3 +1,5 @@
+mod admin_address;
+mod enable_update_account;
 mod expiration;
 mod history;
 mod metadata;
@@ -5,6 +7,8 @@ mod processed_account_per_block;
 mod trade_shield_address;
 mod user_address_queue;
 
+pub use admin_address::PARAMS_ADMIN;
+pub use enable_update_account::UPDATE_ACCOUNT_ENABLED;
 pub use expiration::EXPIRATION;
 pub use history::HISTORY;
 pub use metadata::METADATA;
