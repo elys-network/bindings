@@ -1,6 +1,7 @@
 use crate::helper::get_mut_discount;
 
 use super::*;
+use crate::action::sudo::process_orders;
 use cosmwasm_std::{CosmosMsg, Int128, StdError, WasmMsg};
 use elys_bindings::account_history::msg::ExecuteMsg as AccountHistoryMsg;
 use elys_bindings::trade_shield::states::{
@@ -216,6 +217,7 @@ pub fn execute(
         EstakingWithdrawReward { validator_address } => {
             estaking_withdraw_reward(info, deps, validator_address)
         }
+        ProcessOrders {} => process_orders(deps, env),
     }?;
 
     let resp = if let Some(account_history_address) = account_history_address {
