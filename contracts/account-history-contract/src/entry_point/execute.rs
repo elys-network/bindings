@@ -1,7 +1,12 @@
 use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdError, StdResult};
 use elys_bindings::{account_history::msg::ExecuteMsg, ElysMsg, ElysQuery};
 
-use crate::{action::execute::add_user_address_to_queue, states::TRADE_SHIELD_ADDRESS};
+use crate::{
+    action::execute::add_user_address_to_queue,
+    states::{
+        PARAMS_ADMIN, PROCESSED_ACCOUNT_PER_BLOCK, TRADE_SHIELD_ADDRESS, UPDATE_ACCOUNT_ENABLED,
+    },
+};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
@@ -20,6 +25,25 @@ pub fn execute(
                 return Err(StdError::generic_err("Unauthorized"));
             }
             add_user_address_to_queue(deps.storage, user_address)?;
+            Ok(Response::new())
+        }
+        ExecuteMsg::ChangeParams {
+            update_account_enabled,
+            processed_account_per_block,
+        } => {
+            let params_admin = PARAMS_ADMIN.load(deps.storage)?;
+
+            if params_admin.as_str() != info.sender.as_str() {
+                return Err(StdError::generic_err("Unauthorized"));
+            }
+
+            if let Some(processed_account_per_block) = processed_account_per_block {
+                PROCESSED_ACCOUNT_PER_BLOCK.save(deps.storage, &processed_account_per_block)?;
+            }
+
+            if let Some(update_account_enabled) = update_account_enabled {
+                UPDATE_ACCOUNT_ENABLED.save(deps.storage, &update_account_enabled)?;
+            }
             Ok(Response::new())
         }
     }

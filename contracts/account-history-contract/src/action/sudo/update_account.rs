@@ -1,17 +1,22 @@
 use std::collections::HashMap;
 
 use chrono::NaiveDateTime;
-use cosmwasm_std::{BlockInfo, DepsMut, Env, Response, StdResult, Storage, Timestamp};
+use cosmwasm_std::{BlockInfo, DepsMut, Env, Response, StdError, StdResult, Storage, Timestamp};
 use cw_utils::Expiration;
 
 use crate::{
-    states::{HISTORY, METADATA, PROCESSED_ACCOUNT_PER_BLOCK, USER_ADDRESS_QUEUE},
+    states::{
+        HISTORY, METADATA, PROCESSED_ACCOUNT_PER_BLOCK, UPDATE_ACCOUNT_ENABLED, USER_ADDRESS_QUEUE,
+    },
     types::AccountSnapshotGenerator,
     utils::get_today,
 };
 use elys_bindings::{ElysMsg, ElysQuerier, ElysQuery};
 
 pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<ElysMsg>> {
+    if UPDATE_ACCOUNT_ENABLED.load(deps.storage)? == false {
+        return Err(StdError::generic_err("Update account is disabled"));
+    }
     let querier = ElysQuerier::new(&deps.querier);
 
     // update metadata prices
