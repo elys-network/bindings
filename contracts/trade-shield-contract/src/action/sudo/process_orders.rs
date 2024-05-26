@@ -13,13 +13,8 @@ use super::*;
 pub fn process_orders(
     deps: DepsMut<ElysQuery>,
     env: Env,
-    is_xclock: bool,
 ) -> Result<Response<ElysMsg>, ContractError> {
-    if PROCESS_ORDERS_ENABLED.load(deps.storage)? == false && is_xclock {
-        return Err(StdError::generic_err("process order is disable").into());
-    }
-
-    let spot_orders: Vec<(String, Vec<u64>)> = if SWAP_ENABLED.load(deps.storage)? || !is_xclock {
+    let spot_orders: Vec<(String, Vec<u64>)> = if SWAP_ENABLED.load(deps.storage)? {
         SORTED_PENDING_SPOT_ORDER
             .prefix_range(deps.storage, None, None, Order::Ascending)
             .filter_map(|res| res.ok())
@@ -31,15 +26,14 @@ pub fn process_orders(
     let mut _n_spot_order = LIMIT_PROCESS_ORDER.load(deps.storage)?;
     let mut _n_perpetual_order = _n_spot_order.clone();
 
-    let perpetual_orders: Vec<(String, Vec<u64>)> =
-        if PERPETUAL_ENABLED.load(deps.storage)? || !is_xclock {
-            SORTED_PENDING_PERPETUAL_ORDER
-                .prefix_range(deps.storage, None, None, Order::Ascending)
-                .filter_map(|res| res.ok())
-                .collect()
-        } else {
-            vec![]
-        };
+    let perpetual_orders: Vec<(String, Vec<u64>)> = if PERPETUAL_ENABLED.load(deps.storage)? {
+        SORTED_PENDING_PERPETUAL_ORDER
+            .prefix_range(deps.storage, None, None, Order::Ascending)
+            .filter_map(|res| res.ok())
+            .collect()
+    } else {
+        vec![]
+    };
 
     let mut reply_info_id = MAX_REPLY_ID.load(deps.storage)?;
 

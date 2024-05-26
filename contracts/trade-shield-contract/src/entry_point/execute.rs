@@ -222,7 +222,7 @@ pub fn execute(
                 return Err(StdError::generic_err("Unauthorized").into());
             }
 
-            let resp = process_orders(deps, env, false)?;
+            let resp = process_orders(deps, env)?;
             Ok(resp)
         }
     }?;

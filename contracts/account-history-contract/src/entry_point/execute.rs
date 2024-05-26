@@ -50,7 +50,7 @@ pub fn execute(
             if info.sender != PARAMS_ADMIN.load(deps.storage)? {
                 return Err(StdError::generic_err("Unauthorized"));
             }
-            let resp = update_account(deps, env, false)?;
+            let resp = update_account(deps, env)?;
             Ok(resp)
         }
     }
