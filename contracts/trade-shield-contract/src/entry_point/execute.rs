@@ -217,7 +217,28 @@ pub fn execute(
         EstakingWithdrawReward { validator_address } => {
             estaking_withdraw_reward(info, deps, validator_address)
         }
-        ProcessOrders {} => process_orders(deps, env),
+        ProcessOrders {} => {
+            if info.sender != PARAMS_ADMIN.load(deps.storage)? {
+                return Err(StdError::generic_err("Unauthorized").into());
+            }
+
+            let save_process_orders_enabled_params = PROCESS_ORDERS_ENABLED.load(deps.storage)?;
+            let save_swap_enabled_params = SWAP_ENABLED.load(deps.storage)?;
+            let save_perpetual_enabled_params = PERPETUAL_ENABLED.load(deps.storage)?;
+            PROCESS_ORDERS_ENABLED.save(deps.storage, &true)?;
+            SWAP_ENABLED.save(deps.storage, &true)?;
+            PERPETUAL_ENABLED.save(deps.storage, &true)?;
+            let resp = process_orders(
+                deps,
+                env,
+                Some([
+                    save_process_orders_enabled_params,
+                    save_swap_enabled_params,
+                    save_perpetual_enabled_params,
+                ]),
+            )?;
+            Ok(resp)
+        }
     }?;
 
     let resp = if let Some(account_history_address) = account_history_address {

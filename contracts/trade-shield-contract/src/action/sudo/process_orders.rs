@@ -13,6 +13,7 @@ use super::*;
 pub fn process_orders(
     deps: DepsMut<ElysQuery>,
     env: Env,
+    saved_params: Option<[bool; 3]>,
 ) -> Result<Response<ElysMsg>, ContractError> {
     if PROCESS_ORDERS_ENABLED.load(deps.storage)? == false {
         return Err(StdError::generic_err("process order is disable").into());
@@ -169,6 +170,12 @@ pub fn process_orders(
             .add_submessages(submsgs)
             .add_messages(bank_msgs)
     };
+
+    if let Some([process_orders_param, swap_param, perpetual_param]) = saved_params {
+        PROCESS_ORDERS_ENABLED.save(deps.storage, &process_orders_param)?;
+        SWAP_ENABLED.save(deps.storage, &swap_param)?;
+        PERPETUAL_ENABLED.save(deps.storage, &perpetual_param)?;
+    }
 
     Ok(resp)
 }

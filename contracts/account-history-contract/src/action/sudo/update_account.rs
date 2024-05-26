@@ -13,7 +13,11 @@ use crate::{
 };
 use elys_bindings::{ElysMsg, ElysQuerier, ElysQuery};
 
-pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<ElysMsg>> {
+pub fn update_account(
+    deps: DepsMut<ElysQuery>,
+    env: Env,
+    save_update_account_enabled_param: Option<bool>,
+) -> StdResult<Response<ElysMsg>> {
     if UPDATE_ACCOUNT_ENABLED.load(deps.storage)? == false {
         return Err(StdError::generic_err("Update account is disabled"));
     }
@@ -72,6 +76,10 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     HISTORY.save(deps.storage, &today, &today_snapshots)?;
 
     clean_up_history(deps.storage, &env.block, &generator.expiration);
+
+    if let Some(save_update_account_enabled_param) = save_update_account_enabled_param {
+        UPDATE_ACCOUNT_ENABLED.save(deps.storage, &save_update_account_enabled_param)?;
+    }
 
     Ok(Response::default())
 }
