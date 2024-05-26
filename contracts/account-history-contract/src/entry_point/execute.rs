@@ -2,7 +2,7 @@ use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdError, S
 use elys_bindings::{account_history::msg::ExecuteMsg, ElysMsg, ElysQuery};
 
 use crate::{
-    action::execute::add_user_address_to_queue,
+    action::{execute::add_user_address_to_queue, sudo::update_account},
     states::{
         PARAMS_ADMIN, PROCESSED_ACCOUNT_PER_BLOCK, TRADE_SHIELD_ADDRESS, UPDATE_ACCOUNT_ENABLED,
     },
@@ -11,7 +11,7 @@ use crate::{
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut<ElysQuery>,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
 ) -> StdResult<Response<ElysMsg>> {
@@ -45,6 +45,13 @@ pub fn execute(
                 UPDATE_ACCOUNT_ENABLED.save(deps.storage, &update_account_enabled)?;
             }
             Ok(Response::new())
+        }
+        ExecuteMsg::UpdateAccount {} => {
+            if info.sender != PARAMS_ADMIN.load(deps.storage)? {
+                return Err(StdError::generic_err("Unauthorized"));
+            }
+            let resp = update_account(deps, env)?;
+            Ok(resp)
         }
     }
 }

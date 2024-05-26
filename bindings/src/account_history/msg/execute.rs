@@ -9,4 +9,5 @@ pub enum ExecuteMsg {
         update_account_enabled: Option<bool>,
         processed_account_per_block: Option<u64>,
     },
+    UpdateAccount {},
 }
