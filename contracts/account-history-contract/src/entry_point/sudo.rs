@@ -6,6 +6,6 @@ use elys_bindings::{ElysMsg, ElysQuery};
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn sudo(deps: DepsMut<ElysQuery>, env: Env, msg: SudoMsg) -> StdResult<Response<ElysMsg>> {
     match msg {
-        SudoMsg::ClockEndBlock {} => update_account(deps, env, None),
+        SudoMsg::ClockEndBlock {} => update_account(deps, env, true),
     }
 }

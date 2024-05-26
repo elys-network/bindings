@@ -222,21 +222,7 @@ pub fn execute(
                 return Err(StdError::generic_err("Unauthorized").into());
             }
 
-            let save_process_orders_enabled_params = PROCESS_ORDERS_ENABLED.load(deps.storage)?;
-            let save_swap_enabled_params = SWAP_ENABLED.load(deps.storage)?;
-            let save_perpetual_enabled_params = PERPETUAL_ENABLED.load(deps.storage)?;
-            PROCESS_ORDERS_ENABLED.save(deps.storage, &true)?;
-            SWAP_ENABLED.save(deps.storage, &true)?;
-            PERPETUAL_ENABLED.save(deps.storage, &true)?;
-            let resp = process_orders(
-                deps,
-                env,
-                Some([
-                    save_process_orders_enabled_params,
-                    save_swap_enabled_params,
-                    save_perpetual_enabled_params,
-                ]),
-            )?;
+            let resp = process_orders(deps, env, false)?;
             Ok(resp)
         }
     }?;
