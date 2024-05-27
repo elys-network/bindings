@@ -23,7 +23,6 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
 
     let processed_account_per_block: usize =
         PROCESSED_ACCOUNT_PER_BLOCK.load(deps.storage)? as usize;
-    let processed_account_per_block = processed_account_per_block;
 
     let mut today_snapshots = match HISTORY.may_load(deps.storage, &today)? {
         Some(snapshots) => snapshots,
