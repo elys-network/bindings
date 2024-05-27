@@ -321,7 +321,7 @@ fn get_portfolio() {
             "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
         )],
     )];
-    std::env::set_var("IS_TEST_ENV", "TRUE");
+    std::env::set_var("IS_TEST_ENV", "TESTING");
 
     let mut addresses: Vec<String> = vec![];
     let mut app = BasicAppBuilder::<ElysMsg, ElysQuery>::new_custom()
@@ -842,4 +842,5 @@ fn get_portfolio() {
         snapshots[6].date,
         Expiration::AtTime(Timestamp::from_seconds(24 * 60 * 60 * 8))
     );
+    std::env::set_var("IS_TEST_ENV", "FALSE");
 }

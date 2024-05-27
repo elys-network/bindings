@@ -37,7 +37,11 @@ pub fn migrate(
     LIMIT_PROCESS_ORDER.save(deps.storage, &limit_process_order)?;
 
     match std::env::var("IS_TEST_ENV") {
-        Ok(val) => return Ok(Response::new()),
+        Ok(val) => {
+            if val == "TESTING" {
+                return Ok(Response::new());
+            }
+        }
         Err(e) => (),
     }
 
