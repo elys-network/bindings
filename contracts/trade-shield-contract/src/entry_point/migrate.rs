@@ -5,11 +5,7 @@ use cosmwasm_std::StdError;
 use cw2::set_contract_version;
 use elys_bindings::trade_shield::{
     msg::MigrateMsg,
-    states::{
-        ACCOUNT_HISTORY_ADDRESS, LEVERAGE_ENABLED, LIMIT_PROCESS_ORDER, MARKET_ORDER_ENABLED,
-        PARAMS_ADMIN, PERPETUAL_ENABLED, PROCESS_ORDERS_ENABLED, REWARD_ENABLED, STAKE_ENABLED,
-        SWAP_ENABLED,
-    },
+    states::{ACCOUNT_HISTORY_ADDRESS, PARAMS_ADMIN},
 };
 
 #[cfg_attr(not(feature = "library"), entry_point)]
