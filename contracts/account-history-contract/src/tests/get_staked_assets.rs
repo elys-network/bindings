@@ -192,64 +192,6 @@ impl Module for ElysModuleWrapper {
                 };
                 Ok(to_json_binary(&resp)?)
             }
-            ElysQuery::CommitmentRewardsSubBucketBalanceOfDenom { denom, program, .. } => {
-                let resp: BalanceAvailable = match (denom.as_str(), program) {
-                    ("ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", 1) => {
-                        BalanceAvailable {
-                            amount: Uint128::zero(),
-                            usd_amount: Decimal::zero(),
-                        }
-                    }
-                    ("ueden", 1) => BalanceAvailable {
-                        amount: Uint128::new(349209420),
-                        usd_amount: Decimal::from_str("349209420").unwrap(),
-                    },
-                    ("ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", 2) => {
-                        BalanceAvailable {
-                            amount: Uint128::zero(),
-                            usd_amount: Decimal::zero(),
-                        }
-                    }
-                    ("ueden", 2) => BalanceAvailable {
-                        amount: Uint128::new(9868),
-                        usd_amount: Decimal::from_str("9868").unwrap(),
-                    },
-                    ("uedenb", 2) => BalanceAvailable {
-                        amount: Uint128::new(654083056),
-                        usd_amount: Decimal::from_str("654083056").unwrap(),
-                    },
-                    ("ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", 3) => {
-                        BalanceAvailable {
-                            amount: Uint128::new(1161),
-                            usd_amount: Decimal::from_str("1161").unwrap(),
-                        }
-                    }
-                    ("ueden", 3) => BalanceAvailable {
-                        amount: Uint128::new(2984882),
-                        usd_amount: Decimal::from_str("2984882").unwrap(),
-                    },
-                    ("uedenb", 3) => BalanceAvailable {
-                        amount: Uint128::new(10155052),
-                        usd_amount: Decimal::from_str("10155052").unwrap(),
-                    },
-                    ("ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65", 4) => {
-                        BalanceAvailable {
-                            amount: Uint128::zero(),
-                            usd_amount: Decimal::zero(),
-                        }
-                    }
-                    ("ueden", 4) => BalanceAvailable {
-                        amount: Uint128::zero(),
-                        usd_amount: Decimal::zero(),
-                    },
-                    ("uedenb", 4) => BalanceAvailable {
-                        amount: Uint128::zero(),
-                        usd_amount: Decimal::zero(),
-                    },
-                    _ => return Err(Error::new(StdError::not_found(denom))),
-                };
-                Ok(to_json_binary(&resp)?)
-            }
             ElysQuery::CommitmentStakedPositions { delegator_address } => {
                 let resp = match delegator_address.as_str() {
                     "user" => QueryStakedPositionResponse {

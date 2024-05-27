@@ -32,77 +32,8 @@ pub enum ElysQuery {
     AmmPool { pool_id: u64 },
     #[returns(AmmGetPoolsResponse)]
     AmmPoolAll { pagination: Option<PageRequest> },
-    // Define OracleQuery
-    #[returns(OracleAllPriceResponse)]
-    OraclePriceAll { pagination: PageRequest },
-    #[returns(OracleAssetInfoResponse)]
-    OracleAssetInfo { denom: String },
-    #[returns(QueryGetPriceResponse)]
-    OraclePrice {
-        asset: String,
-        source: String,
-        timestamp: u64,
-    },
-    // Define PerpetualQuery
-    #[returns(PerpetualQueryPositionsResponse)]
-    PerpetualQueryPositions { pagination: PageRequest },
-    #[returns(PerpetualMtpResponse)]
-    PerpetualMtp { address: String, id: u64 },
-    #[returns(PerpetualOpenEstimationResponse)]
-    PerpetualOpenEstimation {
-        position: i32,
-        leverage: SignedDecimal,
-        trading_asset: String,
-        collateral: Coin,
-        take_profit_price: SignedDecimal256,
-        discount: Decimal,
-    },
-    #[returns(PerpetualGetPositionsForAddressResponse)]
-    PerpetualGetPositionsForAddress {
-        address: String,
-        pagination: Option<PageRequest>,
-    },
-    // Define AuthQuery
-    #[returns(AuthAddressesResponse)]
-    AuthAddresses { pagination: Option<PageRequest> },
-    #[returns(QueryGetEntryResponse)]
-    AssetProfileEntry { base_denom: String },
-    #[returns(QueryGetEntryAllResponse)]
-    AssetProfileEntryAll { pagination: Option<PageRequest> },
-    #[returns(QueryAprResponse)]
-    IncentiveApr { withdraw_type: i32, denom: String },
-    #[returns(QueryAprsResponse)]
-    IncentiveAprs {},
-    #[returns(BalanceAvailable)]
-    CommitmentRewardsSubBucketBalanceOfDenom {
-        address: String,
-        denom: String,
-        program: i32,
-    },
-    #[returns(BalanceAvailable)]
-    CommitmentStakedBalanceOfDenom { address: String, denom: String },
     #[returns(Decimal)]
     AmmPriceByDenom { token_in: Coin, discount: Decimal },
-    #[returns(QueryStakedPositionResponse)]
-    CommitmentStakedPositions { delegator_address: String },
-    #[returns(QueryUnstakedPositionResponse)]
-    CommitmentUnStakedPositions { delegator_address: String },
-    #[returns(BalanceBorrowed)]
-    StableStakeBalanceOfBorrow {},
-    #[returns(StableStakeParamsResp)]
-    StableStakeParams {},
-    #[returns(QueryDelegatorDelegationsResponse)]
-    CommitmentDelegations { delegator_address: String },
-    #[returns(QueryDelegatorUnbondingDelegationsResponse)]
-    CommitmentUnbondingDelegations { delegator_address: String },
-    #[returns(QueryDelegatorValidatorsResponse)]
-    CommitmentAllValidators { delegator_address: String },
-    #[returns(QueryDelegatorValidatorsResponse)]
-    CommitmentDelegatorValidators { delegator_address: String },
-    #[returns(QueryShowCommitmentsResponse)]
-    CommitmentShowCommitments { creator: String },
-    #[returns(QueryVestingInfoResponse)]
-    CommitmentVestingInfo { address: String },
     #[returns(QueryEarnPoolResponse)]
     AmmEarnMiningPoolAll {
         pool_ids: Option<Vec<u64>>,
@@ -117,6 +48,58 @@ pub enum ElysQuery {
         share_amount_in: Uint128,
         token_out_denom: String,
     },
+
+    // Define AssetProfil
+    #[returns(QueryGetEntryResponse)]
+    AssetProfileEntry { base_denom: String },
+    #[returns(QueryGetEntryAllResponse)]
+    AssetProfileEntryAll { pagination: Option<PageRequest> },
+
+    // Define AuthQuery
+    #[returns(AuthAddressesResponse)]
+    AuthAddresses { pagination: Option<PageRequest> },
+
+    // Define Commitment
+    #[returns(BalanceAvailable)]
+    CommitmentStakedBalanceOfDenom { address: String, denom: String },
+    #[returns(QueryStakedPositionResponse)]
+    CommitmentStakedPositions { delegator_address: String },
+    #[returns(QueryUnstakedPositionResponse)]
+    CommitmentUnStakedPositions { delegator_address: String },
+    #[returns(QueryDelegatorDelegationsResponse)]
+    CommitmentDelegations { delegator_address: String },
+    #[returns(QueryDelegatorUnbondingDelegationsResponse)]
+    CommitmentUnbondingDelegations { delegator_address: String },
+    #[returns(QueryDelegatorValidatorsResponse)]
+    CommitmentAllValidators { delegator_address: String },
+    #[returns(QueryDelegatorValidatorsResponse)]
+    CommitmentDelegatorValidators { delegator_address: String },
+    #[returns(QueryShowCommitmentsResponse)]
+    CommitmentShowCommitments { creator: String },
+    #[returns(QueryVestingInfoResponse)]
+    CommitmentVestingInfo { address: String },
+    #[returns(CommitmentNumberOfCommitmentsResponse)]
+    CommitmentNumberOfCommitments {},
+
+    // Define Incentive
+    #[returns(QueryAprResponse)]
+    IncentiveApr { withdraw_type: i32, denom: String },
+    #[returns(QueryAprsResponse)]
+    IncentiveAprs {},
+
+    // Define Masterchef
+    #[returns(MasterchefUserPendingRewardResponse)]
+    MasterchefUserPendingReward { user: String },
+    #[returns(QueryPoolAprsResponse)]
+    MasterchefPoolAprs { pool_ids: Vec<u64> },
+    #[returns(QueryStableStakeAprResponse)]
+    MasterchefStableStakeApr { denom: String },
+
+    // Define Estaking
+    #[returns(EstakingRewardsResponse)]
+    EstakingRewards { address: String },
+
+    // Define Leveragelp
     #[returns(LeveragelpParamsResponse)]
     LeveragelpParams {},
     #[returns(LeveragelpPositionsResponse)]
@@ -143,16 +126,44 @@ pub enum ElysQuery {
     LeveragelpPools { pagination: Option<PageRequest> },
     #[returns(LeveragelpPositionResponse)]
     LeveragelpPosition { address: String, id: u64 },
-    #[returns(MasterchefUserPendingRewardResponse)]
-    MasterchefUserPendingReward { user: String },
-    #[returns(EstakingRewardsResponse)]
-    EstakingRewards { address: String },
-    #[returns(QueryPoolAprsResponse)]
-    MasterchefPoolAprs { pool_ids: Vec<u64> },
-    #[returns(QueryStableStakeAprResponse)]
-    MasterchefStableStakeApr { denom: String },
-    #[returns(CommitmentNumberOfCommitmentsResponse)]
-    CommitmentNumberOfCommitments {},
+
+    // Define Perpetual
+    #[returns(PerpetualQueryPositionsResponse)]
+    PerpetualQueryPositions { pagination: PageRequest },
+    #[returns(PerpetualMtpResponse)]
+    PerpetualMtp { address: String, id: u64 },
+    #[returns(PerpetualOpenEstimationResponse)]
+    PerpetualOpenEstimation {
+        position: i32,
+        leverage: SignedDecimal,
+        trading_asset: String,
+        collateral: Coin,
+        take_profit_price: SignedDecimal256,
+        discount: Decimal,
+    },
+    #[returns(PerpetualGetPositionsForAddressResponse)]
+    PerpetualGetPositionsForAddress {
+        address: String,
+        pagination: Option<PageRequest>,
+    },
+
+    // Define Oracle
+    #[returns(OracleAllPriceResponse)]
+    OraclePriceAll { pagination: PageRequest },
+    #[returns(OracleAssetInfoResponse)]
+    OracleAssetInfo { denom: String },
+    #[returns(QueryGetPriceResponse)]
+    OraclePrice {
+        asset: String,
+        source: String,
+        timestamp: u64,
+    },
+
+    // Define Stablestake
+    #[returns(BalanceBorrowed)]
+    StableStakeBalanceOfBorrow {},
+    #[returns(StableStakeParamsResp)]
+    StableStakeParams {},
 }
 
 impl CustomQuery for ElysQuery {}
@@ -245,13 +256,6 @@ impl ElysQuery {
         Self::PerpetualGetPositionsForAddress {
             address,
             pagination,
-        }
-    }
-    pub fn get_sub_bucket_rewards_balance(address: String, denom: String, program: i32) -> Self {
-        ElysQuery::CommitmentRewardsSubBucketBalanceOfDenom {
-            address,
-            denom,
-            program,
         }
     }
     pub fn get_oracle_price(asset: String, source: String, timestamp: u64) -> Self {
