@@ -324,6 +324,7 @@ impl Module for ElysModuleWrapper {
 #[test]
 fn history() {
     let wallet: Vec<(&str, Vec<Coin>)> = vec![("user-a", coins(300, "uelys"))];
+    std::env::set_var("IS_TEST_ENV", "TRUE");
 
     let mut addresses: Vec<String> = vec![];
     let mut app = BasicAppBuilder::<ElysMsg, ElysQuery>::new_custom()

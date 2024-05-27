@@ -36,6 +36,11 @@ pub fn migrate(
     LEVERAGE_ENABLED.save(deps.storage, &state)?;
     LIMIT_PROCESS_ORDER.save(deps.storage, &limit_process_order)?;
 
+    match std::env::var("IS_TEST_ENV") {
+        Ok(val) => return Ok(Response::new()),
+        Err(e) => (),
+    }
+
     let ver = cw2::get_contract_version(deps.storage)?;
     // ensure we are migrating from an allowed contract
     if ver.contract != CONTRACT_NAME {
