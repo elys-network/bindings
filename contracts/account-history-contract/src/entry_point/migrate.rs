@@ -5,10 +5,7 @@ use elys_bindings::account_history::msg::MigrationMsg;
 // use elys_bindings::account_history::types::Metadata;
 use elys_bindings::{ElysMsg, /*ElysQuerier,*/ ElysQuery};
 
-use crate::states::{
-    EXPIRATION, PARAMS_ADMIN, PROCESSED_ACCOUNT_PER_BLOCK, TRADE_SHIELD_ADDRESS,
-    UPDATE_ACCOUNT_ENABLED,
-};
+use crate::states::{EXPIRATION, PARAMS_ADMIN, PROCESSED_ACCOUNT_PER_BLOCK, TRADE_SHIELD_ADDRESS};
 
 use super::instantiate::{CONTRACT_NAME, CONTRACT_VERSION};
 
@@ -36,8 +33,6 @@ pub fn migrate(
     };
 
     PROCESSED_ACCOUNT_PER_BLOCK.save(deps.storage, &limit)?;
-
-    UPDATE_ACCOUNT_ENABLED.save(deps.storage, &true)?;
 
     // METADATA
     // let querier = ElysQuerier::new(&deps.querier);
