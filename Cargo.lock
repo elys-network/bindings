@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "account-history-contract"
-version = "0.0.0"
+version = "0.30.7"
 dependencies = [
  "account-history-contract",
  "anyhow",
@@ -479,7 +479,7 @@ dependencies = [
 
 [[package]]
 name = "financial_snapshot_contract"
-version = "0.0.0"
+version = "0.30.7"
 dependencies = [
  "anyhow",
  "cargo-husky",
@@ -892,7 +892,7 @@ dependencies = [
 
 [[package]]
 name = "trade_shield_contract"
-version = "0.0.0"
+version = "0.30.7"
 dependencies = [
  "anyhow",
  "cargo-husky",
