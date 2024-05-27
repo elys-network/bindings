@@ -11,6 +11,12 @@ mkdir -p artifacts
 
 rm -rf ./target/wasm32-unknown-unknown/
 
+export VERSION=$(git describe --tags --match 'v*' --abbrev=0 | sed 's/^v//')
+
+sed -i '' "s/^version = .*/version = \"$VERSION\"/" contracts/account-history-contract/Cargo.toml
+sed -i '' "s/^version = .*/version = \"$VERSION\"/" contracts/trade-shield-contract/Cargo.toml
+sed -i '' "s/^version = .*/version = \"$VERSION\"/" contracts/financial-snapshot/Cargo.toml
+
 export RUST_BACKTRACE=1
 
 for example in ./contracts/*/; do
