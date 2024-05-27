@@ -1,6 +1,7 @@
 use crate::helper::get_mut_discount;
 
 use super::*;
+use crate::action::sudo::process_orders;
 use cosmwasm_std::{CosmosMsg, Int128, StdError, WasmMsg};
 use elys_bindings::account_history::msg::ExecuteMsg as AccountHistoryMsg;
 use elys_bindings::trade_shield::states::{
@@ -215,6 +216,14 @@ pub fn execute(
 
         EstakingWithdrawReward { validator_address } => {
             estaking_withdraw_reward(info, deps, validator_address)
+        }
+        ProcessOrders {} => {
+            if info.sender != PARAMS_ADMIN.load(deps.storage)? {
+                return Err(StdError::generic_err("Unauthorized").into());
+            }
+
+            let resp = process_orders(deps, env)?;
+            Ok(resp)
         }
     }?;
 

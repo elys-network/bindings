@@ -23,7 +23,7 @@ use elys_bindings::{
         AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse,
         BalanceBorrowed, Commitments, Entry, EstakingRewardsResponse,
         LeveragelpIsWhitelistedResponse, LeveragelpParams, LeveragelpParamsResponse,
-        LeveragelpStatusReponse, LeveragelpWhitelistResponse, MasterchefUserPendingRewardResponse,
+        LeveragelpStatusResponse, LeveragelpWhitelistResponse, MasterchefUserPendingRewardResponse,
         OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
         PerpetualOpenEstimationRawResponse, PerpetualQueryPositionsResponse, PoolApr,
         QueryAprResponse, QueryAprsResponse, QueryGetEntryAllResponse, QueryGetEntryResponse,
@@ -134,7 +134,7 @@ impl Module for ElysModule {
             }
 
             ElysQuery::LeveragelpGetStatus { .. } => {
-                let resp = LeveragelpStatusReponse {
+                let resp = LeveragelpStatusResponse {
                     open_position_count: 10,
                     lifetime_position_count: 100,
                 };

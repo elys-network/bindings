@@ -23,6 +23,43 @@ impl CoinValue {
         }
     }
 
+    pub fn from_price_and_coin(
+        balance: &Coin,
+        price_and_decimal_point: (Decimal, u64),
+    ) -> StdResult<Self> {
+        let amount_token = Decimal::from_atomics(balance.amount, price_and_decimal_point.1 as u32)
+            .map_err(|e| {
+                StdError::generic_err(format!("failed to convert amount to Decimal: {}", e))
+            })?;
+
+        let amount_usd = price_and_decimal_point
+            .0
+            .clone()
+            .checked_mul(
+                Decimal::from_atomics(balance.amount, price_and_decimal_point.1 as u32).map_err(
+                    |e| {
+                        StdError::generic_err(format!(
+                            "failed to convert amount_usd_base to Decimal: {}",
+                            e
+                        ))
+                    },
+                )?,
+            )
+            .map_err(|e| {
+                StdError::generic_err(format!(
+                    "failed to convert amount_usd_base to Decimal: {}",
+                    e
+                ))
+            })?;
+
+        Ok(Self {
+            denom: balance.denom.clone(),
+            amount_token,
+            price: price_and_decimal_point.0,
+            amount_usd,
+        })
+    }
+
     pub fn from_coin(balance: &Coin, querier: &ElysQuerier<'_>) -> StdResult<Self> {
         let OracleAssetInfoResponse { asset_info } = querier
             .asset_info(balance.denom.clone())

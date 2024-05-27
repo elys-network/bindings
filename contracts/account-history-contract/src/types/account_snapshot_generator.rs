@@ -9,15 +9,15 @@ use elys_bindings::{
     account_history::{
         msg::query_resp::{GetRewardsResp, StakeAssetBalanceBreakdown, StakedAssetsResponse},
         types::{
-            earn_program::{EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram},
+            earn_program::{EdenEarnProgram, ElysEarnProgram},
             AccountSnapshot, CoinValue, ElysDenom, LiquidAsset, Metadata, PerpetualAsset,
             PerpetualAssets, PoolBalances, PortfolioBalanceSnapshot, Reward, StakedAssets,
             TotalBalance,
         },
     },
     query_resp::{
-        CommittedTokens, PoolFilterType, PoolResp, QueryAprResponse, QueryUserPoolResponse,
-        UserPoolResp,
+        CommittedTokens, OracleAssetInfoResponse, PoolFilterType, PoolResp, QueryAprResponse,
+        QueryUserPoolResponse, UserPoolResp,
     },
     trade_shield::{
         msg::{
@@ -26,7 +26,10 @@ use elys_bindings::{
             },
             QueryMsg::{GetPerpetualOrders, GetSpotOrders, PerpetualGetPositionsForAddress},
         },
-        types::{PerpetualOrder, PerpetualOrderPlus, PerpetualOrderType, SpotOrder, Status},
+        types::{
+            OracleAssetInfo, PerpetualOrder, PerpetualOrderPlus, PerpetualOrderType, SpotOrder,
+            Status,
+        },
     },
     ElysQuerier, ElysQuery,
 };
@@ -81,7 +84,7 @@ impl AccountSnapshotGenerator {
         env: &Env,
         address: &String,
     ) -> StdResult<AccountSnapshot> {
-        let liquid_assets_response = self.get_liquid_assets(&deps, querier, &address)?;
+        let liquid_assets_response = self.get_liquid_assets(&deps, querier, &address)?; // ✅ Fixme
         let staked_assets_response = self.get_staked_assets(&deps, Some(address.clone()))?;
         let rewards_response = self.get_rewards(&deps, &address)?;
         let perpetual_response = self.get_perpetuals(&deps, &address)?;
@@ -315,10 +318,12 @@ impl AccountSnapshotGenerator {
         querier: &ElysQuerier,
         address: &String,
     ) -> StdResult<LiquidAsset> {
+        // query al balances se kya milta hai?
         let mut account_balances = deps.querier.query_all_balances(address)?;
         let orders_balances =
             self.get_all_orders(&deps.querier, &self.trade_shield_address, &address)?;
 
+        // why we are adding eden earn program detail in liquid asset?
         let eden_program = get_eden_earn_program_details(
             deps,
             Some(address.to_owned()),
@@ -331,26 +336,56 @@ impl AccountSnapshotGenerator {
         )
         .unwrap_or_default();
 
-        let available = eden_program.data.available.unwrap_or_default();
-        let eden_coin = Coin::new(u128::from(available.amount), ElysDenom::Eden.as_str());
+        let available = eden_program.data.to_coin_available();
         if available.amount > Uint128::zero() {
-            account_balances.push(eden_coin);
+            account_balances.push(available);
         }
+
+        // `total_value_per_asset` that maps references to denoms (`&String`) to values of type
+        // `Coin`. it is used to store the coin of unique denom.
+        let mut total_value_per_asset: HashMap<&String, Coin> = HashMap::new();
+        // `price_per_asset` that maps references to denoms to tuples containing a `Decimal` and an unsigned 64-bit integer.
+        let mut price_per_asset: HashMap<&String, (Decimal, u64)> = HashMap::new();
+
+        for available in account_balances.iter() {
+            total_value_per_asset
+                .entry(&available.denom)
+                .and_modify(|e| e.amount += available.amount)
+                .or_insert_with(|| available.clone());
+        }
+
+        for in_order in orders_balances.iter() {
+            total_value_per_asset
+                .entry(&in_order.denom)
+                .and_modify(|e| e.amount += in_order.amount)
+                .or_insert_with(|| in_order.clone());
+        }
+
+        // memoization of price and decimal point for each unique denom in `total_value_per_asset`
+        for (key, _) in total_value_per_asset.iter() {
+            let val = Self::get_price_and_decimal_point(key.to_string(), querier);
+            if let Ok(v) = val {
+                price_per_asset.insert(key, v);
+            }
+        }
+
+        // closure for converting coin to coinvalue using from_price_and_coin
+        let coin_to_coin_value = |coin: &Coin| {
+            let price_and_point = price_per_asset.get(&coin.denom);
+            if price_and_point.is_none() {
+                return None;
+            }
+            CoinValue::from_price_and_coin(coin, price_and_point.unwrap().clone()).ok()
+        };
 
         let available_asset_balance: Vec<CoinValue> = account_balances
             .iter()
-            .filter_map(|coin| match CoinValue::from_coin(coin, querier) {
-                Ok(res) => Some(res),
-                Err(_) => None,
-            })
+            .filter_map(coin_to_coin_value)
             .collect();
 
         let in_orders_asset_balance: Vec<CoinValue> = orders_balances
             .iter()
-            .filter_map(|coin| match CoinValue::from_coin(coin, querier) {
-                Ok(res) => Some(res),
-                Err(_) => None,
-            })
+            .filter_map(coin_to_coin_value)
             .collect();
 
         let mut total_available_balance =
@@ -370,38 +405,14 @@ impl AccountSnapshotGenerator {
                 .checked_add(Decimal256::from(balance.amount_usd.clone()))?
         }
 
-        let mut total_value_per_asset: HashMap<&String, CoinValue> = HashMap::new();
+        let total_value_per_asset: Vec<CoinValue> = total_value_per_asset
+            .values()
+            .filter_map(coin_to_coin_value)
+            .collect();
 
-        for available in available_asset_balance.iter() {
-            total_value_per_asset
-                .entry(&available.denom)
-                .and_modify(|e| {
-                    e.amount_token += available.amount_token.clone();
-                    e.amount_usd += available.amount_usd.clone();
-                })
-                .or_insert_with(|| available.clone());
-        }
-
-        for in_order in in_orders_asset_balance.iter() {
-            total_value_per_asset
-                .entry(&in_order.denom)
-                .and_modify(|e| {
-                    e.amount_token += in_order.amount_token.clone();
-                    e.amount_usd += in_order.amount_usd.clone();
-                })
-                .or_insert_with(|| in_order.clone());
-        }
-
-        let total_value_per_asset: Vec<CoinValue> =
-            total_value_per_asset.values().cloned().collect();
-
+        // calculating total liquid assets
         let total_liquid_asset_balance = DecCoin::new(
-            Decimal256::from(
-                total_value_per_asset
-                    .iter()
-                    .map(|v| v.amount_usd)
-                    .fold(Decimal::zero(), |acc, item| acc + item),
-            ),
+            total_available_balance.amount + total_in_orders_balance.amount,
             &self.metadata.usdc_denom,
         );
 
@@ -428,6 +439,7 @@ impl AccountSnapshotGenerator {
         let mut staked_assets = StakedAssets::default();
         let mut total_staked_balance = Decimal::zero();
 
+        // usdc program
         let usdc_details = get_usdc_earn_program_details(
             deps,
             address.clone(),
@@ -437,15 +449,15 @@ impl AccountSnapshotGenerator {
         )
         .unwrap_or_default();
 
-        // usdc program
-        let staked_asset_usdc = usdc_details.data.clone();
+        let staked_asset_usdc = usdc_details.data;
         total_staked_balance = total_staked_balance
-            .checked_add(match staked_asset_usdc.clone() {
-                UsdcEarnProgram {
-                    staked: Some(r), ..
-                } => r.usd_amount,
-                _ => Decimal::zero(),
-            })
+            .checked_add(
+                staked_asset_usdc
+                    .clone()
+                    .staked
+                    .unwrap_or_default()
+                    .usd_amount,
+            )
             .unwrap_or_default();
         staked_assets.usdc_earn_program = staked_asset_usdc;
 
@@ -556,6 +568,7 @@ impl AccountSnapshotGenerator {
         })
     }
 
+    // denom in or denom out?
     pub fn get_all_orders(
         &self,
         querier: &QuerierWrapper<ElysQuery>,
@@ -745,5 +758,29 @@ impl AccountSnapshotGenerator {
         };
 
         Ok(resp)
+    }
+
+    fn get_price_and_decimal_point(
+        denom: String,
+        querier: &ElysQuerier<'_>,
+    ) -> StdResult<(Decimal, u64)> {
+        let OracleAssetInfoResponse { asset_info } =
+            querier
+                .asset_info(denom.clone())
+                .unwrap_or(OracleAssetInfoResponse {
+                    asset_info: OracleAssetInfo {
+                        denom: denom.clone(),
+                        display: denom.clone(),
+                        band_ticker: denom.clone(),
+                        elys_ticker: denom.clone(),
+                        decimal: 6,
+                    },
+                });
+
+        let price = querier
+            .get_asset_price(denom.clone())
+            .map_err(|e| StdError::generic_err(format!("failed to get_asset_price: {}", e)))?;
+
+        Ok((price, asset_info.decimal))
     }
 }

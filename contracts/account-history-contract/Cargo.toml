@@ -16,12 +16,13 @@ cosmwasm-std = { version = "1.1.4", features = [
     "staking",
 ], default-features = false }
 serde = { version = "1.0.103", default-features = false, features = ["derive"] }
-cw-storage-plus = { version = "0.15.1", default-features = false, features = [
+cw-storage-plus = { version = "1.2.0", default-features = false, features = [
     "iterator",
 ] }
 thiserror = { version = "1", default-features = false }
 schemars = { default-features = false, version = "0.8.1" }
 cw-utils = { version = "0.13", default-features = false }
+cw2 = { version = "1.0.1" }
 elys-bindings = { path = "../../bindings" }
 chrono = { version = "0.4.33", default-features = false, features = ["alloc"] }
 

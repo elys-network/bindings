@@ -70,7 +70,7 @@ pub enum QueryMsg {
         amm_pool_id: u64,
         pagination: Option<PageRequest>,
     },
-    #[returns(LeveragelpStatusReponse)]
+    #[returns(LeveragelpStatusResponse)]
     LeveragelpGetStatus {},
     #[returns(LeveragelpPositionsResponse)]
     LeveragelpQueryPositionsForAddress {

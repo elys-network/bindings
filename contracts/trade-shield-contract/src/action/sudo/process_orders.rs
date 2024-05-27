@@ -14,10 +14,6 @@ pub fn process_orders(
     deps: DepsMut<ElysQuery>,
     env: Env,
 ) -> Result<Response<ElysMsg>, ContractError> {
-    if PROCESS_ORDERS_ENABLED.load(deps.storage)? == false {
-        return Err(StdError::generic_err("process order is disable").into());
-    }
-
     let spot_orders: Vec<(String, Vec<u64>)> = if SWAP_ENABLED.load(deps.storage)? {
         SORTED_PENDING_SPOT_ORDER
             .prefix_range(deps.storage, None, None, Order::Ascending)

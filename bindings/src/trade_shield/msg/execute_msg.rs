@@ -119,4 +119,6 @@ pub enum ExecuteMsg {
     EstakingWithdrawReward {
         validator_address: String,
     },
+
+    ProcessOrders {},
 }
