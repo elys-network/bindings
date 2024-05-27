@@ -1,12 +1,12 @@
 use crate::{
-    account_history::types::{AprElys, CoinValue},
+    account_history::types::{AprElys, CoinValue, ElysDenom},
     query_resp::StakedAvailable,
     trade_shield::types::BalanceAvailable,
     types::VestingDetail,
 };
 
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Decimal, Uint128};
+use cosmwasm_std::{Coin, Decimal, Uint128};
 
 #[cw_serde]
 pub struct EdenEarnProgram {
@@ -32,6 +32,19 @@ pub struct EdenEarnProgram {
     pub vesting_details: Option<Vec<VestingDetail>>,
 }
 
+impl EdenEarnProgram {
+    fn to_coin(&self, amount: Uint128) -> Coin {
+        Coin::new(u128::from(amount), ElysDenom::Eden.as_str())
+    }
+
+    pub fn to_coin_available(&self) -> Coin {
+        self.to_coin(self.available.clone().unwrap_or_default().amount)
+    }
+
+    pub fn to_coin_staked(&self) -> Coin {
+        self.to_coin(self.staked.clone().unwrap_or_default().amount)
+    }
+}
 // implement default
 impl Default for EdenEarnProgram {
     fn default() -> Self {
