@@ -501,6 +501,15 @@ function stake_request() {
         delegate
 }
 
+function update_account() {
+    printf "\n# Update Account\n"
+    execute_message \
+        "$ah_contract_address" \
+        '{
+            "update_account": {}
+        }'
+}
+
 # function(s) to run based on the provided argument
 case "$1" in
 "amm_swap_exact_amount_in")
@@ -577,6 +586,9 @@ case "$1" in
     ;;
 "stake_request")
     stake_request $2
+    ;;
+"update_account")
+    update_account
     ;;
 *)
     # Default case: run all functions
