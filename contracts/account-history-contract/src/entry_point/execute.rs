@@ -24,7 +24,7 @@ pub fn execute(
             if trade_shield_address.as_str() != info.sender.as_str() {
                 return Err(StdError::generic_err("Unauthorized"));
             }
-            add_user_address_to_queue(deps.storage, user_address)?;
+            add_user_address_to_queue(deps, user_address)?;
             Ok(Response::new())
         }
         ExecuteMsg::ChangeParams {
