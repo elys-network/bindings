@@ -13,7 +13,7 @@ dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
  "cw-multi-test",
- "cw-storage-plus 0.15.1",
+ "cw-storage-plus 1.2.0",
  "cw-utils",
  "cw2",
  "elys-bindings",
@@ -290,17 +290,6 @@ dependencies = [
 
 [[package]]
 name = "cw-storage-plus"
-version = "0.15.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc6cf70ef7686e2da9ad7b067c5942cd3e88dd9453f7af42f54557f8af300fb0"
-dependencies = [
- "cosmwasm-std",
- "schemars",
- "serde",
-]
-
-[[package]]
-name = "cw-storage-plus"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d5ff29294ee99373e2cd5fd21786a3c0ced99a52fec2ca347d565489c61b723c"
@@ -486,7 +475,7 @@ dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
  "cw-multi-test",
- "cw-storage-plus 0.15.1",
+ "cw-storage-plus 1.2.0",
  "cw-utils",
  "cw2",
  "elys-bindings",
@@ -576,9 +565,9 @@ checksum = "b1a46d1a171d865aa5f83f92695765caa047a9b4cbae2cbf37dbd613a793fd4c"
 
 [[package]]
 name = "k256"
-version = "0.13.2"
+version = "0.13.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f01b677d82ef7a676aa37e099defd83a28e15687112cafdd112d60236b6115b"
+checksum = "956ff9b67e26e1a6a866cb758f12c6f8746208489e3e4a4b5580802f2f0a587b"
 dependencies = [
  "cfg-if",
  "ecdsa",
@@ -899,7 +888,7 @@ dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
  "cw-multi-test",
- "cw-storage-plus 0.15.1",
+ "cw-storage-plus 1.2.0",
  "cw-utils",
  "cw2",
  "elys-bindings",
