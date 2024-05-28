@@ -6,6 +6,7 @@ use crate::trade_shield::types::{PerpetualOrderType, SpotOrderType, Status};
 use crate::types::{PageRequest, PerpetualPosition};
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Coin, SignedDecimal, SignedDecimal256};
+use cw2::ContractVersion;
 
 #[cw_serde]
 #[derive(QueryResponses)]
@@ -101,4 +102,6 @@ pub enum QueryMsg {
     GetStat {},
     #[returns(GetSpotOrderStatesResp)]
     GetSpotOrderStates { order_id: u64 },
+    #[returns(ContractVersion)]
+    Version {},
 }

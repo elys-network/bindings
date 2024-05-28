@@ -1,4 +1,5 @@
 use super::*;
+use cw2::CONTRACT;
 use elys_bindings::ElysQuery;
 use msg::QueryMsg;
 
@@ -38,5 +39,6 @@ pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, 
 
         // Specific function for querying USDC oracle price
         GetUsdcPrice {} => Ok(to_json_binary(&earn::get_usdc_price(deps)?)?),
+        Version {} => Ok(to_json_binary(&CONTRACT.load(deps.storage)?)?),
     }
 }
