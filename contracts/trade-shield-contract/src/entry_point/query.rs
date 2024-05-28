@@ -1,5 +1,6 @@
 use super::*;
 use cosmwasm_std::{coin, Addr, Decimal, Order, StdError, Timestamp};
+use cw2::CONTRACT;
 use elys_bindings::trade_shield::{
     msg::query_resp::{
         GetSortedOrderListResp, NumberOfPendingOrderResp, OrdersStates, TradeShieldParamsResponse,
@@ -217,5 +218,6 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> Result<Binary, C
         GetSpotOrderStates { order_id } => Ok(to_json_binary(&query::get_spot_order_states(
             deps, order_id,
         )?)?),
+        Version {} => Ok(to_json_binary(&CONTRACT.load(deps.storage)?)?),
     }
 }

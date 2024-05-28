@@ -3,6 +3,7 @@ use super::query_resp::earn::*;
 #[allow(unused_imports)]
 use super::query_resp::pod::*;
 use cosmwasm_schema::{cw_serde, QueryResponses};
+use cw2::ContractVersion;
 #[allow(unused_imports)]
 use elys_bindings::query_resp::*;
 
@@ -28,4 +29,6 @@ pub enum QueryMsg {
     GetCommitments { delegator_addr: String },
     #[returns(GetUsdcPriceResp)]
     GetUsdcPrice {},
+    #[returns(ContractVersion)]
+    Version {},
 }
