@@ -19,7 +19,7 @@ jobs:
 
       - name: Build and test
         run: |
-          ./scripts/fast_build.sh
+          ./scripts/build.sh
           cargo build --verbose
           cargo test --verbose
         working-directory: .
