@@ -33,12 +33,10 @@ pub fn user_snapshots(
             .expect("Failed to convert block time to date")
             .format("%Y-%m-%d")
             .to_string();
+        let key = date + &user_address;
 
-        let day_history = HISTORY.may_load(deps.storage, &date)?;
-        if let Some(day_history) = day_history {
-            if let Some(portfolio) = day_history.get(&user_address) {
-                user_snapshots_list.push(portfolio.to_owned())
-            };
+        if let Some(portfolio) = HISTORY.may_load(deps.storage, &key)? {
+            user_snapshots_list.push(portfolio.to_owned())
         }
 
         day_date = day_date.plus_days(1);
