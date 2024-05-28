@@ -318,12 +318,10 @@ impl AccountSnapshotGenerator {
         querier: &ElysQuerier,
         address: &String,
     ) -> StdResult<LiquidAsset> {
-        // query al balances se kya milta hai?
         let mut account_balances = deps.querier.query_all_balances(address)?;
         let orders_balances =
             self.get_all_orders(&deps.querier, &self.trade_shield_address, &address)?;
 
-        // why we are adding eden earn program detail in liquid asset?
         let eden_program = get_eden_earn_program_details(
             deps,
             Some(address.to_owned()),
@@ -568,7 +566,6 @@ impl AccountSnapshotGenerator {
         })
     }
 
-    // denom in or denom out?
     pub fn get_all_orders(
         &self,
         querier: &QuerierWrapper<ElysQuery>,
