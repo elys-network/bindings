@@ -4,9 +4,9 @@
 if [ "${CI:-}" = "true" ]; then
     echo "CI is true, running the block of commands..."
     export VERSION=$(git describe --tags --match 'v*' --abbrev=0 | sed 's/^v//')
-    sed -i '' "s/^version = .*/version = \"$VERSION\"/" contracts/account-history-contract/Cargo.toml
-    sed -i '' "s/^version = .*/version = \"$VERSION\"/" contracts/trade-shield-contract/Cargo.toml
-    sed -i '' "s/^version = .*/version = \"$VERSION\"/" contracts/financial-snapshot/Cargo.toml
+    sed -i "s/^version = .*/version = \"$VERSION\"/" contracts/account-history-contract/Cargo.toml
+    sed -i "s/^version = .*/version = \"$VERSION\"/" contracts/trade-shield-contract/Cargo.toml
+    sed -i "s/^version = .*/version = \"$VERSION\"/" contracts/financial-snapshot-contract/Cargo.toml
 fi
 
 docker run --rm -v "$(pwd)":/code \
