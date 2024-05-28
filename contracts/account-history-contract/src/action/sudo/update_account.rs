@@ -1,7 +1,5 @@
-use std::collections::HashMap;
-
 use chrono::NaiveDateTime;
-use cosmwasm_std::{BlockInfo, DepsMut, Env, Response, StdResult, Storage, Timestamp};
+use cosmwasm_std::{DepsMut, Env, Response, StdResult, Timestamp};
 use cw_utils::Expiration;
 
 use crate::{
@@ -24,11 +22,6 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     let processed_account_per_block: usize =
         PROCESSED_ACCOUNT_PER_BLOCK.load(deps.storage)? as usize;
 
-    let mut today_snapshots = match HISTORY.may_load(deps.storage, &today)? {
-        Some(snapshots) => snapshots,
-        None => HashMap::new(),
-    };
-
     let generator = AccountSnapshotGenerator::new(&deps.as_ref())?;
 
     for _ in 0..processed_account_per_block {
@@ -43,7 +36,9 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             break;
         };
 
-        if today_snapshots.get(&user_address).is_some() {
+        let key = today.clone() + &user_address;
+
+        if let Some(_) = HISTORY.may_load(deps.storage, &key)? {
             // skip if the account has been updated today
             continue;
         }
@@ -54,25 +49,23 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             &env,
             &user_address,
         )?;
-        today_snapshots.insert(user_address.clone(), new_part);
+        HISTORY.save(deps.storage, &key, &new_part)?;
     }
-
-    HISTORY.save(deps.storage, &today, &today_snapshots)?;
-
-    clean_up_history(deps.storage, &env.block, &generator.expiration);
 
     Ok(Response::default())
 }
 
-fn clean_up_history(storage: &mut dyn Storage, block_info: &BlockInfo, expiration: &Expiration) {
-    let expiration = match expiration {
+pub fn clean_up_history(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<ElysMsg>> {
+    let generator = AccountSnapshotGenerator::new(&deps.as_ref())?;
+    let block_info = env.block;
+    let expiration = match generator.expiration {
         Expiration::AtHeight(h) => Timestamp::from_seconds(h * 3), // since a block is created every 3 seconds
         Expiration::AtTime(t) => t.clone(),
         _ => panic!("never expire"),
     };
 
     if expiration > block_info.time {
-        return;
+        return Ok(Response::default());
     }
 
     let expired_date = NaiveDateTime::from_timestamp_opt(
@@ -86,5 +79,16 @@ fn clean_up_history(storage: &mut dyn Storage, block_info: &BlockInfo, expiratio
     .format("%Y-%m-%d")
     .to_string();
 
-    HISTORY.remove(storage, expired_date.as_str());
+    // Delete 5,000 values
+    for i in 0..5000 {
+        if let Some(val) = HISTORY.first(deps.storage)? {
+            let date_part = &val.0[0..10];
+            if date_part < expired_date.as_str() {
+                HISTORY.remove(deps.storage, &val.0);
+            }
+        } else {
+            break;
+        }
+    }
+    Ok(Response::default())
 }

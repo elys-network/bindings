@@ -8,15 +8,10 @@ use elys_bindings::{
 use crate::states::HISTORY;
 
 pub fn all(deps: Deps<ElysQuery>, pagination: Option<PageRequest>) -> StdResult<GetAllResp> {
-    let snapshot_list: Vec<(String, Vec<(String, PortfolioBalanceSnapshot)>)> = HISTORY
+    let snapshot_list: Vec<(String, PortfolioBalanceSnapshot)> = HISTORY
         .prefix_range(deps.storage, None, None, Order::Ascending)
         .filter_map(|res| res.ok())
-        .map(|(key, value)| {
-            let account_snapshots: Vec<(String, PortfolioBalanceSnapshot)> =
-                value.into_iter().collect();
-
-            (key, account_snapshots)
-        })
+        .map(|(key, value)| (key, value))
         .collect();
 
     let (snapshot_list, page_response) = match pagination {

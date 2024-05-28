@@ -9,12 +9,10 @@ pub fn last_snapshot(
     env: Env,
 ) -> StdResult<PortfolioBalanceSnapshot> {
     let today = get_today(&env.block);
+    let key = today + &user_address;
 
-    let snapshot = match HISTORY.may_load(deps.storage, &today)? {
-        Some(snapshots) => match snapshots.get(&user_address) {
-            Some(snapshot) => snapshot.clone(),
-            None => PortfolioBalanceSnapshot::default(),
-        },
+    let snapshot = match HISTORY.may_load(deps.storage, &key)? {
+        Some(snapshot) => snapshot.clone(),
         None => PortfolioBalanceSnapshot::default(),
     };
 

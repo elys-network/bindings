@@ -10,4 +10,5 @@ pub enum ExecuteMsg {
         processed_account_per_block: Option<u64>,
     },
     UpdateAccount {},
+    CleanHistory {},
 }
