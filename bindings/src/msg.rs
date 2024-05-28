@@ -10,21 +10,7 @@ use crate::{
 
 #[cw_serde]
 pub enum ElysMsg {
-    PerpetualOpen {
-        creator: String,
-        position: i32,
-        collateral: Coin,
-        trading_asset: String,
-        leverage: SignedDecimal,
-        take_profit_price: SignedDecimal256,
-        owner: String,
-    },
-    PerpetualClose {
-        creator: String,
-        id: u64,
-        amount: Int128,
-        owner: String,
-    },
+    // Amm
     AmmSwapExactAmountIn {
         sender: String,
         routes: Vec<SwapAmountInRoute>,
@@ -43,43 +29,6 @@ pub enum ElysMsg {
         discount: Decimal,
         recipient: String,
     },
-    CommitmentStake {
-        creator: String,
-        amount: Int128,
-        asset: String,
-        validator_address: Option<String>,
-    },
-    CommitmentUnstake {
-        creator: String,
-        amount: Int128,
-        asset: String,
-        validator_address: Option<String>,
-    },
-    IncentiveBeginRedelegate {
-        delegator_address: String,
-        validator_src_address: String,
-        validator_dst_address: String,
-        amount: Coin,
-    },
-    IncentiveCancelUnbondingDelegation {
-        delegator_address: String,
-        validator_address: String,
-        amount: Coin,
-        creation_height: i64,
-    },
-    CommitmentVest {
-        creator: String,
-        amount: Int128,
-        denom: String,
-    },
-    CommitmentCancelVest {
-        creator: String,
-        amount: Int128,
-        denom: String,
-    },
-    CommitmentClaimVesting {
-        sender: String,
-    },
     AmmJoinPool {
         sender: String,
         pool_id: u64,
@@ -95,6 +44,63 @@ pub enum ElysMsg {
         token_out_denom: String,
     },
 
+    // Commitment
+    CommitmentStake {
+        creator: String,
+        amount: Int128,
+        asset: String,
+        validator_address: Option<String>,
+    },
+    CommitmentUnstake {
+        creator: String,
+        amount: Int128,
+        asset: String,
+        validator_address: Option<String>,
+    },
+    CommitmentVest {
+        creator: String,
+        amount: Int128,
+        denom: String,
+    },
+    CommitmentCancelVest {
+        creator: String,
+        amount: Int128,
+        denom: String,
+    },
+    CommitmentClaimVesting {
+        sender: String,
+    },
+
+    // Incentive
+    IncentiveBeginRedelegate {
+        delegator_address: String,
+        validator_src_address: String,
+        validator_dst_address: String,
+        amount: Coin,
+    },
+    IncentiveCancelUnbondingDelegation {
+        delegator_address: String,
+        validator_address: String,
+        amount: Coin,
+        creation_height: i64,
+    },
+
+    // Masterchef
+    MasterchefClaimRewards {
+        sender: String,
+        pool_ids: Vec<u64>,
+    },
+
+    // Estaking
+    EstakingWithdrawElysStakingRewards {
+        delegator_address: String,
+    },
+
+    EstakingWithdrawReward {
+        validator_address: String,
+        delegator_address: String,
+    },
+    // Leveragelp
     LeveragelpOpen {
         creator: String,
         collateral_asset: String,
@@ -109,18 +115,21 @@ pub enum ElysMsg {
         lp_amount: Int128,
     },
 
-    EstakingWithdrawElysStakingRewards {
-        delegator_address: String,
+    // Perpetual
+    PerpetualOpen {
+        creator: String,
+        position: i32,
+        collateral: Coin,
+        trading_asset: String,
+        leverage: SignedDecimal,
+        take_profit_price: SignedDecimal256,
+        owner: String,
     },
-
-    MasterchefClaimRewards {
-        sender: String,
-        pool_ids: Vec<u64>,
-    },
-
-    EstakingWithdrawReward {
-        validator_address: String,
-        delegator_address: String,
+    PerpetualClose {
+        creator: String,
+        id: u64,
+        amount: Int128,
+        owner: String,
     },
 }
 

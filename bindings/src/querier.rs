@@ -311,22 +311,6 @@ impl<'a> ElysQuerier<'a> {
         Ok(resp)
     }
 
-    pub fn get_sub_bucket_rewards_balance(
-        &self,
-        address: String,
-        denom: String,
-        program: i32,
-    ) -> StdResult<BalanceAvailable> {
-        let sub_bucket_reward_query = ElysQuery::CommitmentRewardsSubBucketBalanceOfDenom {
-            address,
-            denom,
-            program,
-        };
-        let request: QueryRequest<ElysQuery> = QueryRequest::Custom(sub_bucket_reward_query);
-        let resp: BalanceAvailable = self.querier.query(&request)?;
-        Ok(resp)
-    }
-
     pub fn get_oracle_price(
         &self,
         asset: String,
