@@ -9,7 +9,6 @@ use elys_bindings::{
     account_history::{
         msg::query_resp::{GetRewardsResp, StakeAssetBalanceBreakdown, StakedAssetsResponse},
         types::{
-            earn_program::{EdenEarnProgram, ElysEarnProgram, UsdcEarnProgram},
             AccountSnapshot, CoinValue, ElysDenom, LiquidAsset, Metadata, PerpetualAsset,
             PerpetualAssets, PoolBalances, PortfolioBalanceSnapshot, Reward, StakedAssets,
             TotalBalance,
@@ -218,14 +217,13 @@ impl AccountSnapshotGenerator {
             pub balance: CommittedTokens,
         }
 
-        let pool_balances: Vec<CommittedTokens> = match commitments.committed_tokens {
-            Some(res) => res
-                .iter()
-                .filter(|coin| coin.denom.starts_with("amm/pool/"))
-                .cloned()
-                .collect(),
-            None => vec![],
-        };
+        let pool_balances: Vec<CommittedTokens> =
+            commitments.committed_tokens.map_or(vec![], |res| {
+                res.iter()
+                    .filter(|coin| coin.denom.starts_with("amm/pool/"))
+                    .cloned()
+                    .collect()
+            });
 
         let pool_data: Vec<IdSortedPoolBalance> = pool_balances
             .iter()
@@ -263,8 +261,8 @@ impl AccountSnapshotGenerator {
                 .assets
                 .clone()
                 .into_iter()
-                .map(|asset| match pool.current_pool_ratio.clone() {
-                    Some(ratios) => {
+                .map(|asset| {
+                    pool.current_pool_ratio.clone().map_or(None, |ratios| {
                         let denom = asset.token.denom.clone();
                         let ratio = ratios.get(&denom);
                         let asset_price = querier.get_asset_price(denom.clone());
@@ -280,8 +278,7 @@ impl AccountSnapshotGenerator {
                             }
                             (_, _) => None,
                         }
-                    }
-                    _ => None,
+                    })
                 })
                 .collect();
 
@@ -440,12 +437,13 @@ impl AccountSnapshotGenerator {
         // usdc program
         let staked_asset_usdc = usdc_details.data.clone();
         total_staked_balance = total_staked_balance
-            .checked_add(match staked_asset_usdc.clone() {
-                UsdcEarnProgram {
-                    staked: Some(r), ..
-                } => r.usd_amount,
-                _ => Decimal::zero(),
-            })
+            .checked_add(
+                staked_asset_usdc
+                    .clone()
+                    .staked
+                    .unwrap_or_default()
+                    .usd_amount,
+            )
             .unwrap_or_default();
         staked_assets.usdc_earn_program = staked_asset_usdc;
 
@@ -470,27 +468,24 @@ impl AccountSnapshotGenerator {
 
         let staked_asset_elys = elys_details.data;
         total_staked_balance = total_staked_balance
-            .checked_add(match staked_asset_elys.clone() {
-                ElysEarnProgram {
-                    staked: Some(r), ..
-                } => r.usd_amount,
-                _ => Decimal::zero(),
-            })
+            .checked_add(
+                staked_asset_elys
+                    .clone()
+                    .staked
+                    .unwrap_or_default()
+                    .usd_amount,
+            )
             .unwrap_or_default();
         staked_assets.elys_earn_program = staked_asset_elys.clone();
-        let unstaking = if let Some(unstaked_positions) = staked_asset_elys.unstaked_positions {
-            let total_usd_amount =
-                unstaked_positions
-                    .iter()
-                    .fold(Decimal::zero(), |acc, position| {
-                        // Accumulate the usd_amount from each UnstakedPosition
-                        acc.checked_add(position.unstaked.usd_amount)
-                            .unwrap_or_default()
-                    });
-            total_usd_amount
-        } else {
-            Decimal::zero()
-        };
+
+        let unstaking = staked_asset_elys
+            .unstaked_positions
+            .map_or(Decimal::zero(), |x| {
+                x.iter().fold(Decimal::zero(), |acc, position| {
+                    acc.checked_add(position.unstaked.usd_amount)
+                        .unwrap_or_default()
+                })
+            });
 
         // eden program
         let eden_details = get_eden_earn_program_details(
@@ -513,12 +508,13 @@ impl AccountSnapshotGenerator {
 
         let staked_asset_eden = eden_details.data;
         total_staked_balance = total_staked_balance
-            .checked_add(match staked_asset_eden.clone() {
-                EdenEarnProgram {
-                    staked: Some(r), ..
-                } => r.usd_amount,
-                _ => Decimal::zero(),
-            })
+            .checked_add(
+                staked_asset_eden
+                    .clone()
+                    .staked
+                    .unwrap_or_default()
+                    .usd_amount,
+            )
             .unwrap_or_default();
         let vesting = staked_asset_eden.vesting.usd_amount;
 
