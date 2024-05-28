@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use chrono::NaiveDateTime;
 use cosmwasm_std::{BlockInfo, DepsMut, Env, Response, StdResult, Storage, Timestamp};
 use cw_utils::Expiration;
@@ -24,11 +22,6 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     let processed_account_per_block: usize =
         PROCESSED_ACCOUNT_PER_BLOCK.load(deps.storage)? as usize;
 
-    let mut today_snapshots = match HISTORY.may_load(deps.storage, &today)? {
-        Some(snapshots) => snapshots,
-        None => HashMap::new(),
-    };
-
     let generator = AccountSnapshotGenerator::new(&deps.as_ref())?;
 
     for _ in 0..processed_account_per_block {
@@ -43,7 +36,9 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             break;
         };
 
-        if today_snapshots.get(&user_address).is_some() {
+        let key = today + &user_address;
+
+        if let Some(val) = HISTORY.may_load(deps.storage, &key)? {
             // skip if the account has been updated today
             continue;
         }
@@ -54,16 +49,15 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             &env,
             &user_address,
         )?;
-        today_snapshots.insert(user_address.clone(), new_part);
+        HISTORY.save(deps.storage, &key, &new_part)?;
     }
 
-    HISTORY.save(deps.storage, &today, &today_snapshots)?;
-
-    clean_up_history(deps.storage, &env.block, &generator.expiration);
+    //clean_up_history(deps.storage, &env.block, &generator.expiration);
 
     Ok(Response::default())
 }
 
+// TODO: cleanup function
 fn clean_up_history(storage: &mut dyn Storage, block_info: &BlockInfo, expiration: &Expiration) {
     let expiration = match expiration {
         Expiration::AtHeight(h) => Timestamp::from_seconds(h * 3), // since a block is created every 3 seconds
