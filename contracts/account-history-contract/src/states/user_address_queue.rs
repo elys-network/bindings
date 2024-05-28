@@ -1,3 +1,3 @@
-use cw_storage_plus::Map;
+use cw_storage_plus::Deque;
 
-pub const USER_ADDRESS_QUEUE: Map<&str, ()> = Map::new("user address queue");
+pub const USER_ADDRESS_QUEUE: Deque<String> = Deque::new("user address queue 1");

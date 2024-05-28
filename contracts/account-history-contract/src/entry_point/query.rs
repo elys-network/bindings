@@ -16,7 +16,7 @@ use crate::action::query::{
     pool_asset_estimation, user_snapshots, user_value,
 };
 
-use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult, Uint128};
+use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult};
 use elys_bindings::{
     account_history::types::ElysDenom, query_resp::QueryAprResponse, ElysQuerier, ElysQuery,
 };
@@ -121,15 +121,6 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         CommitmentUnStakedPositions { delegator_address } => {
             let querier = ElysQuerier::new(&deps.querier);
             to_json_binary(&querier.get_unstaked_positions(delegator_address)?)
-        }
-        #[cfg(feature = "debug")]
-        CommitmentRewardsSubBucketBalanceOfDenom {
-            address,
-            denom,
-            program,
-        } => {
-            let querier = ElysQuerier::new(&deps.querier);
-            to_json_binary(&querier.get_sub_bucket_rewards_balance(address, denom, program)?)
         }
         #[cfg(feature = "debug")]
         CommitmentStakedBalanceOfDenom { address, denom } => {
@@ -253,13 +244,9 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
             to_json_binary(&response)
         }
         AddressQueueSize {} => {
-            let user_address_queue: Vec<String> = USER_ADDRESS_QUEUE
-                .prefix_range(deps.storage, None, None, cosmwasm_std::Order::Descending)
-                .filter_map(|res| res.ok().map(|(addr, _)| addr))
-                .collect();
-            let size = Uint128::new(user_address_queue.len() as u128);
+            let user_address_queue_data_size = USER_ADDRESS_QUEUE.len(deps.storage)? as u128;
 
-            to_json_binary(&size)
+            to_json_binary(&user_address_queue_data_size)
         }
     }
 }
