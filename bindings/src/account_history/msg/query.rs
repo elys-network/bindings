@@ -25,6 +25,7 @@ use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::Uint128;
 #[cfg(feature = "debug")]
 use cosmwasm_std::{Coin, DecCoin, Decimal};
+use cw2::ContractVersion;
 
 #[cw_serde]
 #[derive(QueryResponses)]
@@ -154,4 +155,8 @@ pub enum QueryMsg {
     #[cfg(feature = "debug")]
     #[returns(Uint128)]
     AddressQueueSize {},
+
+    #[cfg(feature = "debug")]
+    #[returns(ContractVersion)]
+    Version {},
 }

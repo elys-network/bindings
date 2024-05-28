@@ -437,6 +437,7 @@ dependencies = [
  "cosmwasm-std",
  "cw-storage-plus 1.2.0",
  "cw-utils",
+ "cw2",
 ]
 
 [[package]]

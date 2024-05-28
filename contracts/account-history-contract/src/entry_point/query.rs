@@ -17,6 +17,7 @@ use crate::action::query::{
 };
 
 use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult};
+use cw2::CONTRACT;
 use elys_bindings::{
     account_history::types::ElysDenom, query_resp::QueryAprResponse, ElysQuerier, ElysQuery,
 };
@@ -248,5 +249,6 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
 
             to_json_binary(&user_address_queue_data_size)
         }
+        Version {} => to_json_binary(&CONTRACT.load(deps.storage)?),
     }
 }
