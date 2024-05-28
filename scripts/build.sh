@@ -3,7 +3,7 @@
 # Check if the CI environment variable is set to true
 if [ "${CI:-}" = "true" ]; then
     echo "CI is true, running the block of commands..."
-    git tag
+    git fetch --tags
     export VERSION=$(git describe --tags --match 'v*' --abbrev=0 | sed 's/^v//')
     echo "${VERSION}"
     sed -i "s/^version = .*/version = \"$VERSION\"/" contracts/account-history-contract/Cargo.toml
