@@ -7,7 +7,8 @@ use crate::{
         sudo::{clean_old_history, clean_up_history, update_account},
     },
     states::{
-        PARAMS_ADMIN, PROCESSED_ACCOUNT_PER_BLOCK, TRADE_SHIELD_ADDRESS, UPDATE_ACCOUNT_ENABLED,
+        DELETE_EPOCH, DELETE_OLD_DATA_ENABLED, PARAMS_ADMIN, PROCESSED_ACCOUNT_PER_BLOCK,
+        TRADE_SHIELD_ADDRESS, UPDATE_ACCOUNT_ENABLED,
     },
 };
 
@@ -33,6 +34,8 @@ pub fn execute(
         ExecuteMsg::ChangeParams {
             update_account_enabled,
             processed_account_per_block,
+            delete_old_data_enabled,
+            delete_epoch,
         } => {
             let params_admin = PARAMS_ADMIN.load(deps.storage)?;
 
@@ -46,6 +49,14 @@ pub fn execute(
 
             if let Some(update_account_enabled) = update_account_enabled {
                 UPDATE_ACCOUNT_ENABLED.save(deps.storage, &update_account_enabled)?;
+            }
+
+            if let Some(delete_old_data_enabled) = delete_old_data_enabled {
+                DELETE_OLD_DATA_ENABLED.save(deps.storage, &delete_old_data_enabled)?;
+            }
+
+            if let Some(delete_epoch) = delete_epoch {
+                DELETE_EPOCH.save(deps.storage, &delete_epoch)?;
             }
             Ok(Response::new())
         }
