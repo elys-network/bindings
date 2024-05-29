@@ -608,7 +608,7 @@ mod tests {
 //             },
 //             order_amount: coin(1000000, "usdc"),
 //
-//             o4wner_address: Addr::unchecked("elysd"),
+//             owner_address: Addr::unchecked("elysd"),
 //             order_target_denom: "uatom".to_string(),
 //             status: Status::Pending,
 //             date: Date {
