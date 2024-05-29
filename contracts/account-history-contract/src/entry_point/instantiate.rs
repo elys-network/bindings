@@ -7,7 +7,8 @@ use elys_bindings::{ElysMsg, ElysQuerier, ElysQuery};
 
 use crate::msg::InstantiateMsg;
 use crate::states::{
-    EXPIRATION, METADATA, PROCESSED_ACCOUNT_PER_BLOCK, TRADE_SHIELD_ADDRESS, UPDATE_ACCOUNT_ENABLED,
+    DELETE_EPOCH, DELETE_OLD_DATA_ENABLED, EXPIRATION, METADATA, PROCESSED_ACCOUNT_PER_BLOCK,
+    TRADE_SHIELD_ADDRESS, UPDATE_ACCOUNT_ENABLED,
 };
 
 // Version info, for migration info
@@ -50,6 +51,9 @@ pub fn instantiate(
     METADATA.save(deps.storage, &metadata)?;
 
     UPDATE_ACCOUNT_ENABLED.save(deps.storage, &true)?;
+
+    DELETE_OLD_DATA_ENABLED.save(deps.storage, &true)?;
+    DELETE_EPOCH.save(deps.storage, &1000u64)?;
 
     // RESPONSE
     Ok(Response::new())

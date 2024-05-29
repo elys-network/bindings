@@ -14,11 +14,12 @@ pub fn sudo(mut deps: DepsMut<ElysQuery>, env: Env, msg: SudoMsg) -> StdResult<R
             if UPDATE_ACCOUNT_ENABLED.load(deps.storage)? == false {
                 return Err(StdError::generic_err("Update account is disabled"));
             }
-            if DELETE_OLD_DATA_ENABLED.load(deps.storage)? == true
-                && env.block.height % DELETE_EPOCH.load(deps.storage)? == 0
+
+            let epoch = DELETE_EPOCH.load(deps.storage)?;
+            if DELETE_OLD_DATA_ENABLED.load(deps.storage)? == true && env.block.height % epoch == 0
             {
-                clean_old_history(&mut deps, 1000u64)?;
-                clean_up_history(&mut deps, env.clone(), 1000u64)?;
+                clean_old_history(&mut deps, epoch)?;
+                clean_up_history(&mut deps, env.clone(), epoch)?;
             }
 
             update_account(deps, env)
