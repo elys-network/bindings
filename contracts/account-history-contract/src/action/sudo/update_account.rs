@@ -59,7 +59,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
 }
 
 pub fn clean_up_history(
-    deps: DepsMut<ElysQuery>,
+    deps: &mut DepsMut<ElysQuery>,
     env: Env,
     limit: u64,
 ) -> StdResult<Response<ElysMsg>> {
@@ -100,7 +100,10 @@ pub fn clean_up_history(
     Ok(Response::default())
 }
 
-pub fn clean_old_history(deps: DepsMut<ElysQuery>, limit: u64) -> StdResult<Response<ElysMsg>> {
+pub fn clean_old_history(
+    deps: &mut DepsMut<ElysQuery>,
+    limit: u64,
+) -> StdResult<Response<ElysMsg>> {
     // Delete limit values
     for _ in 0..limit {
         if let Some(val) = OLD_HISTORY_1.first(deps.storage)? {

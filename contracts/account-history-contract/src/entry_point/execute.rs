@@ -13,7 +13,7 @@ use crate::{
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
-    deps: DepsMut<ElysQuery>,
+    mut deps: DepsMut<ElysQuery>,
     env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
@@ -60,14 +60,14 @@ pub fn execute(
             if info.sender != PARAMS_ADMIN.load(deps.storage)? {
                 return Err(StdError::generic_err("Unauthorized"));
             }
-            let resp = clean_up_history(deps, env, limit)?;
+            let resp = clean_up_history(&mut deps, env, limit)?;
             Ok(resp)
         }
         ExecuteMsg::CleanOldHistory { limit } => {
             if info.sender != PARAMS_ADMIN.load(deps.storage)? {
                 return Err(StdError::generic_err("Unauthorized"));
             }
-            let resp = clean_old_history(deps, limit)?;
+            let resp = clean_old_history(&mut deps, limit)?;
             Ok(resp)
         }
     }
