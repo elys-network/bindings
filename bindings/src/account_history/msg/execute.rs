@@ -8,7 +8,14 @@ pub enum ExecuteMsg {
     ChangeParams {
         update_account_enabled: Option<bool>,
         processed_account_per_block: Option<u64>,
+        delete_old_data_enabled: Option<bool>,
+        delete_epoch: Option<u64>,
     },
     UpdateAccount {},
-    CleanHistory {},
+    CleanHistory {
+        limit: u64,
+    },
+    CleanOldHistory {
+        limit: u64,
+    },
 }
