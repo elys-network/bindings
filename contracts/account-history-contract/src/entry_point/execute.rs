@@ -4,16 +4,17 @@ use elys_bindings::{account_history::msg::ExecuteMsg, ElysMsg, ElysQuery};
 use crate::{
     action::{
         execute::add_user_address_to_queue,
-        sudo::{clean_up_history, update_account},
+        sudo::{clean_old_history, clean_up_history, update_account},
     },
     states::{
-        PARAMS_ADMIN, PROCESSED_ACCOUNT_PER_BLOCK, TRADE_SHIELD_ADDRESS, UPDATE_ACCOUNT_ENABLED,
+        DELETE_EPOCH, DELETE_OLD_DATA_ENABLED, PARAMS_ADMIN, PROCESSED_ACCOUNT_PER_BLOCK,
+        TRADE_SHIELD_ADDRESS, UPDATE_ACCOUNT_ENABLED,
     },
 };
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
-    deps: DepsMut<ElysQuery>,
+    mut deps: DepsMut<ElysQuery>,
     env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
@@ -33,6 +34,8 @@ pub fn execute(
         ExecuteMsg::ChangeParams {
             update_account_enabled,
             processed_account_per_block,
+            delete_old_data_enabled,
+            delete_epoch,
         } => {
             let params_admin = PARAMS_ADMIN.load(deps.storage)?;
 
@@ -47,6 +50,14 @@ pub fn execute(
             if let Some(update_account_enabled) = update_account_enabled {
                 UPDATE_ACCOUNT_ENABLED.save(deps.storage, &update_account_enabled)?;
             }
+
+            if let Some(delete_old_data_enabled) = delete_old_data_enabled {
+                DELETE_OLD_DATA_ENABLED.save(deps.storage, &delete_old_data_enabled)?;
+            }
+
+            if let Some(delete_epoch) = delete_epoch {
+                DELETE_EPOCH.save(deps.storage, &delete_epoch)?;
+            }
             Ok(Response::new())
         }
         ExecuteMsg::UpdateAccount {} => {
@@ -56,11 +67,18 @@ pub fn execute(
             let resp = update_account(deps, env)?;
             Ok(resp)
         }
-        ExecuteMsg::CleanHistory {} => {
+        ExecuteMsg::CleanHistory { limit } => {
             if info.sender != PARAMS_ADMIN.load(deps.storage)? {
                 return Err(StdError::generic_err("Unauthorized"));
             }
-            let resp = clean_up_history(deps, env)?;
+            let resp = clean_up_history(&mut deps, env, limit)?;
+            Ok(resp)
+        }
+        ExecuteMsg::CleanOldHistory { limit } => {
+            if info.sender != PARAMS_ADMIN.load(deps.storage)? {
+                return Err(StdError::generic_err("Unauthorized"));
+            }
+            let resp = clean_old_history(&mut deps, limit)?;
             Ok(resp)
         }
     }

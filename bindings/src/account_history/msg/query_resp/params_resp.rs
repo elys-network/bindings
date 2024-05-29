@@ -9,4 +9,6 @@ pub struct ParamsResp {
     pub trade_shield_address: Option<String>,
     pub update_account_enabled: bool,
     pub metadata: Metadata,
+    pub delete_old_data_enabled: bool,
+    pub delete_epoch: u64,
 }
