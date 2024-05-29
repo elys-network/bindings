@@ -119,10 +119,8 @@ pub fn process_orders(
     }
 
     for (key, order_ids) in perpetual_orders.iter() {
-        if let Some(n_perpetual_order) = n_perpetual_order {
-            if n_perpetual_order == 0 {
-                break;
-            }
+        if n_perpetual_order = Some(0)  {
+            break;
         }
         let (order_position_type, order_type, base_denom, quote_denom) =
             PerpetualOrder::from_key(key.as_str())?;
