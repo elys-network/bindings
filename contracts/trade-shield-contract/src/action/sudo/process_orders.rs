@@ -48,11 +48,9 @@ pub fn process_orders(
     } = querier.get_asset_profile("uusdc".to_string())?;
 
     for (key, order_ids) in spot_orders.iter() {
-        if let Some(n_spot_order) = n_spot_order {
-            if n_spot_order == 0 {
-                break;
-            }
-        }
+    if n_spot_order == Some(0) {
+        break;
+    }
 
         let (order_type, base_denom, quote_denom) = SpotOrder::from_key(key.as_str())?;
 
