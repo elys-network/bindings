@@ -1,4 +1,4 @@
-use cosmwasm_std::{entry_point, DepsMut, Env, Response, StdResult, Timestamp};
+use cosmwasm_std::{entry_point, DepsMut, Env, Response, StdError, StdResult, Timestamp};
 use cw2::set_contract_version;
 use cw_utils::Expiration;
 use elys_bindings::account_history::msg::MigrationMsg;
@@ -43,15 +43,14 @@ pub fn migrate(
 
     // RESPONSE
 
-    // Uncomment after first migration
-    // let ver = cw2::get_contract_version(deps.storage)?;
-    // // ensure we are migrating from an allowed contract
-    // if ver.contract != CONTRACT_NAME {
-    //     return Err(StdError::generic_err("Can only upgrade from same type").into());
-    // }
-    // if ver.version.as_str() >= CONTRACT_VERSION {
-    //     return Err(StdError::generic_err("Cannot upgrade from a newer version").into());
-    // }
+    let ver = cw2::get_contract_version(deps.storage)?;
+    // ensure we are migrating from an allowed contract
+    if ver.contract != CONTRACT_NAME {
+        return Err(StdError::generic_err("Can only upgrade from same type").into());
+    }
+    if ver.version.as_str() >= CONTRACT_VERSION {
+        return Err(StdError::generic_err("Cannot upgrade from a newer version").into());
+    }
 
     let admin = "elys16xffmfa6k45j340cx5zyp66lqvuw62a0neaa7w".to_string();
     PARAMS_ADMIN.save(deps.storage, &admin)?;

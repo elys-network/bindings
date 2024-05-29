@@ -324,6 +324,7 @@ impl Module for ElysModuleWrapper {
 #[test]
 fn history() {
     let wallet: Vec<(&str, Vec<Coin>)> = vec![("user-a", coins(300, "uelys"))];
+    std::env::set_var("IS_TEST_ENV", "TESTING");
 
     let mut addresses: Vec<String> = vec![];
     let mut app = BasicAppBuilder::<ElysMsg, ElysQuery>::new_custom()
@@ -460,4 +461,5 @@ fn history() {
         res.value.total_balance_usd,
         Decimal256::from_str("400.00110371648").unwrap(),
     ); // The previous value wasn't removed yet but wasn't read either since it's expired.
+    std::env::set_var("IS_TEST_ENV", "FALSE");
 }
