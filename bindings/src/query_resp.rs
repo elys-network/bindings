@@ -753,40 +753,62 @@ impl EstakingRewardsResponse {
             .cloned()
             .collect::<Vec<_>>();
 
-        EstakingRewardsResponse {
-            rewards,
-            total: self.total.clone(),
-        }
+        let total = self.compute_total(&rewards);
+
+        EstakingRewardsResponse { rewards, total }
     }
 
     pub fn get_validator_rewards(&self, validator: Validator) -> Self {
-        let rewards = self
+        let rewards = vec![self
             .rewards
             .iter()
             .find(|delegation_reward| delegation_reward.validator_address == validator.to_string())
             .cloned()
-            .unwrap_or_default();
+            .unwrap_or_default()];
 
-        EstakingRewardsResponse {
-            rewards: vec![rewards],
-            total: self.total.clone(),
-        }
+        let total = self.compute_total(&rewards);
+
+        EstakingRewardsResponse { rewards, total }
     }
 
-    pub fn to_coin_values(&self, querier: &ElysQuerier<'_>) -> StdResult<Vec<(String, CoinValue)>> {
-        let mut coin_values = Vec::new();
+    pub fn to_coin_values(
+        &self,
+        querier: &ElysQuerier<'_>,
+    ) -> StdResult<HashMap<String, CoinValue>> {
+        let mut coin_values: HashMap<String, CoinValue> = HashMap::new();
 
-        for delegation_reward in &self.rewards {
-            let validator_address = delegation_reward.validator_address.clone();
-            for coin in &delegation_reward.reward {
-                let coin_value = CoinValue::from_coin(&coin.clone(), querier).map_err(|e| {
-                    StdError::generic_err(format!("Failed to convert to CoinValue {}", e))
-                })?;
-                coin_values.push((validator_address.clone(), coin_value));
-            }
+        for coin in &self.total {
+            let coin_value = CoinValue::from_coin(&coin.clone(), querier).map_err(|e| {
+                StdError::generic_err(format!("Failed to convert total to CoinValue: {}", e))
+            })?;
+            coin_values.insert(coin.denom.clone(), coin_value);
         }
 
         Ok(coin_values)
+    }
+
+    fn compute_total(&self, delegation_reward: &[DelegationDelegatorReward]) -> Vec<Coin> {
+        let mut total_map: HashMap<String, u128> = HashMap::new();
+        for delegation in delegation_reward {
+            for coin in &delegation.reward {
+                total_map
+                    .entry(coin.denom.clone())
+                    .and_modify(|existing_amount| {
+                        *existing_amount = existing_amount
+                            .checked_add(coin.amount.into())
+                            .unwrap_or_default();
+                    })
+                    .or_insert(coin.amount.into());
+            }
+        }
+
+        total_map
+            .into_iter()
+            .map(|(denom, amount)| Coin {
+                denom,
+                amount: amount.into(),
+            })
+            .collect()
     }
 }
 
