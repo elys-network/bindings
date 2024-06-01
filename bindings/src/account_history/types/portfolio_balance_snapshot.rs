@@ -22,3 +22,10 @@ impl Default for PortfolioBalanceSnapshot {
         Self::zero()
     }
 }
+
+#[cw_serde]
+pub struct PortfolioBalanceSnapshotOld {
+    pub date: Expiration,
+    pub portfolio_balance_usd: Decimal256,
+    pub total_balance_usd: Decimal256,
+}
