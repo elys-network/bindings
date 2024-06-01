@@ -5,7 +5,7 @@ use crate::account_history::types::CoinValue;
 
 #[cw_serde]
 pub struct GetEstakingRewardsResponse {
-    pub rewards: Vec<(String, CoinValue)>,
+    pub rewards: Vec<CoinValue>,
     pub total: Vec<Coin>,
 }
 

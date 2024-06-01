@@ -23,8 +23,8 @@ pub fn process_orders(
         vec![]
     };
 
-    let mut _n_spot_order = LIMIT_PROCESS_ORDER.load(deps.storage)?;
-    let mut _n_perpetual_order = _n_spot_order.clone();
+    let mut n_spot_order = LIMIT_PROCESS_ORDER.load(deps.storage)?;
+    let mut n_perpetual_order = n_spot_order.clone();
 
     let perpetual_orders: Vec<(String, Vec<u64>)> = if PERPETUAL_ENABLED.load(deps.storage)? {
         SORTED_PENDING_PERPETUAL_ORDER
@@ -48,6 +48,10 @@ pub fn process_orders(
     } = querier.get_asset_profile("uusdc".to_string())?;
 
     for (key, order_ids) in spot_orders.iter() {
+        if n_spot_order == Some(0) {
+            break;
+        }
+
         let (order_type, base_denom, quote_denom) = SpotOrder::from_key(key.as_str())?;
 
         if order_type == SpotOrderType::MarketBuy {
@@ -96,6 +100,7 @@ pub fn process_orders(
 
         let orders_to_process: Vec<u64> = split_spot_order(
             closest_spot_price,
+            &mut n_spot_order,
             order_type,
             market_price,
             order_ids.to_owned(),
@@ -114,6 +119,9 @@ pub fn process_orders(
     }
 
     for (key, order_ids) in perpetual_orders.iter() {
+        if n_perpetual_order == Some(0) {
+            break;
+        }
         let (order_position_type, order_type, base_denom, quote_denom) =
             PerpetualOrder::from_key(key.as_str())?;
 
@@ -139,6 +147,7 @@ pub fn process_orders(
 
         let order_to_execute = split_perpetual_order(
             closest_index,
+            &mut n_perpetual_order,
             &order_position_type,
             order_type,
             market_price,
@@ -244,6 +253,7 @@ fn process_perpetual_order(
 
 fn split_perpetual_order(
     closest_index: usize,
+    n_perpetual_order: &mut Option<u128>,
     order_position_type: &PerpetualPosition,
     order_type: PerpetualOrderType,
     market_price: Decimal,
@@ -266,7 +276,7 @@ fn split_perpetual_order(
         None
     };
 
-    match (order_price, order_type, order_position_type) {
+    let ids_to_process = match (order_price, order_type, order_position_type) {
         (Some(price), PerpetualOrderType::LimitOpen, PerpetualPosition::Long) => {
             if market_price <= price {
                 Ok(ids.get(closest_index..).unwrap_or(&[]).to_vec())
@@ -315,8 +325,21 @@ fn split_perpetual_order(
             }
         }
         (None, PerpetualOrderType::StopLoss, PerpetualPosition::Short) => Ok(ids),
-        _ => return Err(StdError::generic_err("process market order")),
-    }
+        _ => Err(StdError::generic_err("process market order")),
+    }?;
+
+    if let Some(n) = n_perpetual_order {
+        if *n < ids_to_process.len() as u128 {
+            let max_order = *n as usize;
+            *n = 0;
+            let new_ids_to_process = ids_to_process.get(0..max_order).unwrap_or(&[]).to_vec();
+            return Ok(new_ids_to_process);
+        } else {
+            *n -= ids_to_process.len() as u128;
+        }
+    };
+
+    Ok(ids_to_process)
     // (PerpetualOrderType::LimitOpen, PerpetualPosition::Long) => market_price <= order_price,
     // (PerpetualOrderType::LimitOpen, PerpetualPosition::Short) => market_price >= order_price,
     // (PerpetualOrderType::LimitClose, PerpetualPosition::Long) => market_price >= order_price,
@@ -327,6 +350,7 @@ fn split_perpetual_order(
 
 fn split_spot_order(
     closest_index: usize,
+    n_spot_order: &mut Option<u128>,
     order_type: SpotOrderType,
     market_price: Decimal,
     ids: Vec<u64>,
@@ -347,7 +371,7 @@ fn split_spot_order(
         None
     };
 
-    match (order_type, order_price) {
+    let id_to_process = match (order_type, order_price) {
         (SpotOrderType::StopLoss, Some(order_price)) => {
             if market_price <= order_price {
                 Ok(ids.get(closest_index..).unwrap_or(&[]).to_vec())
@@ -373,8 +397,20 @@ fn split_spot_order(
         }
         (SpotOrderType::LimitBuy, _) => Ok(vec![]),
         _ => Err(StdError::generic_err("Unsupported market order type")),
-    }
+    }?;
 
+    if let Some(n) = n_spot_order {
+        if *n < id_to_process.len() as u128 {
+            let max_order = *n as usize;
+            *n = 0;
+            let new_ids_to_process = id_to_process.get(0..max_order).unwrap_or(&[]).to_vec();
+            return Ok(new_ids_to_process);
+        } else {
+            *n -= id_to_process.len() as u128;
+        }
+    };
+
+    Ok(id_to_process)
     // SpotOrderType::StopLoss => market_price <= order_price,
     // SpotOrderType::LimitSell => market_price >= order_price,
     // SpotOrderType::LimitBuy => market_price <= order_price,
@@ -517,6 +553,38 @@ fn _calculate_token_out_min_amount(_order: &SpotOrder) -> Int128 {
 
     // Int128::new((amount.u128()) as i128)
     Int128::zero()
+}
+
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+
+    use cosmwasm_std::testing::MockStorage;
+
+    use super::*;
+
+    #[test]
+    fn test_split_function() {
+        let ids = vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        let mut n_spot_order = Some(5);
+        let closest_index = 12;
+        let order_type = SpotOrderType::LimitSell;
+        let market_price = Decimal::from_str("0.1").unwrap();
+        let mut mock_storage = MockStorage::new();
+
+        let result = split_spot_order(
+            closest_index,
+            &mut n_spot_order,
+            order_type,
+            market_price,
+            ids,
+            &mut mock_storage,
+        )
+        .unwrap();
+
+        assert_eq!(result, vec![0, 1, 2, 3, 4]);
+        assert_eq!(n_spot_order, Some(0));
+    }
 }
 
 // #[cfg(test)]

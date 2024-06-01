@@ -1,5 +1,6 @@
-use cosmwasm_std::{Deps, StdError, StdResult};
+use cosmwasm_std::{Deps, StdResult};
 use elys_bindings::account_history::msg::query_resp::estaking::GetEstakingRewardsResponse;
+use elys_bindings::account_history::types::CoinValue;
 use elys_bindings::{ElysQuerier, ElysQuery};
 
 /**
@@ -14,19 +15,14 @@ pub fn get_estaking_rewards(
     let response = querier.get_estaking_rewards(address).unwrap_or_default();
 
     let fiat_coins = response.to_coin_values(&querier);
-
-    match fiat_coins {
-        Err(e) => {
-            return Err(StdError::generic_err(format!(
-                "Failed to convert to CoinValue {}",
-                e
-            )))
-        }
-        _ => {}
-    }
+    let rewards = fiat_coins
+        .unwrap_or_default()
+        .into_iter()
+        .map(|(_, v)| v.clone())
+        .collect::<Vec<CoinValue>>();
 
     Ok(GetEstakingRewardsResponse {
-        rewards: fiat_coins.unwrap_or_default(),
+        rewards,
         total: response.total,
     })
 }
