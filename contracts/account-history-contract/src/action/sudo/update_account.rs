@@ -3,10 +3,7 @@ use cosmwasm_std::{DepsMut, Env, Response, StdResult, Timestamp};
 use cw_utils::Expiration;
 
 use crate::{
-    states::{
-        HISTORY, METADATA, OLD_HISTORY_2, PROCESSED_ACCOUNT_PER_BLOCK,
-        USER_ADDRESS_QUEUE,
-    },
+    states::{HISTORY, METADATA, OLD_HISTORY_2, PROCESSED_ACCOUNT_PER_BLOCK, USER_ADDRESS_QUEUE},
     types::AccountSnapshotGenerator,
     utils::get_today,
 };
