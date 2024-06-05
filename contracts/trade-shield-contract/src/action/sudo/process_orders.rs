@@ -10,7 +10,9 @@ use cosmwasm_std::{
 };
 use query_resp::AmmSwapEstimationByDenomResponse;
 
-fn generate_spot_order(
+use super::*;
+
+fn generate_spot_order_submsgs_bankmsgs(
     deps: &mut DepsMut<ElysQuery>,
     env: &Env,
     n_spot_order: &mut Option<u128>,
@@ -114,7 +116,7 @@ fn generate_spot_order(
     Ok((submsgs, bank_msgs, price_hash_map))
 }
 
-fn generate_perpetual_orders(
+fn generate_perpetual_orders_submsgs(
     deps: &mut DepsMut<ElysQuery>,
     env: &Env,
     price_hash_map: &mut HashMap<String, Decimal>,
@@ -172,7 +174,7 @@ fn generate_perpetual_orders(
                         .checked_div(inverted_market_price.clone())
                         .unwrap()
                 }
-            },
+            }
             None => {
                 cancel_perpetual_orders(deps.storage, key, &order_ids, None)?;
                 continue;
@@ -211,8 +213,6 @@ fn generate_perpetual_orders(
     Ok(submsgs)
 }
 
-use super::*;
-
 pub fn process_orders(
     mut deps: DepsMut<ElysQuery>,
     env: Env,
@@ -227,13 +227,18 @@ pub fn process_orders(
         Vec<BankMsg>,
         HashMap<String, Decimal>,
     ) = if SWAP_ENABLED.load(deps.storage)? {
-        generate_spot_order(&mut deps, &env, &mut n_spot_order, &mut reply_info_id)?
+        generate_spot_order_submsgs_bankmsgs(
+            &mut deps,
+            &env,
+            &mut n_spot_order,
+            &mut reply_info_id,
+        )?
     } else {
         (vec![], vec![], HashMap::default())
     };
 
     let perpetual_submsgs: Vec<SubMsg<ElysMsg>> = if PERPETUAL_ENABLED.load(deps.storage)? {
-        generate_perpetual_orders(
+        generate_perpetual_orders_submsgs(
             &mut deps,
             &env,
             &mut price_hash_map,

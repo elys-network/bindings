@@ -466,11 +466,11 @@ function eden_claim_vesting_request() {
 function claim_rewards_request() {
     printf "\n# claim_rewards_request\n"
     execute_message \
-    "$ts_contract_address" \
-    '{
+        "$ts_contract_address" \
+        '{
         "claim_rewards_request": {}
     }' \
-    "wasm-claim_rewards_request"
+        "wasm-claim_rewards_request"
 }
 
 function masterchef_claim_rewards() {
@@ -507,6 +507,15 @@ function update_account() {
         "$ah_contract_address" \
         '{
             "update_account": {}
+        }'
+}
+
+function process_orders() {
+    printf "\n# Process Orders\n"
+    execute_message \
+        "$ts_contract_address" \
+        '{
+            "process_orders": {}
         }'
 }
 
@@ -589,6 +598,9 @@ case "$1" in
     ;;
 "update_account")
     update_account
+    ;;
+"process_orders")
+    process_orders
     ;;
 *)
     # Default case: run all functions
