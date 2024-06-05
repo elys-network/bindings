@@ -164,7 +164,15 @@ fn generate_perpetual_orders(
         let hash_key = format!("{}{}", base_denom, quote_denom);
         //get the price in usdc
         let market_price = match price_hash_map.get(&hash_key) {
-            Some(market_price) => market_price.clone(),
+            Some(inverted_market_price) => {
+                if inverted_market_price.is_zero() {
+                    Decimal::zero()
+                } else {
+                    Decimal::one()
+                        .checked_div(inverted_market_price.clone())
+                        .unwrap()
+                }
+            },
             None => {
                 cancel_perpetual_orders(deps.storage, key, &order_ids, None)?;
                 continue;
