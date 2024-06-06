@@ -350,7 +350,7 @@ function leveragelp_open() {
                 "amm_pool_id": 2,
                 "collateral_asset": "'"$usdc_denom"'",
                 "collateral_amount": "10000000",
-                "leverage": "5.0",
+                "leverage": "1.10",
                 "stop_loss_price": "0.0"
             }
         }' \
