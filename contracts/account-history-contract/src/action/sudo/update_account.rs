@@ -3,10 +3,7 @@ use cosmwasm_std::{DepsMut, Env, Response, StdResult, Timestamp};
 use cw_utils::Expiration;
 
 use crate::{
-    states::{
-        HISTORY, METADATA, OLD_HISTORY_1, OLD_HISTORY_2, PROCESSED_ACCOUNT_PER_BLOCK,
-        USER_ADDRESS_QUEUE,
-    },
+    states::{HISTORY, METADATA, OLD_HISTORY_2, PROCESSED_ACCOUNT_PER_BLOCK, USER_ADDRESS_QUEUE},
     types::AccountSnapshotGenerator,
     utils::get_today,
 };
@@ -105,13 +102,6 @@ pub fn clean_old_history(
     limit: u64,
 ) -> StdResult<Response<ElysMsg>> {
     // Delete limit values
-    for _ in 0..limit {
-        if let Some(val) = OLD_HISTORY_1.first(deps.storage)? {
-            OLD_HISTORY_1.remove(deps.storage, &val.0);
-        } else {
-            break;
-        }
-    }
     for _ in 0..limit {
         if let Some(val) = OLD_HISTORY_2.first(deps.storage)? {
             OLD_HISTORY_2.remove(deps.storage, &val.0);
