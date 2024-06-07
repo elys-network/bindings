@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::{
     helper::{get_mut_discount, remove_perpetual_order},
     msg::ReplyType,
@@ -8,7 +6,6 @@ use cosmwasm_std::{
     coin, to_json_binary, Decimal, Int128, OverflowError, QuerierWrapper, StdError, StdResult,
     Storage, SubMsg,
 };
-use query_resp::AmmSwapEstimationByDenomResponse;
 
 use super::*;
 
@@ -17,12 +14,10 @@ fn generate_spot_order_submsgs_bankmsgs(
     env: &Env,
     n_spot_order: &mut Option<u128>,
     reply_info_id: &mut u64,
-) -> Result<(Vec<SubMsg<ElysMsg>>, Vec<BankMsg>, HashMap<String, Decimal>), ContractError> {
+) -> Result<(Vec<SubMsg<ElysMsg>>, Vec<BankMsg>), ContractError> {
     let querier = ElysQuerier::new(&deps.querier);
     let mut submsgs: Vec<SubMsg<ElysMsg>> = vec![];
     let mut bank_msgs: Vec<BankMsg> = vec![];
-    let mut price_hash_map: HashMap<String, Decimal> = HashMap::new();
-    let mut amm_hash_map: HashMap<String, AmmSwapEstimationByDenomResponse> = HashMap::new();
     let spot_orders: Vec<(String, Vec<u64>, (SpotOrderType, String, String))> =
         SORTED_PENDING_SPOT_ORDER
             .prefix_range(deps.storage, None, None, Order::Ascending)
@@ -30,37 +25,20 @@ fn generate_spot_order_submsgs_bankmsgs(
                 let (key, ids) = res.ok()?;
                 let (order_type, base_denom, quote_denom) =
                     SpotOrder::from_key(key.as_str()).ok()?;
-                let hash_key = format!("{}{}", base_denom, quote_denom);
-                if !price_hash_map.contains_key(&key) {
-                    let data = querier
-                        .get_asset_price_from_denom_in_to_denom_out(&base_denom, &quote_denom)
-                        .ok()?;
-                    price_hash_map.insert(hash_key.to_string(), data);
-                }
-                if !amm_hash_map.contains_key(&hash_key) {
-                    let data = querier
-                        .amm_swap_estimation_by_denom(
-                            &coin(1000000, &base_denom),
-                            &base_denom,
-                            &quote_denom,
-                            &Decimal::zero(),
-                        )
-                        .ok()?;
-                    amm_hash_map.insert(hash_key.to_string(), data);
-                }
-
                 Some((key, ids, (order_type, base_denom, quote_denom)))
             })
             .collect();
 
     for (key, order_ids, (spot_order_type, base_denom, quote_denom)) in spot_orders.iter() {
-        let hash_key = format!("{}{}", base_denom, quote_denom);
         if spot_order_type == &SpotOrderType::MarketBuy {
             SORTED_PENDING_SPOT_ORDER.remove(deps.storage, key.as_str());
             continue;
         }
 
-        let market_price = match price_hash_map.get(&hash_key) {
+        let market_price = match querier
+            .get_asset_price_from_denom_in_to_denom_out(base_denom, quote_denom)
+            .ok()
+        {
             Some(market_price) => {
                 if spot_order_type == &SpotOrderType::LimitBuy {
                     match Decimal::one().checked_div(market_price.clone()) {
@@ -79,7 +57,15 @@ fn generate_spot_order_submsgs_bankmsgs(
             }
         };
         let closest_spot_price = SpotOrder::binary_search(&market_price, deps.storage, &order_ids)?;
-        let routes = match amm_hash_map.get(&hash_key) {
+        let routes = match querier
+            .amm_swap_estimation_by_denom(
+                &coin(1000000, base_denom),
+                base_denom,
+                quote_denom,
+                &Decimal::zero(),
+            )
+            .ok()
+        {
             Some(r) => match r.clone().in_route {
                 Some(routes) => routes,
                 None => {
@@ -113,13 +99,12 @@ fn generate_spot_order_submsgs_bankmsgs(
         )?;
     }
 
-    Ok((submsgs, bank_msgs, price_hash_map))
+    Ok((submsgs, bank_msgs))
 }
 
 fn generate_perpetual_orders_submsgs(
     deps: &mut DepsMut<ElysQuery>,
     env: &Env,
-    price_hash_map: &mut HashMap<String, Decimal>,
     n_perpetual_order: &mut Option<u128>,
     reply_info_id: &mut u64,
 ) -> Result<Vec<SubMsg<ElysMsg>>, ContractError> {
@@ -141,13 +126,6 @@ fn generate_perpetual_orders_submsgs(
                 let (key, order_ids) = res.ok()?;
                 let (order_position, order_type, base_denom, quote_denom) =
                     PerpetualOrder::from_key(&key).ok()?;
-                let hash_key = format!("{}{}", base_denom, quote_denom);
-                if !price_hash_map.contains_key(&hash_key) {
-                    let data = querier
-                        .get_asset_price_from_denom_in_to_denom_out(&base_denom, &quote_denom)
-                        .ok()?;
-                    price_hash_map.insert(hash_key.to_string(), data);
-                }
                 Some((
                     key,
                     order_ids,
@@ -163,18 +141,12 @@ fn generate_perpetual_orders_submsgs(
         if n_perpetual_order == &Some(0) {
             break;
         }
-        let hash_key = format!("{}{}", base_denom, quote_denom);
         //get the price in usdc
-        let market_price = match price_hash_map.get(&hash_key) {
-            Some(inverted_market_price) => {
-                if inverted_market_price.is_zero() {
-                    Decimal::zero()
-                } else {
-                    Decimal::one()
-                        .checked_div(inverted_market_price.clone())
-                        .unwrap()
-                }
-            }
+        let market_price = match querier
+            .get_asset_price_from_denom_in_to_denom_out(quote_denom, base_denom)
+            .ok()
+        {
+            Some(market_price) => market_price.clone(),
             None => {
                 cancel_perpetual_orders(deps.storage, key, &order_ids, None)?;
                 continue;
@@ -222,26 +194,22 @@ pub fn process_orders(
     let mut n_spot_order = LIMIT_PROCESS_ORDER.load(deps.storage)?;
     let mut n_perpetual_order = n_spot_order.clone();
 
-    let (submsgs, bank_msgs, mut price_hash_map): (
-        Vec<SubMsg<ElysMsg>>,
-        Vec<BankMsg>,
-        HashMap<String, Decimal>,
-    ) = if SWAP_ENABLED.load(deps.storage)? {
-        generate_spot_order_submsgs_bankmsgs(
-            &mut deps,
-            &env,
-            &mut n_spot_order,
-            &mut reply_info_id,
-        )?
-    } else {
-        (vec![], vec![], HashMap::default())
-    };
+    let (submsgs, bank_msgs): (Vec<SubMsg<ElysMsg>>, Vec<BankMsg>) =
+        if SWAP_ENABLED.load(deps.storage)? {
+            generate_spot_order_submsgs_bankmsgs(
+                &mut deps,
+                &env,
+                &mut n_spot_order,
+                &mut reply_info_id,
+            )?
+        } else {
+            (vec![], vec![])
+        };
 
     let perpetual_submsgs: Vec<SubMsg<ElysMsg>> = if PERPETUAL_ENABLED.load(deps.storage)? {
         generate_perpetual_orders_submsgs(
             &mut deps,
             &env,
-            &mut price_hash_map,
             &mut n_perpetual_order,
             &mut reply_info_id,
         )?
