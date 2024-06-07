@@ -120,6 +120,12 @@ mod claim_rewards_request {
     mod claim_rewards_request;
 }
 
+mod leveragelp_open {
+    use super::*;
+    mod invalid_collateral;
+    mod invalid_leverage;
+}
+
 pub use mock::instantiate::*;
 mod mock {
     pub mod instantiate;
