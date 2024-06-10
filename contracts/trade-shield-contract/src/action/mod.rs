@@ -63,6 +63,7 @@ pub mod execute {
     mod close_leveragelp_position_request;
     mod masterchef_claim_rewards;
     mod open_leveragelp_position_request;
+    mod update_stop_loss_leverage;
 
     mod estaking_withdraw_elys_staking_rewards;
     mod estaking_withdraw_reward;
