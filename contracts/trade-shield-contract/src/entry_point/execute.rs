@@ -166,6 +166,10 @@ pub fn execute(
             amount,
         } => close_leveragelp_position_request(info, deps, position_id, amount),
 
+        LeveragelpUpdateStopLoss { id, price } => {
+            update_stop_loss_leveragelp_request(info, deps, id, price)
+        }
+
         SetParams {
             market_order_enabled,
             stake_enabled,
