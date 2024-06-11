@@ -704,9 +704,9 @@ pub struct LeveragelpOpenEstResponse {
 
 #[cw_serde]
 pub struct LeveragelpCloseEstResponse {
-    owner: String,
-    id: u64,
-    lp_amount: Int128,
+    liability: Int128,
+    weight_balance_ratio: Decimal,
+    amount_returned: Int128,
 }
 
 #[cw_serde]
