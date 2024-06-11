@@ -99,7 +99,7 @@ pub enum ExecuteMsg {
         amount: Int128,
     },
     LeveragelpUpdateStopLoss {
-        id: u64,
+        position: u64,
         price: SignedDecimal,
     },
 
