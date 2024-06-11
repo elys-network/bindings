@@ -116,7 +116,7 @@ pub enum ElysMsg {
     },
     LeveragelpUpdateStopLoss {
         creator: String,
-        id: u64,
+        position: u64,
         price: SignedDecimal,
     },
 
@@ -352,10 +352,14 @@ impl ElysMsg {
         }
     }
 
-    pub fn leveragelp_update_stop_loss(creator: String, id: u64, price: SignedDecimal) -> Self {
+    pub fn leveragelp_update_stop_loss(
+        creator: String,
+        position: u64,
+        price: SignedDecimal,
+    ) -> Self {
         Self::LeveragelpUpdateStopLoss {
             creator,
-            id: id,
+            position: position,
             price: price,
         }
     }
