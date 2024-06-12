@@ -547,7 +547,7 @@ function leveragelp_open_estimation() {
 
 # leveragelp close estimation
 function leveragelp_close_estimation() {
-    printf "\n# everagelp close estimation\n"
+    printf "\n# leveragelp close estimation\n"
     query_contract "$ts_contract_address" '{
         "leveragelp_close_est": {
             "owner" : "'"$user_address"'",
