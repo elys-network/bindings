@@ -1025,6 +1025,16 @@ impl Module for ElysModule {
                     data: Some(data),
                 })
             }
+            ElysMsg::LeveragelpUpdateStopLoss { .. } => {
+                LAST_MODULE_USED.save(storage, &Some("LeveragelpUpdateStopLoss".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
             ElysMsg::MasterchefClaimRewards { .. } => {
                 LAST_MODULE_USED.save(storage, &Some("MasterchefClaimRewards".to_string()))?;
                 let data = to_json_binary(&MsgResponse {
