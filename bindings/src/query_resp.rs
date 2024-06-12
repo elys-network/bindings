@@ -694,6 +694,67 @@ pub struct LeveragelpPoolsResponse {
     pub pool: Vec<LeveragelpPool>,
     pub pagination: Option<PageResponse>,
 }
+
+#[cw_serde]
+pub struct LeveragelpOpenEstResponse {
+    position_size: Int128,
+    weight_balance_ratio: Decimal,
+    borrow_fee: Decimal,
+}
+
+#[cw_serde]
+pub struct LeveragelpCloseEstResponse {
+    liability: Int128,
+    weight_balance_ratio: Decimal,
+    amount_returned: Int128,
+}
+
+#[cw_serde]
+pub struct IncentiveInfo {
+    pub eden_amount_per_year: Int128,
+    pub distribution_start_block: Int128,
+    pub total_blocks_per_year: Int128,
+    pub blocks_distributed: Int128,
+}
+
+#[cw_serde]
+pub struct SupportedRewardDenom {
+    pub denom: String,
+    pub min_amount: Int128,
+}
+
+#[cw_serde]
+pub struct MasterchefParams {
+    pub lp_incentives: IncentiveInfo,
+    pub reward_portion_for_lps: SignedDecimal,
+    pub reward_portion_for_stakers: SignedDecimal,
+    pub max_eden_reward_apr_lps: SignedDecimal,
+    pub supported_reward_denoms: SupportedRewardDenom,
+    pub protocol_revenue_address: String,
+}
+
+#[cw_serde]
+pub struct MasterchefParamsResponse {
+    pub params: MasterchefParams,
+}
+
+#[cw_serde]
+pub struct MasterchefPoolInfo {
+    pub pool_id: u64,
+    pub reward_wallet: String,
+    pub multiplier: SignedDecimal,
+    pub eden_apr: SignedDecimal,
+    pub dex_apr: SignedDecimal,
+    pub gas_apr: SignedDecimal,
+    pub external_incentive_apr: SignedDecimal,
+    pub external_reward_denoms: Vec<String>,
+}
+
+#[cw_serde]
+pub struct MasterchefPoolInfoResponse {
+    pub pool_info: MasterchefPoolInfo,
+}
+
 #[cw_serde]
 #[derive(Default)]
 pub struct MasterchefUserPendingRewardResponse {
