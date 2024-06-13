@@ -532,6 +532,32 @@ function leveragelp_position() {
     }'
 }
 
+# leveragelp open estimation
+function leveragelp_open_estimation() {
+    printf "\n# Leveragelp open estimation\n"
+    query_contract "$ts_contract_address" '{
+        "leveragelp_open_est": {
+            "collateral_asset": "'$usdc_denom'",
+            "collateral_amount": "1000000",
+            "amm_pool_id": 2,
+            "leverage": "5.0",
+        }
+    }'
+}
+
+# leveragelp close estimation
+function leveragelp_close_estimation() {
+    printf "\n# leveragelp close estimation\n"
+    query_contract "$ts_contract_address" '{
+        "leveragelp_close_est": {
+            "owner" : "'"$user_address"'",
+            "id": 2,
+            "lp_amount": "1000000"
+        }
+    }'
+}
+
+
 function ts_params() {
     printf "\n# Get TS Params\n"
     query_contract \
@@ -557,6 +583,15 @@ function get_estaking_rewards() {
         "get_estaking_rewards": {
              "address": "'"$user_address"'"
         }
+    }'
+}
+
+function master_chef_params() {
+    printf "\n# Get Masterchef Params\n"
+    query_contract \
+        "$ah_contract_address" \
+        '{
+        "get_masterchef_params": {}
     }'
 }
 
@@ -771,6 +806,12 @@ case "$2" in
 "leveragelp_position")
     leveragelp_position
     ;;
+"leveragelp_open_estimation")
+    leveragelp_open_estimation
+    ;;
+"leveragelp_close_estimation")
+    leveragelp_close_estimation
+    ;;
 "ts_params")
     ts_params
     ;;
@@ -779,6 +820,9 @@ case "$2" in
     ;;
 "get_estaking_rewards")
     get_estaking_rewards
+    ;;
+"master_chef_params")
+    master_chef_params
     ;;
 "get_masterchef_pending_rewards")
     get_masterchef_pending_rewards

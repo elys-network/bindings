@@ -114,6 +114,11 @@ pub enum ElysMsg {
         id: u64,
         lp_amount: Int128,
     },
+    LeveragelpUpdateStopLoss {
+        creator: String,
+        position: u64,
+        price: SignedDecimal,
+    },
 
     // Perpetual
     PerpetualOpen {
@@ -344,6 +349,18 @@ impl ElysMsg {
             creator,
             id,
             lp_amount,
+        }
+    }
+
+    pub fn leveragelp_update_stop_loss(
+        creator: String,
+        position: u64,
+        price: SignedDecimal,
+    ) -> Self {
+        Self::LeveragelpUpdateStopLoss {
+            creator,
+            position: position,
+            price: price,
         }
     }
 
