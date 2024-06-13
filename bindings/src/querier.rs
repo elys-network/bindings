@@ -790,6 +790,17 @@ impl<'a> ElysQuerier<'a> {
         ))
     }
 
+    pub fn query_leverage_lp_rewards(
+        &self,
+        address: String,
+        ids: Vec<u64>,
+    ) -> StdResult<GetLeverageLpRewardsResp> {
+        self.querier
+            .query(&QueryRequest::Custom(ElysQuery::query_leverage_lp_rewards(
+                address, ids,
+            )))
+    }
+
     pub fn get_masterchef_pool_apr(&self, pool_ids: Vec<u64>) -> StdResult<QueryPoolAprsResponse> {
         let query = ElysQuery::get_masterchef_pool_apr(pool_ids);
         let request = QueryRequest::Custom(query);

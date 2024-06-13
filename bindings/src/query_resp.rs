@@ -955,3 +955,15 @@ pub struct CommitmentNumberOfCommitmentsResponseRaw {
 pub struct CommitmentNumberOfCommitmentsResponse {
     pub number: i64,
 }
+
+#[cw_serde]
+pub struct GetLeverageLpRewardsResp {
+    pub rewards: RewardInfo,
+    pub total_rewards: Vec<Coin>,
+}
+
+#[cw_serde]
+pub struct RewardInfo {
+    pub position_id: u64,
+    pub reward: Vec<Coin>,
+}

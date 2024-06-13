@@ -101,6 +101,8 @@ pub enum QueryMsg {
     },
     #[returns(LeveragelpPositionResponse)]
     LeveragelpPosition { address: String, id: u64 },
+    #[returns(GetLeverageLpRewardsResp)]
+    LeveragelpRewards { address: String, ids: Vec<u64> },
     #[returns(TradeShieldParamsResponse)]
     GetParams {},
     #[returns(NumberOfPendingOrderResp)]
