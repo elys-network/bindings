@@ -98,6 +98,10 @@ pub enum ExecuteMsg {
         position_id: u64,
         amount: Int128,
     },
+    LeveragelpUpdateStopLoss {
+        position: u64,
+        price: SignedDecimal,
+    },
 
     SetParams {
         market_order_enabled: Option<bool>,

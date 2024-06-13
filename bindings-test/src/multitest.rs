@@ -162,6 +162,8 @@ impl Module for ElysModule {
             ElysQuery::LeveragelpPool { .. } => todo!("LeveragelpPool"),
             ElysQuery::LeveragelpPools { .. } => todo!("LeveragelpPools"),
             ElysQuery::LeveragelpPosition { .. } => todo!("LeveragelpPosition"),
+            ElysQuery::LeveragelpCloseEst { .. } => todo!("LeveragelpCloseEst"),
+            ElysQuery::LeveragelpOpenEst { .. } => todo!("LeveragelpOpenEst"),
 
             ElysQuery::AmmEarnMiningPoolAll { .. } => todo!("AmmEarnMiningPoolAll"),
             ElysQuery::AmmJoinPoolEstimation { .. } => todo!("AmmJoinPoolEstimation"),
@@ -623,6 +625,8 @@ impl Module for ElysModule {
                 };
                 Ok(to_json_binary(&resp)?)
             }
+            ElysQuery::MasterchefParams {} => todo!("MasterchefParams"),
+            ElysQuery::MasterchefPoolInfo { .. } => todo!("MasterchefPool"),
             ElysQuery::MasterchefUserPendingReward { .. } => {
                 // TODO: remove default instead proper mock
                 Ok(to_json_binary(
@@ -1013,6 +1017,16 @@ impl Module for ElysModule {
             }
             ElysMsg::LeveragelpClose { .. } => {
                 LAST_MODULE_USED.save(storage, &Some("LeveragelpClose".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
+            ElysMsg::LeveragelpUpdateStopLoss { .. } => {
+                LAST_MODULE_USED.save(storage, &Some("LeveragelpUpdateStopLoss".to_string()))?;
                 let data = to_json_binary(&MsgResponse {
                     result: "Ok".to_string(),
                 })?;
