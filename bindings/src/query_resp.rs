@@ -611,6 +611,17 @@ pub struct LeveragelpPositionsResponseRaw {
     pub pagination: Option<PageResponse>,
 }
 
+impl LeveragelpPositionsResponseRaw {
+    pub fn get_pools(&self) -> Option<Vec<u64>> {
+        let positions = &self.positions.clone().unwrap();
+        if positions.is_empty() {
+            return None;
+        }
+        let pools = positions.iter().map(|x| x.amm_pool_id).collect();
+        Some(pools)
+    }
+}
+
 #[cw_serde]
 pub struct LeveragelpPositionsResponse {
     pub positions: Vec<LeveragelpPosition>,
@@ -966,4 +977,14 @@ pub struct GetLeverageLpRewardsResp {
 pub struct RewardInfo {
     pub position_id: u64,
     pub reward: Vec<Coin>,
+}
+
+impl GetLeverageLpRewardsResp {
+    pub fn total_rewards_to_coin(&self, querier: &ElysQuerier<'_>) -> StdResult<Vec<CoinValue>> {
+        let mut coin_values = Vec::new();
+        for reward in &self.total_rewards {
+            coin_values.push(CoinValue::from_coin(reward, querier)?);
+        }
+        Ok(coin_values)
+    }
 }

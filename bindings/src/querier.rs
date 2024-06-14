@@ -906,11 +906,25 @@ impl<'a> ElysQuerier<'a> {
             pagination,
         ));
         let raw_resp: LeveragelpPositionsResponseRaw = self.querier.query(&req)?;
-        let positions = raw_resp.positions.unwrap_or(vec![]);
+        let positions = raw_resp.clone().positions.unwrap_or(vec![]);
+
         Ok(LeveragelpPositionsResponse {
             positions,
             pagination: raw_resp.pagination,
         })
+    }
+    pub fn leveragelp_pool_ids_for_address(
+        &self,
+        address: impl Into<String>,
+        pagination: Option<PageRequest>,
+    ) -> StdResult<Option<Vec<u64>>> {
+        let req = QueryRequest::Custom(ElysQuery::leveragelp_query_positions_for_address(
+            address.into(),
+            pagination,
+        ));
+        let raw_resp: LeveragelpPositionsResponseRaw = self.querier.query(&req)?;
+        let ids = raw_resp.get_pools();
+        Ok(ids)
     }
     pub fn leveragelp_get_whitelist(
         &self,

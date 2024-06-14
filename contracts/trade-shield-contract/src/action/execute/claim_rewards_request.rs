@@ -5,6 +5,7 @@ use elys_bindings::query_resp::Validator;
 pub fn claim_rewards_request(
     info: MessageInfo,
     deps: DepsMut<ElysQuery>,
+    pagination: Option<PageRequest>,
 ) -> Result<Response<ElysMsg>, ContractError> {
     if REWARD_ENABLED.load(deps.storage)? == false {
         return Err(StdError::generic_err("reward endpoint are disable").into());
@@ -67,6 +68,15 @@ pub fn claim_rewards_request(
         msgs.push(ElysMsg::get_masterchef_claim_rewards(
             info.sender.to_string(),
             pools_ids_to_claim,
+        ));
+    }
+
+    let ids = querier.leveragelp_pool_ids_for_address(info.sender.to_string(), pagination)?;
+
+    if ids.is_some() {
+        msgs.push(ElysMsg::leveragelp_withdraw_reward(
+            info.sender.to_string(),
+            ids.unwrap(),
         ));
     }
 
