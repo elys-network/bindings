@@ -86,15 +86,15 @@ pub enum QueryMsg {
     LeveragelpPool { index: u64 },
     #[returns(LeveragelpPoolsResponse)]
     LeveragelpPools { pagination: Option<PageRequest> },
-    #[returns(LeveragelpOpenEstResponse)]
-    LeveragelpOpenEst {
+    #[returns(LeveragelpOpenEstimationResponse)]
+    LeveragelpOpenEstimation {
         collateral_asset: String,
         collateral_amount: Int128,
         amm_pool_id: u64,
         leverage: Decimal,
     },
-    #[returns(LeveragelpCloseEstResponse)]
-    LeveragelpCloseEst {
+    #[returns(LeveragelpCloseEstimationResponse)]
+    LeveragelpCloseEstimation {
         owner: String,
         id: u64,
         lp_amount: Int128,

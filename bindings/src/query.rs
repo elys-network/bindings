@@ -130,15 +130,15 @@ pub enum ElysQuery {
     LeveragelpPools { pagination: Option<PageRequest> },
     #[returns(LeveragelpPositionResponse)]
     LeveragelpPosition { address: String, id: u64 },
-    #[returns(LeveragelpOpenEstResponse)]
-    LeveragelpOpenEst {
+    #[returns(LeveragelpOpenEstimationResponse)]
+    LeveragelpOpenEstimation {
         collateral_asset: String,
         collateral_amount: Int128,
         amm_pool_id: u64,
         leverage: Decimal,
     },
-    #[returns(LeveragelpCloseEstResponse)]
-    LeveragelpCloseEst {
+    #[returns(LeveragelpCloseEstimationResponse)]
+    LeveragelpCloseEstimation {
         owner: String,
         id: u64,
         lp_amount: Int128,
@@ -397,7 +397,7 @@ impl ElysQuery {
         amm_pool_id: u64,
         leverage: Decimal,
     ) -> Self {
-        Self::LeveragelpOpenEst {
+        Self::LeveragelpOpenEstimation {
             collateral_asset,
             collateral_amount,
             amm_pool_id,
@@ -405,7 +405,7 @@ impl ElysQuery {
         }
     }
     pub fn leveragelp_close_est(owner: String, id: u64, lp_amount: Int128) -> Self {
-        Self::LeveragelpCloseEst {
+        Self::LeveragelpCloseEstimation {
             owner,
             id,
             lp_amount,
