@@ -988,7 +988,7 @@ impl<'a> ElysQuerier<'a> {
         collateral_amount: Int128,
         amm_pool_id: u64,
         leverage: Decimal,
-    ) -> StdResult<LeveragelpOpenEstResponse> {
+    ) -> StdResult<LeveragelpOpenEstimationResponse> {
         let req = QueryRequest::Custom(ElysQuery::leveragelp_open_est(
             collateral_asset,
             collateral_amount,
@@ -1002,7 +1002,7 @@ impl<'a> ElysQuerier<'a> {
         owner: String,
         id: u64,
         lp_amount: Int128,
-    ) -> StdResult<LeveragelpCloseEstResponse> {
+    ) -> StdResult<LeveragelpCloseEstimationResponse> {
         let req = QueryRequest::Custom(ElysQuery::leveragelp_close_est(owner, id, lp_amount));
         self.querier.query(&req)
     }

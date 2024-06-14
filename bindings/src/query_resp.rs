@@ -696,14 +696,14 @@ pub struct LeveragelpPoolsResponse {
 }
 
 #[cw_serde]
-pub struct LeveragelpOpenEstResponse {
+pub struct LeveragelpOpenEstimationResponse {
     position_size: Int128,
     weight_balance_ratio: Decimal,
     borrow_fee: Decimal,
 }
 
 #[cw_serde]
-pub struct LeveragelpCloseEstResponse {
+pub struct LeveragelpCloseEstimationResponse {
     liability: Int128,
     weight_balance_ratio: Decimal,
     amount_returned: Int128,
