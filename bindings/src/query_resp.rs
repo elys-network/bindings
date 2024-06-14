@@ -612,13 +612,13 @@ pub struct LeveragelpPositionsResponseRaw {
 }
 
 impl LeveragelpPositionsResponseRaw {
-    pub fn get_pools(&self) -> Option<Vec<u64>> {
-        let positions = &self.positions.clone().unwrap();
-        if positions.is_empty() {
-            return None;
-        }
-        let pools = positions.iter().map(|x| x.amm_pool_id).collect();
-        Some(pools)
+    pub fn get_pools(&self) -> Vec<u64> {
+        self.positions
+            .clone()
+            .unwrap_or(vec![])
+            .iter()
+            .map(|x| x.amm_pool_id)
+            .collect()
     }
 }
 

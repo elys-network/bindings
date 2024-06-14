@@ -896,34 +896,60 @@ impl<'a> ElysQuerier<'a> {
         };
         Ok(resp)
     }
-    pub fn leveragelp_query_positions_for_address(
+
+    fn leveragelp_query_positions_for_address(
         &self,
         address: impl Into<String>,
         pagination: Option<PageRequest>,
-    ) -> StdResult<LeveragelpPositionsResponse> {
+    ) -> StdResult<LeveragelpPositionsResponseRaw> {
         let req = QueryRequest::Custom(ElysQuery::leveragelp_query_positions_for_address(
             address.into(),
             pagination,
         ));
-        let raw_resp: LeveragelpPositionsResponseRaw = self.querier.query(&req)?;
-        let positions = raw_resp.clone().positions.unwrap_or(vec![]);
+        self.querier.query(&req)
+    }
+
+    pub fn get_leveragelp_query_positions_for_address(
+        &self,
+        address: impl Into<String>,
+        prev_pagination: Option<PageRequest>,
+    ) -> StdResult<LeveragelpPositionsResponse> {
+        let address: String = address.into();
+        let raw_resp: LeveragelpPositionsResponseRaw =
+            self.leveragelp_query_positions_for_address(address.to_string(), prev_pagination)?;
+        let leverage_reward_data =
+            self.query_leverage_lp_rewards(address.to_string(), raw_resp.get_pools())?;
+        let _rewards_coin: Vec<CoinValue> = leverage_reward_data
+            .rewards
+            .reward
+            .iter()
+            .filter_map(|coin| CoinValue::from_coin(coin, self).ok())
+            .collect();
+        let _total_rewards: Vec<CoinValue> = leverage_reward_data
+            .total_rewards
+            .iter()
+            .filter_map(|coin| CoinValue::from_coin(coin, self).ok())
+            .collect();
 
         Ok(LeveragelpPositionsResponse {
-            positions,
+            positions: raw_resp.positions.unwrap_or(vec![]),
             pagination: raw_resp.pagination,
         })
     }
-    pub fn leveragelp_pool_ids_for_address(
-        &self,
-        address: impl Into<String>,
-        pagination: Option<PageRequest>,
-    ) -> StdResult<Option<Vec<u64>>> {
-        let req = QueryRequest::Custom(ElysQuery::leveragelp_query_positions_for_address(
-            address.into(),
-            pagination,
-        ));
-        let raw_resp: LeveragelpPositionsResponseRaw = self.querier.query(&req)?;
-        let ids = raw_resp.get_pools();
+    pub fn leveragelp_pool_ids_for_address(&self, address: String) -> StdResult<Vec<u64>> {
+        let mut pagination = PageRequest::new(10u64);
+        let mut ids = vec![];
+        loop {
+            let raw_resp = self.leveragelp_query_positions_for_address(
+                address.clone(),
+                Some(pagination.clone()),
+            )?;
+            if raw_resp.pagination.is_none() {
+                break;
+            }
+            ids = [ids, raw_resp.get_pools()].concat();
+            pagination.update(raw_resp.pagination.unwrap().next_key);
+        }
         Ok(ids)
     }
     pub fn leveragelp_get_whitelist(
