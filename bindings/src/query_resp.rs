@@ -629,6 +629,14 @@ pub struct LeveragelpPositionsResponse {
 }
 
 #[cw_serde]
+pub struct LeveragelpPositionsAndRewardsResponse {
+    pub positions: Vec<LeveragelpPosition>,
+    pub pagination: Option<PageResponse>,
+    pub usdc: Decimal,
+    pub eden: Uint128,
+}
+
+#[cw_serde]
 pub struct LeveragelpStatusResponse {
     pub open_position_count: u64,
     pub lifetime_position_count: u64,

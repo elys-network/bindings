@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use std::str::FromStr;
+use std::{ascii::AsciiExt, collections::HashMap};
 
 use cosmwasm_std::{
     coin, to_json_vec, Binary, Coin, ContractResult, Decimal, Int128, QuerierWrapper, QueryRequest,
@@ -913,27 +913,40 @@ impl<'a> ElysQuerier<'a> {
         &self,
         address: impl Into<String>,
         prev_pagination: Option<PageRequest>,
-    ) -> StdResult<LeveragelpPositionsResponse> {
+    ) -> StdResult<LeveragelpPositionsAndRewardsResponse> {
         let address: String = address.into();
         let raw_resp: LeveragelpPositionsResponseRaw =
             self.leveragelp_query_positions_for_address(address.to_string(), prev_pagination)?;
         let leverage_reward_data =
             self.query_leverage_lp_rewards(address.to_string(), raw_resp.get_pools())?;
-        let _rewards_coin: Vec<CoinValue> = leverage_reward_data
-            .rewards
-            .reward
-            .iter()
-            .filter_map(|coin| CoinValue::from_coin(coin, self).ok())
-            .collect();
-        let _total_rewards: Vec<CoinValue> = leverage_reward_data
-            .total_rewards
-            .iter()
-            .filter_map(|coin| CoinValue::from_coin(coin, self).ok())
-            .collect();
+        // let _rewards_coin: Vec<CoinValue> = leverage_reward_data
+        //     .rewards
+        //     .reward
+        //     .iter()
+        //     .filter_map(|coin| CoinValue::from_coin(coin, self).ok())
+        //     .collect();
+        // let total_rewards: Vec<CoinValue> = leverage_reward_data
+        //     .total_rewards
+        //     .iter()
+        //     .filter_map(|coin| CoinValue::from_coin(coin, self).ok())
+        //     .collect();
 
-        Ok(LeveragelpPositionsResponse {
+        let mut usdc = Decimal::zero();
+        let mut eden = Uint128::zero();
+
+        for i in leverage_reward_data.total_rewards {
+            if i.denom == "usdc".to_string() {
+                usdc = CoinValue::from_coin(&i, self).ok().unwrap().amount_usd;
+            } else {
+                eden = i.amount;
+            }
+        }
+
+        Ok(LeveragelpPositionsAndRewardsResponse {
             positions: raw_resp.positions.unwrap_or(vec![]),
             pagination: raw_resp.pagination,
+            usdc,
+            eden,
         })
     }
     pub fn leveragelp_pool_ids_for_address(&self, address: String) -> StdResult<Vec<u64>> {
