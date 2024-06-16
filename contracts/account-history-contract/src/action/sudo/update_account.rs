@@ -56,7 +56,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
 }
 
 pub fn update_account_chain(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<ElysMsg>> {
-    let querier = ElysQuerier::new(&deps.querier);
+    //let querier = ElysQuerier::new(&deps.querier);
 
     // update metadata prices
     // let mut metadata = METADATA.load(deps.storage)?;
@@ -69,7 +69,7 @@ pub fn update_account_chain(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Res
         PROCESSED_ACCOUNT_PER_BLOCK.load(deps.storage)? as usize;
 
     //let generator = AccountSnapshotGenerator::new(&deps.as_ref())?;
-
+    let mut msgs = vec![];
     for _ in 0..processed_account_per_block {
         if USER_ADDRESS_QUEUE.is_empty(deps.storage)? == true {
             break;
@@ -81,6 +81,10 @@ pub fn update_account_chain(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Res
         } else {
             break;
         };
+
+        let msg: ElysMsg =
+            ElysMsg::tier_set_portfolio(env.contract.address.to_string(), user_address);
+        msgs.push(msg)
 
         // let key = today.clone() + &user_address;
 
@@ -98,7 +102,7 @@ pub fn update_account_chain(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Res
         // HISTORY.save(deps.storage, &key, &new_part)?;
     }
 
-    Ok(Response::default())
+    Ok(Response::default().add_messages(msgs))
 }
 
 pub fn clean_up_history(
