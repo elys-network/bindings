@@ -1041,6 +1041,16 @@ impl Module for ElysModule {
                     data: Some(data),
                 })
             }
+            ElysMsg::TierSetPortfolio { .. } => {
+                LAST_MODULE_USED.save(storage, &Some("TierSetPortfolio".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
             ElysMsg::MasterchefClaimRewards { .. } => {
                 LAST_MODULE_USED.save(storage, &Some("MasterchefClaimRewards".to_string()))?;
                 let data = to_json_binary(&MsgResponse {

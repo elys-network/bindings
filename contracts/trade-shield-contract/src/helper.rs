@@ -55,19 +55,6 @@ pub fn get_mut_discount(
 }
 
 pub fn get_discount(deps: &Deps<ElysQuery>, user_address: String) -> StdResult<Decimal> {
-    // let account_history_address = match ACCOUNT_HISTORY_ADDRESS.load(deps.storage)? {
-    //     Some(account_history_address) => account_history_address,
-    //     None => return Ok(Decimal::zero()),
-    // };
-
-    // let discount = match deps.querier.query_wasm_smart::<MembershipTierResponse>(
-    //     &account_history_address,
-    //     &AccountHistoryQueryMsg::GetMembershipTier { user_address },
-    // ) {
-    //     Ok(resp) => resp.discount,
-    //     Err(_) => Decimal::zero(),
-    // };
-
     let querier = ElysQuerier::new(&deps.querier);
     let discount_str = match querier.tier_calculate_discount(user_address) {
         Ok(resp) => resp.discount,
