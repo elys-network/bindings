@@ -169,6 +169,13 @@ pub struct TierCalculateDiscountResponse {
     pub portfolio: String,
 }
 
+#[cw_serde]
+pub struct TierCalculateDiscountResponseRaw {
+    pub discount: Option<String>,
+    pub tier: Option<String>,
+    pub portfolio: Option<String>,
+}
+
 // TODO:
 // Some of the items are commented because of the omitempty flag in protobuf.
 // Until we fix this problem, we keep the items commented to be same result from the live elys testnet asset entry.

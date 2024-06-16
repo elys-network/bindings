@@ -412,4 +412,7 @@ impl ElysQuery {
     pub fn commitment_number_of_commitments() -> Self {
         Self::CommitmentNumberOfCommitments {}
     }
+    pub fn tier_calculate_discount(user: String) -> Self {
+        Self::TierCalculateDiscount { user }
+    }
 }
