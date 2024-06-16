@@ -164,6 +164,10 @@ pub enum ElysQuery {
     StableStakeBalanceOfBorrow {},
     #[returns(StableStakeParamsResp)]
     StableStakeParams {},
+
+    // Define Tier
+    #[returns(TierCalculateDiscountResponse)]
+    TierCalculateDiscount { user: String },
 }
 
 impl CustomQuery for ElysQuery {}

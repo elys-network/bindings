@@ -1,6 +1,8 @@
 pub mod sudo {
     mod update_account;
-    pub use update_account::{clean_old_history, clean_up_history, update_account};
+    pub use update_account::{
+        clean_old_history, clean_up_history, update_account, update_account_chain,
+    };
 }
 
 pub mod query {
