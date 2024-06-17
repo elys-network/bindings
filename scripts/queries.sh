@@ -626,10 +626,17 @@ function get_spot_order_states() {
     }'
 }
 
-function get_ts_stat {
+function get_ts_stat() {
     printf "\n# Get Spot Order State"
     query_contract "$ts_contract_address" '{
         "get_stat": {}
+    }'
+}
+
+function parameter_params() {
+    printf "\n# Get Parameter Params"
+query_contract "$ts_contract_address" '{
+        "parameter_params": {}
     }'
 }
 
@@ -835,6 +842,9 @@ case "$2" in
     ;;
 "get_ts_stat")
     get_ts_stat
+    ;;
+"parameter_params")
+    parameter_params
     ;;
 *)
     # Default case: run all functions

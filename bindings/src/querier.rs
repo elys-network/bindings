@@ -1063,6 +1063,12 @@ impl<'a> ElysQuerier<'a> {
 
         self.querier.query(&pools_request)
     }
+    pub fn parameter_params(&self) -> StdResult<ParameterParamsResponse> {
+        let query = ElysQuery::parameter_params();
+        let request = QueryRequest::Custom(query);
+
+        self.querier.query(&request)
+    }
 
     #[allow(dead_code)]
     #[cfg(feature = "debug")]

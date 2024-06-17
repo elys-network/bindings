@@ -110,6 +110,7 @@ impl Module for ElysModule {
         request: Self::QueryT,
     ) -> AnyResult<cosmwasm_std::Binary> {
         match request {
+            ElysQuery::ParameterParams {} => todo!("ParameterParams"),
             ElysQuery::LeveragelpParams { .. } => {
                 let resp = LeveragelpParamsResponse {
                     params: Some(LeveragelpParams {
