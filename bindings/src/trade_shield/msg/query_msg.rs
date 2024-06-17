@@ -5,7 +5,7 @@ use crate::query_resp::*;
 use crate::trade_shield::types::{PerpetualOrderType, SpotOrderType, Status};
 use crate::types::{PageRequest, PerpetualPosition};
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::{Coin, SignedDecimal, SignedDecimal256};
+use cosmwasm_std::{Coin, Decimal, Int128, SignedDecimal, SignedDecimal256};
 use cw2::ContractVersion;
 
 #[cw_serde]
@@ -86,6 +86,19 @@ pub enum QueryMsg {
     LeveragelpPool { index: u64 },
     #[returns(LeveragelpPoolsResponse)]
     LeveragelpPools { pagination: Option<PageRequest> },
+    #[returns(LeveragelpOpenEstimationResponse)]
+    LeveragelpOpenEstimation {
+        collateral_asset: String,
+        collateral_amount: Int128,
+        amm_pool_id: u64,
+        leverage: Decimal,
+    },
+    #[returns(LeveragelpCloseEstimationResponse)]
+    LeveragelpCloseEstimation {
+        owner: String,
+        id: u64,
+        lp_amount: Int128,
+    },
     #[returns(LeveragelpPositionResponse)]
     LeveragelpPosition { address: String, id: u64 },
     #[returns(TradeShieldParamsResponse)]

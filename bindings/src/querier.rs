@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::str::FromStr;
 
 use cosmwasm_std::{
-    coin, to_json_vec, Binary, Coin, ContractResult, Decimal, QuerierWrapper, QueryRequest,
+    coin, to_json_vec, Binary, Coin, ContractResult, Decimal, Int128, QuerierWrapper, QueryRequest,
     SignedDecimal, SignedDecimal256, StdError, StdResult, SystemResult, Uint128,
 };
 
@@ -745,6 +745,17 @@ impl<'a> ElysQuerier<'a> {
             ))
         })
     }
+
+    pub fn masterchef_params(&self) -> StdResult<MasterchefParamsResponse> {
+        let request = QueryRequest::Custom(ElysQuery::masterchef_params());
+        self.querier.query(&request)
+    }
+
+    pub fn masterchef_pool_info(&self, pool_id: u64) -> StdResult<MasterchefPoolInfoResponse> {
+        let request = QueryRequest::Custom(ElysQuery::masterchef_pool_info(pool_id));
+        self.querier.query(&request)
+    }
+
     /// This function retrieves pending rewards for a user from the Masterchef contract.
     ///
     /// Arguments:
@@ -951,6 +962,31 @@ impl<'a> ElysQuerier<'a> {
         Ok(CommitmentNumberOfCommitmentsResponse {
             number: number.unwrap_or(0),
         })
+    }
+
+    pub fn leveragelp_open_est(
+        &self,
+        collateral_asset: String,
+        collateral_amount: Int128,
+        amm_pool_id: u64,
+        leverage: Decimal,
+    ) -> StdResult<LeveragelpOpenEstimationResponse> {
+        let req = QueryRequest::Custom(ElysQuery::leveragelp_open_est(
+            collateral_asset,
+            collateral_amount,
+            amm_pool_id,
+            leverage,
+        ));
+        self.querier.query(&req)
+    }
+    pub fn leveragelp_close_est(
+        &self,
+        owner: String,
+        id: u64,
+        lp_amount: Int128,
+    ) -> StdResult<LeveragelpCloseEstimationResponse> {
+        let req = QueryRequest::Custom(ElysQuery::leveragelp_close_est(owner, id, lp_amount));
+        self.querier.query(&req)
     }
     pub fn get_all_pools_apr(
         &self,

@@ -6,7 +6,7 @@ use crate::types::{BalanceAvailable, PageRequest, SwapAmountInRoute};
 use super::query_resp::*;
 
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::{Coin, CustomQuery, Decimal, SignedDecimal, SignedDecimal256, Uint128};
+use cosmwasm_std::{Coin, CustomQuery, Decimal, Int128, SignedDecimal, SignedDecimal256, Uint128};
 
 // Now define ElysQuery to include the new OracleQuery and AmmQuery
 #[cw_serde]
@@ -88,6 +88,10 @@ pub enum ElysQuery {
     IncentiveAprs {},
 
     // Define Masterchef
+    #[returns(MasterchefParamsResponse)]
+    MasterchefParams {},
+    #[returns(MasterchefPoolInfoResponse)]
+    MasterchefPoolInfo { pool_id: u64 },
     #[returns(MasterchefUserPendingRewardResponse)]
     MasterchefUserPendingReward { user: String },
     #[returns(QueryPoolAprsResponse)]
@@ -126,7 +130,19 @@ pub enum ElysQuery {
     LeveragelpPools { pagination: Option<PageRequest> },
     #[returns(LeveragelpPositionResponse)]
     LeveragelpPosition { address: String, id: u64 },
-
+    #[returns(LeveragelpOpenEstimationResponse)]
+    LeveragelpOpenEstimation {
+        collateral_asset: String,
+        collateral_amount: Int128,
+        amm_pool_id: u64,
+        leverage: Decimal,
+    },
+    #[returns(LeveragelpCloseEstimationResponse)]
+    LeveragelpCloseEstimation {
+        owner: String,
+        id: u64,
+        lp_amount: Int128,
+    },
     // Define Perpetual
     #[returns(PerpetualQueryPositionsResponse)]
     PerpetualQueryPositions { pagination: PageRequest },
@@ -379,6 +395,27 @@ impl ElysQuery {
     pub fn leveragelp_position(address: String, id: u64) -> Self {
         Self::LeveragelpPosition { address, id }
     }
+    pub fn leveragelp_open_est(
+        collateral_asset: String,
+        collateral_amount: Int128,
+        amm_pool_id: u64,
+        leverage: Decimal,
+    ) -> Self {
+        Self::LeveragelpOpenEstimation {
+            collateral_asset,
+            collateral_amount,
+            amm_pool_id,
+            leverage,
+        }
+    }
+    pub fn leveragelp_close_est(owner: String, id: u64, lp_amount: Int128) -> Self {
+        Self::LeveragelpCloseEstimation {
+            owner,
+            id,
+            lp_amount,
+        }
+    }
+
     pub fn join_pool_estimation(pool_id: u64, amounts_in: Vec<Coin>) -> Self {
         ElysQuery::AmmJoinPoolEstimation {
             pool_id,
@@ -397,6 +434,12 @@ impl ElysQuery {
         }
     }
 
+    pub fn masterchef_params() -> Self {
+        Self::MasterchefParams {}
+    }
+    pub fn masterchef_pool_info(pool_id: u64) -> Self {
+        Self::MasterchefPoolInfo { pool_id }
+    }
     pub fn masterchef_pending_rewards(address: String) -> Self {
         Self::MasterchefUserPendingReward { user: address }
     }

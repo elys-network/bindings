@@ -90,6 +90,16 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
 
         GetEstakingRewards { address } => to_json_binary(&get_estaking_rewards(deps, address)?),
 
+        GetMasterchefParams {} => {
+            let querier = ElysQuerier::new(&deps.querier);
+            to_json_binary(&querier.masterchef_params()?)
+        }
+
+        GetMasterchefPoolInfo { pool_id } => {
+            let querier = ElysQuerier::new(&deps.querier);
+            to_json_binary(&querier.masterchef_pool_info(pool_id)?)
+        }
+
         GetMasterchefPendingRewards { address } => {
             to_json_binary(&get_masterchef_pending_rewards(deps, address)?)
         }

@@ -142,6 +142,24 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> Result<Binary, C
         LeveragelpPosition { address, id } => {
             Ok(to_json_binary(&querier.leveragelp_position(address, id)?)?)
         }
+        LeveragelpOpenEstimation {
+            collateral_asset,
+            collateral_amount,
+            amm_pool_id,
+            leverage,
+        } => Ok(to_json_binary(&querier.leveragelp_open_est(
+            collateral_asset,
+            collateral_amount,
+            amm_pool_id,
+            leverage,
+        )?)?),
+        LeveragelpCloseEstimation {
+            owner,
+            id,
+            lp_amount,
+        } => Ok(to_json_binary(
+            &querier.leveragelp_close_est(owner, id, lp_amount)?,
+        )?),
         GetParams {} => Ok(to_json_binary(&{
             let params_admin = PARAMS_ADMIN.load(deps.storage)?;
 

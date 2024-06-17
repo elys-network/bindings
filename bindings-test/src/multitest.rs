@@ -172,6 +172,8 @@ impl Module for ElysModule {
             ElysQuery::LeveragelpPool { .. } => todo!("LeveragelpPool"),
             ElysQuery::LeveragelpPools { .. } => todo!("LeveragelpPools"),
             ElysQuery::LeveragelpPosition { .. } => todo!("LeveragelpPosition"),
+            ElysQuery::LeveragelpCloseEstimation { .. } => todo!("LeveragelpCloseEstimation"),
+            ElysQuery::LeveragelpOpenEstimation { .. } => todo!("LeveragelpOpenEstimation"),
 
             ElysQuery::AmmEarnMiningPoolAll { .. } => todo!("AmmEarnMiningPoolAll"),
             ElysQuery::AmmJoinPoolEstimation { .. } => todo!("AmmJoinPoolEstimation"),
@@ -633,6 +635,8 @@ impl Module for ElysModule {
                 };
                 Ok(to_json_binary(&resp)?)
             }
+            ElysQuery::MasterchefParams {} => todo!("MasterchefParams"),
+            ElysQuery::MasterchefPoolInfo { .. } => todo!("MasterchefPool"),
             ElysQuery::MasterchefUserPendingReward { .. } => {
                 // TODO: remove default instead proper mock
                 Ok(to_json_binary(
