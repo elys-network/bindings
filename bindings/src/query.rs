@@ -12,6 +12,9 @@ use cosmwasm_std::{Coin, CustomQuery, Decimal, Int128, SignedDecimal, SignedDeci
 #[cw_serde]
 #[derive(QueryResponses)]
 pub enum ElysQuery {
+    // Define Parameter
+    #[returns(ParameterParamsResponse)]
+    ParameterParams {},
     // Define AmmQuery
     #[returns(AmmSwapEstimationResponse)]
     AmmSwapEstimation {
@@ -185,6 +188,9 @@ pub enum ElysQuery {
 impl CustomQuery for ElysQuery {}
 
 impl ElysQuery {
+    pub fn parameter_params() -> Self {
+        Self::ParameterParams {}
+    }
     pub fn amm_swap_estimation(
         routes: Vec<SwapAmountInRoute>,
         token_in: Coin,

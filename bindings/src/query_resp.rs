@@ -955,3 +955,21 @@ pub struct CommitmentNumberOfCommitmentsResponseRaw {
 pub struct CommitmentNumberOfCommitmentsResponse {
     pub number: i64,
 }
+
+#[cw_serde]
+pub struct ParameterParams {
+    pub min_commission_rate: Decimal,
+    pub max_voting_power: Decimal,
+    pub min_self_delegation: Int128,
+    pub broker_address: String,
+    pub total_blocks_per_year: u64,
+    pub rewards_data_lifetime: u64,
+    pub wasm_max_label_size: Int128,
+    pub wasm_max_size: Int128,
+    pub wasm_max_proposal_wasm_size: Int128,
+}
+
+#[cw_serde]
+pub struct ParameterParamsResponse {
+    pub params: ParameterParams,
+}
