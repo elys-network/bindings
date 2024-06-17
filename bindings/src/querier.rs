@@ -919,17 +919,6 @@ impl<'a> ElysQuerier<'a> {
             self.leveragelp_query_positions_for_address(address.to_string(), prev_pagination)?;
         let leverage_reward_data =
             self.query_leverage_lp_rewards(address.to_string(), raw_resp.get_pools())?;
-        // let _rewards_coin: Vec<CoinValue> = leverage_reward_data
-        //     .rewards
-        //     .reward
-        //     .iter()
-        //     .filter_map(|coin| CoinValue::from_coin(coin, self).ok())
-        //     .collect();
-        // let total_rewards: Vec<CoinValue> = leverage_reward_data
-        //     .total_rewards
-        //     .iter()
-        //     .filter_map(|coin| CoinValue::from_coin(coin, self).ok())
-        //     .collect();
 
         let mut usdc = Decimal::zero();
         let mut eden = Uint128::zero();
@@ -961,6 +950,9 @@ impl<'a> ElysQuerier<'a> {
                 break;
             }
             ids = [ids, raw_resp.get_pools()].concat();
+            if raw_resp.pagination.clone().unwrap().next_key.is_none() {
+                break;
+            }
             pagination.update(raw_resp.pagination.unwrap().next_key);
         }
         Ok(ids)
