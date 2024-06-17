@@ -158,6 +158,16 @@ impl PageRequest {
     pub fn update(&mut self, key: Option<Binary>) -> () {
         self.key = key;
     }
+
+    pub fn total() -> Self {
+        Self {
+            key: None,
+            offset: Some(0),
+            limit: 0,
+            count_total: true,
+            reverse: false,
+        }
+    }
 }
 
 #[cw_serde]

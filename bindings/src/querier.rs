@@ -923,11 +923,11 @@ impl<'a> ElysQuerier<'a> {
         let mut usdc = Decimal::zero();
         let mut eden = Uint128::zero();
 
-        for i in leverage_reward_data.total_rewards {
-            if i.denom == "usdc".to_string() {
-                usdc = CoinValue::from_coin(&i, self).ok().unwrap().amount_usd;
+        for coin in leverage_reward_data.total_rewards {
+            if coin.denom == "uusdc".to_string() {
+                usdc = CoinValue::from_coin(&coin, self)?.amount_usd;
             } else {
-                eden = i.amount;
+                eden = coin.amount;
             }
         }
 
@@ -939,23 +939,10 @@ impl<'a> ElysQuerier<'a> {
         })
     }
     pub fn leveragelp_pool_ids_for_address(&self, address: String) -> StdResult<Vec<u64>> {
-        let mut pagination = PageRequest::new(10u64);
-        let mut ids = vec![];
-        loop {
-            let raw_resp = self.leveragelp_query_positions_for_address(
-                address.clone(),
-                Some(pagination.clone()),
-            )?;
-            if raw_resp.pagination.is_none() {
-                break;
-            }
-            ids = [ids, raw_resp.get_pools()].concat();
-            if raw_resp.pagination.clone().unwrap().next_key.is_none() {
-                break;
-            }
-            pagination.update(raw_resp.pagination.unwrap().next_key);
-        }
-        Ok(ids)
+        let pagination = PageRequest::total();
+        let raw_resp =
+            self.leveragelp_query_positions_for_address(address.clone(), Some(pagination.clone()))?;
+        Ok(raw_resp.get_pools())
     }
     pub fn leveragelp_get_whitelist(
         &self,
