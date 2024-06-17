@@ -640,6 +640,16 @@ query_contract "$ts_contract_address" '{
     }'
 }
 
+function get_masterchef_pool_info() {
+    printf "\n# Get Masterchef Pool Info"
+    query_contract "$ah_contract_address" '{
+        "get_masterchef_pool_info": {
+            "pool_id": 2
+        }
+    }'
+
+}
+
 # function(s) to run based on the provided argument
 case "$2" in
 "ah_params")
@@ -830,6 +840,9 @@ case "$2" in
     ;;
 "master_chef_params")
     master_chef_params
+    ;;
+"get_masterchef_pool_info")
+    get_masterchef_pool_info
     ;;
 "get_masterchef_pending_rewards")
     get_masterchef_pending_rewards
