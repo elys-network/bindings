@@ -770,18 +770,12 @@ impl<'a> ElysQuerier<'a> {
                 blocks_distributed: Int128::zero(),
             },
             |raw_lp_incentives| IncentiveInfo {
-                eden_amount_per_year: raw_lp_incentives
-                    .eden_amount_per_year
-                    .unwrap_or(Int128::zero()),
+                eden_amount_per_year: raw_lp_incentives.eden_amount_per_year.unwrap_or_default(),
                 distribution_start_block: raw_lp_incentives
                     .distribution_start_block
-                    .unwrap_or(Int128::zero()),
-                total_blocks_per_year: raw_lp_incentives
-                    .total_blocks_per_year
-                    .unwrap_or(Int128::zero()),
-                blocks_distributed: raw_lp_incentives
-                    .blocks_distributed
-                    .unwrap_or(Int128::zero()),
+                    .unwrap_or_default(),
+                total_blocks_per_year: raw_lp_incentives.total_blocks_per_year.unwrap_or_default(),
+                blocks_distributed: raw_lp_incentives.blocks_distributed.unwrap_or_default(),
             },
         );
 
@@ -791,23 +785,17 @@ impl<'a> ElysQuerier<'a> {
                 raw_supported_reward_denoms
                     .iter()
                     .map(|reward_denom| SupportedRewardDenom {
-                        denom: reward_denom.denom.clone().unwrap_or("".to_string()),
-                        min_amount: reward_denom.min_amount.unwrap_or(Int128::zero()),
+                        denom: reward_denom.denom.clone().unwrap_or_default(),
+                        min_amount: reward_denom.min_amount.unwrap_or_default(),
                     })
                     .collect()
             });
 
         let params = MasterchefParams {
             lp_incentives,
-            reward_portion_for_lps: raw_params
-                .reward_portion_for_lps
-                .unwrap_or(SignedDecimal::zero()),
-            reward_portion_for_stakers: raw_params
-                .reward_portion_for_stakers
-                .unwrap_or(SignedDecimal::zero()),
-            max_eden_reward_apr_lps: raw_params
-                .max_eden_reward_apr_lps
-                .unwrap_or(SignedDecimal::zero()),
+            reward_portion_for_lps: raw_params.reward_portion_for_lps.unwrap_or_default(),
+            reward_portion_for_stakers: raw_params.reward_portion_for_stakers.unwrap_or_default(),
+            max_eden_reward_apr_lps: raw_params.max_eden_reward_apr_lps.unwrap_or_default(),
             supported_reward_denoms,
             protocol_revenue_address: "".to_string(),
         };
@@ -821,16 +809,14 @@ impl<'a> ElysQuerier<'a> {
             pool_info: pool_info_raw,
         } = self.querier.query(&request)?;
         let pool_info = MasterchefPoolInfo {
-            pool_id: pool_info_raw.pool_id.unwrap_or(0),
-            reward_wallet: pool_info_raw.reward_wallet.unwrap_or("".to_string()),
-            multiplier: pool_info_raw.multiplier.unwrap_or(SignedDecimal::zero()),
-            eden_apr: pool_info_raw.eden_apr.unwrap_or(SignedDecimal::zero()),
-            dex_apr: pool_info_raw.dex_apr.unwrap_or(SignedDecimal::zero()),
-            gas_apr: pool_info_raw.gas_apr.unwrap_or(SignedDecimal::zero()),
-            external_incentive_apr: pool_info_raw
-                .external_incentive_apr
-                .unwrap_or(SignedDecimal::zero()),
-            external_reward_denoms: pool_info_raw.external_reward_denoms.unwrap_or(vec![]),
+            pool_id: pool_info_raw.pool_id.unwrap_or_default(),
+            reward_wallet: pool_info_raw.reward_wallet.unwrap_or_default(),
+            multiplier: pool_info_raw.multiplier.unwrap_or_default(),
+            eden_apr: pool_info_raw.eden_apr.unwrap_or_default(),
+            dex_apr: pool_info_raw.dex_apr.unwrap_or_default(),
+            gas_apr: pool_info_raw.gas_apr.unwrap_or_default(),
+            external_incentive_apr: pool_info_raw.external_incentive_apr.unwrap_or_default(),
+            external_reward_denoms: pool_info_raw.external_reward_denoms.unwrap_or_default(),
         };
 
         Ok(MasterchefPoolInfoResponse { pool_info })
