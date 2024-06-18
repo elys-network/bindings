@@ -162,8 +162,8 @@ impl Module for ElysModule {
             ElysQuery::LeveragelpPool { .. } => todo!("LeveragelpPool"),
             ElysQuery::LeveragelpPools { .. } => todo!("LeveragelpPools"),
             ElysQuery::LeveragelpPosition { .. } => todo!("LeveragelpPosition"),
-            ElysQuery::LeveragelpCloseEst { .. } => todo!("LeveragelpCloseEst"),
-            ElysQuery::LeveragelpOpenEst { .. } => todo!("LeveragelpOpenEst"),
+            ElysQuery::LeveragelpCloseEstimation { .. } => todo!("LeveragelpCloseEstimation"),
+            ElysQuery::LeveragelpOpenEstimation { .. } => todo!("LeveragelpOpenEstimation"),
 
             ElysQuery::AmmEarnMiningPoolAll { .. } => todo!("AmmEarnMiningPoolAll"),
             ElysQuery::AmmJoinPoolEstimation { .. } => todo!("AmmJoinPoolEstimation"),

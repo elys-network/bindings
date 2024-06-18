@@ -145,7 +145,7 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> Result<Binary, C
         LeveragelpPosition { address, id } => {
             Ok(to_json_binary(&querier.leveragelp_position(address, id)?)?)
         }
-        LeveragelpOpenEst {
+        LeveragelpOpenEstimation {
             collateral_asset,
             collateral_amount,
             amm_pool_id,
@@ -156,7 +156,7 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> Result<Binary, C
             amm_pool_id,
             leverage,
         )?)?),
-        LeveragelpCloseEst {
+        LeveragelpCloseEstimation {
             owner,
             id,
             lp_amount,
