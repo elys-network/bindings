@@ -136,6 +136,11 @@ pub enum ElysMsg {
         amount: Int128,
         owner: String,
     },
+
+    LeveragelpClaimRewards {
+        sender: String,
+        id: Vec<u64>,
+    },
 }
 
 impl ElysMsg {
@@ -362,6 +367,10 @@ impl ElysMsg {
             position: position,
             price: price,
         }
+    }
+
+    pub fn leveragelp_withdraw_reward(sender: String, id: Vec<u64>) -> Self {
+        Self::LeveragelpClaimRewards { sender, id }
     }
 
     pub fn estaking_withdraw_reward(delegator_address: String, validator_address: String) -> Self {
