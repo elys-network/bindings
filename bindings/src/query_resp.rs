@@ -977,7 +977,7 @@ pub struct CommitmentNumberOfCommitmentsResponse {
 
 #[cw_serde]
 pub struct GetLeverageLpRewardsResp {
-    pub rewards: RewardInfo,
+    pub rewards: Vec<RewardInfo>,
     pub total_rewards: Vec<Coin>,
 }
 
