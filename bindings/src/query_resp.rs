@@ -611,10 +611,29 @@ pub struct LeveragelpPositionsResponseRaw {
     pub pagination: Option<PageResponse>,
 }
 
+impl LeveragelpPositionsResponseRaw {
+    pub fn get_pools(&self) -> Vec<u64> {
+        self.positions
+            .clone()
+            .unwrap_or(vec![])
+            .iter()
+            .map(|x| x.amm_pool_id)
+            .collect()
+    }
+}
+
 #[cw_serde]
 pub struct LeveragelpPositionsResponse {
     pub positions: Vec<LeveragelpPosition>,
     pub pagination: Option<PageResponse>,
+}
+
+#[cw_serde]
+pub struct LeveragelpPositionsAndRewardsResponse {
+    pub positions: Vec<LeveragelpPosition>,
+    pub pagination: Option<PageResponse>,
+    pub usdc: Decimal,
+    pub eden: Uint128,
 }
 
 #[cw_serde]
@@ -954,4 +973,26 @@ pub struct CommitmentNumberOfCommitmentsResponseRaw {
 #[cw_serde]
 pub struct CommitmentNumberOfCommitmentsResponse {
     pub number: i64,
+}
+
+#[cw_serde]
+pub struct GetLeverageLpRewardsResp {
+    pub rewards: RewardInfo,
+    pub total_rewards: Vec<Coin>,
+}
+
+#[cw_serde]
+pub struct RewardInfo {
+    pub position_id: u64,
+    pub reward: Vec<Coin>,
+}
+
+impl GetLeverageLpRewardsResp {
+    pub fn total_rewards_to_coin(&self, querier: &ElysQuerier<'_>) -> StdResult<Vec<CoinValue>> {
+        let mut coin_values = Vec::new();
+        for reward in &self.total_rewards {
+            coin_values.push(CoinValue::from_coin(reward, querier)?);
+        }
+        Ok(coin_values)
+    }
 }
