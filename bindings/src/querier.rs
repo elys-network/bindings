@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use std::str::FromStr;
+use std::{ascii::AsciiExt, collections::HashMap};
 
 use cosmwasm_std::{
     coin, to_json_vec, Binary, Coin, ContractResult, Decimal, Int128, QuerierWrapper, QueryRequest,
@@ -790,6 +790,17 @@ impl<'a> ElysQuerier<'a> {
         ))
     }
 
+    pub fn query_leverage_lp_rewards(
+        &self,
+        address: String,
+        ids: Vec<u64>,
+    ) -> StdResult<GetLeverageLpRewardsResp> {
+        self.querier
+            .query(&QueryRequest::Custom(ElysQuery::query_leverage_lp_rewards(
+                address, ids,
+            )))
+    }
+
     pub fn get_masterchef_pool_apr(&self, pool_ids: Vec<u64>) -> StdResult<QueryPoolAprsResponse> {
         let query = ElysQuery::get_masterchef_pool_apr(pool_ids);
         let request = QueryRequest::Custom(query);
@@ -885,21 +896,53 @@ impl<'a> ElysQuerier<'a> {
         };
         Ok(resp)
     }
-    pub fn leveragelp_query_positions_for_address(
+
+    fn leveragelp_query_positions_for_address(
         &self,
         address: impl Into<String>,
         pagination: Option<PageRequest>,
-    ) -> StdResult<LeveragelpPositionsResponse> {
+    ) -> StdResult<LeveragelpPositionsResponseRaw> {
         let req = QueryRequest::Custom(ElysQuery::leveragelp_query_positions_for_address(
             address.into(),
             pagination,
         ));
-        let raw_resp: LeveragelpPositionsResponseRaw = self.querier.query(&req)?;
-        let positions = raw_resp.positions.unwrap_or(vec![]);
-        Ok(LeveragelpPositionsResponse {
-            positions,
+        self.querier.query(&req)
+    }
+
+    pub fn get_leveragelp_query_positions_for_address(
+        &self,
+        address: impl Into<String>,
+        prev_pagination: Option<PageRequest>,
+    ) -> StdResult<LeveragelpPositionsAndRewardsResponse> {
+        let address: String = address.into();
+        let raw_resp: LeveragelpPositionsResponseRaw =
+            self.leveragelp_query_positions_for_address(address.to_string(), prev_pagination)?;
+        let leverage_reward_data =
+            self.query_leverage_lp_rewards(address.to_string(), raw_resp.get_pools())?;
+
+        let mut usdc = Decimal::zero();
+        let mut eden = Uint128::zero();
+
+        for coin in leverage_reward_data.total_rewards {
+            if coin.denom == "uusdc".to_string() {
+                usdc = CoinValue::from_coin(&coin, self)?.amount_usd;
+            } else {
+                eden = coin.amount;
+            }
+        }
+
+        Ok(LeveragelpPositionsAndRewardsResponse {
+            positions: raw_resp.positions.unwrap_or(vec![]),
             pagination: raw_resp.pagination,
+            usdc,
+            eden,
         })
+    }
+    pub fn leveragelp_pool_ids_for_address(&self, address: String) -> StdResult<Vec<u64>> {
+        let pagination = PageRequest::total();
+        let raw_resp =
+            self.leveragelp_query_positions_for_address(address.clone(), Some(pagination.clone()))?;
+        Ok(raw_resp.get_pools())
     }
     pub fn leveragelp_get_whitelist(
         &self,
