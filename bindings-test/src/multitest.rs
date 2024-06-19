@@ -653,6 +653,7 @@ impl Module for ElysModule {
                 })?)
             }
             ElysQuery::CommitmentNumberOfCommitments {} => todo!("CommitmentNumberOfCommitments"),
+            ElysQuery::LeveragelpRewards { .. } => todo!(),
         }
     }
 
@@ -1046,6 +1047,7 @@ impl Module for ElysModule {
                     data: Some(data),
                 })
             }
+            ElysMsg::LeveragelpClaimRewards { .. } => todo!(),
         }
     }
 

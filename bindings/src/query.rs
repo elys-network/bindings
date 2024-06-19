@@ -83,6 +83,8 @@ pub enum ElysQuery {
     CommitmentVestingInfo { address: String },
     #[returns(CommitmentNumberOfCommitmentsResponse)]
     CommitmentNumberOfCommitments {},
+    #[returns(GetLeverageLpRewardsResp)]
+    LeveragelpRewards { address: String, ids: Vec<u64> },
 
     // Define Incentive
     #[returns(QueryAprResponse)]
@@ -456,5 +458,8 @@ impl ElysQuery {
     }
     pub fn commitment_number_of_commitments() -> Self {
         Self::CommitmentNumberOfCommitments {}
+    }
+    pub fn query_leverage_lp_rewards(address: String, ids: Vec<u64>) -> Self {
+        Self::LeveragelpRewards { address, ids }
     }
 }

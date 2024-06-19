@@ -611,10 +611,48 @@ pub struct LeveragelpPositionsResponseRaw {
     pub pagination: Option<PageResponse>,
 }
 
+impl LeveragelpPositionsResponseRaw {
+    pub fn get_pools(&self) -> Vec<u64> {
+        self.positions
+            .clone()
+            .unwrap_or(vec![])
+            .iter()
+            .map(|x| x.amm_pool_id)
+            .collect()
+    }
+}
+
 #[cw_serde]
 pub struct LeveragelpPositionsResponse {
     pub positions: Vec<LeveragelpPosition>,
     pub pagination: Option<PageResponse>,
+}
+
+#[cw_serde]
+pub struct LeveragelpPositionsAndRewardsResponse {
+    pub positions: LeveragelpPositionWithReward,
+    pub pagination: Option<PageResponse>,
+}
+
+#[cw_serde]
+#[derive(Default)]
+pub struct LeveragelpPositionWithReward {
+    pub positions: Vec<LeveragelpPosition>,
+    pub rewards: LeveragelpFiatRewards,
+}
+
+#[cw_serde]
+#[derive(Default)]
+pub struct LeveragelpFiatRewards {
+    pub rewards: Vec<RewardInfoMappedToCoinValue>,
+    pub total_rewards: Vec<CoinValue>,
+}
+
+#[cw_serde]
+#[derive(Default)]
+pub struct RewardInfoMappedToCoinValue {
+    pub position_id: u64,
+    pub reward: Vec<CoinValue>,
 }
 
 #[cw_serde]
@@ -1035,4 +1073,48 @@ pub struct ParameterParamsResponseRaw {
 #[cw_serde]
 pub struct ParameterParamsResponse {
     pub params: ParameterParams,
+}
+
+#[cw_serde]
+pub struct GetLeverageLpRewardsResp {
+    pub rewards: Vec<RewardInfo>,
+    pub total_rewards: Vec<Coin>,
+}
+
+#[cw_serde]
+pub struct RewardInfo {
+    pub position_id: u64,
+    pub reward: Vec<Coin>,
+}
+
+impl GetLeverageLpRewardsResp {
+    pub fn total_rewards_to_coin_value(
+        &self,
+        querier: &ElysQuerier<'_>,
+    ) -> StdResult<Vec<CoinValue>> {
+        let mut coin_values = Vec::new();
+        for reward in &self.total_rewards {
+            coin_values.push(CoinValue::from_coin(reward, querier)?);
+        }
+        Ok(coin_values)
+    }
+
+    pub fn to_coin_value(
+        &self,
+        querier: &ElysQuerier<'_>,
+    ) -> StdResult<Vec<RewardInfoMappedToCoinValue>> {
+        let mut reward_info = vec![RewardInfoMappedToCoinValue::default()];
+
+        for reward in &self.rewards {
+            let mut coin_values = vec![];
+            for coin in reward.reward.clone() {
+                coin_values.push(CoinValue::from_coin(&coin, querier)?);
+            }
+            reward_info.push(RewardInfoMappedToCoinValue {
+                position_id: reward.position_id,
+                reward: coin_values,
+            })
+        }
+        Ok(reward_info)
+    }
 }

@@ -843,6 +843,17 @@ impl<'a> ElysQuerier<'a> {
         ))
     }
 
+    pub fn query_leverage_lp_rewards(
+        &self,
+        address: String,
+        ids: Vec<u64>,
+    ) -> StdResult<GetLeverageLpRewardsResp> {
+        self.querier
+            .query(&QueryRequest::Custom(ElysQuery::query_leverage_lp_rewards(
+                address, ids,
+            )))
+    }
+
     pub fn get_masterchef_pool_apr(&self, pool_ids: Vec<u64>) -> StdResult<QueryPoolAprsResponse> {
         let query = ElysQuery::get_masterchef_pool_apr(pool_ids);
         let request = QueryRequest::Custom(query);
@@ -938,21 +949,56 @@ impl<'a> ElysQuerier<'a> {
         };
         Ok(resp)
     }
-    pub fn leveragelp_query_positions_for_address(
+
+    fn leveragelp_query_positions_for_address(
         &self,
         address: impl Into<String>,
         pagination: Option<PageRequest>,
-    ) -> StdResult<LeveragelpPositionsResponse> {
+    ) -> StdResult<LeveragelpPositionsResponseRaw> {
         let req = QueryRequest::Custom(ElysQuery::leveragelp_query_positions_for_address(
             address.into(),
             pagination,
         ));
-        let raw_resp: LeveragelpPositionsResponseRaw = self.querier.query(&req)?;
-        let positions = raw_resp.positions.unwrap_or(vec![]);
-        Ok(LeveragelpPositionsResponse {
-            positions,
+        self.querier.query(&req)
+    }
+
+    pub fn get_leveragelp_query_positions_for_address(
+        &self,
+        address: impl Into<String>,
+        prev_pagination: Option<PageRequest>,
+    ) -> StdResult<LeveragelpPositionsAndRewardsResponse> {
+        let address: String = address.into();
+        let raw_resp: LeveragelpPositionsResponseRaw =
+            self.leveragelp_query_positions_for_address(address.to_string(), prev_pagination)?;
+
+        if raw_resp.positions.is_none() {
+            return Ok(LeveragelpPositionsAndRewardsResponse {
+                positions: LeveragelpPositionWithReward::default(),
+                pagination: raw_resp.pagination,
+            });
+        }
+
+        let leverage_reward_data =
+            self.query_leverage_lp_rewards(address.to_string(), raw_resp.get_pools())?;
+
+        let leveragelp_fiat_rewards = LeveragelpFiatRewards {
+            rewards: leverage_reward_data.to_coin_value(self)?,
+            total_rewards: leverage_reward_data.total_rewards_to_coin_value(self)?,
+        };
+
+        Ok(LeveragelpPositionsAndRewardsResponse {
+            positions: LeveragelpPositionWithReward {
+                positions: raw_resp.positions.unwrap(),
+                rewards: leveragelp_fiat_rewards,
+            },
             pagination: raw_resp.pagination,
         })
+    }
+    pub fn leveragelp_pool_ids_for_address(&self, address: String) -> StdResult<Vec<u64>> {
+        let pagination = PageRequest::total();
+        let raw_resp =
+            self.leveragelp_query_positions_for_address(address.clone(), Some(pagination.clone()))?;
+        Ok(raw_resp.get_pools())
     }
     pub fn leveragelp_get_whitelist(
         &self,
