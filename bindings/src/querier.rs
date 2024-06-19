@@ -917,25 +917,28 @@ impl<'a> ElysQuerier<'a> {
         let address: String = address.into();
         let raw_resp: LeveragelpPositionsResponseRaw =
             self.leveragelp_query_positions_for_address(address.to_string(), prev_pagination)?;
+
+        if raw_resp.positions.is_none() {
+            return Ok(LeveragelpPositionsAndRewardsResponse {
+                positions: LeveragelpPositionWithReward::default(),
+                pagination: raw_resp.pagination,
+            });
+        }
+
         let leverage_reward_data =
             self.query_leverage_lp_rewards(address.to_string(), raw_resp.get_pools())?;
 
-        let mut usdc = Decimal::zero();
-        let mut eden = Uint128::zero();
-
-        for coin in leverage_reward_data.total_rewards {
-            if coin.denom == "uusdc".to_string() {
-                usdc = CoinValue::from_coin(&coin, self)?.amount_usd;
-            } else {
-                eden = coin.amount;
-            }
-        }
+        let leveragelp_fiat_rewards = LeveragelpFiatRewards {
+            rewards: leverage_reward_data.to_coin_value(self)?,
+            total_rewards: leverage_reward_data.total_rewards_to_coin_value(self)?,
+        };
 
         Ok(LeveragelpPositionsAndRewardsResponse {
-            positions: raw_resp.positions.unwrap_or(vec![]),
+            positions: LeveragelpPositionWithReward {
+                positions: raw_resp.positions.unwrap(),
+                rewards: leveragelp_fiat_rewards,
+            },
             pagination: raw_resp.pagination,
-            usdc,
-            eden,
         })
     }
     pub fn leveragelp_pool_ids_for_address(&self, address: String) -> StdResult<Vec<u64>> {

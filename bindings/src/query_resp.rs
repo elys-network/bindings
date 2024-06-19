@@ -630,10 +630,29 @@ pub struct LeveragelpPositionsResponse {
 
 #[cw_serde]
 pub struct LeveragelpPositionsAndRewardsResponse {
-    pub positions: Vec<LeveragelpPosition>,
+    pub positions: LeveragelpPositionWithReward,
     pub pagination: Option<PageResponse>,
-    pub usdc: Decimal,
-    pub eden: Uint128,
+}
+
+#[cw_serde]
+#[derive(Default)]
+pub struct LeveragelpPositionWithReward {
+    pub positions: Vec<LeveragelpPosition>,
+    pub rewards: LeveragelpFiatRewards,
+}
+
+#[cw_serde]
+#[derive(Default)]
+pub struct LeveragelpFiatRewards {
+    pub rewards: Vec<RewardInfoMappedToCoinValue>,
+    pub total_rewards: Vec<CoinValue>,
+}
+
+#[cw_serde]
+#[derive(Default)]
+pub struct RewardInfoMappedToCoinValue {
+    pub position_id: u64,
+    pub reward: Vec<CoinValue>,
 }
 
 #[cw_serde]
@@ -988,11 +1007,33 @@ pub struct RewardInfo {
 }
 
 impl GetLeverageLpRewardsResp {
-    pub fn total_rewards_to_coin(&self, querier: &ElysQuerier<'_>) -> StdResult<Vec<CoinValue>> {
+    pub fn total_rewards_to_coin_value(
+        &self,
+        querier: &ElysQuerier<'_>,
+    ) -> StdResult<Vec<CoinValue>> {
         let mut coin_values = Vec::new();
         for reward in &self.total_rewards {
             coin_values.push(CoinValue::from_coin(reward, querier)?);
         }
         Ok(coin_values)
+    }
+
+    pub fn to_coin_value(
+        &self,
+        querier: &ElysQuerier<'_>,
+    ) -> StdResult<Vec<RewardInfoMappedToCoinValue>> {
+        let mut reward_info = vec![RewardInfoMappedToCoinValue::default()];
+
+        for reward in &self.rewards {
+            let mut coin_values = vec![];
+            for coin in reward.reward.clone() {
+                coin_values.push(CoinValue::from_coin(&coin, querier)?);
+            }
+            reward_info.push(RewardInfoMappedToCoinValue {
+                position_id: reward.position_id,
+                reward: coin_values,
+            })
+        }
+        Ok(reward_info)
     }
 }
