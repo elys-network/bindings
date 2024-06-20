@@ -119,4 +119,6 @@ pub enum QueryMsg {
     GetSpotOrderStates { order_id: u64 },
     #[returns(ContractVersion)]
     Version {},
+    #[returns(ParameterParamsResponse)]
+    ParameterParams {},
 }
