@@ -1068,7 +1068,7 @@ impl GetLeverageLpRewardsResp {
         &self,
         querier: &ElysQuerier<'_>,
     ) -> StdResult<Vec<RewardInfoMappedToCoinValue>> {
-        let mut reward_info = vec![RewardInfoMappedToCoinValue::default()];
+        let mut reward_info: Vec<RewardInfoMappedToCoinValue> = vec![];
 
         for reward in &self.rewards {
             let mut coin_values = vec![];
