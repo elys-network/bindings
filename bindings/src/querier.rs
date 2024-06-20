@@ -126,10 +126,7 @@ impl<'a> ElysQuerier<'a> {
     }
 
     pub fn get_balance(&self, address: String, denom: String) -> StdResult<BalanceAvailable> {
-        let balance_query = ElysQuery::AmmBalance {
-            address: address.to_owned(),
-            denom: denom.to_owned(),
-        };
+        let balance_query = ElysQuery::AmmBalance { address, denom };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(balance_query);
         let resp: BalanceAvailable = self.querier.query(&request)?;
         Ok(resp)
@@ -212,7 +209,7 @@ impl<'a> ElysQuerier<'a> {
     }
 
     pub fn get_asset_profile(&self, base_denom: String) -> StdResult<QueryGetEntryResponse> {
-        let asset_profile = ElysQuery::get_asset_profile(base_denom.to_owned());
+        let asset_profile = ElysQuery::get_asset_profile(base_denom);
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(asset_profile);
         let QueryGetEntryResponseRaw { entry: raw_entry } = self.querier.query(&request)?;
 
@@ -298,7 +295,7 @@ impl<'a> ElysQuerier<'a> {
     pub fn get_incentive_apr(&self, program: i32, denom: String) -> StdResult<QueryAprResponse> {
         let incentive_apr_query = ElysQuery::IncentiveApr {
             withdraw_type: program.to_owned(),
-            denom: denom.to_owned(),
+            denom,
         };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(incentive_apr_query);
         let resp: QueryAprResponse = self.querier.query(&request)?;
@@ -328,10 +325,7 @@ impl<'a> ElysQuerier<'a> {
     }
 
     pub fn get_staked_balance(&self, address: String, denom: String) -> StdResult<StakedAvailable> {
-        let staked_balance_query = ElysQuery::CommitmentStakedBalanceOfDenom {
-            address: address.to_owned(),
-            denom: denom.to_owned(),
-        };
+        let staked_balance_query = ElysQuery::CommitmentStakedBalanceOfDenom { address, denom };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(staked_balance_query);
         let resp: StakedAvailable = self.querier.query(&request)?;
         Ok(resp)
@@ -339,7 +333,7 @@ impl<'a> ElysQuerier<'a> {
 
     pub fn get_amm_price_by_denom(&self, token_in: Coin, discount: Decimal) -> StdResult<Decimal> {
         let amm_price_query = ElysQuery::AmmPriceByDenom {
-            token_in: token_in.to_owned(),
+            token_in,
             discount: discount.to_owned(),
         };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(amm_price_query);
@@ -349,7 +343,7 @@ impl<'a> ElysQuerier<'a> {
 
     pub fn get_staked_positions(&self, address: String) -> StdResult<QueryStakedPositionResponse> {
         let staked_position_query = ElysQuery::CommitmentStakedPositions {
-            delegator_address: address.to_owned(),
+            delegator_address: address,
         };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(staked_position_query);
 
@@ -381,12 +375,10 @@ impl<'a> ElysQuerier<'a> {
                     voting_power: stack
                         .validator
                         .voting_power
-                        .clone()
                         .map_or(Decimal::zero(), |voting_power| voting_power),
                     commission: stack
                         .validator
                         .commission
-                        .clone()
                         .map_or(Decimal::zero(), |commission| commission),
                 },
                 staked: stack.staked.clone(),
@@ -406,7 +398,7 @@ impl<'a> ElysQuerier<'a> {
         address: String,
     ) -> StdResult<QueryUnstakedPositionResponse> {
         let unstaked_position_query = ElysQuery::CommitmentUnStakedPositions {
-            delegator_address: address.to_owned(),
+            delegator_address: address,
         };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(unstaked_position_query);
         let resp: QueryUnstakedPositionResponse = self.querier.query(&request)?;
@@ -432,7 +424,7 @@ impl<'a> ElysQuerier<'a> {
         delegator_addr: String,
     ) -> StdResult<QueryDelegatorDelegationsResponse> {
         let delegations_query = ElysQuery::CommitmentDelegations {
-            delegator_address: delegator_addr.to_owned(),
+            delegator_address: delegator_addr,
         };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(delegations_query);
         let resp: QueryDelegatorDelegationsResponse = self.querier.query(&request)?;
@@ -444,7 +436,7 @@ impl<'a> ElysQuerier<'a> {
         delegator_addr: String,
     ) -> StdResult<QueryDelegatorUnbondingDelegationsResponse> {
         let unbonding_delegations_query = ElysQuery::CommitmentUnbondingDelegations {
-            delegator_address: delegator_addr.to_owned(),
+            delegator_address: delegator_addr,
         };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(unbonding_delegations_query);
         let resp: QueryDelegatorUnbondingDelegationsResponse = self.querier.query(&request)?;
@@ -456,7 +448,7 @@ impl<'a> ElysQuerier<'a> {
         delegator: String,
     ) -> StdResult<QueryDelegatorValidatorsResponse> {
         let validators_query = ElysQuery::CommitmentAllValidators {
-            delegator_address: delegator.to_owned(),
+            delegator_address: delegator,
         };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(validators_query);
         let resp: QueryDelegatorValidatorsResponse = self.querier.query(&request)?;
@@ -468,7 +460,7 @@ impl<'a> ElysQuerier<'a> {
         delegator: String,
     ) -> StdResult<QueryDelegatorValidatorsResponse> {
         let validators_query = ElysQuery::CommitmentDelegatorValidators {
-            delegator_address: delegator.to_owned(),
+            delegator_address: delegator,
         };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(validators_query);
         let resp: QueryDelegatorValidatorsResponse = self.querier.query(&request)?;
@@ -476,9 +468,7 @@ impl<'a> ElysQuerier<'a> {
     }
 
     pub fn get_commitments(&self, address: String) -> StdResult<QueryShowCommitmentsResponse> {
-        let commitments_query = ElysQuery::CommitmentShowCommitments {
-            creator: address.to_owned(),
-        };
+        let commitments_query = ElysQuery::CommitmentShowCommitments { creator: address };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(commitments_query);
         let raw_resp: QueryShowCommitmentsResponseRaw = self.querier.query(&request)?;
         let vesting_tokens: Option<Vec<VestingTokens>> = match raw_resp.commitments.vesting_tokens {
@@ -517,9 +507,7 @@ impl<'a> ElysQuerier<'a> {
     }
 
     pub fn get_vesting_info(&self, address: String) -> StdResult<QueryVestingInfoResponse> {
-        let vesting_info_query = ElysQuery::CommitmentVestingInfo {
-            address: address.to_owned(),
-        };
+        let vesting_info_query = ElysQuery::CommitmentVestingInfo { address };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(vesting_info_query);
         let resp: QueryVestingInfoResponse = self.querier.query(&request)?;
         Ok(resp)
@@ -554,7 +542,7 @@ impl<'a> ElysQuerier<'a> {
             if let Some(usd_value) = x.usd_value {
                 return acc + usd_value;
             }
-            return Decimal::zero();
+            Decimal::zero()
         });
 
         // Calculate ratio for each asset in the pool
@@ -577,8 +565,7 @@ impl<'a> ElysQuerier<'a> {
         pagination: Option<PageRequest>,
     ) -> StdResult<QueryEarnPoolResponse> {
         let pools_response = self.get_all_pools_apr(pool_ids.clone(), filter_type, pagination)?;
-        let aprs_response =
-            self.get_masterchef_pool_apr(pool_ids.or(Some([].to_vec())).unwrap())?;
+        let aprs_response = self.get_masterchef_pool_apr(pool_ids.unwrap_or([].to_vec()))?;
 
         match (pools_response.pools, aprs_response.data) {
             (Some(pools), aprs) => {
@@ -636,7 +623,7 @@ impl<'a> ElysQuerier<'a> {
                             pool.fiat_rewards = Some(
                                 pool.reward_coins
                                     .iter()
-                                    .map(|coin| CoinValue::from_coin(&coin, self).unwrap())
+                                    .map(|coin| CoinValue::from_coin(coin, self).unwrap())
                                     .collect(),
                             );
                             if let Some(index) = pool
@@ -880,9 +867,7 @@ impl<'a> ElysQuerier<'a> {
     }
 
     pub fn get_estaking_rewards(&self, address: String) -> StdResult<EstakingRewardsResponse> {
-        let query = ElysQuery::EstakingRewards {
-            address: address.to_owned(),
-        };
+        let query = ElysQuery::EstakingRewards { address };
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(query);
         self.querier.query(&request)
     }
@@ -899,17 +884,14 @@ impl<'a> ElysQuerier<'a> {
     pub fn leveragelp_params(&self) -> StdResult<LeveragelpParamsResponse> {
         let req = QueryRequest::Custom(ElysQuery::leveragelp_params());
         let raw_resp: LeveragelpParamsResponseRaw = self.querier.query(&req)?;
-        let params = match raw_resp.params {
-            Some(raw_params) => Some(LeveragelpParams {
-                leverage_max: raw_params.leverage_max.unwrap_or(Decimal::zero()),
-                max_open_positions: raw_params.max_open_positions.unwrap_or(0),
-                pool_open_threshold: raw_params.pool_open_threshold.unwrap_or(Decimal::zero()),
-                safety_factor: raw_params.safety_factor.unwrap_or(Decimal::zero()),
-                whitelisting_enabled: raw_params.whitelisting_enabled.unwrap_or(false),
-                epoch_length: raw_params.epoch_length.unwrap_or(0),
-            }),
-            None => None,
-        };
+        let params = raw_resp.params.map(|raw_params| LeveragelpParams {
+            leverage_max: raw_params.leverage_max.unwrap_or(Decimal::zero()),
+            max_open_positions: raw_params.max_open_positions.unwrap_or(0),
+            pool_open_threshold: raw_params.pool_open_threshold.unwrap_or(Decimal::zero()),
+            safety_factor: raw_params.safety_factor.unwrap_or(Decimal::zero()),
+            whitelisting_enabled: raw_params.whitelisting_enabled.unwrap_or(false),
+            epoch_length: raw_params.epoch_length.unwrap_or(0),
+        });
         Ok(LeveragelpParamsResponse { params })
     }
     pub fn leveragelp_query_positions(
@@ -1115,6 +1097,19 @@ impl<'a> ElysQuerier<'a> {
         let pools_request: QueryRequest<ElysQuery> = QueryRequest::Custom(pools_query);
 
         self.querier.query(&pools_request)
+    }
+    pub fn tier_calculate_discount(
+        &self,
+        user: String,
+    ) -> StdResult<TierCalculateDiscountResponse> {
+        let req = QueryRequest::Custom(ElysQuery::tier_calculate_discount(user));
+        let raw_resp: TierCalculateDiscountResponseRaw = self.querier.query(&req)?;
+        let resp = TierCalculateDiscountResponse {
+            tier: raw_resp.tier.unwrap_or("bronze".to_string()),
+            discount: raw_resp.discount.unwrap_or("0".to_string()),
+            portfolio: raw_resp.portfolio.unwrap_or("0".to_string()),
+        };
+        Ok(resp)
     }
     pub fn parameter_params(&self) -> StdResult<ParameterParamsResponse> {
         let query = ElysQuery::parameter_params();
