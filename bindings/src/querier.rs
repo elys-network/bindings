@@ -761,12 +761,65 @@ impl<'a> ElysQuerier<'a> {
 
     pub fn masterchef_params(&self) -> StdResult<MasterchefParamsResponse> {
         let request = QueryRequest::Custom(ElysQuery::masterchef_params());
-        self.querier.query(&request)
+        let MasterchefParamsResponseRaw { params: raw_params } = self.querier.query(&request)?;
+        let lp_incentives = raw_params.lp_incentives.map_or(
+            IncentiveInfo {
+                eden_amount_per_year: Int128::zero(),
+                distribution_start_block: Int128::zero(),
+                total_blocks_per_year: Int128::zero(),
+                blocks_distributed: Int128::zero(),
+            },
+            |raw_lp_incentives| IncentiveInfo {
+                eden_amount_per_year: raw_lp_incentives.eden_amount_per_year.unwrap_or_default(),
+                distribution_start_block: raw_lp_incentives
+                    .distribution_start_block
+                    .unwrap_or_default(),
+                total_blocks_per_year: raw_lp_incentives.total_blocks_per_year.unwrap_or_default(),
+                blocks_distributed: raw_lp_incentives.blocks_distributed.unwrap_or_default(),
+            },
+        );
+
+        let supported_reward_denoms: Vec<SupportedRewardDenom> = raw_params
+            .supported_reward_denoms
+            .map_or(vec![], |raw_supported_reward_denoms| {
+                raw_supported_reward_denoms
+                    .iter()
+                    .map(|reward_denom| SupportedRewardDenom {
+                        denom: reward_denom.denom.clone().unwrap_or_default(),
+                        min_amount: reward_denom.min_amount.unwrap_or_default(),
+                    })
+                    .collect()
+            });
+
+        let params = MasterchefParams {
+            lp_incentives,
+            reward_portion_for_lps: raw_params.reward_portion_for_lps.unwrap_or_default(),
+            reward_portion_for_stakers: raw_params.reward_portion_for_stakers.unwrap_or_default(),
+            max_eden_reward_apr_lps: raw_params.max_eden_reward_apr_lps.unwrap_or_default(),
+            supported_reward_denoms,
+            protocol_revenue_address: "".to_string(),
+        };
+
+        Ok(MasterchefParamsResponse { params })
     }
 
     pub fn masterchef_pool_info(&self, pool_id: u64) -> StdResult<MasterchefPoolInfoResponse> {
         let request = QueryRequest::Custom(ElysQuery::masterchef_pool_info(pool_id));
-        self.querier.query(&request)
+        let MasterchefPoolInfoResponseRaw {
+            pool_info: pool_info_raw,
+        } = self.querier.query(&request)?;
+        let pool_info = MasterchefPoolInfo {
+            pool_id: pool_info_raw.pool_id.unwrap_or_default(),
+            reward_wallet: pool_info_raw.reward_wallet.unwrap_or_default(),
+            multiplier: pool_info_raw.multiplier.unwrap_or_default(),
+            eden_apr: pool_info_raw.eden_apr.unwrap_or_default(),
+            dex_apr: pool_info_raw.dex_apr.unwrap_or_default(),
+            gas_apr: pool_info_raw.gas_apr.unwrap_or_default(),
+            external_incentive_apr: pool_info_raw.external_incentive_apr.unwrap_or_default(),
+            external_reward_denoms: pool_info_raw.external_reward_denoms.unwrap_or_default(),
+        };
+
+        Ok(MasterchefPoolInfoResponse { pool_info })
     }
 
     /// This function retrieves pending rewards for a user from the Masterchef contract.
@@ -1062,6 +1115,25 @@ impl<'a> ElysQuerier<'a> {
         let pools_request: QueryRequest<ElysQuery> = QueryRequest::Custom(pools_query);
 
         self.querier.query(&pools_request)
+    }
+    pub fn parameter_params(&self) -> StdResult<ParameterParamsResponse> {
+        let query = ElysQuery::parameter_params();
+        let request = QueryRequest::Custom(query);
+        let ParameterParamsResponseRaw { params: raw_params } = self.querier.query(&request)?;
+        let params = ParameterParams {
+            min_commission_rate: raw_params.min_commission_rate.unwrap_or(Decimal::zero()),
+            max_voting_power: raw_params.max_voting_power.unwrap_or(Decimal::zero()),
+            min_self_delegation: raw_params.min_self_delegation.unwrap_or(Int128::zero()),
+            broker_address: raw_params.broker_address.unwrap_or("".to_string()),
+            total_blocks_per_year: raw_params.total_blocks_per_year.unwrap_or(0),
+            rewards_data_lifetime: raw_params.rewards_data_lifetime.unwrap_or(0),
+            wasm_max_label_size: raw_params.wasm_max_label_size.unwrap_or(Int128::zero()),
+            wasm_max_size: raw_params.wasm_max_size.unwrap_or(Int128::zero()),
+            wasm_max_proposal_wasm_size: raw_params
+                .wasm_max_proposal_wasm_size
+                .unwrap_or(Int128::zero()),
+        };
+        Ok(ParameterParamsResponse { params })
     }
 
     #[allow(dead_code)]
