@@ -1,5 +1,5 @@
+use std::collections::HashMap;
 use std::str::FromStr;
-use std::{ascii::AsciiExt, collections::HashMap};
 
 use cosmwasm_std::{
     coin, to_json_vec, Binary, Coin, ContractResult, Decimal, Int128, QuerierWrapper, QueryRequest,
