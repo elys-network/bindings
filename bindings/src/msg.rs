@@ -143,7 +143,7 @@ pub enum ElysMsg {
 
     LeveragelpClaimRewards {
         sender: String,
-        id: Vec<u64>,
+        ids: Vec<u64>,
     },
 }
 
@@ -376,8 +376,8 @@ impl ElysMsg {
     pub fn tier_set_portfolio(creator: String, user: String) -> Self {
         Self::TierSetPortfolio { creator, user }
     }
-    pub fn leveragelp_withdraw_reward(sender: String, id: Vec<u64>) -> Self {
-        Self::LeveragelpClaimRewards { sender, id }
+    pub fn leveragelp_withdraw_reward(sender: String, ids: Vec<u64>) -> Self {
+        Self::LeveragelpClaimRewards { sender, ids }
     }
 
     pub fn estaking_withdraw_reward(delegator_address: String, validator_address: String) -> Self {
