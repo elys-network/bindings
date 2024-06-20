@@ -185,6 +185,10 @@ pub enum ElysQuery {
     StableStakeBalanceOfBorrow {},
     #[returns(StableStakeParamsResp)]
     StableStakeParams {},
+
+    // Define Tier
+    #[returns(TierCalculateDiscountResponse)]
+    TierCalculateDiscount { user: String },
 }
 
 impl CustomQuery for ElysQuery {}
@@ -458,6 +462,9 @@ impl ElysQuery {
     }
     pub fn commitment_number_of_commitments() -> Self {
         Self::CommitmentNumberOfCommitments {}
+    }
+    pub fn tier_calculate_discount(user: String) -> Self {
+        Self::TierCalculateDiscount { user }
     }
     pub fn query_leverage_lp_rewards(address: String, ids: Vec<u64>) -> Self {
         Self::LeveragelpRewards { address, ids }

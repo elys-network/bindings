@@ -12,6 +12,7 @@ use elys_bindings::msg_resp::PerpetualOpenResponse;
 use elys_bindings::query_resp::{
     OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponseRaw,
     PerpetualOpenEstimationRawResponse, QueryGetEntryResponseRaw, QueryGetPriceResponse, RawEntry,
+    TierCalculateDiscountResponse,
 };
 use elys_bindings::trade_shield::msg::query_resp::GetPerpetualOrderResp;
 use elys_bindings::trade_shield::msg::{ExecuteMsg, QueryMsg, SudoMsg};
@@ -145,6 +146,14 @@ impl Module for ElysModuleWrapper {
                         pagination: PageResponse::empty(false),
                     },
                 )?)
+            }
+            ElysQuery::TierCalculateDiscount { .. } => {
+                let resp = TierCalculateDiscountResponse {
+                    tier: "bronze".to_string(),
+                    discount: "0".to_string(),
+                    portfolio: "10".to_string(),
+                };
+                Ok(to_json_binary(&resp)?)
             }
             _ => panic!("not implemented {request:?}"),
         }

@@ -162,6 +162,20 @@ pub struct PerpetualGetPositionsForAddressResponse {
     pub pagination: PageResponse,
 }
 
+#[cw_serde]
+pub struct TierCalculateDiscountResponse {
+    pub discount: String,
+    pub tier: String,
+    pub portfolio: String,
+}
+
+#[cw_serde]
+pub struct TierCalculateDiscountResponseRaw {
+    pub discount: Option<String>,
+    pub tier: Option<String>,
+    pub portfolio: Option<String>,
+}
+
 // TODO:
 // Some of the items are commented because of the omitempty flag in protobuf.
 // Until we fix this problem, we keep the items commented to be same result from the live elys testnet asset entry.
@@ -612,12 +626,12 @@ pub struct LeveragelpPositionsResponseRaw {
 }
 
 impl LeveragelpPositionsResponseRaw {
-    pub fn get_pools(&self) -> Vec<u64> {
+    pub fn get_positions(&self) -> Vec<u64> {
         self.positions
             .clone()
             .unwrap_or(vec![])
             .iter()
-            .map(|x| x.amm_pool_id)
+            .map(|x| x.id)
             .collect()
     }
 }

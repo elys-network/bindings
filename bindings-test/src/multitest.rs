@@ -30,6 +30,7 @@ use elys_bindings::{
         QueryGetPriceResponse, QueryPoolAprsResponse, QueryShowCommitmentsResponse,
         QueryStableStakeAprResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
         QueryVestingInfoResponse, StableStakeParamsData, StableStakeParamsResp,
+        TierCalculateDiscountResponse,
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
@@ -144,6 +145,15 @@ impl Module for ElysModule {
 
             ElysQuery::LeveragelpQueryPositionsForAddress { .. } => {
                 todo!("LeveragelpQueryPositionsForAddress")
+            }
+
+            ElysQuery::TierCalculateDiscount { .. } => {
+                let resp = TierCalculateDiscountResponse {
+                    tier: "bronze".to_string(),
+                    discount: "0".to_string(),
+                    portfolio: "10".to_string(),
+                };
+                Ok(to_json_binary(&resp)?)
             }
 
             ElysQuery::LeveragelpGetWhitelist { .. } => {
@@ -1029,6 +1039,16 @@ impl Module for ElysModule {
             }
             ElysMsg::LeveragelpUpdateStopLoss { .. } => {
                 LAST_MODULE_USED.save(storage, &Some("LeveragelpUpdateStopLoss".to_string()))?;
+                let data = to_json_binary(&MsgResponse {
+                    result: "Ok".to_string(),
+                })?;
+                Ok(AppResponse {
+                    events: vec![],
+                    data: Some(data),
+                })
+            }
+            ElysMsg::TierSetPortfolio { .. } => {
+                LAST_MODULE_USED.save(storage, &Some("TierSetPortfolio".to_string()))?;
                 let data = to_json_binary(&MsgResponse {
                     result: "Ok".to_string(),
                 })?;
