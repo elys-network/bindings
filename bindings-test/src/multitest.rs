@@ -111,6 +111,7 @@ impl Module for ElysModule {
         request: Self::QueryT,
     ) -> AnyResult<cosmwasm_std::Binary> {
         match request {
+            ElysQuery::ParameterParams {} => todo!("ParameterParams"),
             ElysQuery::LeveragelpParams { .. } => {
                 let resp = LeveragelpParamsResponse {
                     params: Some(LeveragelpParams {
@@ -662,6 +663,7 @@ impl Module for ElysModule {
                 })?)
             }
             ElysQuery::CommitmentNumberOfCommitments {} => todo!("CommitmentNumberOfCommitments"),
+            ElysQuery::LeveragelpRewards { .. } => todo!(),
         }
     }
 
@@ -1065,6 +1067,7 @@ impl Module for ElysModule {
                     data: Some(data),
                 })
             }
+            ElysMsg::LeveragelpClaimRewards { .. } => todo!(),
         }
     }
 

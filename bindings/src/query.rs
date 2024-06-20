@@ -12,6 +12,9 @@ use cosmwasm_std::{Coin, CustomQuery, Decimal, Int128, SignedDecimal, SignedDeci
 #[cw_serde]
 #[derive(QueryResponses)]
 pub enum ElysQuery {
+    // Define Parameter
+    #[returns(ParameterParamsResponse)]
+    ParameterParams {},
     // Define AmmQuery
     #[returns(AmmSwapEstimationResponse)]
     AmmSwapEstimation {
@@ -80,6 +83,8 @@ pub enum ElysQuery {
     CommitmentVestingInfo { address: String },
     #[returns(CommitmentNumberOfCommitmentsResponse)]
     CommitmentNumberOfCommitments {},
+    #[returns(GetLeverageLpRewardsResp)]
+    LeveragelpRewards { address: String, ids: Vec<u64> },
 
     // Define Incentive
     #[returns(QueryAprResponse)]
@@ -189,6 +194,9 @@ pub enum ElysQuery {
 impl CustomQuery for ElysQuery {}
 
 impl ElysQuery {
+    pub fn parameter_params() -> Self {
+        Self::ParameterParams {}
+    }
     pub fn amm_swap_estimation(
         routes: Vec<SwapAmountInRoute>,
         token_in: Coin,
@@ -457,5 +465,8 @@ impl ElysQuery {
     }
     pub fn tier_calculate_discount(user: String) -> Self {
         Self::TierCalculateDiscount { user }
+    }
+    pub fn query_leverage_lp_rewards(address: String, ids: Vec<u64>) -> Self {
+        Self::LeveragelpRewards { address, ids }
     }
 }

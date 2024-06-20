@@ -625,10 +625,48 @@ pub struct LeveragelpPositionsResponseRaw {
     pub pagination: Option<PageResponse>,
 }
 
+impl LeveragelpPositionsResponseRaw {
+    pub fn get_pools(&self) -> Vec<u64> {
+        self.positions
+            .clone()
+            .unwrap_or(vec![])
+            .iter()
+            .map(|x| x.amm_pool_id)
+            .collect()
+    }
+}
+
 #[cw_serde]
 pub struct LeveragelpPositionsResponse {
     pub positions: Vec<LeveragelpPosition>,
     pub pagination: Option<PageResponse>,
+}
+
+#[cw_serde]
+pub struct LeveragelpPositionsAndRewardsResponse {
+    pub positions: LeveragelpPositionWithReward,
+    pub pagination: Option<PageResponse>,
+}
+
+#[cw_serde]
+#[derive(Default)]
+pub struct LeveragelpPositionWithReward {
+    pub positions: Vec<LeveragelpPosition>,
+    pub rewards: LeveragelpFiatRewards,
+}
+
+#[cw_serde]
+#[derive(Default)]
+pub struct LeveragelpFiatRewards {
+    pub rewards: Vec<RewardInfoMappedToCoinValue>,
+    pub total_rewards: Vec<CoinValue>,
+}
+
+#[cw_serde]
+#[derive(Default)]
+pub struct RewardInfoMappedToCoinValue {
+    pub position_id: u64,
+    pub reward: Vec<CoinValue>,
 }
 
 #[cw_serde]
@@ -724,11 +762,25 @@ pub struct LeveragelpCloseEstimationResponse {
 }
 
 #[cw_serde]
+pub struct IncentiveInfoRaw {
+    pub eden_amount_per_year: Option<Int128>,
+    pub distribution_start_block: Option<Int128>,
+    pub total_blocks_per_year: Option<Int128>,
+    pub blocks_distributed: Option<Int128>,
+}
+
+#[cw_serde]
 pub struct IncentiveInfo {
     pub eden_amount_per_year: Int128,
     pub distribution_start_block: Int128,
     pub total_blocks_per_year: Int128,
     pub blocks_distributed: Int128,
+}
+
+#[cw_serde]
+pub struct SupportedRewardDenomRaw {
+    pub denom: Option<String>,
+    pub min_amount: Option<Int128>,
 }
 
 #[cw_serde]
@@ -738,18 +790,45 @@ pub struct SupportedRewardDenom {
 }
 
 #[cw_serde]
+pub struct MasterchefParamsRaw {
+    pub lp_incentives: Option<IncentiveInfoRaw>,
+    pub reward_portion_for_lps: Option<SignedDecimal>,
+    pub reward_portion_for_stakers: Option<SignedDecimal>,
+    pub max_eden_reward_apr_lps: Option<SignedDecimal>,
+    pub supported_reward_denoms: Option<Vec<SupportedRewardDenomRaw>>,
+    pub protocol_revenue_address: Option<String>,
+}
+
+#[cw_serde]
 pub struct MasterchefParams {
     pub lp_incentives: IncentiveInfo,
     pub reward_portion_for_lps: SignedDecimal,
     pub reward_portion_for_stakers: SignedDecimal,
     pub max_eden_reward_apr_lps: SignedDecimal,
-    pub supported_reward_denoms: SupportedRewardDenom,
+    pub supported_reward_denoms: Vec<SupportedRewardDenom>,
     pub protocol_revenue_address: String,
+}
+
+#[cw_serde]
+pub struct MasterchefParamsResponseRaw {
+    pub params: MasterchefParamsRaw,
 }
 
 #[cw_serde]
 pub struct MasterchefParamsResponse {
     pub params: MasterchefParams,
+}
+
+#[cw_serde]
+pub struct MasterchefPoolInfoRaw {
+    pub pool_id: Option<u64>,
+    pub reward_wallet: Option<String>,
+    pub multiplier: Option<SignedDecimal>,
+    pub eden_apr: Option<SignedDecimal>,
+    pub dex_apr: Option<SignedDecimal>,
+    pub gas_apr: Option<SignedDecimal>,
+    pub external_incentive_apr: Option<SignedDecimal>,
+    pub external_reward_denoms: Option<Vec<String>>,
 }
 
 #[cw_serde]
@@ -762,6 +841,11 @@ pub struct MasterchefPoolInfo {
     pub gas_apr: SignedDecimal,
     pub external_incentive_apr: SignedDecimal,
     pub external_reward_denoms: Vec<String>,
+}
+
+#[cw_serde]
+pub struct MasterchefPoolInfoResponseRaw {
+    pub pool_info: MasterchefPoolInfoRaw,
 }
 
 #[cw_serde]
@@ -968,4 +1052,83 @@ pub struct CommitmentNumberOfCommitmentsResponseRaw {
 #[cw_serde]
 pub struct CommitmentNumberOfCommitmentsResponse {
     pub number: i64,
+}
+
+#[cw_serde]
+pub struct GetLeverageLpRewardsResp {
+    pub rewards: Vec<RewardInfo>,
+    pub total_rewards: Vec<Coin>,
+}
+
+#[cw_serde]
+pub struct RewardInfo {
+    pub position_id: u64,
+    pub reward: Vec<Coin>,
+}
+
+impl GetLeverageLpRewardsResp {
+    pub fn total_rewards_to_coin_value(
+        &self,
+        querier: &ElysQuerier<'_>,
+    ) -> StdResult<Vec<CoinValue>> {
+        let mut coin_values = Vec::new();
+        for reward in &self.total_rewards {
+            coin_values.push(CoinValue::from_coin(reward, querier)?);
+        }
+        Ok(coin_values)
+    }
+
+    pub fn to_coin_value(
+        &self,
+        querier: &ElysQuerier<'_>,
+    ) -> StdResult<Vec<RewardInfoMappedToCoinValue>> {
+        let mut reward_info: Vec<RewardInfoMappedToCoinValue> = vec![];
+
+        for reward in &self.rewards {
+            let mut coin_values = vec![];
+            for coin in reward.reward.clone() {
+                coin_values.push(CoinValue::from_coin(&coin, querier)?);
+            }
+            reward_info.push(RewardInfoMappedToCoinValue {
+                position_id: reward.position_id,
+                reward: coin_values,
+            })
+        }
+        Ok(reward_info)
+    }
+}
+
+#[cw_serde]
+pub struct ParameterParamsRaw {
+    pub min_commission_rate: Option<Decimal>,
+    pub max_voting_power: Option<Decimal>,
+    pub min_self_delegation: Option<Int128>,
+    pub broker_address: Option<String>,
+    pub total_blocks_per_year: Option<u64>,
+    pub rewards_data_lifetime: Option<u64>,
+    pub wasm_max_label_size: Option<Int128>,
+    pub wasm_max_size: Option<Int128>,
+    pub wasm_max_proposal_wasm_size: Option<Int128>,
+}
+
+#[cw_serde]
+pub struct ParameterParams {
+    pub min_commission_rate: Decimal,
+    pub max_voting_power: Decimal,
+    pub min_self_delegation: Int128,
+    pub broker_address: String,
+    pub total_blocks_per_year: u64,
+    pub rewards_data_lifetime: u64,
+    pub wasm_max_label_size: Int128,
+    pub wasm_max_size: Int128,
+    pub wasm_max_proposal_wasm_size: Int128,
+}
+#[cw_serde]
+pub struct ParameterParamsResponseRaw {
+    pub params: ParameterParamsRaw,
+}
+
+#[cw_serde]
+pub struct ParameterParamsResponse {
+    pub params: ParameterParams,
 }

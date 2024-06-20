@@ -8,6 +8,8 @@ use crate::entry_point::{execute, query};
 use anyhow::{bail, Result as AnyResult};
 use cosmwasm_std::coin;
 use cosmwasm_std::Coin;
+use cosmwasm_std::Decimal;
+use cosmwasm_std::Int128;
 use cosmwasm_std::StdError;
 use cosmwasm_std::Uint128;
 use cosmwasm_std::{to_json_binary, Addr, Empty};
@@ -19,10 +21,13 @@ use cw_storage_plus::Item;
 use cw_storage_plus::Map;
 use elys_bindings::query_resp::DelegationDelegatorReward;
 use elys_bindings::query_resp::EstakingRewardsResponse;
+use elys_bindings::query_resp::LeveragelpPosition;
+use elys_bindings::query_resp::LeveragelpPositionsResponse;
 use elys_bindings::query_resp::MasterchefUserPendingRewardData;
 use elys_bindings::query_resp::MasterchefUserPendingRewardResponse;
 use elys_bindings::query_resp::Validator;
 use elys_bindings::trade_shield::msg::ExecuteMsg;
+use elys_bindings::types::PageResponse;
 use elys_bindings::{ElysMsg, ElysQuery};
 use elys_bindings_test::ElysModule;
 
@@ -115,6 +120,32 @@ impl Module for ElysModuleWrapper {
                 };
                 Ok(to_json_binary(&resp)?)
             }
+            ElysQuery::LeveragelpQueryPositionsForAddress { .. } => {
+                let position = LeveragelpPosition {
+                    address: "user".to_string(),
+                    collateral: Coin {
+                        denom: "uelys".to_string(),
+                        amount: Uint128::new(100000000),
+                    },
+                    liabilities: Int128::zero(),
+                    interest_paid: Int128::zero(),
+                    leverage: Decimal::new(Uint128::new(10)),
+                    leveraged_lp_amount: Int128::new(10000000),
+                    position_health: Decimal::one(),
+                    id: 1,
+                    amm_pool_id: 1,
+                    stop_loss_price: Decimal::one(),
+                };
+
+                let resp = LeveragelpPositionsResponse {
+                    positions: vec![position],
+                    pagination: Some(PageResponse {
+                        next_key: None,
+                        total: Some(1),
+                    }),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
             _ => panic!("not implemented {request:?}"),
         }
     }
@@ -197,6 +228,20 @@ impl Module for ElysModuleWrapper {
                     }),
                 )
             }
+            ElysMsg::LeveragelpClaimRewards { sender, .. } => router.sudo(
+                api,
+                storage,
+                block,
+                SudoMsg::Bank(BankSudo::Mint {
+                    to_address: sender,
+                    amount: vec![Coin {
+                        denom:
+                            "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65"
+                                .to_string(),
+                        amount: Uint128::new(10000000),
+                    }],
+                }),
+            ),
             _ => bail!("not implemented {msg:?}"),
         }
     }
@@ -281,7 +326,7 @@ fn claim_rewards_request() {
 
     let msgs_called = app.init_modules(|_, _, storage| MSG_CALLED.load(storage).unwrap());
 
-    assert_eq!(msgs_called.len(), 3);
+    assert_eq!(msgs_called.len(), 4);
     assert_eq!(
         msgs_called[0],
         ElysMsg::estaking_withdraw_elys_staking_rewards("user".to_string())
@@ -294,10 +339,14 @@ fn claim_rewards_request() {
         msgs_called[2],
         ElysMsg::get_masterchef_claim_rewards("user".to_string(), vec![2])
     );
+    assert_eq!(
+        msgs_called[3],
+        ElysMsg::leveragelp_withdraw_reward("user".to_string(), vec![1])
+    );
 
     let user_usdc_balance = app.wrap().query_balance("user", DENOM_INFO[0].0).unwrap();
     let user_uelys_balance = app.wrap().query_balance("user", "uelys").unwrap();
 
-    assert_eq!(user_usdc_balance, coin(500, DENOM_INFO[0].0));
+    assert_eq!(user_usdc_balance, coin(10000500, DENOM_INFO[0].0));
     assert_eq!(user_uelys_balance, coin(24100000, "uelys"));
 }
