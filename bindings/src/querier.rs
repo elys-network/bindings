@@ -994,11 +994,11 @@ impl<'a> ElysQuerier<'a> {
             pagination: raw_resp.pagination,
         })
     }
-    pub fn leveragelp_pool_ids_for_address(&self, address: String) -> StdResult<Vec<u64>> {
+    pub fn leveragelp_positions_ids_for_address(&self, address: String) -> StdResult<Vec<u64>> {
         let pagination = PageRequest::total();
         let raw_resp =
             self.leveragelp_query_positions_for_address(address.clone(), Some(pagination.clone()))?;
-        Ok(raw_resp.get_pools())
+        Ok(raw_resp.get_positions())
     }
     pub fn leveragelp_get_whitelist(
         &self,

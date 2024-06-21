@@ -69,7 +69,7 @@ pub fn claim_rewards_request(
             pools_ids_to_claim,
         ));
     }
-    let ids = querier.leveragelp_pool_ids_for_address(info.sender.to_string())?;
+    let ids = querier.leveragelp_positions_ids_for_address(info.sender.to_string())?;
 
     if !ids.is_empty() {
         msgs.push(ElysMsg::leveragelp_withdraw_reward(

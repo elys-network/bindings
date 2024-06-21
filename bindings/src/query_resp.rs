@@ -612,6 +612,15 @@ pub struct LeveragelpPositionsResponseRaw {
 }
 
 impl LeveragelpPositionsResponseRaw {
+    pub fn get_positions(&self) -> Vec<u64> {
+        self.positions
+            .clone()
+            .unwrap_or(vec![])
+            .iter()
+            .map(|x| x.id)
+            .collect()
+    }
+
     pub fn get_pools(&self) -> Vec<u64> {
         self.positions
             .clone()
