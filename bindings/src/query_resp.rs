@@ -314,6 +314,12 @@ pub struct QueryUnstakedPositionResponse {
 }
 
 #[cw_serde]
+pub struct BalanceBorrowedRaw {
+    pub usd_amount: String,
+    pub percentage: String,
+}
+
+#[cw_serde]
 pub struct BalanceBorrowed {
     pub usd_amount: Decimal,
     pub percentage: Decimal,
