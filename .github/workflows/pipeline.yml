@@ -237,7 +237,8 @@ jobs:
           toolchain: stable
       - name: Compile
         run: |
-            VERSION=$(cat .version)
+            VERSION=${{ github.sha }}
+            echo "VERSION": $VERSION
             sed -i "s/^version = .*/version = \"$VERSION\"/" contracts/account-history-contract/Cargo.toml
             sed -i "s/^version = .*/version = \"$VERSION\"/" contracts/trade-shield-contract/Cargo.toml
             sed -i "s/^version = .*/version = \"$VERSION\"/" contracts/financial-snapshot-contract/Cargo.toml
