@@ -408,7 +408,13 @@ impl<'a> ElysQuerier<'a> {
     pub fn get_borrowed_balance(&self) -> StdResult<BalanceBorrowed> {
         let borrowed_balance_query = ElysQuery::StableStakeBalanceOfBorrow {};
         let request: QueryRequest<ElysQuery> = QueryRequest::Custom(borrowed_balance_query);
-        let resp: BalanceBorrowed = self.querier.query(&request)?;
+        let raw_resp: BalanceBorrowedRaw = self.querier.query(&request)?;
+
+        let resp = BalanceBorrowed {
+            usd_amount: Decimal::from_str(&raw_resp.usd_amount).unwrap_or_default(),
+            percentage: Decimal::from_str(&raw_resp.percentage).unwrap_or_default(),
+        };
+
         Ok(resp)
     }
 
