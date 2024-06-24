@@ -1,6 +1,9 @@
+use std::collections::HashMap;
+
+use crate::account_history::states::PRICE_CACHE;
 use crate::{query_resp::OracleAssetInfoResponse, types::OracleAssetInfo, ElysQuerier};
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, Decimal, StdError, StdResult};
+use cosmwasm_std::{Coin, Decimal, Env, StdError, StdResult, Storage};
 
 use super::ElysDenom;
 
@@ -60,7 +63,48 @@ impl CoinValue {
         })
     }
 
+    pub fn update_from_coin(
+        balance: &Coin,
+        querier: &ElysQuerier<'_>,
+        env: Env,
+        store: &mut dyn Storage,
+    ) -> StdResult<Self> {
+        let price_cache = PRICE_CACHE.may_load(store, env.block.height)?;
+
+        if price_cache.is_none() {
+            let (coin_value, decimal) = Self::from_coin_int(balance, querier)?;
+            let mut value = HashMap::new();
+            value.insert(balance.denom.clone(), (coin_value.amount_usd, decimal));
+            PRICE_CACHE.save(store, env.block.height, &value)?;
+            return Ok(coin_value);
+        }
+
+        if let Some(price_and_denom) = price_cache.unwrap().get(&balance.denom) {
+            let (amount_token, amount_usd) =
+                Self::calculate(price_and_denom.1, balance, price_and_denom.0)?;
+
+            return Ok(Self {
+                denom: balance.denom.clone(),
+                amount_token,
+                price: price_and_denom.0,
+                amount_usd,
+            });
+        }
+        let (coin_value, decimal) = Self::from_coin_int(balance, querier)?;
+        let mut value = HashMap::new();
+        value.insert(balance.denom.clone(), (coin_value.amount_usd, decimal));
+        PRICE_CACHE.save(store, env.block.height, &value)?;
+
+        return Ok(coin_value);
+    }
+
     pub fn from_coin(balance: &Coin, querier: &ElysQuerier<'_>) -> StdResult<Self> {
+        let coin_value = Self::from_coin_int(balance, querier)?;
+
+        Ok(coin_value.0)
+    }
+
+    fn from_coin_int(balance: &Coin, querier: &ElysQuerier<'_>) -> StdResult<(Self, u64)> {
         let OracleAssetInfoResponse { asset_info } = querier
             .asset_info(balance.denom.clone())
             .unwrap_or(OracleAssetInfoResponse {
@@ -74,24 +118,38 @@ impl CoinValue {
             });
         let decimal_point_usd = asset_info.decimal;
 
+        let mut price = Decimal::zero();
+        if balance.denom != ElysDenom::EdenBoost.as_str() {
+            price = querier
+                .get_asset_price(balance.denom.clone())
+                .map_err(|e| StdError::generic_err(format!("failed to get_asset_price: {}", e)))?;
+        }
+
+        let (amount_token, amount_usd) = Self::calculate(decimal_point_usd, balance, price)?;
+
+        Ok((
+            Self {
+                denom: balance.denom.clone(),
+                amount_token,
+                price,
+                amount_usd,
+            },
+            decimal_point_usd,
+        ))
+    }
+
+    fn calculate(
+        decimal_point_usd: u64,
+        balance: &Coin,
+        price: Decimal,
+    ) -> StdResult<(Decimal, Decimal)> {
         let amount_token = Decimal::from_atomics(balance.amount, decimal_point_usd as u32)
             .map_err(|e| {
                 StdError::generic_err(format!("failed to convert amount to Decimal: {}", e))
             })?;
-
-        // Eden boost does not have Fiat valuation.
         if balance.denom == ElysDenom::EdenBoost.as_str() {
-            return Ok(Self {
-                amount_token,
-                denom: balance.denom.clone(),
-                amount_usd: Decimal::zero(),
-                price: Decimal::zero(),
-            });
+            return Ok((amount_token, Decimal::zero()));
         }
-
-        let price = querier
-            .get_asset_price(balance.denom.clone())
-            .map_err(|e| StdError::generic_err(format!("failed to get_asset_price: {}", e)))?;
 
         let amount_usd = price
             .clone()
@@ -110,11 +168,6 @@ impl CoinValue {
                 ))
             })?;
 
-        Ok(Self {
-            denom: balance.denom.clone(),
-            amount_token,
-            price,
-            amount_usd,
-        })
+        Ok((amount_token, amount_usd))
     }
 }
