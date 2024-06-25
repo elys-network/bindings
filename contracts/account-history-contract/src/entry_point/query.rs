@@ -16,7 +16,7 @@ use crate::action::query::{
     pool_asset_estimation, user_snapshots, user_value,
 };
 
-use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult};
+use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult, Storage};
 use cw2::CONTRACT;
 use elys_bindings::{
     account_history::types::ElysDenom, query_resp::QueryAprResponse, ElysQuerier, ElysQuery,
@@ -25,7 +25,12 @@ use elys_bindings::{
 use crate::msg::QueryMsg;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary> {
+pub fn query(
+    deps: Deps<ElysQuery>,
+    env: Env,
+    msg: QueryMsg,
+    storage: &mut dyn Storage,
+) -> StdResult<Binary> {
     use QueryMsg::*;
 
     match msg {
@@ -37,7 +42,7 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         }),
 
         GetLiquidAssets { user_address } => {
-            to_json_binary(&get_liquid_assets(deps, user_address, env)?)
+            to_json_binary(&get_liquid_assets(deps, user_address, env, storage)?)
         }
         GetStakedAssets { user_address } => {
             to_json_binary(&get_staked_assets(deps, user_address, env)?)
@@ -45,7 +50,9 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         GetPoolBalances { user_address } => {
             to_json_binary(&get_pool_balances(deps, user_address, env)?)
         }
-        GetRewards { user_address } => to_json_binary(&get_rewards(deps, user_address, env)?),
+        GetRewards { user_address } => {
+            to_json_binary(&get_rewards(deps, user_address, env, storage)?)
+        }
 
         GetMembershipTier { user_address } => {
             to_json_binary(&get_membership_tier(env, deps, user_address)?)

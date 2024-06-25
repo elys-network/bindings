@@ -4,11 +4,16 @@ use crate::{
     action::sudo::{clean_old_history, clean_up_history, update_account},
     states::UPDATE_ACCOUNT_ENABLED,
 };
-use cosmwasm_std::{entry_point, DepsMut, Env, Response, StdError, StdResult};
+use cosmwasm_std::{entry_point, DepsMut, Env, Response, StdError, StdResult, Storage};
 use elys_bindings::{ElysMsg, ElysQuery};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn sudo(mut deps: DepsMut<ElysQuery>, env: Env, msg: SudoMsg) -> StdResult<Response<ElysMsg>> {
+pub fn sudo(
+    mut deps: DepsMut<ElysQuery>,
+    env: Env,
+    msg: SudoMsg,
+    storage: &mut dyn Storage,
+) -> StdResult<Response<ElysMsg>> {
     match msg {
         SudoMsg::ClockEndBlock {} => {
             if UPDATE_ACCOUNT_ENABLED.load(deps.storage)? == false {
@@ -22,7 +27,7 @@ pub fn sudo(mut deps: DepsMut<ElysQuery>, env: Env, msg: SudoMsg) -> StdResult<R
                 clean_up_history(&mut deps, env.clone(), epoch)?;
             }
 
-            update_account(deps, env)
+            update_account(deps, env, storage)
         }
     }
 }

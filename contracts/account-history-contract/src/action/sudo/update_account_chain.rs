@@ -1,5 +1,5 @@
 use chrono::NaiveDateTime;
-use cosmwasm_std::{DepsMut, Env, Response, StdResult, Timestamp};
+use cosmwasm_std::{DepsMut, Env, Response, StdResult, Storage, Timestamp};
 use cw_utils::Expiration;
 
 use crate::{
@@ -9,7 +9,11 @@ use crate::{
 };
 use elys_bindings::{ElysMsg, ElysQuerier, ElysQuery};
 
-pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<ElysMsg>> {
+pub fn update_account(
+    deps: DepsMut<ElysQuery>,
+    env: Env,
+    storage: &mut dyn Storage,
+) -> StdResult<Response<ElysMsg>> {
     let querier = ElysQuerier::new(&deps.querier);
 
     // update metadata prices
@@ -48,6 +52,7 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
             &deps.as_ref(),
             &env,
             &user_address,
+            storage,
         )?;
         HISTORY.save(deps.storage, &key, &new_part)?;
     }
