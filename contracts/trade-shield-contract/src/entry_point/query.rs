@@ -127,10 +127,13 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> Result<Binary, C
             address,
             pagination,
         } => Ok(to_json_binary(
-            &querier.leveragelp_query_positions_for_address(address, pagination)?,
+            &querier.get_leveragelp_query_positions_for_address(address, pagination)?,
         )?),
         LeveragelpGetWhitelist { pagination } => Ok(to_json_binary(
             &querier.leveragelp_get_whitelist(pagination)?,
+        )?),
+        LeveragelpRewards { address, ids } => Ok(to_json_binary(
+            &querier.query_leverage_lp_rewards(address, ids)?,
         )?),
         LeveragelpIsWhitelisted { address } => Ok(to_json_binary(
             &querier.leveragelp_is_whitelisted(address)?,
@@ -232,6 +235,7 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> Result<Binary, C
             }
             Ok(to_json_binary(&GetSortedOrderListResp { orders_states })?)
         }
+        ParameterParams {} => Ok(to_json_binary(&querier.parameter_params()?)?),
         GetStat {} => Ok(to_json_binary(&query::get_stat(deps, env)?)?),
         GetSpotOrderStates { order_id } => Ok(to_json_binary(&query::get_spot_order_states(
             deps, order_id,

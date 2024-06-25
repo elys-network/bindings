@@ -55,6 +55,31 @@ pub fn update_account(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<
     Ok(Response::default())
 }
 
+pub fn update_account_chain(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Response<ElysMsg>> {
+    let processed_account_per_block: usize =
+        PROCESSED_ACCOUNT_PER_BLOCK.load(deps.storage)? as usize;
+
+    let mut msgs = vec![];
+    for _ in 0..processed_account_per_block {
+        if USER_ADDRESS_QUEUE.is_empty(deps.storage)? == true {
+            break;
+        }
+
+        // remove the first element from the queue
+        let user_address = if let Some(addr) = USER_ADDRESS_QUEUE.pop_back(deps.storage)? {
+            addr.to_string()
+        } else {
+            break;
+        };
+
+        let msg: ElysMsg =
+            ElysMsg::tier_set_portfolio(env.contract.address.to_string(), user_address);
+        msgs.push(msg)
+    }
+
+    Ok(Response::default().add_messages(msgs))
+}
+
 pub fn clean_up_history(
     deps: &mut DepsMut<ElysQuery>,
     env: Env,

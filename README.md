@@ -26,12 +26,32 @@ This guide provides instructions on how to spin up a new localnet using the Elys
 
    This command will install the `elysd` daemon.
 
-3. **Download the Latest Snapshot**
+3. **Download the Latest TestNet Snapshot**
 
-   Get the latest snapshot available for the Elys network by using the following command:
+   Get the latest TestNet snapshot available for the Elys network.
+
+   **Main branch**
+
+   Use the following command to download the latest TestNet snapshot that uses the changes from the `main` branch:
 
    ```bash
    rm -rf ~/.elys && curl -o - -L https://snapshots.elys.network/elys-snapshot-main.tar.lz4 | lz4 -c -d - | tar -x -C ~/
+   ```
+
+   **Devnet branch**
+
+   Use the following command to download the latest TestNet snapshot that uses the changes from the `devnet` branch:
+
+   ```bash
+   rm -rf ~/.elys && curl -o - -L https://snapshots.elys.network/elys-snapshot-devnet.tar.lz4 | lz4 -c -d - | tar -x -C ~/
+   ```
+
+   **Develop branch**
+
+   Use the following command to download the latest TestNet snapshot that uses the changes from the `develop` branch:
+
+   ```bash
+   rm -rf ~/.elys && curl -o - -L https://snapshots.elys.network/elys-snapshot-develop.tar.lz4 | lz4 -c -d - | tar -x -C ~/
    ```
 
 4. **Spin Up the Localnet**

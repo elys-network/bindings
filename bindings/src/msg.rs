@@ -119,6 +119,10 @@ pub enum ElysMsg {
         position: u64,
         price: SignedDecimal,
     },
+    TierSetPortfolio {
+        creator: String,
+        user: String,
+    },
 
     // Perpetual
     PerpetualOpen {
@@ -135,6 +139,11 @@ pub enum ElysMsg {
         id: u64,
         amount: Int128,
         owner: String,
+    },
+
+    LeveragelpClaimRewards {
+        sender: String,
+        ids: Vec<u64>,
     },
 }
 
@@ -362,6 +371,13 @@ impl ElysMsg {
             position: position,
             price: price,
         }
+    }
+
+    pub fn tier_set_portfolio(creator: String, user: String) -> Self {
+        Self::TierSetPortfolio { creator, user }
+    }
+    pub fn leveragelp_withdraw_reward(sender: String, ids: Vec<u64>) -> Self {
+        Self::LeveragelpClaimRewards { sender, ids }
     }
 
     pub fn estaking_withdraw_reward(delegator_address: String, validator_address: String) -> Self {

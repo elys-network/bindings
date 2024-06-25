@@ -3,6 +3,7 @@ use cw_utils::Expiration;
 use elys_bindings::account_history::types::Metadata;
 
 use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, Timestamp};
+use elys_bindings::trade_shield::states::PARAMS_ADMIN;
 use elys_bindings::{ElysMsg, ElysQuerier, ElysQuery};
 
 use crate::msg::InstantiateMsg;
@@ -19,7 +20,7 @@ pub const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub fn instantiate(
     deps: DepsMut<ElysQuery>,
     _env: Env,
-    _info: MessageInfo,
+    info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response<ElysMsg>> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
@@ -37,6 +38,8 @@ pub fn instantiate(
         Some(limit) => limit,
         None => 1,
     };
+
+    PARAMS_ADMIN.save(deps.storage, &info.sender.to_string())?;
 
     PROCESSED_ACCOUNT_PER_BLOCK.save(deps.storage, &limit)?;
 
