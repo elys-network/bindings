@@ -288,9 +288,9 @@ jobs:
           $ELYSD config chain-id ${{vars.CHAIN_ID}}
           $ELYSD config broadcast-mode sync
 
-          echo "${{ secrets.KEY_MNEMONIC }}" | elysd keys add $NAME --recover --keyring-backend test
+          echo "${{ secrets.KEY_MNEMONIC }}" | $ELYSD keys add $NAME --recover --keyring-backend test
 
-          user_address=$(elysd keys show $NAME -a)
+          user_address=$($ELYSD keys show $NAME -a)
 
           # get account and sequence number
           account_number=$($ELYSD q account $user_address --node $NODE | extract_account_number)
