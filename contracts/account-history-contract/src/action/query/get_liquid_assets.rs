@@ -1,4 +1,4 @@
-use cosmwasm_std::{Decimal, Deps, StdResult};
+use cosmwasm_std::{Decimal, Deps, Env, StdResult, Storage};
 use elys_bindings::{account_history::types::CoinValue, ElysQuerier, ElysQuery};
 
 use crate::{
@@ -14,7 +14,7 @@ pub fn get_liquid_assets(
 
     let generator = AccountSnapshotGenerator::new(&deps)?;
 
-    let liquid_asset = generator.get_liquid_assets(&deps, &querier, &user_address)?;
+    let liquid_asset = generator.query_get_liquid_assets(&deps, &querier, &user_address)?;
 
     let mut liquid_assets: Vec<LiquidAsset> = vec![];
 

@@ -1,5 +1,5 @@
 use chrono::NaiveDateTime;
-use cosmwasm_std::{DepsMut, Env, Response, StdResult, Storage, Timestamp};
+use cosmwasm_std::{DepsMut, Env, Response, StdResult, Timestamp};
 use cw_utils::Expiration;
 
 use crate::{
@@ -12,7 +12,6 @@ use elys_bindings::{ElysMsg, ElysQuerier, ElysQuery};
 pub fn update_account(
     deps: DepsMut<ElysQuery>,
     env: Env,
-    storage: &mut dyn Storage,
 ) -> StdResult<Response<ElysMsg>> {
     let querier = ElysQuerier::new(&deps.querier);
 
@@ -49,10 +48,9 @@ pub fn update_account(
 
         let new_part = generator.generate_portfolio_balance_snapshot_for_address(
             &querier,
-            &deps.as_ref(),
+            deps,
             &env,
             &user_address,
-            storage,
         )?;
         HISTORY.save(deps.storage, &key, &new_part)?;
     }

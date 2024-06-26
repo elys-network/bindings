@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    Coin, DecCoin, Decimal, Decimal256, Deps, Env, QuerierWrapper, StdError, StdResult, Uint128,
+    Coin, DecCoin, Decimal, Decimal256, Deps, DepsMut, Env, QuerierWrapper, StdError, StdResult, Uint128
 };
 use cw_utils::Expiration;
 use elys_bindings::{
@@ -61,7 +61,7 @@ impl AccountSnapshotGenerator {
     pub fn generate_portfolio_balance_snapshot_for_address(
         &self,
         querier: &ElysQuerier,
-        deps: &Deps<ElysQuery>,
+        deps: DepsMut<ElysQuery>,
         env: &Env,
         address: &String,
     ) -> StdResult<PortfolioBalanceSnapshot> {
@@ -76,15 +76,15 @@ impl AccountSnapshotGenerator {
     pub fn generate_account_snapshot_for_address(
         &self,
         querier: &ElysQuerier,
-        deps: &Deps<ElysQuery>,
+        deps: DepsMut<ElysQuery>,
         env: &Env,
         address: &String,
     ) -> StdResult<AccountSnapshot> {
-        let liquid_assets_response = self.get_liquid_assets(&deps, querier, &address)?; // ✅ Fixme
-        let staked_assets_response = self.get_staked_assets(&deps, Some(address.clone()))?;
-        let rewards_response = self.get_rewards(&deps, &address)?;
-        let perpetual_response = self.get_perpetuals(&deps, &address)?;
-        let pool_balances_response = self.get_pool_balances(&deps, &address)?;
+        let liquid_assets_response = self.get_liquid_assets(deps, querier, &address, env.clone())?;
+        let staked_assets_response = self.get_staked_assets(&deps.as_ref(), Some(address.clone()))?;
+        let rewards_response = self.get_rewards(deps, &address, env.clone())?;
+        let perpetual_response = self.get_perpetuals(&deps.as_ref(), &address)?;
+        let pool_balances_response = self.get_pool_balances(&deps.as_ref(), &address)?;
 
         let date = match self.expiration {
             Expiration::AtHeight(_) => Expiration::AtHeight(env.block.height),
@@ -306,7 +306,7 @@ impl AccountSnapshotGenerator {
         })
     }
 
-    pub fn get_liquid_assets(
+    pub fn query_get_liquid_assets(
         &self,
         deps: &Deps<ElysQuery>,
         querier: &ElysQuerier,
@@ -381,6 +381,100 @@ impl AccountSnapshotGenerator {
         let mut total_value_per_asset: Vec<CoinValue> = vec![];
         for value in total_value_for_each_asset.values() {
             total_value_per_asset.push(CoinValue::from_coin(value, querier).unwrap_or_default())
+        }
+
+        // calculating total liquid assets
+        let total_liquid_asset_balance = DecCoin::new(
+            total_available_balance.amount + total_in_orders_balance.amount,
+            &self.metadata.usdc_denom,
+        );
+
+        Ok(LiquidAsset {
+            total_liquid_asset_balance,
+            total_available_balance,
+            total_in_orders_balance,
+            available_asset_balance,
+            in_orders_asset_balance,
+            total_value_per_asset,
+        })
+    }
+
+    pub fn get_liquid_assets(
+        &self,
+        deps: DepsMut<ElysQuery>,
+        querier: &ElysQuerier,
+        address: &String,
+        env: Env,
+    ) -> StdResult<LiquidAsset> {
+        let mut account_balances = deps.querier.query_all_balances(address)?;
+        let orders_balances =
+            self.get_all_orders(&deps.querier, &self.trade_shield_address, &address)?;
+
+        let eden_program = get_eden_earn_program_details(
+            &deps.as_ref(),
+            Some(address.to_owned()),
+            ElysDenom::Eden.as_str().to_string(),
+            self.metadata.uusdc_usd_price,
+            self.metadata.uelys_price_in_uusdc,
+            self.metadata.usdc_apr_eden.to_owned(),
+            self.metadata.eden_apr_eden.to_owned(),
+            self.metadata.edenb_apr_eden.to_owned(),
+        )
+        .unwrap_or_default();
+
+        let available = eden_program.data.to_coin_available();
+        if available.amount > Uint128::zero() {
+            account_balances.push(available);
+        }
+
+        // `total_value_per_asset` that maps references to denoms (`&String`) to values of type
+        // `Coin`. it is used to store the coin of unique denom.
+        let mut total_value_for_each_asset: HashMap<&String, Coin> = HashMap::new();
+
+        for available in account_balances.iter() {
+            total_value_for_each_asset
+                .entry(&available.denom)
+                .and_modify(|e| e.amount += available.amount)
+                .or_insert_with(|| available.clone());
+        }
+
+        for in_order in orders_balances.iter() {
+            total_value_for_each_asset
+                .entry(&in_order.denom)
+                .and_modify(|e| e.amount += in_order.amount)
+                .or_insert_with(|| in_order.clone());
+        }
+
+        let available_asset_balance: Vec<CoinValue> = account_balances
+            .iter()
+            .map(|coin| CoinValue::update_from_coin(&coin, &querier, env.clone(), deps.storage).unwrap_or_default())
+            .collect();
+
+        let in_orders_asset_balance: Vec<CoinValue> = orders_balances
+            .iter()
+            .map(|coin| CoinValue::update_from_coin(&coin, &querier, env.clone(), deps.storage).unwrap_or_default())
+            .collect();
+
+        let mut total_available_balance =
+            DecCoin::new(Decimal256::zero(), &self.metadata.usdc_denom);
+        let mut total_in_orders_balance =
+            DecCoin::new(Decimal256::zero(), &self.metadata.usdc_denom);
+
+        for balance in &available_asset_balance {
+            total_available_balance.amount = total_available_balance
+                .amount
+                .checked_add(Decimal256::from(balance.amount_usd.clone()))?
+        }
+
+        for balance in &in_orders_asset_balance {
+            total_in_orders_balance.amount = total_in_orders_balance
+                .amount
+                .checked_add(Decimal256::from(balance.amount_usd.clone()))?
+        }
+
+        let mut total_value_per_asset: Vec<CoinValue> = vec![];
+        for value in total_value_for_each_asset.values() {
+            total_value_per_asset.push(CoinValue::update_from_coin(value, querier, env.clone(), deps.storage).unwrap_or_default())
         }
 
         // calculating total liquid assets
@@ -642,6 +736,98 @@ impl AccountSnapshotGenerator {
     }
 
     pub fn get_rewards(
+        &self,
+        deps: DepsMut<ElysQuery>,
+        address: &String,
+        env: Env,
+    ) -> StdResult<GetRewardsResp> {
+        let querier = ElysQuerier::new(&deps.querier);
+
+        // Elys Eden and Eden Boost Program rewards
+        let estaking_rewards = querier
+            .get_estaking_rewards(address.clone())
+            .unwrap_or_default();
+        // All pool rewards including USDC program rewards
+        let masterchef_rewards = querier.get_masterchef_pending_rewards(address.to_string())?;
+
+        // Concatenate all staking reward vectors into one
+        let all_staking_rewards: Vec<&Coin> = estaking_rewards
+            .total
+            .iter()
+            .chain(&masterchef_rewards.total_rewards)
+            .collect();
+
+        // Accumulate amounts for each denomination
+        let mut denom_amounts: HashMap<String, Uint128> = HashMap::new();
+        all_staking_rewards.iter().for_each(|coin| {
+            denom_amounts
+                .entry(coin.denom.clone())
+                .and_modify(|amount| {
+                    *amount += coin.amount;
+                })
+                .or_insert(coin.amount);
+        });
+
+        // Convert accumulated amounts to CoinValue instances
+        let mut reward_map: HashMap<String, CoinValue> = HashMap::new();
+        for (denom, amount) in denom_amounts {
+            let dec_coin_value = CoinValue::update_from_coin(
+                &Coin {
+                    denom: denom.clone(),
+                    amount,
+                },
+                &querier,
+                env.clone(),
+                deps.storage,
+            )
+            .unwrap_or_default();
+
+            reward_map.insert(denom, dec_coin_value);
+        }
+
+        let total_usd: Decimal = reward_map.values().map(|v| v.amount_usd).sum();
+
+        // Calculate other_usd as the sum of all amount_usd values in reward_map
+        // excluding USDC, Eden, and EdenBoost
+        let mut other_usd: Decimal = Decimal::zero();
+        for (denom, value) in &reward_map {
+            if denom != &self.metadata.usdc_denom
+                && denom != &ElysDenom::Eden.as_str().to_string()
+                && denom != &ElysDenom::EdenBoost.as_str().to_string()
+            {
+                other_usd += value.amount_usd;
+            }
+        }
+
+        let reward = Reward {
+            usdc_usd: reward_map
+                .entry(self.metadata.usdc_denom.clone())
+                .or_default()
+                .amount_usd,
+            eden_usd: reward_map
+                .entry(ElysDenom::Eden.as_str().to_string())
+                .or_default()
+                .amount_usd,
+            eden_boost: reward_map
+                .entry(ElysDenom::EdenBoost.as_str().to_string())
+                .or_default()
+                .amount_token,
+            other_usd,
+            total_usd,
+        };
+
+        // Construct rewards_vec as the values of all rewards_map entries
+        let rewards_vec: Vec<CoinValue> = reward_map.into_iter().map(|(_, v)| v).collect();
+
+        let resp = GetRewardsResp {
+            rewards_map: reward,
+            rewards: rewards_vec,
+        };
+
+        Ok(resp)
+    }
+
+    pub fn query_get_rewards(
         &self,
         deps: &Deps<ElysQuery>,
         address: &String,
