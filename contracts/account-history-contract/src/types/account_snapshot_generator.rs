@@ -2,8 +2,7 @@ use std::collections::HashMap;
 
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    Coin, DecCoin, Decimal, Decimal256, Deps, Env, QuerierWrapper, StdError, StdResult, Storage,
-    Uint128,
+    Coin, DecCoin, Decimal, Decimal256, Deps, Env, QuerierWrapper, StdError, StdResult, Uint128,
 };
 use cw_utils::Expiration;
 use elys_bindings::{
@@ -65,10 +64,8 @@ impl AccountSnapshotGenerator {
         deps: &Deps<ElysQuery>,
         env: &Env,
         address: &String,
-        storage: &mut dyn Storage,
     ) -> StdResult<PortfolioBalanceSnapshot> {
-        let snapshot =
-            self.generate_account_snapshot_for_address(querier, deps, env, address, storage)?;
+        let snapshot = self.generate_account_snapshot_for_address(querier, deps, env, address)?;
 
         Ok(PortfolioBalanceSnapshot {
             date: snapshot.date,
@@ -82,12 +79,10 @@ impl AccountSnapshotGenerator {
         deps: &Deps<ElysQuery>,
         env: &Env,
         address: &String,
-        storage: &mut dyn Storage,
     ) -> StdResult<AccountSnapshot> {
-        let liquid_assets_response =
-            self.get_liquid_assets(&deps, querier, &address, env.clone(), storage)?; // ✅ Fixme
+        let liquid_assets_response = self.get_liquid_assets(&deps, querier, &address)?; // ✅ Fixme
         let staked_assets_response = self.get_staked_assets(&deps, Some(address.clone()))?;
-        let rewards_response = self.get_rewards(&deps, &address, env.clone(), storage)?;
+        let rewards_response = self.get_rewards(&deps, &address)?;
         let perpetual_response = self.get_perpetuals(&deps, &address)?;
         let pool_balances_response = self.get_pool_balances(&deps, &address)?;
 
@@ -316,8 +311,6 @@ impl AccountSnapshotGenerator {
         deps: &Deps<ElysQuery>,
         querier: &ElysQuerier,
         address: &String,
-        env: Env,
-        storage: &mut dyn Storage,
     ) -> StdResult<LiquidAsset> {
         let mut account_balances = deps.querier.query_all_balances(address)?;
         let orders_balances =
@@ -360,18 +353,12 @@ impl AccountSnapshotGenerator {
 
         let available_asset_balance: Vec<CoinValue> = account_balances
             .iter()
-            .map(|coin| {
-                CoinValue::update_from_coin(&coin, &querier, env.clone(), storage)
-                    .unwrap_or_default()
-            })
+            .map(|coin| CoinValue::from_coin(&coin, &querier).unwrap_or_default())
             .collect();
 
         let in_orders_asset_balance: Vec<CoinValue> = orders_balances
             .iter()
-            .map(|coin| {
-                CoinValue::update_from_coin(&coin, &querier, env.clone(), storage)
-                    .unwrap_or_default()
-            })
+            .map(|coin| CoinValue::from_coin(&coin, &querier).unwrap_or_default())
             .collect();
 
         let mut total_available_balance =
@@ -393,10 +380,7 @@ impl AccountSnapshotGenerator {
 
         let mut total_value_per_asset: Vec<CoinValue> = vec![];
         for value in total_value_for_each_asset.values() {
-            total_value_per_asset.push(
-                CoinValue::update_from_coin(value, querier, env.clone(), storage)
-                    .unwrap_or_default(),
-            )
+            total_value_per_asset.push(CoinValue::from_coin(value, querier).unwrap_or_default())
         }
 
         // calculating total liquid assets
@@ -661,8 +645,6 @@ impl AccountSnapshotGenerator {
         &self,
         deps: &Deps<ElysQuery>,
         address: &String,
-        env: Env,
-        storage: &mut dyn Storage,
     ) -> StdResult<GetRewardsResp> {
         let querier = ElysQuerier::new(&deps.querier);
 
@@ -694,14 +676,12 @@ impl AccountSnapshotGenerator {
         // Convert accumulated amounts to CoinValue instances
         let mut reward_map: HashMap<String, CoinValue> = HashMap::new();
         for (denom, amount) in denom_amounts {
-            let dec_coin_value = CoinValue::update_from_coin(
+            let dec_coin_value = CoinValue::from_coin(
                 &Coin {
                     denom: denom.clone(),
                     amount,
                 },
                 &querier,
-                env.clone(),
-                storage,
             )
             .unwrap_or_default();
 
