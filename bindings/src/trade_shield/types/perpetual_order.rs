@@ -1,9 +1,13 @@
 use std::str::FromStr;
 
-use crate::{trade_shield::states::PENDING_PERPETUAL_ORDER, types::PerpetualPosition};
+use crate::{
+    trade_shield::states::{PENDING_PERPETUAL_ORDER, PERPETUAL_ORDER_MAX_ID},
+    types::PerpetualPosition,
+};
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    Coin, OverflowError, SignedDecimal, SignedDecimal256, StdError, StdResult, Storage,
+    Coin, Deps, DepsMut, OverflowError, OverflowOperation, SignedDecimal, SignedDecimal256,
+    StdError, StdResult, Storage,
 };
 
 use super::{OrderPrice, PerpetualOrderType, Status};
@@ -33,7 +37,7 @@ impl PerpetualOrder {
         leverage: &SignedDecimal,
         take_profit_price: &Option<SignedDecimal256>,
         trigger_price: &Option<OrderPrice>,
-        order_vec: &Vec<PerpetualOrder>,
+        storage: &mut dyn Storage,
     ) -> StdResult<Self> {
         let status = if order_type == &PerpetualOrderType::MarketOpen {
             Status::Executed
@@ -41,7 +45,7 @@ impl PerpetualOrder {
             Status::Pending
         };
 
-        let order_id = get_new_id(&order_vec)?;
+        let order_id = get_new_id(storage)?;
 
         let order = Self {
             order_id,
@@ -69,9 +73,9 @@ impl PerpetualOrder {
         position_id: u64,
         trigger_price: &Option<OrderPrice>,
         take_profit_price: &Option<SignedDecimal256>,
-        order_vec: &Vec<PerpetualOrder>,
+        storage: &mut dyn Storage,
     ) -> StdResult<Self> {
-        let order_id: u64 = get_new_id(&order_vec)?;
+        let order_id: u64 = get_new_id(storage)?;
 
         let status = if order_type == &PerpetualOrderType::MarketClose {
             Status::Executed
@@ -184,16 +188,19 @@ impl PerpetualOrder {
     }
 }
 
-fn get_new_id(orders: &[PerpetualOrder]) -> StdResult<u64> {
-    match orders.iter().max_by_key(|s| s.order_id) {
-        Some(order) => match order.order_id.checked_add(1) {
-            Some(id) => Ok(id),
-            None => Err(StdError::overflow(OverflowError::new(
-                cosmwasm_std::OverflowOperation::Add,
-                "perpetual_order_max_id",
-                "increment one",
-            ))),
-        },
-        None => Ok(0),
-    }
+fn get_new_id(storage: &mut dyn Storage) -> StdResult<u64> {
+    let max_id = match PERPETUAL_ORDER_MAX_ID.may_load(storage)? {
+        Some(id) => id + 1,
+        None => 1,
+    };
+    let id = max_id
+        .checked_add(1)
+        .ok_or(StdError::overflow(OverflowError::new(
+            OverflowOperation::Add,
+            "perpetual order id",
+            "1",
+        )))?;
+    PERPETUAL_ORDER_MAX_ID.save(storage, &id)?;
+
+    Ok(id)
 }

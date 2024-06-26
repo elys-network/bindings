@@ -3,7 +3,7 @@ use crate::{helper::get_discount, msg::ReplyType};
 use super::*;
 use cosmwasm_std::{
     coin, to_json_binary, OverflowError, OverflowOperation, SignedDecimal, SignedDecimal256,
-    StdError, StdResult, SubMsg,
+    StdError, StdResult, Storage, SubMsg,
 };
 use cw_utils;
 use elys_bindings::query_resp::{Entry, QueryGetEntryResponse};
@@ -184,7 +184,7 @@ fn create_perpetual_open_order(
         &leverage,
         &take_profit_price,
         &trigger_price,
-        &orders,
+        deps.storage,
     )?;
 
     let order_id = order.order_id;
@@ -283,11 +283,6 @@ fn create_perpetual_close_order(
         return Err(StdError::not_found("perpetual trading position").into());
     };
 
-    let orders: Vec<PerpetualOrder> = PERPETUAL_ORDER
-        .prefix_range(deps.storage, None, None, Order::Ascending)
-        .filter_map(|res| res.ok().map(|r| r.1))
-        .collect();
-
     let QueryGetEntryResponse {
         entry: Entry {
             denom: usdc_denom, ..
@@ -314,15 +309,7 @@ fn create_perpetual_close_order(
         }
     }
 
-    if let Some(mut order) = orders
-        .iter()
-        .find(|order| {
-            order.position_id == Some(position_id)
-                && order.status == Status::Pending
-                && order_type == order.order_type
-        })
-        .cloned()
-    {
+    if let Some(mut order) = check_perpetual_id(position_id, &order_type, deps.storage)? {
         order.trigger_price = trigger_price;
         PERPETUAL_ORDER.save(deps.storage, order.order_id, &order)?;
 
@@ -359,7 +346,7 @@ fn create_perpetual_close_order(
         position_id,
         &trigger_price,
         &Some(mtp.take_profit_price),
-        &orders,
+        deps.storage,
     )?;
 
     let order_id = order.order_id;
@@ -378,6 +365,12 @@ fn create_perpetual_close_order(
         Event::new("create_perpetual_close_order")
             .add_attribute("perpetual_order_id", order_id.to_string()),
     );
+
+    let mut perpetual_position_ids = CLOSE_PERPETUAL_ORDER
+        .may_load(deps.storage, position_id)?
+        .unwrap_or_default();
+    perpetual_position_ids.push(order_id);
+    CLOSE_PERPETUAL_ORDER.save(deps.storage, position_id, &perpetual_position_ids)?;
 
     if order_type != MarketClose {
         let number_of_pending_order = NUMBER_OF_PENDING_ORDER.load(deps.storage)? + 1;
@@ -418,4 +411,21 @@ fn create_perpetual_close_order(
     let sub_msg = SubMsg::reply_always(msg, reply_id);
 
     Ok(resp.add_submessage(sub_msg))
+}
+
+fn check_perpetual_id(
+    position_id: u64,
+    order_type: &PerpetualOrderType,
+    storage: &dyn Storage,
+) -> StdResult<Option<PerpetualOrder>> {
+    let order_ids = CLOSE_PERPETUAL_ORDER.may_load(storage, position_id)?;
+
+    for order_id in order_ids.unwrap_or(vec![]) {
+        let order = PERPETUAL_ORDER.load(storage, order_id)?;
+
+        if order.status == Status::Pending && order_type == &order.order_type {
+            return Ok(Some(order));
+        }
+    }
+    Ok(None)
 }
