@@ -191,7 +191,7 @@ impl PerpetualOrder {
 fn get_new_id(storage: &mut dyn Storage) -> StdResult<u64> {
     let max_id = match PERPETUAL_ORDER_MAX_ID.may_load(storage)? {
         Some(id) => id + 1,
-        None => 1,
+        None => 0,
     };
     let id = max_id
         .checked_add(1)

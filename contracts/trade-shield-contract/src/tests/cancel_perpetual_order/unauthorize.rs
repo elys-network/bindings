@@ -11,22 +11,23 @@ fn unauthorize() {
     let instantiate_msg = InstantiateMockMsg {
         account_history_address: None,
         spot_orders: vec![],
-        perpetual_orders: vec![PerpetualOrder::new_open(
-            "user",
-            &PerpetualPosition::Long,
-            &PerpetualOrderType::LimitOpen,
-            &coin(255, "usdc"),
-            "btc",
-            &SignedDecimal::from_str("1.2").unwrap(),
-            &Some(SignedDecimal256::from_str("1.2").unwrap()),
-            &Some(OrderPrice {
+        perpetual_orders: vec![PerpetualOrder {
+            order_id: 0,
+            owner: "user".to_string(),
+            order_type: PerpetualOrderType::LimitOpen,
+            position: PerpetualPosition::Long,
+            trigger_price: Some(OrderPrice {
                 base_denom: "btc".to_string(),
                 quote_denom: "usdc".to_string(),
                 rate: Decimal::from_str("20000.0").unwrap(),
             }),
-            &vec![],
-        )
-        .unwrap()],
+            collateral: coin(255, "usdc"),
+            trading_asset: "btc".to_string(),
+            leverage: SignedDecimal::from_str("1.2").unwrap(),
+            take_profit_price: Some(SignedDecimal256::from_str("1.2").unwrap()),
+            position_id: None,
+            status: Status::Pending,
+        }],
     };
 
     // Create a contract wrapper and store its code.

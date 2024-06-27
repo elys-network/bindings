@@ -374,7 +374,12 @@ fn pending_limit_open_long_order_with_price_met() {
         order: PerpetualOrderPlus { order, .. },
     } = app
         .wrap()
-        .query_wasm_smart(addr.clone(), &QueryMsg::GetPerpetualOrder { id: 0 })
+        .query_wasm_smart(
+            addr.clone(),
+            &QueryMsg::GetPerpetualOrder {
+                id: u64::from_str(&order_id).unwrap(),
+            },
+        )
         .unwrap();
 
     assert_eq!(order.status, Status::Executed);

@@ -1,5 +1,5 @@
 use crate::msg::query_resp::GetPerpetualOrderResp;
-use cosmwasm_std::{Addr, Decimal, SignedDecimal, SignedDecimal256};
+use cosmwasm_std::{Addr, SignedDecimal, SignedDecimal256};
 
 use super::*;
 // This test case verifies the successful query of an existing order in the contract.
@@ -8,22 +8,23 @@ fn successful_query_message() {
     // Initialize the ElysApp instance.
     let mut app = ElysApp::new();
 
-    let order = PerpetualOrder::new_open(
-        "user",
-        &PerpetualPosition::Long,
-        &PerpetualOrderType::MarketOpen,
-        &coin(255, "usdc"),
-        "btc",
-        &SignedDecimal::from_str("5").unwrap(),
-        &Some(SignedDecimal256::one()),
-        &Some(OrderPrice {
+    let order = PerpetualOrder {
+        order_id: 1,
+        owner: "user".to_string(),
+        order_type: PerpetualOrderType::MarketOpen,
+        position: PerpetualPosition::Long,
+        trigger_price: Some(OrderPrice {
             base_denom: "btc".to_string(),
             quote_denom: "usdc".to_string(),
-            rate: Decimal::from_str("35").unwrap(),
+            rate: Decimal::from_str("35.0").unwrap(),
         }),
-        &vec![],
-    )
-    .unwrap();
+        collateral: coin(255, "usdc"),
+        trading_asset: "btc".to_string(),
+        leverage: SignedDecimal::from_str("5").unwrap(),
+        take_profit_price: Some(SignedDecimal256::one()),
+        position_id: None,
+        status: Status::Executed,
+    };
 
     // Create a mock message to instantiate the contract with an initial dummy order.
     let instantiate_msg = InstantiateMockMsg {
