@@ -6,8 +6,8 @@ use crate::{
 };
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    Coin, Deps, DepsMut, OverflowError, OverflowOperation, SignedDecimal, SignedDecimal256,
-    StdError, StdResult, Storage,
+    Coin, OverflowError, OverflowOperation, SignedDecimal, SignedDecimal256, StdError, StdResult,
+    Storage,
 };
 
 use super::{OrderPrice, PerpetualOrderType, Status};

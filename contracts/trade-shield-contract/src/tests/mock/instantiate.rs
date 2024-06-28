@@ -75,7 +75,17 @@ pub fn instantiate(
             }
             SORTED_PENDING_PERPETUAL_ORDER.save(deps.storage, key.as_str(), &vec)?;
             number_of_pending_order += 1;
+            if order.status == Status::Pending {
+                if let Some(position_id) = order.position_id {
+                    let mut vec = CLOSE_PERPETUAL_ORDER
+                        .may_load(deps.storage, position_id)?
+                        .unwrap_or(vec![]);
+                    vec.push(order.order_id);
+                    CLOSE_PERPETUAL_ORDER.save(deps.storage, position_id, &vec)?;
+                }
+            }
         }
+
         let mut ids = match user_perpetual_orders.get(&owner) {
             Some(ids) => ids.to_owned(),
             None => vec![],
@@ -90,6 +100,17 @@ pub fn instantiate(
     SPOT_ORDER_MAX_ID.save(
         deps.storage,
         &match msg.spot_orders.iter().max_by_key(|order| order.order_id) {
+            Some(o) => o.order_id,
+            None => 0,
+        },
+    )?;
+    PERPETUAL_ORDER_MAX_ID.save(
+        deps.storage,
+        &match msg
+            .perpetual_orders
+            .iter()
+            .max_by_key(|order| order.order_id)
+        {
             Some(o) => o.order_id,
             None => 0,
         },

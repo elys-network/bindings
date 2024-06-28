@@ -5,8 +5,9 @@ use cosmwasm_std::{
 use elys_bindings::account_history::msg::query_resp::MembershipTierResponse;
 use elys_bindings::account_history::msg::QueryMsg as AccountHistoryQueryMsg;
 use elys_bindings::trade_shield::states::{
-    NUMBER_OF_EXECUTED_ORDER, NUMBER_OF_PENDING_ORDER, PENDING_PERPETUAL_ORDER, PENDING_SPOT_ORDER,
-    PERPETUAL_ORDER, SORTED_PENDING_PERPETUAL_ORDER, SORTED_PENDING_SPOT_ORDER, SPOT_ORDER,
+    CLOSE_PERPETUAL_ORDER, NUMBER_OF_EXECUTED_ORDER, NUMBER_OF_PENDING_ORDER,
+    PENDING_PERPETUAL_ORDER, PENDING_SPOT_ORDER, PERPETUAL_ORDER, SORTED_PENDING_PERPETUAL_ORDER,
+    SORTED_PENDING_SPOT_ORDER, SPOT_ORDER,
 };
 use elys_bindings::trade_shield::types::{PerpetualOrder, PerpetualOrderType, SpotOrder, Status};
 use elys_bindings::{trade_shield::states::ACCOUNT_HISTORY_ADDRESS, ElysMsg};
@@ -128,6 +129,20 @@ pub fn remove_perpetual_order(
     PERPETUAL_ORDER.save(storage, order.order_id, &order)?;
     PENDING_PERPETUAL_ORDER.remove(storage, order.order_id);
     change_the_number_of_order(storage, &order.status)?;
+    if order.order_type == PerpetualOrderType::LimitClose
+        || order.order_type == PerpetualOrderType::StopLoss
+    {
+        let orders_ids: Vec<u64> = CLOSE_PERPETUAL_ORDER
+            .load(storage, order.position_id.unwrap())?
+            .iter()
+            .filter(|id| *id == &order.order_id)
+            .cloned()
+            .collect();
+        CLOSE_PERPETUAL_ORDER.save(storage, order.position_id.unwrap(), &orders_ids)?;
+        if !orders_ids.is_empty() {
+            remove_perpetual_order(orders_ids[0], Status::Canceled, storage, None)?;
+        }
+    }
     let bank_msg =
         if order.status == Status::Canceled && order.order_type == PerpetualOrderType::LimitOpen {
             Some(BankMsg::Send {

@@ -120,11 +120,6 @@ fn create_perpetual_open_order(
 ) -> Result<Response<ElysMsg>, ContractError> {
     let collateral = cw_utils::one_coin(&info)?;
 
-    let orders: Vec<PerpetualOrder> = PERPETUAL_ORDER
-        .prefix_range(deps.storage, None, None, Order::Ascending)
-        .filter_map(|res| res.ok().map(|r| r.1))
-        .collect();
-
     if position == PerpetualPosition::Unspecified {
         return Err(
             StdError::generic_err("perpetual position cannot be set at: Unspecified").into(),
