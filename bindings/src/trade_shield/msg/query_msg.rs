@@ -101,6 +101,8 @@ pub enum QueryMsg {
     },
     #[returns(LeveragelpPositionResponse)]
     LeveragelpPosition { address: String, id: u64 },
+    #[returns(GetLeverageLpRewardsResp)]
+    LeveragelpRewards { address: String, ids: Vec<u64> },
     #[returns(TradeShieldParamsResponse)]
     GetParams {},
     #[returns(NumberOfPendingOrderResp)]
@@ -117,4 +119,6 @@ pub enum QueryMsg {
     GetSpotOrderStates { order_id: u64 },
     #[returns(ContractVersion)]
     Version {},
+    #[returns(ParameterParamsResponse)]
+    ParameterParams {},
 }

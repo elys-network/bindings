@@ -1,14 +1,4 @@
 pub mod query {
-    pub mod pod {
-        mod get_pod_liquidity_position;
-        mod get_pod_liquidity_positions;
-
-        use crate::{states::LIQUIDITY_POSITIONS, types::*, ContractError};
-        use cosmwasm_std::Deps;
-        pub use get_pod_liquidity_position::get_pod_liquidity_position;
-        pub use get_pod_liquidity_positions::get_pod_liquidity_positions;
-    }
-
     pub mod earn {
         mod get_all_validators;
         mod get_commitments;

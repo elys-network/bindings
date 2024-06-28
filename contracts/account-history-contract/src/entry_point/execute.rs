@@ -4,7 +4,7 @@ use elys_bindings::{account_history::msg::ExecuteMsg, ElysMsg, ElysQuery};
 use crate::{
     action::{
         execute::add_user_address_to_queue,
-        sudo::{clean_old_history, clean_up_history, update_account},
+        sudo::{clean_old_history, clean_up_history, update_account_chain},
     },
     states::{
         DELETE_EPOCH, DELETE_OLD_DATA_ENABLED, PARAMS_ADMIN, PROCESSED_ACCOUNT_PER_BLOCK,
@@ -64,7 +64,7 @@ pub fn execute(
             if info.sender != PARAMS_ADMIN.load(deps.storage)? {
                 return Err(StdError::generic_err("Unauthorized"));
             }
-            let resp = update_account(deps, env)?;
+            let resp = update_account_chain(deps, env)?;
             Ok(resp)
         }
         ExecuteMsg::CleanHistory { limit } => {

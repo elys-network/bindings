@@ -6,7 +6,6 @@ pub use error::ContractError;
 
 mod action;
 mod error;
-mod states;
 
 #[cfg(test)]
 mod tests;
