@@ -6,93 +6,74 @@ use cosmwasm_std::{
     coin, to_json_binary, Decimal, Int128, OverflowError, QuerierWrapper, StdError, StdResult,
     Storage, SubMsg,
 };
-use elys_bindings::query_resp::{Entry, QueryGetEntryResponse};
 
 use super::*;
 
-pub fn process_orders(
-    deps: DepsMut<ElysQuery>,
-    env: Env,
-) -> Result<Response<ElysMsg>, ContractError> {
-    let spot_orders: Vec<(String, Vec<u64>)> = if SWAP_ENABLED.load(deps.storage)? {
-        SORTED_PENDING_SPOT_ORDER
-            .prefix_range(deps.storage, None, None, Order::Ascending)
-            .filter_map(|res| res.ok())
-            .collect()
-    } else {
-        vec![]
-    };
-
-    let mut n_spot_order = LIMIT_PROCESS_ORDER.load(deps.storage)?;
-    let mut n_perpetual_order = n_spot_order.clone();
-
-    let perpetual_orders: Vec<(String, Vec<u64>)> = if PERPETUAL_ENABLED.load(deps.storage)? {
-        SORTED_PENDING_PERPETUAL_ORDER
-            .prefix_range(deps.storage, None, None, Order::Ascending)
-            .filter_map(|res| res.ok())
-            .collect()
-    } else {
-        vec![]
-    };
-
-    let mut reply_info_id = MAX_REPLY_ID.load(deps.storage)?;
-
+fn generate_spot_order_submsgs_bankmsgs(
+    deps: &mut DepsMut<ElysQuery>,
+    env: &Env,
+    n_spot_order: &mut Option<u128>,
+    reply_info_id: &mut u64,
+) -> Result<(Vec<SubMsg<ElysMsg>>, Vec<BankMsg>), ContractError> {
     let querier = ElysQuerier::new(&deps.querier);
     let mut submsgs: Vec<SubMsg<ElysMsg>> = vec![];
     let mut bank_msgs: Vec<BankMsg> = vec![];
+    let spot_orders: Vec<(String, Vec<u64>, (SpotOrderType, String, String))> =
+        SORTED_PENDING_SPOT_ORDER
+            .prefix_range(deps.storage, None, None, Order::Ascending)
+            .filter_map(|res| {
+                let (key, ids) = res.ok()?;
+                let (order_type, base_denom, quote_denom) =
+                    SpotOrder::from_key(key.as_str()).ok()?;
+                Some((key, ids, (order_type, base_denom, quote_denom)))
+            })
+            .collect();
 
-    let QueryGetEntryResponse {
-        entry: Entry {
-            denom: _usdc_denom, ..
-        },
-    } = querier.get_asset_profile("uusdc".to_string())?;
-
-    for (key, order_ids) in spot_orders.iter() {
-        if n_spot_order == Some(0) {
-            break;
-        }
-
-        let (order_type, base_denom, quote_denom) = SpotOrder::from_key(key.as_str())?;
-
-        if order_type == SpotOrderType::MarketBuy {
+    for (key, order_ids, (spot_order_type, base_denom, quote_denom)) in spot_orders.iter() {
+        if spot_order_type == &SpotOrderType::MarketBuy {
             SORTED_PENDING_SPOT_ORDER.remove(deps.storage, key.as_str());
             continue;
         }
 
-        let market_price =
-            match querier.get_asset_price_from_denom_in_to_denom_out(&base_denom, &quote_denom) {
-                Ok(market_price) => {
-                    if order_type == SpotOrderType::LimitBuy {
-                        match Decimal::one().checked_div(market_price.clone()) {
-                            Ok(market_price) => market_price,
-                            Err(_) => {
-                                continue;
-                            }
+        let market_price = match querier
+            .get_asset_price_from_denom_in_to_denom_out(base_denom, quote_denom)
+            .ok()
+        {
+            Some(market_price) => {
+                if spot_order_type == &SpotOrderType::LimitBuy {
+                    match Decimal::one().checked_div(market_price.clone()) {
+                        Ok(market_price) => market_price,
+                        Err(_) => {
+                            continue;
                         }
-                    } else {
-                        market_price
                     }
+                } else {
+                    market_price.clone()
                 }
-                Err(_) => {
-                    bank_msgs.extend(cancel_spot_orders(deps.storage, key, order_ids, None)?);
-                    continue;
-                }
-            };
+            }
+            None => {
+                bank_msgs.extend(cancel_spot_orders(deps.storage, key, order_ids, None)?);
+                continue;
+            }
+        };
         let closest_spot_price = SpotOrder::binary_search(&market_price, deps.storage, &order_ids)?;
-        let routes = match querier.amm_swap_estimation_by_denom(
-            &coin(1000000, &base_denom),
-            &base_denom,
-            &quote_denom,
-            &Decimal::zero(),
-        ) {
-            Ok(r) => match r.in_route {
+        let routes = match querier
+            .amm_swap_estimation_by_denom(
+                &coin(1000000, base_denom),
+                base_denom,
+                quote_denom,
+                &Decimal::zero(),
+            )
+            .ok()
+        {
+            Some(r) => match r.clone().in_route {
                 Some(routes) => routes,
                 None => {
                     bank_msgs.extend(cancel_spot_orders(deps.storage, key, order_ids, None)?);
                     continue;
                 }
             },
-            Err(_) => {
+            None => {
                 bank_msgs.extend(cancel_spot_orders(deps.storage, key, order_ids, None)?);
                 continue;
             }
@@ -100,8 +81,8 @@ pub fn process_orders(
 
         let orders_to_process: Vec<u64> = split_spot_order(
             closest_spot_price,
-            &mut n_spot_order,
-            order_type,
+            n_spot_order,
+            spot_order_type.clone(),
             market_price,
             order_ids.to_owned(),
             deps.storage,
@@ -112,33 +93,70 @@ pub fn process_orders(
             orders_to_process,
             &mut submsgs,
             env.contract.address.as_str(),
-            &mut reply_info_id,
+            reply_info_id,
             deps.storage,
             deps.querier,
         )?;
     }
 
-    for (key, order_ids) in perpetual_orders.iter() {
-        if n_perpetual_order == Some(0) {
+    Ok((submsgs, bank_msgs))
+}
+
+fn generate_perpetual_orders_submsgs(
+    deps: &mut DepsMut<ElysQuery>,
+    env: &Env,
+    n_perpetual_order: &mut Option<u128>,
+    reply_info_id: &mut u64,
+) -> Result<Vec<SubMsg<ElysMsg>>, ContractError> {
+    let querier = ElysQuerier::new(&deps.querier);
+    let mut submsgs: Vec<SubMsg<ElysMsg>> = vec![];
+
+    let perpetual_orders: Vec<(
+        String,
+        Vec<u64>,
+        (PerpetualPosition, PerpetualOrderType, String, String),
+    )> = SORTED_PENDING_PERPETUAL_ORDER
+        .prefix_range(deps.storage, None, None, Order::Ascending)
+        .filter_map(
+            |res| -> Option<(
+                String,
+                Vec<u64>,
+                (PerpetualPosition, PerpetualOrderType, String, String),
+            )> {
+                let (key, order_ids) = res.ok()?;
+                let (order_position, order_type, base_denom, quote_denom) =
+                    PerpetualOrder::from_key(&key).ok()?;
+                Some((
+                    key,
+                    order_ids,
+                    (order_position, order_type, base_denom, quote_denom),
+                ))
+            },
+        )
+        .collect();
+
+    for (key, order_ids, (order_position, order_type, base_denom, quote_denom)) in
+        perpetual_orders.iter()
+    {
+        if n_perpetual_order == &Some(0) {
             break;
         }
-        let (order_position_type, order_type, base_denom, quote_denom) =
-            PerpetualOrder::from_key(key.as_str())?;
-
         //get the price in usdc
-        let market_price =
-            match querier.get_asset_price_from_denom_in_to_denom_out(&quote_denom, &base_denom) {
-                Ok(market_price) => market_price,
-                Err(_) => {
-                    cancel_perpetual_orders(deps.storage, key, &order_ids, None)?;
-                    continue;
-                }
-            };
+        let market_price = match querier
+            .get_asset_price_from_denom_in_to_denom_out(quote_denom, base_denom)
+            .ok()
+        {
+            Some(market_price) => market_price.clone(),
+            None => {
+                cancel_perpetual_orders(deps.storage, key, &order_ids, None)?;
+                continue;
+            }
+        };
 
         let closest_index = PerpetualOrder::binary_search(
             &Some(OrderPrice {
-                base_denom,
-                quote_denom,
+                base_denom: base_denom.to_string(),
+                quote_denom: quote_denom.to_string(),
                 rate: market_price.clone(),
             }),
             deps.storage,
@@ -147,9 +165,9 @@ pub fn process_orders(
 
         let order_to_execute = split_perpetual_order(
             closest_index,
-            &mut n_perpetual_order,
-            &order_position_type,
-            order_type,
+            n_perpetual_order,
+            order_position,
+            order_type.clone(),
             market_price,
             order_ids.to_owned(),
             deps.storage,
@@ -158,20 +176,54 @@ pub fn process_orders(
         process_perpetual_order(
             order_to_execute,
             &mut submsgs,
-            &mut reply_info_id,
+            reply_info_id,
             deps.storage,
             &querier,
             env.contract.address.as_str(),
         )?;
     }
+    Ok(submsgs)
+}
+
+pub fn process_orders(
+    mut deps: DepsMut<ElysQuery>,
+    env: Env,
+) -> Result<Response<ElysMsg>, ContractError> {
+    let mut reply_info_id = MAX_REPLY_ID.load(deps.storage)?;
+
+    let mut n_spot_order = LIMIT_PROCESS_ORDER.load(deps.storage)?;
+    let mut n_perpetual_order = n_spot_order.clone();
+
+    let (submsgs, bank_msgs): (Vec<SubMsg<ElysMsg>>, Vec<BankMsg>) =
+        if SWAP_ENABLED.load(deps.storage)? {
+            generate_spot_order_submsgs_bankmsgs(
+                &mut deps,
+                &env,
+                &mut n_spot_order,
+                &mut reply_info_id,
+            )?
+        } else {
+            (vec![], vec![])
+        };
+
+    let perpetual_submsgs: Vec<SubMsg<ElysMsg>> = if PERPETUAL_ENABLED.load(deps.storage)? {
+        generate_perpetual_orders_submsgs(
+            &mut deps,
+            &env,
+            &mut n_perpetual_order,
+            &mut reply_info_id,
+        )?
+    } else {
+        vec![]
+    };
 
     MAX_REPLY_ID.save(deps.storage, &reply_info_id)?;
 
     let resp = if bank_msgs.is_empty() {
-        Response::new().add_submessages(submsgs)
+        Response::new().add_submessages([submsgs, perpetual_submsgs].concat())
     } else {
         Response::new()
-            .add_submessages(submsgs)
+            .add_submessages([submsgs, perpetual_submsgs].concat())
             .add_messages(bank_msgs)
     };
 
