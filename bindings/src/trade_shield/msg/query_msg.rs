@@ -86,21 +86,23 @@ pub enum QueryMsg {
     LeveragelpPool { index: u64 },
     #[returns(LeveragelpPoolsResponse)]
     LeveragelpPools { pagination: Option<PageRequest> },
-    #[returns(LeveragelpOpenEstResponse)]
-    LeveragelpOpenEst {
+    #[returns(LeveragelpOpenEstimationResponse)]
+    LeveragelpOpenEstimation {
         collateral_asset: String,
         collateral_amount: Int128,
         amm_pool_id: u64,
         leverage: Decimal,
     },
-    #[returns(LeveragelpCloseEstResponse)]
-    LeveragelpCloseEst {
+    #[returns(LeveragelpCloseEstimationResponse)]
+    LeveragelpCloseEstimation {
         owner: String,
         id: u64,
         lp_amount: Int128,
     },
     #[returns(LeveragelpPositionResponse)]
     LeveragelpPosition { address: String, id: u64 },
+    #[returns(GetLeverageLpRewardsResp)]
+    LeveragelpRewards { address: String, ids: Vec<u64> },
     #[returns(TradeShieldParamsResponse)]
     GetParams {},
     #[returns(NumberOfPendingOrderResp)]
@@ -117,4 +119,6 @@ pub enum QueryMsg {
     GetSpotOrderStates { order_id: u64 },
     #[returns(ContractVersion)]
     Version {},
+    #[returns(ParameterParamsResponse)]
+    ParameterParams {},
 }

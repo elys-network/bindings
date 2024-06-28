@@ -5,18 +5,9 @@ use msg::QueryMsg;
 
 pub fn query(deps: Deps<ElysQuery>, _env: Env, msg: QueryMsg) -> Result<Binary, ContractError> {
     use action::query::earn;
-    use action::query::pod;
     use QueryMsg::*;
 
     match msg {
-        // Pod dashboard
-        GetPodLiquidityPositions {} => {
-            Ok(to_json_binary(&pod::get_pod_liquidity_positions(deps)?)?)
-        }
-        GetPodLiquidityPosition { pool_id } => Ok(to_json_binary(
-            &pod::get_pod_liquidity_position(deps, pool_id)?,
-        )?),
-
         // Earn Program
         GetAllValidators { delegator_addr } => Ok(to_json_binary(&earn::get_all_validators(
             deps,

@@ -12,6 +12,9 @@ use cosmwasm_std::{Coin, CustomQuery, Decimal, Int128, SignedDecimal, SignedDeci
 #[cw_serde]
 #[derive(QueryResponses)]
 pub enum ElysQuery {
+    // Define Parameter
+    #[returns(ParameterParamsResponse)]
+    ParameterParams {},
     // Define AmmQuery
     #[returns(AmmSwapEstimationResponse)]
     AmmSwapEstimation {
@@ -80,6 +83,8 @@ pub enum ElysQuery {
     CommitmentVestingInfo { address: String },
     #[returns(CommitmentNumberOfCommitmentsResponse)]
     CommitmentNumberOfCommitments {},
+    #[returns(GetLeverageLpRewardsResp)]
+    LeveragelpRewards { address: String, ids: Vec<u64> },
 
     // Define Incentive
     #[returns(QueryAprResponse)]
@@ -130,15 +135,15 @@ pub enum ElysQuery {
     LeveragelpPools { pagination: Option<PageRequest> },
     #[returns(LeveragelpPositionResponse)]
     LeveragelpPosition { address: String, id: u64 },
-    #[returns(LeveragelpOpenEstResponse)]
-    LeveragelpOpenEst {
+    #[returns(LeveragelpOpenEstimationResponse)]
+    LeveragelpOpenEstimation {
         collateral_asset: String,
         collateral_amount: Int128,
         amm_pool_id: u64,
         leverage: Decimal,
     },
-    #[returns(LeveragelpCloseEstResponse)]
-    LeveragelpCloseEst {
+    #[returns(LeveragelpCloseEstimationResponse)]
+    LeveragelpCloseEstimation {
         owner: String,
         id: u64,
         lp_amount: Int128,
@@ -180,11 +185,18 @@ pub enum ElysQuery {
     StableStakeBalanceOfBorrow {},
     #[returns(StableStakeParamsResp)]
     StableStakeParams {},
+
+    // Define Tier
+    #[returns(TierCalculateDiscountResponse)]
+    TierCalculateDiscount { user: String },
 }
 
 impl CustomQuery for ElysQuery {}
 
 impl ElysQuery {
+    pub fn parameter_params() -> Self {
+        Self::ParameterParams {}
+    }
     pub fn amm_swap_estimation(
         routes: Vec<SwapAmountInRoute>,
         token_in: Coin,
@@ -397,7 +409,7 @@ impl ElysQuery {
         amm_pool_id: u64,
         leverage: Decimal,
     ) -> Self {
-        Self::LeveragelpOpenEst {
+        Self::LeveragelpOpenEstimation {
             collateral_asset,
             collateral_amount,
             amm_pool_id,
@@ -405,7 +417,7 @@ impl ElysQuery {
         }
     }
     pub fn leveragelp_close_est(owner: String, id: u64, lp_amount: Int128) -> Self {
-        Self::LeveragelpCloseEst {
+        Self::LeveragelpCloseEstimation {
             owner,
             id,
             lp_amount,
@@ -450,5 +462,11 @@ impl ElysQuery {
     }
     pub fn commitment_number_of_commitments() -> Self {
         Self::CommitmentNumberOfCommitments {}
+    }
+    pub fn tier_calculate_discount(user: String) -> Self {
+        Self::TierCalculateDiscount { user }
+    }
+    pub fn query_leverage_lp_rewards(address: String, ids: Vec<u64>) -> Self {
+        Self::LeveragelpRewards { address, ids }
     }
 }

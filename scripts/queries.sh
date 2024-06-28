@@ -626,11 +626,28 @@ function get_spot_order_states() {
     }'
 }
 
-function get_ts_stat {
+function get_ts_stat() {
     printf "\n# Get Spot Order State"
     query_contract "$ts_contract_address" '{
         "get_stat": {}
     }'
+}
+
+function parameter_params() {
+    printf "\n# Get Parameter Params"
+query_contract "$ts_contract_address" '{
+        "parameter_params": {}
+    }'
+}
+
+function get_masterchef_pool_info() {
+    printf "\n# Get Masterchef Pool Info"
+    query_contract "$ah_contract_address" '{
+        "get_masterchef_pool_info": {
+            "pool_id": 2
+        }
+    }'
+
 }
 
 # function(s) to run based on the provided argument
@@ -824,6 +841,9 @@ case "$2" in
 "master_chef_params")
     master_chef_params
     ;;
+"get_masterchef_pool_info")
+    get_masterchef_pool_info
+    ;;
 "get_masterchef_pending_rewards")
     get_masterchef_pending_rewards
     ;;
@@ -835,6 +855,9 @@ case "$2" in
     ;;
 "get_ts_stat")
     get_ts_stat
+    ;;
+"parameter_params")
+    parameter_params
     ;;
 *)
     # Default case: run all functions

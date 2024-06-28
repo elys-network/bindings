@@ -10,12 +10,6 @@ use elys_bindings::query_resp::*;
 #[cw_serde]
 #[derive(QueryResponses)]
 pub enum QueryMsg {
-    // Pod dashboard
-    #[returns(GetLiquidityPositionsResp)]
-    GetPodLiquidityPositions {},
-    #[returns(GetLiquidityPositionResp)]
-    GetPodLiquidityPosition { pool_id: u64 },
-
     // Earn dashboard
     #[returns(QueryDelegatorValidatorsResponse)]
     GetAllValidators { delegator_addr: Option<String> },
