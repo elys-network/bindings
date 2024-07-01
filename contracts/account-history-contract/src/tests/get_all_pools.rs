@@ -155,6 +155,7 @@ impl Module for ElysModuleWrapper {
                         swap_fee: Decimal::from_str("0.1").unwrap(),
                         fee_denom: "uelys".to_string(),
                         use_oracle: Some(true),
+                        leveragelp_enabled: Some(true),
                     }]),
                 };
                 Ok(to_json_binary(&resp)?)
@@ -347,6 +348,7 @@ fn get_all_pools() {
                 swap_fee: Decimal::from_str("0.1").unwrap(),
                 fee_denom: "uelys".to_string(),
                 use_oracle: Some(true),
+                leveragelp_enabled: Some(true),
             }]
             .to_vec(),
         ),
