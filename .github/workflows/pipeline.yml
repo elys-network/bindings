@@ -37,7 +37,7 @@ jobs:
     needs: test
     name: deploy on devnet
     runs-on: ubuntu-latest
-    if:  github.ref == 'refs/heads/devnet'
+    if:  github.ref == 'refs/heads/main'
     environment: devnet
     steps:
       - uses: actions/checkout@v4
