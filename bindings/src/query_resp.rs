@@ -527,7 +527,7 @@ pub struct PoolResp {
     pub swap_fee: Decimal,
     pub fee_denom: String,
     pub use_oracle: Option<bool>,
-    pub leveragelp_enabled: Option<bool>,
+    pub is_leveragelp: Option<bool>,
 }
 
 impl Default for PoolResp {
@@ -553,7 +553,7 @@ impl Default for PoolResp {
             swap_fee: Decimal::zero(),
             use_oracle: Some(false),
             lp_token_price: None,
-            leveragelp_enabled: None,
+            is_leveragelp: None,
         }
     }
 }
