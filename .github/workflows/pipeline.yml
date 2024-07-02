@@ -53,7 +53,27 @@ jobs:
           toolchain: stable
       - name: Compile
         run: |
-            VERSION=$(cat .version)
+            ELYSD=./elysd
+            json=$($ELYSD q --output json --node "${{vars.NODE}}" wasm contract-state smart "${{vars.FS_CONTRACT_ADDRESS}}" '{ "version": {} }')
+            echo "Response json: $json"
+            VERSION=$(echo $json | jq -r ".data.version")
+            echo "Current version: $VERSION"
+            
+            # Extract the major, minor, and patch versions
+            version_parts=(${VERSION//./ })
+            major=${version_parts[0]}
+            minor=${version_parts[1]}
+            patch=${version_parts[2]}
+
+            # Increment the minor version
+            minor=$((minor + 1))
+
+            # Update the version string
+            VERSION="$major.$minor.$patch"
+
+            # Print the updated version number
+            echo "New version number: $new_version"
+            
             sed -i "s/^version = .*/version = \"$VERSION\"/" contracts/account-history-contract/Cargo.toml
             sed -i "s/^version = .*/version = \"$VERSION\"/" contracts/trade-shield-contract/Cargo.toml
             sed -i "s/^version = .*/version = \"$VERSION\"/" contracts/financial-snapshot-contract/Cargo.toml
