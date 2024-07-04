@@ -3,14 +3,14 @@ use cw2::set_contract_version;
 use cw_utils::Expiration;
 use elys_bindings::account_history::msg::MigrationMsg;
 // use elys_bindings::account_history::types::Metadata;
-use elys_bindings::{ElysMsg, /*ElysQuerier,*/ ElysQuery};
+use elys_bindings::{ElysMsg, ElysQuery};
 use semver::Version;
 
+use super::instantiate::{CONTRACT_NAME, CONTRACT_VERSION};
 use crate::states::{
     DELETE_EPOCH, DELETE_OLD_DATA_ENABLED, EXPIRATION, PARAMS_ADMIN, PROCESSED_ACCOUNT_PER_BLOCK,
     TRADE_SHIELD_ADDRESS,
 };
-
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(
     deps: DepsMut<ElysQuery>,
