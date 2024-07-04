@@ -1,6 +1,6 @@
 [package]
 name = "account-history-contract"
-version = "0.2.20"
+version = "0.0.0"
 edition = "2021"
 
 [lib]
