@@ -16,6 +16,7 @@ cosmwasm-schema = "1.1.4"
 cw-utils = "0.13"
 cw2 = { version = "1.0.1" }
 elys-bindings = { path = "../../bindings" }
+semver = "1.0"
 
 [dev-dependencies]
 cw-multi-test = "0.13.4"
