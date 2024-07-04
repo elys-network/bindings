@@ -609,7 +609,7 @@ pub struct LeveragelpParamsResponse {
 }
 
 #[cw_serde]
-pub struct LeveragelpPosition {
+pub struct Position {
     pub address: String,
     pub collateral: Coin,
     pub liabilities: Int128,
@@ -621,6 +621,13 @@ pub struct LeveragelpPosition {
     pub amm_pool_id: u64,
     pub stop_loss_price: Decimal,
 }
+#[cw_serde]
+pub struct LeveragelpPosition {
+    pub position: Position,
+    pub interest_rate_hour: Decimal,
+    pub interest_rate_hour_usd: Decimal,
+}
+
 
 #[cw_serde]
 pub struct LeveragelpPositionResponse {
@@ -639,7 +646,7 @@ impl LeveragelpPositionsResponseRaw {
             .clone()
             .unwrap_or(vec![])
             .iter()
-            .map(|x| x.id)
+            .map(|x| x.position.id)
             .collect()
     }
 }

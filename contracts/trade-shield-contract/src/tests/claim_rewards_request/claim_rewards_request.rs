@@ -25,6 +25,7 @@ use elys_bindings::query_resp::LeveragelpPosition;
 use elys_bindings::query_resp::LeveragelpPositionsResponse;
 use elys_bindings::query_resp::MasterchefUserPendingRewardData;
 use elys_bindings::query_resp::MasterchefUserPendingRewardResponse;
+use elys_bindings::query_resp::Position;
 use elys_bindings::query_resp::Validator;
 use elys_bindings::trade_shield::msg::ExecuteMsg;
 use elys_bindings::types::PageResponse;
@@ -122,19 +123,23 @@ impl Module for ElysModuleWrapper {
             }
             ElysQuery::LeveragelpQueryPositionsForAddress { .. } => {
                 let position = LeveragelpPosition {
-                    address: "user".to_string(),
-                    collateral: Coin {
-                        denom: "uelys".to_string(),
-                        amount: Uint128::new(100000000),
+                    position: Position {
+                        address: "user".to_string(),
+                        collateral: Coin {
+                            denom: "uelys".to_string(),
+                            amount: Uint128::new(100000000),
+                        },
+                        liabilities: Int128::zero(),
+                        interest_paid: Int128::zero(),
+                        leverage: Decimal::new(Uint128::new(10)),
+                        leveraged_lp_amount: Int128::new(10000000),
+                        position_health: Decimal::one(),
+                        id: 1,
+                        amm_pool_id: 1,
+                        stop_loss_price: Decimal::one(),
                     },
-                    liabilities: Int128::zero(),
-                    interest_paid: Int128::zero(),
-                    leverage: Decimal::new(Uint128::new(10)),
-                    leveraged_lp_amount: Int128::new(10000000),
-                    position_health: Decimal::one(),
-                    id: 1,
-                    amm_pool_id: 1,
-                    stop_loss_price: Decimal::one(),
+                    interest_rate_hour: Decimal::one(),
+                    interest_rate_hour_usd: Decimal::zero(),
                 };
 
                 let resp = LeveragelpPositionsResponse {
