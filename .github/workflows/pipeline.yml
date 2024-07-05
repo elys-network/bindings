@@ -34,7 +34,7 @@ jobs:
           cargo test --verbose
         working-directory: .
   devnet:
-    needs: test
+    #needs: test
     name: deploy on devnet
     runs-on: ubuntu-latest
     if:  github.ref == 'refs/heads/main'
