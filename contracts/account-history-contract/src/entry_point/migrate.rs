@@ -3,15 +3,14 @@ use cw2::set_contract_version;
 use cw_utils::Expiration;
 use elys_bindings::account_history::msg::MigrationMsg;
 // use elys_bindings::account_history::types::Metadata;
-use elys_bindings::{ElysMsg, /*ElysQuerier,*/ ElysQuery};
+use elys_bindings::{ElysMsg, ElysQuery};
+use semver::Version;
 
+use super::instantiate::{CONTRACT_NAME, CONTRACT_VERSION};
 use crate::states::{
     DELETE_EPOCH, DELETE_OLD_DATA_ENABLED, EXPIRATION, PARAMS_ADMIN, PROCESSED_ACCOUNT_PER_BLOCK,
     TRADE_SHIELD_ADDRESS,
 };
-
-use super::instantiate::{CONTRACT_NAME, CONTRACT_VERSION};
-
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(
     deps: DepsMut<ElysQuery>,
@@ -53,8 +52,17 @@ pub fn migrate(
     if ver.contract != CONTRACT_NAME {
         return Err(StdError::generic_err("Can only upgrade from same type").into());
     }
-    if ver.version.as_str() >= CONTRACT_VERSION {
-        return Err(StdError::generic_err("Cannot upgrade from a newer version").into());
+    let new_contract_version = Version::parse(CONTRACT_VERSION).unwrap();
+    let actual_contract_version = Version::parse(ver.version.as_str()).unwrap();
+
+    if new_contract_version.le(&actual_contract_version) {
+        let err_version: String = format!(
+            "Error the version of account-history-contract {} has to be upper to {}",
+            new_contract_version.to_string(),
+            actual_contract_version.to_string()
+        );
+
+        return Err(StdError::generic_err(err_version).into());
     }
 
     let admin = "elys16xffmfa6k45j340cx5zyp66lqvuw62a0neaa7w".to_string();
