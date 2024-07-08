@@ -25,7 +25,7 @@ cw-utils = { version = "0.13", default-features = false }
 cw2 = { version = "1.0.1" }
 elys-bindings = { path = "../../bindings" }
 chrono = { version = "0.4.33", default-features = false, features = ["alloc"] }
-
+semver = "1.0"
 
 [dev-dependencies]
 trade_shield_contract = { path = "../trade-shield-contract" }
