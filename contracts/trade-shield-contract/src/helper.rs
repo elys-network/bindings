@@ -1,6 +1,6 @@
 use cosmwasm_std::{
     from_json, BankMsg, Decimal, Deps, OverflowError, OverflowOperation, QuerierWrapper, Response,
-    StdError, StdResult, Storage, SubMsgResult,
+    StdError, StdResult, Storage, SubMsgResult, Uint128,
 };
 use elys_bindings::account_history::msg::query_resp::MembershipTierResponse;
 use elys_bindings::account_history::msg::QueryMsg as AccountHistoryQueryMsg;
@@ -62,7 +62,13 @@ pub fn get_discount(deps: &Deps<ElysQuery>, user_address: String) -> StdResult<D
     };
 
     let discount = match discount_str.parse::<Decimal>() {
-        Ok(discount) => discount.checked_div(Decimal::new(100)),
+        Ok(discount) => {
+            let result = match discount.checked_div(Decimal::new(Uint128::from(100u64))) {
+                Ok(result) => result,
+                Err(_) => Decimal::zero(),
+            };
+            result
+        }
         Err(_) => Decimal::zero(),
     };
 
