@@ -62,7 +62,7 @@ pub fn get_discount(deps: &Deps<ElysQuery>, user_address: String) -> StdResult<D
     };
 
     let discount = match discount_str.parse::<Decimal>() {
-        Ok(discount) => discount,
+        Ok(discount) => discount.checked_div(Decimal::new(100)),
         Err(_) => Decimal::zero(),
     };
 
