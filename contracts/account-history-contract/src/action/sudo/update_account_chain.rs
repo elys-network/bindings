@@ -1,6 +1,4 @@
-use chrono::NaiveDateTime;
-use cosmwasm_std::{DepsMut, Env, Response, StdResult, Timestamp};
-use cw_utils::Expiration;
+use cosmwasm_std::{DepsMut, Env, Response, StdResult};
 
 use crate::{
     states::{HISTORY, METADATA, OLD_HISTORY_2, PROCESSED_ACCOUNT_PER_BLOCK, USER_ADDRESS_QUEUE},
@@ -78,61 +76,4 @@ pub fn update_account_chain(deps: DepsMut<ElysQuery>, env: Env) -> StdResult<Res
     }
 
     Ok(Response::default().add_messages(msgs))
-}
-
-pub fn clean_up_history(
-    deps: &mut DepsMut<ElysQuery>,
-    env: Env,
-    limit: u64,
-) -> StdResult<Response<ElysMsg>> {
-    let generator = AccountSnapshotGenerator::new(&deps.as_ref())?;
-    let block_info = env.block;
-    let expiration = match generator.expiration {
-        Expiration::AtHeight(h) => Timestamp::from_seconds(h * 3), // since a block is created every 3 seconds
-        Expiration::AtTime(t) => t.clone(),
-        _ => panic!("never expire"),
-    };
-
-    if expiration > block_info.time {
-        return Ok(Response::default());
-    }
-
-    let expired_date = NaiveDateTime::from_timestamp_opt(
-        block_info
-            .time
-            .minus_seconds(expiration.seconds())
-            .seconds() as i64,
-        0,
-    )
-    .expect("Failed to convert block time to date")
-    .format("%Y-%m-%d")
-    .to_string();
-
-    // Delete limit values
-    for _ in 0..limit {
-        if let Some(val) = HISTORY.first(deps.storage)? {
-            let date_part = &val.0[0..10];
-            if date_part < expired_date.as_str() {
-                HISTORY.remove(deps.storage, &val.0);
-            }
-        } else {
-            break;
-        }
-    }
-    Ok(Response::default())
-}
-
-pub fn clean_old_history(
-    deps: &mut DepsMut<ElysQuery>,
-    limit: u64,
-) -> StdResult<Response<ElysMsg>> {
-    // Delete limit values
-    for _ in 0..limit {
-        if let Some(val) = OLD_HISTORY_2.first(deps.storage)? {
-            OLD_HISTORY_2.remove(deps.storage, &val.0);
-        } else {
-            break;
-        }
-    }
-    Ok(Response::default())
 }

@@ -17,7 +17,7 @@ use trade_shield_contract::msg as trade_shield_msg;
 use trade_shield_contract::types::{OrderPrice, SpotOrderType};
 
 use crate::entry_point::instantiate;
-use crate::entry_point::{execute, query, sudo};
+use crate::entry_point::{execute, query};
 use anyhow::{bail, Error, Result as AnyResult};
 use cosmwasm_std::{to_json_binary, Empty, Int128, SignedDecimal, StdError, Uint128};
 use cw_multi_test::{AppResponse, Module};
@@ -365,7 +365,7 @@ fn history() {
         .to_string();
 
     // Create a contract wrapper and store its code.
-    let code = ContractWrapper::new(execute, instantiate, query).with_sudo(sudo);
+    let code = ContractWrapper::new(execute, instantiate, query);
     let code_id = app.store_code(Box::new(code));
 
     // Create a mock message to instantiate the contract with no initial orders.
