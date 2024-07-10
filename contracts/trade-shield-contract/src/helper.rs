@@ -62,13 +62,9 @@ pub fn get_discount(deps: &Deps<ElysQuery>, user_address: String) -> StdResult<D
     };
 
     let discount = match discount_str.parse::<Decimal>() {
-        Ok(discount) => {
-            let result = match discount.checked_div(Decimal::new(Uint128::from(100u64))) {
-                Ok(result) => result,
-                Err(_) => Decimal::zero(),
-            };
-            result
-        }
+        Ok(discount) => discount
+            .checked_div(Decimal::new(Uint128::from(100u64)))
+            .unwrap_or_default(),
         Err(_) => Decimal::zero(),
     };
 
