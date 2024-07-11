@@ -3,7 +3,7 @@ use std::str::FromStr;
 use crate::entry_point::instantiate;
 use crate::tests::get_staked_assets::query_resp::StakedAssetsResponse;
 use crate::{
-    entry_point::{execute, query},
+    entry_point::{execute, query, sudo},
     msg::*,
 };
 use anyhow::{bail, Error, Result as AnyResult};
@@ -524,7 +524,7 @@ fn get_staked_assets() {
         .to_string();
 
     // Create a contract wrapper and store its code.
-    let code = ContractWrapper::new(execute, instantiate, query);
+    let code = ContractWrapper::new(execute, instantiate, query).with_sudo(sudo);
     let code_id = app.store_code(Box::new(code));
 
     // Create a mock message to instantiate the contract with no initial orders.
