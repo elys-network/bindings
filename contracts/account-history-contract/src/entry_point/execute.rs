@@ -2,10 +2,7 @@ use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdError, S
 use elys_bindings::{account_history::msg::ExecuteMsg, ElysMsg, ElysQuery};
 
 use crate::{
-    action::{
-        execute::{add_user_address_to_queue, clean_up_storage},
-        sudo::update_account_chain,
-    },
+    action::execute::{add_user_address_to_queue, clean_up_storage},
     states::{
         DELETE_EPOCH, DELETE_OLD_DATA_ENABLED, PARAMS_ADMIN, PROCESSED_ACCOUNT_PER_BLOCK,
         TRADE_SHIELD_ADDRESS, UPDATE_ACCOUNT_ENABLED,
@@ -59,13 +56,6 @@ pub fn execute(
                 DELETE_EPOCH.save(deps.storage, &delete_epoch)?;
             }
             Ok(Response::new())
-        }
-        ExecuteMsg::UpdateAccount {} => {
-            if info.sender != PARAMS_ADMIN.load(deps.storage)? {
-                return Err(StdError::generic_err("Unauthorized"));
-            }
-            let resp = update_account_chain(deps, env)?;
-            Ok(resp)
         }
         ExecuteMsg::CleanStorage { limit } => {
             if info.sender != PARAMS_ADMIN.load(deps.storage)? {

@@ -12,8 +12,8 @@ pub fn clean_up_storage(deps: &mut DepsMut<ElysQuery>, limit: u64) -> StdResult<
         if let Some(val) = OLD_HISTORY_2.first(deps.storage)? {
             OLD_HISTORY_2.remove(deps.storage, &val.0);
         }
-        if USER_ADDRESS_QUEUE.front(deps.storage).is_ok() {
-            USER_ADDRESS_QUEUE.pop_front(deps.storage)?;
+        if !USER_ADDRESS_QUEUE.is_empty(deps.storage).unwrap() {
+            let _ = USER_ADDRESS_QUEUE.pop_front(deps.storage);
         }
     }
     Ok(Response::default())

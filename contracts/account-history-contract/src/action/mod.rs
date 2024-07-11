@@ -1,8 +1,3 @@
-pub mod sudo {
-    mod update_account_chain;
-    pub use update_account_chain::update_account_chain;
-}
-
 pub mod query {
     mod get_liquid_assets;
     use crate::error::ContractError;
