@@ -4,8 +4,8 @@ use elys_bindings::{account_history::msg::ExecuteMsg, ElysMsg, ElysQuery};
 use crate::{
     action::execute::{add_user_address_to_queue, clean_up_storage},
     states::{
-        DELETE_EPOCH, DELETE_OLD_DATA_ENABLED, PARAMS_ADMIN, PROCESSED_ACCOUNT_PER_BLOCK,
-        TRADE_SHIELD_ADDRESS, UPDATE_ACCOUNT_ENABLED,
+        DELETE_EPOCH, DELETE_OLD_DATA_ENABLED, HISTORY, OLD_HISTORY_2, PARAMS_ADMIN,
+        PROCESSED_ACCOUNT_PER_BLOCK, TRADE_SHIELD_ADDRESS, UPDATE_ACCOUNT_ENABLED,
     },
 };
 
@@ -63,6 +63,14 @@ pub fn execute(
             }
             let resp = clean_up_storage(&mut deps, limit)?;
             Ok(resp)
+        }
+        ExecuteMsg::CleanStorageBulk {} => {
+            if info.sender != PARAMS_ADMIN.load(deps.storage)? {
+                return Err(StdError::generic_err("Unauthorized"));
+            }
+            HISTORY.clear(deps.storage);
+            OLD_HISTORY_2.clear(deps.storage);
+            Ok(Response::new())
         }
     }
 }

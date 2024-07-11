@@ -14,4 +14,5 @@ pub enum ExecuteMsg {
     CleanStorage {
         limit: u64,
     },
+    CleanStorageBulk {},
 }
