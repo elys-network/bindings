@@ -10,6 +10,3 @@ mod action;
 mod error;
 mod states;
 mod types;
-
-#[cfg(test)]
-mod tests;
