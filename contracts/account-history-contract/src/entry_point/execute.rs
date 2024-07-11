@@ -12,7 +12,7 @@ use crate::{
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     mut deps: DepsMut<ElysQuery>,
-    env: Env,
+    _env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
 ) -> StdResult<Response<ElysMsg>> {
