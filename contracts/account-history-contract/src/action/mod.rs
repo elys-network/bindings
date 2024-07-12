@@ -67,3 +67,8 @@ pub mod execute {
     pub use add_user_address_to_queue::add_user_address_to_queue;
     pub use clean_up_storage::clean_up_storage;
 }
+
+pub mod sudo {
+    mod update_metadata_prices;
+    pub use update_metadata_prices::update_metadata_prices;
+}
