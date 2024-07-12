@@ -160,8 +160,8 @@ pub enum QueryMsg {
     IncentiveAprs {},
 
     #[cfg(feature = "debug")]
-    #[returns(Uint128)]
-    AddressQueueSize {},
+    #[returns(StorageSizeResp)]
+    StorageSize {},
 
     #[cfg(feature = "debug")]
     #[returns(ContractVersion)]

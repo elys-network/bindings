@@ -282,8 +282,9 @@ fn get_all_pools() {
         )
         .unwrap();
 
-    app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {})
-        .unwrap();
+    let msg = app.wasm_sudo(addr.clone(), &SudoMsg::ClockEndBlock {});
+
+    println!("{:?}", msg);
 
     let resp: QueryEarnPoolResponse = app
         .wrap()
