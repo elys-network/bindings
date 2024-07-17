@@ -138,7 +138,7 @@ impl Module for ElysModuleWrapper {
                         amm_pool_id: 1,
                         stop_loss_price: Decimal::one(),
                     },
-                    interest_rate_hour: Decimal::one(),
+                    interest_rate_hour: Decimal::zero(),
                     interest_rate_hour_usd: Decimal::zero(),
                 };
 
