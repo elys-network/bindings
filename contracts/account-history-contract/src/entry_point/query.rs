@@ -3,8 +3,8 @@ use crate::{
         get_eden_boost_earn_program_details, get_eden_earn_program_details,
         get_elys_earn_program_details, get_estaking_rewards, get_liquid_assets,
         get_masterchef_pending_rewards, get_masterchef_pool_apr, get_masterchef_stable_stake_apr,
-        get_membership_tier, get_perpetuals_assets, get_pool_balances, get_rewards,
-        get_staked_assets, get_usdc_earn_program_details,
+        get_perpetuals_assets, get_pool_balances, get_rewards, get_staked_assets,
+        get_usdc_earn_program_details,
     },
     states::{HISTORY, OLD_HISTORY_2, USER_ADDRESS_QUEUE},
     types::AccountSnapshotGenerator,
@@ -49,9 +49,6 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         }
         GetRewards { user_address } => to_json_binary(&get_rewards(deps, user_address, env)?),
 
-        GetMembershipTier { user_address } => {
-            to_json_binary(&get_membership_tier(env, deps, user_address)?)
-        }
         GetPerpetualAssets { user_address } => {
             to_json_binary(&get_perpetuals_assets(deps, user_address, env)?)
         }

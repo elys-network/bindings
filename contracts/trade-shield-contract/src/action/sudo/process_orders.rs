@@ -1,5 +1,5 @@
 use crate::{
-    helper::{get_mut_discount, remove_perpetual_order},
+    helper::{get_discount, remove_perpetual_order},
     msg::ReplyType,
 };
 use cosmwasm_std::{
@@ -449,7 +449,7 @@ fn process_spot_order(
         };
         REPLY_INFO.save(storage, *reply_info_id, &reply_info)?;
 
-        let discount = get_mut_discount(storage, querier, order.owner_address.to_string())?;
+        let discount = get_discount(querier, order.owner_address.to_string())?;
 
         let msg = ElysMsg::amm_swap_exact_amount_in(
             sender,

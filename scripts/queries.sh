@@ -86,16 +86,6 @@ function ah_params() {
     }'
 }
 
-# Get membership tier
-function membership_tier() {
-    printf "\n# Membership tier\n"
-    query_contract "$ah_contract_address" '{
-        "get_membership_tier": {
-            "user_address": "'"$user_address"'"
-        }
-    }'
-}
-
 # Get rewards
 function rewards() {
     printf "\n# Rewards\n"
@@ -655,9 +645,6 @@ case "$2" in
 "ah_params")
     ah_params
     ;;
-"membership_tier")
-    membership_tier
-    ;;
 "rewards")
     rewards
     ;;
@@ -863,7 +850,6 @@ case "$2" in
     # Default case: run all functions
     ah_params
     ts_params
-    membership_tier
     rewards
     liquid_assets
     staked_assets

@@ -42,7 +42,7 @@ pub fn create_spot_order(
         &info.funds[0].denom,
     )?;
 
-    let discount = get_discount(&deps.as_ref(), info.sender.to_string())?;
+    let discount = get_discount(deps.querier, info.sender.to_string())?;
 
     let AmmSwapEstimationByDenomResponse { in_route, .. } = querier.amm_swap_estimation_by_denom(
         &info.funds[0],
