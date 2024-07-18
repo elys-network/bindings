@@ -7,11 +7,11 @@ use cosmwasm_std::{
 };
 
 use crate::{
-    account_history::types::CoinValue,
     query::*,
     query_resp::*,
     trade_shield::types::{
-        AmmPool, PoolAsset, PoolExtraInfo, StakedPosition, StakedPositionRaw, StakingValidator,
+        AmmPool, CoinValue, PoolAsset, PoolExtraInfo, StakedPosition, StakedPositionRaw,
+        StakingValidator,
     },
     types::{BalanceAvailable, PageRequest, PerpetualPosition, Price, SwapAmountInRoute},
 };

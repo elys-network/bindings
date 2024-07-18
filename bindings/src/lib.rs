@@ -12,6 +12,4 @@ pub use msg::*;
 pub use querier::ElysQuerier;
 pub use query::*;
 
-pub mod account_history;
-
 pub mod trade_shield;

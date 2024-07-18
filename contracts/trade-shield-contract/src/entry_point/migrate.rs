@@ -1,8 +1,3 @@
-use std::{
-    f32::consts::E,
-    fmt::{format, Debug},
-};
-
 use self::instantiate::{CONTRACT_NAME, CONTRACT_VERSION};
 
 use super::*;

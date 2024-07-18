@@ -5,7 +5,7 @@ use crate::tests::test_order_status::test_spot_order_status;
 use anyhow::{bail, Ok, Result as AnyResult};
 use cosmwasm_std::{
     coin, to_json_binary, Addr, BankMsg, BlockInfo, Decimal, Empty, Int64, SignedDecimal, StdError,
-    Timestamp, Uint128,
+    Timestamp,
 };
 use cw_multi_test::BankSudo;
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
