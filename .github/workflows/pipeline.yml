@@ -77,13 +77,10 @@ jobs:
           }
 
           tradeShieldContractVersion=$(getNewVersionBYContract ${{vars.TS_CONTRACT_ADDRESS}})
-          financialSnapshotContractVersion=$(getNewVersionBYContract ${{vars.FS_CONTRACT_ADDRESS}})
 
           echo "new tradeShieldContractVersion: $tradeShieldContractVersion"
-          echo "new financialSnapshotContractVersion: $financialSnapshotContractVersion"
 
           sed -i "s/^version = .*/version = \"$tradeShieldContractVersion\"/" contracts/trade-shield-contract/Cargo.toml
-          sed -i "s/^version = .*/version = \"$financialSnapshotContractVersion\"/" contracts/financial-snapshot-contract/Cargo.toml
           cargo update
 
           docker run --rm -v "$(pwd)":/code \
@@ -151,32 +148,9 @@ jobs:
           OPTIONS="--from $NAME --node $NODE --chain-id ${{vars.CHAIN_ID}} --keyring-backend=test --gas auto --gas-adjustment 1.3 --fees 300000uelys -y --account-number $account_number -b async --log_level trace --trace"
 
           ##contracts
-          FS_CONTRACT_ADDRESS=${{vars.FS_CONTRACT_ADDRESS}}
           TS_CONTRACT_ADDRESS=${{vars.TS_CONTRACT_ADDRESS}}
 
-          printf "FS_CONTRACT_ADDRESS=%s\n" "$FS_CONTRACT_ADDRESS"
           printf "TS_CONTRACT_ADDRESS=%s\n" "$TS_CONTRACT_ADDRESS"
-
-          # store and init/migrate financial snapshot contract
-          txhash=$(echo "${{ secrets.PASSPHRASE_MALLORCA }}" | $ELYSD tx wasm store $OPTIONS --sequence $(($sequence + 1)) artifacts/financial_snapshot_contract.wasm | extract_txhash)
-          echo "fs store txhash: $txhash"
-          exit_if_tx_is_empty $txhash
-          wait_for_tx $txhash
-          codeid=$($ELYSD q tx $txhash --node $NODE | extract_code_id)
-          echo "fs code id: $codeid"
-
-          if [ "$FS_CONTRACT_ADDRESS" != "empty" ]; then
-              txhash=$( echo "${{ secrets.PASSPHRASE_MALLORCA }}" | $ELYSD tx wasm migrate $OPTIONS --sequence $(($sequence + 2)) $FS_CONTRACT_ADDRESS $codeid '{}' | extract_txhash)
-              echo "fs migrate txhash: $txhash"
-          else
-              txhash=$( echo "${{ secrets.PASSPHRASE_MALLORCA }}" | $ELYSD tx wasm init $OPTIONS --sequence $(($sequence + 2)) --label "fs" --admin $NAME $codeid '{}' | extract_txhash)
-              echo "fs init txhash: $txhash"
-          fi
-
-          exit_if_tx_is_empty $txhash
-          wait_for_tx $txhash
-          export fs_contract_address=$($ELYSD q tx $txhash --node $NODE | extract_contract_address)
-          echo "fs_contract_address: $fs_contract_address"
 
           # store and init/migrate trade shield contract
           txhash=$(echo "${{ secrets.PASSPHRASE_MALLORCA }}" | $ELYSD tx wasm store $OPTIONS --sequence $(($sequence + 3)) artifacts/trade_shield_contract.wasm | extract_txhash)
@@ -203,5 +177,4 @@ jobs:
           printf "\nset those environment variables to use the contracts:\n\n"
           printf "export NODE=%s\n" "$NODE"
           printf "export NAME=%s\n" "$NAME"
-          printf "export FS_CONTRACT_ADDRESS=%s\n" "$fs_contract_address"
           printf "export TS_CONTRACT_ADDRESS=%s\n" "$ts_contract_address"
