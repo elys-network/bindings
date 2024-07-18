@@ -1,4 +1,3 @@
-mod account_history_address;
 mod limit_order;
 mod number_of_order;
 mod params;
@@ -6,7 +5,6 @@ mod perpetual_order;
 mod reply_info;
 mod spot_order;
 
-pub use account_history_address::ACCOUNT_HISTORY_ADDRESS;
 pub use limit_order::LIMIT_PROCESS_ORDER;
 pub use number_of_order::{NUMBER_OF_EXECUTED_ORDER, NUMBER_OF_PENDING_ORDER};
 pub use params::{

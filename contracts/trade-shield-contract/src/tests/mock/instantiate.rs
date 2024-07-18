@@ -12,7 +12,6 @@ use elys_bindings::{ElysMsg, ElysQuery};
 pub struct InstantiateMockMsg {
     pub spot_orders: Vec<SpotOrder>,
     pub perpetual_orders: Vec<PerpetualOrder>,
-    pub account_history_address: Option<String>,
 }
 
 pub fn instantiate(
@@ -96,7 +95,6 @@ pub fn instantiate(
     )?;
     NUMBER_OF_PENDING_ORDER.save(deps.storage, &number_of_pending_order)?;
     NUMBER_OF_EXECUTED_ORDER.save(deps.storage, &number_of_executed_order)?;
-    ACCOUNT_HISTORY_ADDRESS.save(deps.storage, &msg.account_history_address)?;
     user_spot_orders
         .into_iter()
         .map(|(addr, v)| USER_SPOT_ORDER.save(deps.storage, &addr, &v))

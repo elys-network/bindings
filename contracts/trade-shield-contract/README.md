@@ -70,10 +70,10 @@ Optionally, use `-v` to display the node logs.
    Run the following command to store the contract on the chain:
 
 ```sh
-elysd tx wasm store path/to/account_history_contract.wasm  --from=treasury --keyring-backend=test --chain-id=elystestnet-1 --gas=auto --gas-adjustment=1.3 -y -b=sync
+elysd tx wasm store path/to/trade_shield_contract.wasm  --from=treasury --keyring-backend=test --chain-id=elystestnet-1 --gas=auto --gas-adjustment=1.3 -y -b=sync
 ```
 
-Ensure to replace `path/to/account_history_contract.wasm` with the actual path to the downloaded contract.
+Ensure to replace `path/to/trade_shield_contract.wasm` with the actual path to the downloaded contract.
 
 7. Instantiate Contract
    Execute the command below to instantiate the contract on the Elys network:

@@ -9,7 +9,6 @@ fn invalid_leverage() {
     let trade_shield_code = ContractWrapper::new(execute, instantiate, query);
     let trade_shield_code_id = app.store_code(Box::new(trade_shield_code));
     let trade_shield_init = InstantiateMockMsg {
-        account_history_address: None,
         spot_orders: vec![],
         perpetual_orders: vec![],
     };

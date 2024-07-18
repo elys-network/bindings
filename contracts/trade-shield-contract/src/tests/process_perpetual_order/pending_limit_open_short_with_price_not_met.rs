@@ -313,7 +313,6 @@ fn pending_limit_open_short_order_with_price_not_met() {
 
     // Create a mock message to instantiate the contract with the dummy order.
     let instantiate_msg = InstantiateMockMsg {
-        account_history_address: None,
         spot_orders: vec![],
         perpetual_orders: vec![],
     };
