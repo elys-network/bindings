@@ -34,11 +34,6 @@ fi
 printf "# Node: %s\n" "$NODE"
 
 # Contract addresses
-if [ -n "$FS_CONTRACT_ADDRESS" ]; then
-    fs_contract_address=$FS_CONTRACT_ADDRESS
-else
-    fs_contract_address="elys1g2xwx805epc897rwyrykskjque07yxfmc4qq2p4ef5dwd6znl30qnxje76"
-fi
 if [ -n "$TS_CONTRACT_ADDRESS" ]; then
     ts_contract_address=$TS_CONTRACT_ADDRESS
 else
@@ -46,7 +41,6 @@ else
 fi
 
 # Print contract addresses
-printf "# FS contract address: %s\n" "$fs_contract_address"
 printf "# TS contract address: %s\n" "$ts_contract_address"
 
 # Denoms

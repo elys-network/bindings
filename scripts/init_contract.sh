@@ -3,9 +3,9 @@
 # This command is used to automate the store and init process of
 # smart contracts. Examples:
 
-# Without params: sh scripts/init_contract.sh ./artifacts/financial_snapshot_contract.wasm
+# Without params: sh scripts/init_contract.sh ./artifacts/trade_shield_contract.wasm
 # With init params: sh scripts/init_contract.sh ./artifacts/trade_shield_contract.wasm '{}'
-# Common extra aguments: sh scripts/init_contract.sh ./artifacts/financial_snapshot_contract.wasm {} '--node test.com'
+# Common extra aguments: sh scripts/init_contract.sh ./artifacts/trade_shield_contract.wasm {} '--node test.com'
 
 init_contract() {
     local contract_wasm_path="$1"
