@@ -144,7 +144,7 @@ fn create_perpetual_open_order(
         &trading_asset,
         collateral.clone(),
         take_profit_price.clone(),
-        get_discount(&deps.as_ref(), info.sender.to_string())?,
+        get_discount(deps.querier, info.sender.to_string())?,
     )?;
 
     if !open_estimation.valid_collateral {

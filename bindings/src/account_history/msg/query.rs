@@ -41,8 +41,6 @@ pub enum QueryMsg {
     GetPoolBalances { user_address: String },
     #[returns(GetRewardsResp)]
     GetRewards { user_address: String },
-    #[returns(MembershipTierResponse)]
-    GetMembershipTier { user_address: String },
     #[returns(PerpetualAssets)]
     GetPerpetualAssets { user_address: String },
     #[returns(Decimal)]

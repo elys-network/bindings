@@ -15,7 +15,6 @@ pub mod query_resp {
     mod get_rewards_resp;
     mod get_storage_size;
     mod liquid_asset;
-    mod membership_tier_response;
     mod params_resp;
     mod total_value_per_asset_resp;
     mod user_value_response;
@@ -24,7 +23,6 @@ pub mod query_resp {
     pub use get_rewards_resp::GetRewardsResp;
     pub use get_storage_size::StorageSizeResp;
     pub use liquid_asset::LiquidAsset;
-    pub use membership_tier_response::MembershipTierResponse;
     pub use params_resp::ParamsResp;
     pub use total_value_per_asset_resp::GetLiquidAssetsResp;
     pub use user_value_response::UserValueResponse;

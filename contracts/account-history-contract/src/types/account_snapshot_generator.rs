@@ -2,16 +2,15 @@ use std::collections::HashMap;
 
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    Coin, DecCoin, Decimal, Decimal256, Deps, Env, QuerierWrapper, StdError, StdResult, Uint128,
+    Coin, DecCoin, Decimal, Decimal256, Deps, QuerierWrapper, StdError, StdResult, Uint128,
 };
 use cw_utils::Expiration;
 use elys_bindings::{
     account_history::{
         msg::query_resp::{GetRewardsResp, StakeAssetBalanceBreakdown, StakedAssetsResponse},
         types::{
-            AccountSnapshot, CoinValue, ElysDenom, LiquidAsset, Metadata, PerpetualAsset,
-            PerpetualAssets, PoolBalances, PortfolioBalanceSnapshot, Reward, StakedAssets,
-            TotalBalance,
+            CoinValue, ElysDenom, LiquidAsset, Metadata, PerpetualAsset, PerpetualAssets, Reward,
+            StakedAssets,
         },
     },
     query_resp::{
@@ -58,80 +57,6 @@ impl AccountSnapshotGenerator {
             trade_shield_address,
             expiration,
             metadata,
-        })
-    }
-
-    pub fn generate_portfolio_balance_snapshot_for_address(
-        &self,
-        querier: &ElysQuerier,
-        deps: &Deps<ElysQuery>,
-        env: &Env,
-        address: &String,
-    ) -> StdResult<PortfolioBalanceSnapshot> {
-        let snapshot = self.generate_account_snapshot_for_address(querier, deps, env, address)?;
-
-        Ok(PortfolioBalanceSnapshot {
-            date: snapshot.date,
-            total_balance_usd: snapshot.total_balance.total_balance.clone(),
-        })
-    }
-
-    pub fn generate_account_snapshot_for_address(
-        &self,
-        querier: &ElysQuerier,
-        deps: &Deps<ElysQuery>,
-        env: &Env,
-        address: &String,
-    ) -> StdResult<AccountSnapshot> {
-        let liquid_assets_response = self.get_liquid_assets(&deps, querier, &address)?; // ✅ Fixme
-        let staked_assets_response = self.get_staked_assets(&deps, Some(address.clone()))?;
-        let rewards_response = self.get_rewards(&deps, &address)?;
-        let perpetual_response = self.get_perpetuals(&deps, &address)?;
-        let pool_balances_response = self.get_pool_balances(&deps, &address)?;
-
-        let date = match self.expiration {
-            Expiration::AtHeight(_) => Expiration::AtHeight(env.block.height),
-            Expiration::AtTime(_) => Expiration::AtTime(env.block.time),
-            Expiration::Never {} => panic!("never expire"),
-        };
-
-        let mut total_liquidity_position_balance = Decimal256::zero();
-        for pool in pool_balances_response.pools.iter() {
-            total_liquidity_position_balance =
-                total_liquidity_position_balance.checked_add(Decimal256::from(pool.available))?;
-        }
-
-        let reward = rewards_response.rewards_map;
-        let portfolio_usd = liquid_assets_response
-            .total_liquid_asset_balance
-            .amount
-            .checked_add(Decimal256::from(staked_assets_response.total_balance))?
-            .checked_add(
-                perpetual_response
-                    .total_perpetual_asset_balance
-                    .amount
-                    .clone(),
-            )?
-            .checked_add(total_liquidity_position_balance)?;
-
-        let reward_usd = Decimal256::from(reward.total_usd.clone());
-        let total_balance = portfolio_usd.checked_add(reward_usd.clone())?;
-
-        // Adds the records all the time as we should return data to the FE even if it is 0 balanced.
-        Ok(AccountSnapshot {
-            date,
-            total_balance: TotalBalance {
-                total_balance,
-                portfolio_usd: portfolio_usd.clone(),
-                reward_usd,
-            },
-            reward,
-            pool_balances: PoolBalances {
-                balances: pool_balances_response.pools,
-            },
-            liquid_asset: liquid_assets_response,
-            staked_assets: staked_assets_response.staked_assets,
-            perpetual_assets: perpetual_response,
         })
     }
 

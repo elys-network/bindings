@@ -2,10 +2,10 @@ use std::str::FromStr;
 
 use crate::entry_point::{execute, query, sudo};
 use crate::tests::test_order_status::test_spot_order_status;
-use anyhow::{bail, Result as AnyResult};
+use anyhow::{bail, Ok, Result as AnyResult};
 use cosmwasm_std::{
     coin, to_json_binary, Addr, BankMsg, BlockInfo, Decimal, Empty, Int64, SignedDecimal, StdError,
-    Timestamp,
+    Timestamp, Uint128,
 };
 use cw_multi_test::BankSudo;
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
@@ -13,6 +13,7 @@ use cw_storage_plus::Item;
 use elys_bindings::msg_resp::AmmSwapExactAmountInResp;
 use elys_bindings::query_resp::{
     AmmSwapEstimationByDenomResponse, Entry, QueryGetEntryResponse, QueryGetPriceResponse,
+    TierCalculateDiscountResponse,
 };
 use elys_bindings::trade_shield::msg::SudoMsg;
 use elys_bindings::trade_shield::types::{OrderPrice, SpotOrder, SpotOrderType, Status};
@@ -196,6 +197,14 @@ impl Module for ElysModuleWrapper {
                 })?),
                 _ => panic!("price not found for {}", asset),
             },
+            ElysQuery::TierCalculateDiscount { .. } => {
+                let resp = TierCalculateDiscountResponse {
+                    tier: "bronze".to_string(),
+                    discount: "0".to_string(),
+                    portfolio: "10".to_string(),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
 
             _ => panic!("not implemented"),
         }
