@@ -13,7 +13,7 @@ pub fn swap_estimation_by_denom(
     let querier = ElysQuerier::new(&deps.querier);
 
     let discount = match user_address {
-        Some(user_address) => get_discount(&deps, user_address)?,
+        Some(user_address) => get_discount(deps.querier, user_address)?,
         None => Decimal::zero(),
     };
 

@@ -2,20 +2,17 @@ use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdError, S
 use elys_bindings::{account_history::msg::ExecuteMsg, ElysMsg, ElysQuery};
 
 use crate::{
-    action::{
-        execute::add_user_address_to_queue,
-        sudo::{clean_old_history, clean_up_history, update_account_chain},
-    },
+    action::execute::{add_user_address_to_queue, clean_up_storage},
     states::{
-        DELETE_EPOCH, DELETE_OLD_DATA_ENABLED, PARAMS_ADMIN, PROCESSED_ACCOUNT_PER_BLOCK,
-        TRADE_SHIELD_ADDRESS, UPDATE_ACCOUNT_ENABLED,
+        DELETE_EPOCH, DELETE_OLD_DATA_ENABLED, HISTORY, OLD_HISTORY_2, PARAMS_ADMIN,
+        PROCESSED_ACCOUNT_PER_BLOCK, TRADE_SHIELD_ADDRESS, UPDATE_ACCOUNT_ENABLED,
     },
 };
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     mut deps: DepsMut<ElysQuery>,
-    env: Env,
+    _env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
 ) -> StdResult<Response<ElysMsg>> {
@@ -60,26 +57,20 @@ pub fn execute(
             }
             Ok(Response::new())
         }
-        ExecuteMsg::UpdateAccount {} => {
+        ExecuteMsg::CleanStorage { limit } => {
             if info.sender != PARAMS_ADMIN.load(deps.storage)? {
                 return Err(StdError::generic_err("Unauthorized"));
             }
-            let resp = update_account_chain(deps, env)?;
+            let resp = clean_up_storage(&mut deps, limit)?;
             Ok(resp)
         }
-        ExecuteMsg::CleanHistory { limit } => {
+        ExecuteMsg::CleanStorageBulk {} => {
             if info.sender != PARAMS_ADMIN.load(deps.storage)? {
                 return Err(StdError::generic_err("Unauthorized"));
             }
-            let resp = clean_up_history(&mut deps, env, limit)?;
-            Ok(resp)
-        }
-        ExecuteMsg::CleanOldHistory { limit } => {
-            if info.sender != PARAMS_ADMIN.load(deps.storage)? {
-                return Err(StdError::generic_err("Unauthorized"));
-            }
-            let resp = clean_old_history(&mut deps, limit)?;
-            Ok(resp)
+            HISTORY.clear(deps.storage);
+            OLD_HISTORY_2.clear(deps.storage);
+            Ok(Response::new())
         }
     }
 }

@@ -1,7 +1,6 @@
-use crate::helper::get_mut_discount;
-
 use super::*;
 use crate::action::sudo::process_orders;
+use crate::helper::get_discount;
 use cosmwasm_std::{CosmosMsg, Int128, StdError, WasmMsg};
 use elys_bindings::account_history::msg::ExecuteMsg as AccountHistoryMsg;
 use elys_bindings::trade_shield::states::{
@@ -138,7 +137,7 @@ pub fn execute(
                 routes,
                 token_in: info.funds[0].clone(),
                 token_out_min_amount: Int128::zero(),
-                discount: get_mut_discount(deps.storage, deps.querier, info.sender.to_string())?,
+                discount: get_discount(deps.querier, info.sender.to_string())?,
                 recipient: "".to_string(),
             };
 

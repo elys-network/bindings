@@ -12,6 +12,7 @@ use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Mod
 use elys_bindings::msg_resp::AmmSwapExactAmountInResp;
 use elys_bindings::query_resp::{
     AmmSwapEstimationByDenomResponse, Entry, QueryGetEntryResponse, QueryGetPriceResponse,
+    TierCalculateDiscountResponse,
 };
 
 use elys_bindings::trade_shield::msg::SudoMsg;
@@ -192,6 +193,14 @@ impl Module for ElysModuleWrapper {
                 })?),
                 _ => panic!("price not found for {}", asset),
             },
+            ElysQuery::TierCalculateDiscount { .. } => {
+                let resp = TierCalculateDiscountResponse {
+                    tier: "bronze".to_string(),
+                    discount: "0".to_string(),
+                    portfolio: "10".to_string(),
+                };
+                Ok(to_json_binary(&resp)?)
+            }
 
             _ => panic!("not implemented"),
         }

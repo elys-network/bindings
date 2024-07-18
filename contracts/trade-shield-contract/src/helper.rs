@@ -1,15 +1,13 @@
 use cosmwasm_std::{
-    from_json, BankMsg, Decimal, Deps, OverflowError, OverflowOperation, QuerierWrapper, Response,
-    StdError, StdResult, Storage, SubMsgResult,
+    from_json, BankMsg, Decimal, OverflowError, OverflowOperation, QuerierWrapper, Response,
+    StdError, StdResult, Storage, SubMsgResult, Uint128,
 };
-use elys_bindings::account_history::msg::query_resp::MembershipTierResponse;
-use elys_bindings::account_history::msg::QueryMsg as AccountHistoryQueryMsg;
 use elys_bindings::trade_shield::states::{
     NUMBER_OF_EXECUTED_ORDER, NUMBER_OF_PENDING_ORDER, PENDING_PERPETUAL_ORDER, PENDING_SPOT_ORDER,
     PERPETUAL_ORDER, SORTED_PENDING_PERPETUAL_ORDER, SORTED_PENDING_SPOT_ORDER, SPOT_ORDER,
 };
 use elys_bindings::trade_shield::types::{PerpetualOrder, PerpetualOrderType, SpotOrder, Status};
-use elys_bindings::{trade_shield::states::ACCOUNT_HISTORY_ADDRESS, ElysMsg};
+use elys_bindings::ElysMsg;
 use elys_bindings::{ElysQuerier, ElysQuery};
 
 use serde::de::DeserializeOwned;
@@ -33,36 +31,20 @@ pub fn get_response_from_reply<T: DeserializeOwned>(
     }
 }
 
-pub fn get_mut_discount(
-    storage: &mut dyn Storage,
+pub fn get_discount(
     querier: QuerierWrapper<'_, ElysQuery>,
     user_address: String,
 ) -> StdResult<Decimal> {
-    let account_history_address = match ACCOUNT_HISTORY_ADDRESS.load(storage)? {
-        Some(account_history_address) => account_history_address,
-        None => return Ok(Decimal::zero()),
-    };
-
-    let discount = match querier.query_wasm_smart::<MembershipTierResponse>(
-        &account_history_address,
-        &AccountHistoryQueryMsg::GetMembershipTier { user_address },
-    ) {
-        Ok(resp) => resp.discount,
-        Err(_) => Decimal::zero(),
-    };
-
-    Ok(discount)
-}
-
-pub fn get_discount(deps: &Deps<ElysQuery>, user_address: String) -> StdResult<Decimal> {
-    let querier = ElysQuerier::new(&deps.querier);
+    let querier = ElysQuerier::new(&querier);
     let discount_str = match querier.tier_calculate_discount(user_address) {
         Ok(resp) => resp.discount,
         Err(_) => "0".to_string(),
     };
 
     let discount = match discount_str.parse::<Decimal>() {
-        Ok(discount) => discount,
+        Ok(discount) => discount
+            .checked_div(Decimal::new(Uint128::from(100u64)))
+            .unwrap_or_default(),
         Err(_) => Decimal::zero(),
     };
 

@@ -11,11 +11,8 @@ pub enum ExecuteMsg {
         delete_old_data_enabled: Option<bool>,
         delete_epoch: Option<u64>,
     },
-    UpdateAccount {},
-    CleanHistory {
+    CleanStorage {
         limit: u64,
     },
-    CleanOldHistory {
-        limit: u64,
-    },
+    CleanStorageBulk {},
 }

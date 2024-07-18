@@ -3,10 +3,10 @@ use crate::{
         get_eden_boost_earn_program_details, get_eden_earn_program_details,
         get_elys_earn_program_details, get_estaking_rewards, get_liquid_assets,
         get_masterchef_pending_rewards, get_masterchef_pool_apr, get_masterchef_stable_stake_apr,
-        get_membership_tier, get_perpetuals_assets, get_pool_balances, get_rewards,
-        get_staked_assets, get_usdc_earn_program_details,
+        get_perpetuals_assets, get_pool_balances, get_rewards, get_staked_assets,
+        get_usdc_earn_program_details,
     },
-    states::USER_ADDRESS_QUEUE,
+    states::{HISTORY, OLD_HISTORY_2, USER_ADDRESS_QUEUE},
     types::AccountSnapshotGenerator,
 };
 
@@ -19,7 +19,9 @@ use crate::action::query::{
 use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, Env, StdResult};
 use cw2::CONTRACT;
 use elys_bindings::{
-    account_history::types::ElysDenom, query_resp::QueryAprResponse, ElysQuerier, ElysQuery,
+    account_history::{msg::query_resp::StorageSizeResp, types::ElysDenom},
+    query_resp::QueryAprResponse,
+    ElysQuerier, ElysQuery,
 };
 
 use crate::msg::QueryMsg;
@@ -47,9 +49,6 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
         }
         GetRewards { user_address } => to_json_binary(&get_rewards(deps, user_address, env)?),
 
-        GetMembershipTier { user_address } => {
-            to_json_binary(&get_membership_tier(env, deps, user_address)?)
-        }
         GetPerpetualAssets { user_address } => {
             to_json_binary(&get_perpetuals_assets(deps, user_address, env)?)
         }
@@ -254,10 +253,20 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> StdResult<Binary
 
             to_json_binary(&response)
         }
-        AddressQueueSize {} => {
+        StorageSize {} => {
             let user_address_queue_data_size = USER_ADDRESS_QUEUE.len(deps.storage)? as u128;
+            let history_data_size = HISTORY
+                .keys(deps.storage, None, None, cosmwasm_std::Order::Descending)
+                .count() as u128;
+            let old_history_2_data_size = OLD_HISTORY_2
+                .keys(deps.storage, None, None, cosmwasm_std::Order::Descending)
+                .count() as u128;
 
-            to_json_binary(&user_address_queue_data_size)
+            to_json_binary(&StorageSizeResp {
+                user_address_queue_data_size,
+                history_data_size,
+                old_history_2_data_size,
+            })
         }
         Version {} => to_json_binary(&CONTRACT.load(deps.storage)?),
     }

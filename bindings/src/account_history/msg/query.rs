@@ -41,8 +41,6 @@ pub enum QueryMsg {
     GetPoolBalances { user_address: String },
     #[returns(GetRewardsResp)]
     GetRewards { user_address: String },
-    #[returns(MembershipTierResponse)]
-    GetMembershipTier { user_address: String },
     #[returns(PerpetualAssets)]
     GetPerpetualAssets { user_address: String },
     #[returns(Decimal)]
@@ -160,8 +158,8 @@ pub enum QueryMsg {
     IncentiveAprs {},
 
     #[cfg(feature = "debug")]
-    #[returns(Uint128)]
-    AddressQueueSize {},
+    #[returns(StorageSizeResp)]
+    StorageSize {},
 
     #[cfg(feature = "debug")]
     #[returns(ContractVersion)]
