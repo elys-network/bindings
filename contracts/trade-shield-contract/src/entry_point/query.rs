@@ -74,11 +74,8 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> Result<Binary, C
             denom_out,
             user_address,
         )?)?),
-        GetPerpetualAsset {
-            address,
-            usdc_denom,
-        } => Ok(to_json_binary(&query::get_perpetuals_assets(
-            deps, address, env, usdc_denom,
+        GetPerpetualAsset { address } => Ok(to_json_binary(&query::get_perpetuals_assets(
+            deps, address, env,
         )?)?),
         GetPerpetualOrder { id } => Ok(to_json_binary(&query::get_perpetual_order(deps, id)?)?),
         PerpetualOpenEstimation {

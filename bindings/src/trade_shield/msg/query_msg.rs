@@ -122,5 +122,5 @@ pub enum QueryMsg {
     #[returns(ParameterParamsResponse)]
     ParameterParams {},
     #[returns(PerpetualAssets)]
-    GetPerpetualAsset { address: String, usdc_denom: String },
+    GetPerpetualAsset { address: String },
 }
