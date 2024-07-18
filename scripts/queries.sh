@@ -34,11 +34,6 @@ fi
 printf "# Node: %s\n" "$NODE"
 
 # Contract addresses
-if [ -n "$AH_CONTRACT_ADDRESS" ]; then
-    ah_contract_address=$AH_CONTRACT_ADDRESS
-else
-    ah_contract_address="elys1s37xz7tzrru2cpl96juu9lfqrsd4jh73j9slyv440q5vttx2uyesetjpne"
-fi
 if [ -n "$FS_CONTRACT_ADDRESS" ]; then
     fs_contract_address=$FS_CONTRACT_ADDRESS
 else
@@ -51,7 +46,6 @@ else
 fi
 
 # Print contract addresses
-printf "# AH contract address: %s\n" "$ah_contract_address"
 printf "# FS contract address: %s\n" "$fs_contract_address"
 printf "# TS contract address: %s\n" "$ts_contract_address"
 
@@ -77,73 +71,6 @@ user_address="${1:-}"
 printf "\n# User address: %s\n" "$user_address"
 
 # Function definitions for each query
-
-# Get AH params
-function ah_params() {
-    printf "\n# AH Params\n"
-    query_contract "$ah_contract_address" '{
-        "params": {}
-    }'
-}
-
-# Get rewards
-function rewards() {
-    printf "\n# Rewards\n"
-    query_contract "$ah_contract_address" '{
-        "get_rewards": {
-            "user_address": "'"$user_address"'"
-        }
-    }'
-}
-
-# Get liquid assets
-function liquid_assets() {
-    printf "\n# Liquid assets\n"
-    query_contract "$ah_contract_address" '{
-        "get_liquid_assets": {
-            "user_address": "'"$user_address"'"
-        }
-    }'
-}
-
-# Get staked assets
-function staked_assets() {
-    printf "\n# Staked assets\n"
-    query_contract "$ah_contract_address" '{
-        "get_staked_assets": {
-            "user_address": "'"$user_address"'"
-        }
-    }'
-}
-
-function staked_assets_no_user() {
-    printf "\n# Staked assets\n"
-    query_contract "$ah_contract_address" '{
-        "get_staked_assets": {
-        }
-    }'
-}
-
-
-# Get perpetual assets
-function perpetual_assets() {
-    printf "\n# Perpertual assets\n"
-    query_contract "$ah_contract_address" '{
-        "get_perpetual_assets": {
-            "user_address": "'"$user_address"'"
-        }
-    }'
-}
-
-# Get user value
-function user_value() {
-    printf "\n# User value\n"
-    query_contract "$ah_contract_address" '{
-        "user_value": {
-            "user_address": "'"$user_address"'"
-        }
-    }'
-}
 
 # Swap estimation by denom
 function swap_estimation_by_denom() {
@@ -181,30 +108,6 @@ function asset_info() {
     query_contract "$ts_contract_address" '{
         "asset_info": {
             "denom": "uelys"
-        }
-    }'
-}
-
-# Get Asset Price
-function get_asset_price() {
-    asset=$1
-    printf "\n# Get Asset Price\n"
-    query_contract "$ah_contract_address" '{
-        "get_asset_price" : {
-            "asset": "'"$asset"'"
-        }
-    }'
-}
-
-# Get Asset Price From Denom In To Denom Out
-function get_asset_price_from_denom_in_to_denom_out() {
-    denom_in=$1
-    denom_out=$2
-    printf "\n# Get Asset Price From Denom In To Denom Outs\n"
-    query_contract "$ah_contract_address" '{
-        "get_asset_price_from_denom_in_to_denom_out": {
-            "denom_in": "'"$denom_in"'",
-            "denom_out": "'"$denom_out"'"
         }
     }'
 }
@@ -302,131 +205,6 @@ function perpetual_get_positions_for_address() {
         "perpetual_get_positions_for_address": {
             "address": "'"$user_address"'",
             "pagination": null
-        }
-    }'
-}
-
-# get commitment staked positions
-function get_commitment_staked_positions() {
-    printf "\n# Get commitment staked positions\n"
-    query_contract "$ah_contract_address" '{
-        "commitment_staked_positions": {
-            "delegator_address": "'"$user_address"'"
-        }
-    }'
-}
-
-# get CommitmentUnStakedPositions
-function get_commitment_unstaked_positions() {
-    printf "\n# Get commitment unstaked positions\n"
-    query_contract "$ah_contract_address" '{
-        "commitment_un_staked_positions": {
-            "delegator_address": "'"$user_address"'"
-        }
-    }'
-}
-
-# get CommitmentRewardsSubBucketBalanceOfDenom
-function get_commitment_rewards_sub_bucket_balance_of_denom() {
-    denom=$1
-    program=$2
-    printf "\n# Get commitment rewards sub bucket balance of denom denom=$1 program=$2\n"
-    query_contract "$ah_contract_address" '{
-        "commitment_rewards_sub_bucket_balance_of_denom": {
-            "address": "'"$user_address"'",
-            "denom": "'"$denom"'",
-            "program": '"$program"'
-        }
-    }'
-}
-
-# get CommitmentStakedBalanceOfDenom
-function get_commitment_staked_balance_of_denom() {
-    denom=$1
-    printf "\n# Get commitment staked balance of denom\n"
-    query_contract "$ah_contract_address" '{
-        "commitment_staked_balance_of_denom": {
-            "address": "'"$user_address"'",
-            "denom": "'"$denom"'"
-        }
-    }'
-}
-
-# get StableStakeBalanceOfBorrow
-function get_stable_stake_balance_of_borrow() {
-    printf "\n# Get stable stake balance of borrow\n"
-    query_contract "$ah_contract_address" '{
-        "stable_stake_balance_of_borrow": {}
-    }'
-}
-
-# get CommitmentVestingInfo
-function get_commitment_vesting_info() {
-    printf "\n# Get commitment vesting info\n"
-    query_contract "$ah_contract_address" '{
-        "commitment_vesting_info": {
-            "address": "'"$user_address"'"
-        }
-    }'
-}
-
-# get AmmPriceByDenom
-function get_amm_price_by_denom() {
-    denom=$1
-    printf "\n# Get amm price by denom\n"
-    query_contract "$ah_contract_address" '{
-        "amm_price_by_denom": {
-            "token_in": {
-                "amount": "1000000",
-                "denom": "'"$denom"'"
-            },
-            "discount": "0"
-        }
-    }'
-}
-
-# get user snapshots
-function get_user_snapshots() {
-    printf "\n# Get user snapshots\n"
-    query_contract "$ah_contract_address" '{
-        "user_snapshots": {
-            "user_address": "'"$user_address"'"
-        }
-    }'
-}
-
-# get user last snapshot
-function get_user_last_snapshot() {
-    printf "\n# Get user last snapshot\n"
-    query_contract "$ah_contract_address" '{
-        "last_snapshot": {
-            "user_address": "'"$user_address"'"
-        }
-    }'
-}
-
-# get all snapshots
-function get_all_snapshots() {
-    printf "\n# Get all snapshots\n"
-    query_contract "$ah_contract_address" '{
-        "all": {}
-    }'
-}
-
-# get stable stake params
-function get_stable_stake_params() {
-    printf "\n# Get stable stake params\n"
-    query_contract "$ah_contract_address" '{
-        "stable_stake_params": {}
-    }'
-}
-
-# get liquidity pools
-function get_liquidity_pools() {
-    printf "\n# Get stable stake params\n"
-    query_contract "$ah_contract_address" '{
-        "get_liquidity_pools": {
-            "filter_type": "filter_all"
         }
     }'
 }
@@ -566,46 +344,6 @@ function number_of_pending_orders() {
     }'
 }
 
-# get EstakingRewards
-function get_estaking_rewards() {
-    printf "\n# Get estaking rewards\n"
-    query_contract "$ah_contract_address" '{
-        "get_estaking_rewards": {
-             "address": "'"$user_address"'"
-        }
-    }'
-}
-
-function master_chef_params() {
-    printf "\n# Get Masterchef Params\n"
-    query_contract \
-        "$ah_contract_address" \
-        '{
-        "get_masterchef_params": {}
-    }'
-}
-
-# get Masterchef Pending Rewards
-function get_masterchef_pending_rewards() {
-    printf "\n# Get master chef pending rewards\n"
-    query_contract "$ah_contract_address" '{
-        "get_masterchef_pending_rewards": {
-             "address": "'"$user_address"'"
-        }
-    }'
-}
-
-# get Masterchef Pending Rewards
-function get_masterchef_stable_stake_apr() {
-    denom=$1
-    printf "\n# Get Masterchef stable stake apr\n"
-    query_contract "$ah_contract_address" '{
-        "get_masterchef_stable_stake_apr": {
-             "denom": "'"$denom"'"
-        }
-    }'
-}
-
 function get_spot_order_states() {
     order_id=$1
     printf "\n# Get Spot Order State"
@@ -630,39 +368,8 @@ query_contract "$ts_contract_address" '{
     }'
 }
 
-function get_masterchef_pool_info() {
-    printf "\n# Get Masterchef Pool Info"
-    query_contract "$ah_contract_address" '{
-        "get_masterchef_pool_info": {
-            "pool_id": 2
-        }
-    }'
-
-}
-
 # function(s) to run based on the provided argument
 case "$2" in
-"ah_params")
-    ah_params
-    ;;
-"rewards")
-    rewards
-    ;;
-"liquid_assets")
-    liquid_assets
-    ;;
-"staked_assets")
-    staked_assets
-    ;;
-"staked_assets_no_user")
-    staked_assets_no_user
-    ;;
-"perpetual_assets")
-    perpetual_assets
-    ;;
-"user_value")
-    user_value
-    ;;
 "swap_estimation_by_denom_elys_usdc_elys")
     swap_estimation_by_denom 1000000 uelys $usdc_denom uelys
     ;;
@@ -738,48 +445,6 @@ case "$2" in
 "perpetual_get_positions_for_address")
     perpetual_get_positions_for_address
     ;;
-"get_commitment_staked_positions")
-    get_commitment_staked_positions
-    ;;
-"get_commitment_unstaked_positions")
-    get_commitment_unstaked_positions
-    ;;
-"get_commitment_rewards_sub_bucket_balance_of_denom")
-    get_commitment_rewards_sub_bucket_balance_of_denom $3 $4
-    ;;
-"get_commitment_staked_balance_of_denom")
-    get_commitment_staked_balance_of_denom $3
-    ;;
-"get_stable_stake_balance_of_borrow")
-    get_stable_stake_balance_of_borrow
-    ;;
-"get_commitment_vesting_info")
-    get_commitment_vesting_info
-    ;;
-"get_amm_price_by_denom")
-    get_amm_price_by_denom $3
-    ;;
-"get_user_snapshots")
-    get_user_snapshots
-    ;;
-"get_user_last_snapshot")
-    get_user_last_snapshot
-    ;;
-"get_all_snapshots")
-    get_all_snapshots
-    ;;
-"get_stable_stake_params")
-    get_stable_stake_params
-    ;;
-"get_liquidity_pools")
-    get_liquidity_pools
-    ;;
-"get_asset_price")
-    get_asset_price $3
-    ;;
-"get_asset_price_from_denom_in_to_denom_out")
-    get_asset_price_from_denom_in_to_denom_out $3 $4
-    ;;
 "leveragelp_params")
     leveragelp_params
     ;;
@@ -822,21 +487,6 @@ case "$2" in
 "number_of_pending_orders")
     number_of_pending_orders
     ;;
-"get_estaking_rewards")
-    get_estaking_rewards
-    ;;
-"master_chef_params")
-    master_chef_params
-    ;;
-"get_masterchef_pool_info")
-    get_masterchef_pool_info
-    ;;
-"get_masterchef_pending_rewards")
-    get_masterchef_pending_rewards
-    ;;
-"get_masterchef_stable_stake_apr")
-    get_masterchef_stable_stake_apr $3
-    ;;
 "get_spot_order_states")
     get_spot_order_states $3
     ;;
@@ -848,13 +498,8 @@ case "$2" in
     ;;
 *)
     # Default case: run all functions
-    ah_params
     ts_params
-    rewards
-    liquid_assets
-    staked_assets
     perpetual_assets
-    user_value
     swap_estimation_by_denom 1000000 uelys $usdc_denom uelys
     swap_estimation_by_denom 1000000 $usdc_denom $usdc_denom $usdc_denom
     swap_estimation_by_denom 1000000 $usdc_denom $usdc_denom $atom_denom
@@ -878,16 +523,5 @@ case "$2" in
     perpetual_orders market_close
     perpetual_open_estimation
     perpetual_get_positions_for_address
-    get_commitment_staked_positions
-    get_commitment_unstaked_positions
-    get_commitment_rewards_sub_bucket_balance_of_denom ueden 2
-    get_commitment_staked_balance_of_denom $usdc_denom
-    get_stable_stake_balance_of_borrow
-    get_commitment_vesting_info
-    get_amm_price_by_denom $usdc_denom
-    get_amm_price_by_denom $elys_denom
-    get_amm_price_by_denom $eden_denom
-    get_stable_stake_params
-    get_liquidity_pools
     ;;
 esac

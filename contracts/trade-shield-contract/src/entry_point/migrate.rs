@@ -6,9 +6,8 @@ use cw2::set_contract_version;
 use elys_bindings::trade_shield::{
     msg::MigrateMsg,
     states::{
-        ACCOUNT_HISTORY_ADDRESS, LEVERAGE_ENABLED, LIMIT_PROCESS_ORDER, MARKET_ORDER_ENABLED,
-        PARAMS_ADMIN, PERPETUAL_ENABLED, PROCESS_ORDERS_ENABLED, REWARD_ENABLED, STAKE_ENABLED,
-        SWAP_ENABLED,
+        LEVERAGE_ENABLED, LIMIT_PROCESS_ORDER, MARKET_ORDER_ENABLED, PARAMS_ADMIN,
+        PERPETUAL_ENABLED, PROCESS_ORDERS_ENABLED, REWARD_ENABLED, STAKE_ENABLED, SWAP_ENABLED,
     },
 };
 use semver::Version;
@@ -19,10 +18,6 @@ pub fn migrate(
     _env: Env,
     msg: MigrateMsg,
 ) -> StdResult<Response<ElysMsg>> {
-    if msg.account_history_address.is_some() {
-        ACCOUNT_HISTORY_ADDRESS.save(deps.storage, &msg.account_history_address)?;
-    }
-
     let admin = "elys16xffmfa6k45j340cx5zyp66lqvuw62a0neaa7w".to_string();
     PARAMS_ADMIN.save(deps.storage, &admin)?;
 

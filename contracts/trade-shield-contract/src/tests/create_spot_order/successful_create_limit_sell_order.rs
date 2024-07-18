@@ -20,7 +20,6 @@ fn successful_create_limit_sell_order() {
 
     // Create a mock message to instantiate the contract with no initial orders.
     let instantiate_msg = InstantiateMockMsg {
-        account_history_address: None,
         spot_orders: vec![],
         perpetual_orders: vec![],
     };

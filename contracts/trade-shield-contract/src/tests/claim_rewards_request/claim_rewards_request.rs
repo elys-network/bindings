@@ -300,7 +300,6 @@ fn claim_rewards_request() {
     let code_id = app.store_code(Box::new(code));
 
     let instantiate_msg = InstantiateMockMsg {
-        account_history_address: None,
         spot_orders: vec![],
         perpetual_orders: vec![],
     };
