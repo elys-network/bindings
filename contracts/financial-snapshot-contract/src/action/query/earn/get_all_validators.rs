@@ -1,8 +1,7 @@
 use cosmwasm_std::{Decimal, StdError};
-use elys_bindings::{
-    account_history::types::ElysDenom, query_resp::QueryDelegatorValidatorsResponse, ElysQuerier,
-    ElysQuery,
-};
+use elys_bindings::{query_resp::QueryDelegatorValidatorsResponse, ElysQuerier, ElysQuery};
+
+use crate::types::ElysDenom;
 
 use super::*;
 

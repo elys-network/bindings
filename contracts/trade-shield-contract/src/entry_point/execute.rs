@@ -1,12 +1,10 @@
 use super::*;
 use crate::action::sudo::process_orders;
 use crate::helper::get_discount;
-use cosmwasm_std::{CosmosMsg, Int128, StdError, WasmMsg};
-use elys_bindings::account_history::msg::ExecuteMsg as AccountHistoryMsg;
+use cosmwasm_std::{Int128, StdError};
 use elys_bindings::trade_shield::states::{
-    ACCOUNT_HISTORY_ADDRESS, LEVERAGE_ENABLED, LIMIT_PROCESS_ORDER, MARKET_ORDER_ENABLED,
-    PARAMS_ADMIN, PERPETUAL_ENABLED, PROCESS_ORDERS_ENABLED, REWARD_ENABLED, STAKE_ENABLED,
-    SWAP_ENABLED,
+    LEVERAGE_ENABLED, LIMIT_PROCESS_ORDER, MARKET_ORDER_ENABLED, PARAMS_ADMIN, PERPETUAL_ENABLED,
+    PROCESS_ORDERS_ENABLED, REWARD_ENABLED, STAKE_ENABLED, SWAP_ENABLED,
 };
 use msg::ExecuteMsg;
 
@@ -19,9 +17,6 @@ pub fn execute(
 ) -> Result<Response<ElysMsg>, ContractError> {
     use action::execute::*;
     use ExecuteMsg::*;
-
-    let account_history_address = ACCOUNT_HISTORY_ADDRESS.load(deps.storage)?;
-    let user_address = info.sender.to_string();
 
     let resp = match msg {
         CreateSpotOrder {
@@ -230,14 +225,5 @@ pub fn execute(
         }
     }?;
 
-    let resp = if let Some(account_history_address) = account_history_address {
-        resp.add_message(CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: account_history_address,
-            msg: to_json_binary(&AccountHistoryMsg::AddUserAddressToQueue { user_address })?,
-            funds: vec![],
-        }))
-    } else {
-        resp
-    };
     Ok(resp)
 }

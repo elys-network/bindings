@@ -2,7 +2,7 @@
 use super::query_resp::*;
 #[allow(unused_imports)]
 use crate::query_resp::*;
-use crate::trade_shield::types::{PerpetualOrderType, SpotOrderType, Status};
+use crate::trade_shield::types::{PerpetualAssets, PerpetualOrderType, SpotOrderType, Status};
 use crate::types::{PageRequest, PerpetualPosition};
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Coin, Decimal, Int128, SignedDecimal, SignedDecimal256};
@@ -121,4 +121,6 @@ pub enum QueryMsg {
     Version {},
     #[returns(ParameterParamsResponse)]
     ParameterParams {},
+    #[returns(PerpetualAssets)]
+    GetPerpetualAsset { address: String, usdc_denom: String },
 }
