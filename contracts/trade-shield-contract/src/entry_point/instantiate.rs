@@ -17,7 +17,6 @@ pub fn instantiate(
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     MAX_REPLY_ID.save(deps.storage, &0)?;
     SPOT_ORDER_MAX_ID.save(deps.storage, &0)?;
-    ACCOUNT_HISTORY_ADDRESS.save(deps.storage, &msg.account_history_address)?;
 
     let admin = "elys16xffmfa6k45j340cx5zyp66lqvuw62a0neaa7w".to_string();
     PARAMS_ADMIN.save(deps.storage, &admin)?;

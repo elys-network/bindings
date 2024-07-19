@@ -10,7 +10,10 @@ mod spot_order {
         mod new_dummy;
     }
 }
+mod coin_value;
 mod date;
+mod denom;
+mod perpetual_assets;
 mod perpetual_order;
 mod perpetual_order_plus;
 mod perpetual_order_type;
@@ -19,7 +22,10 @@ mod reply_info;
 mod status;
 
 pub use crate::types::*;
+pub use coin_value::CoinValue;
 pub use date::Date;
+pub use denom::ElysDenom;
+pub use perpetual_assets::{PerpetualAsset, PerpetualAssets};
 pub use perpetual_order::PerpetualOrder;
 pub use perpetual_order_plus::PerpetualOrderPlus;
 pub use perpetual_order_type::PerpetualOrderType;

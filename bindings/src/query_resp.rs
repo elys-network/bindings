@@ -7,9 +7,8 @@ use cosmwasm_std::{
 };
 
 use crate::{
-    account_history::types::CoinValue,
     trade_shield::types::{
-        AmmPool, AmmPoolRaw, PerpetualPosition, PoolExtraInfo, StakedPositionRaw,
+        AmmPool, AmmPoolRaw, CoinValue, PerpetualPosition, PoolExtraInfo, StakedPositionRaw,
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, PoolAsset, Price, StakedPosition,

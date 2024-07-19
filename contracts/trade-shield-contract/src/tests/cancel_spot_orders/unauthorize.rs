@@ -9,7 +9,6 @@ fn unauthorize() {
 
     // Create a mock message to instantiate the contract with an empty list of orders.
     let instantiate_msg = InstantiateMockMsg {
-        account_history_address: None,
         spot_orders: vec![SpotOrder {
             order_type: SpotOrderType::LimitBuy,
             order_id: 1,

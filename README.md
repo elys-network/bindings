@@ -28,30 +28,10 @@ This guide provides instructions on how to spin up a new localnet using the Elys
 
 3. **Download the Latest TestNet Snapshot**
 
-   Get the latest TestNet snapshot available for the Elys network.
-
-   **Main branch**
-
-   Use the following command to download the latest TestNet snapshot that uses the changes from the `main` branch:
+   To get the latest TestNet snapshot available for the Elys network, use the following command to download the latest TestNet snapshot that uses the changes from the `main` branch:
 
    ```bash
    rm -rf ~/.elys && curl -o - -L https://snapshots.elys.network/elys-snapshot-main.tar.lz4 | lz4 -c -d - | tar -x -C ~/
-   ```
-
-   **Devnet branch**
-
-   Use the following command to download the latest TestNet snapshot that uses the changes from the `devnet` branch:
-
-   ```bash
-   rm -rf ~/.elys && curl -o - -L https://snapshots.elys.network/elys-snapshot-devnet.tar.lz4 | lz4 -c -d - | tar -x -C ~/
-   ```
-
-   **Develop branch**
-
-   Use the following command to download the latest TestNet snapshot that uses the changes from the `develop` branch:
-
-   ```bash
-   rm -rf ~/.elys && curl -o - -L https://snapshots.elys.network/elys-snapshot-develop.tar.lz4 | lz4 -c -d - | tar -x -C ~/
    ```
 
 4. **Spin Up the Localnet**
@@ -95,12 +75,10 @@ After running `deploy.sh`, set the provided environment variables:
 ```bash
 export NODE=tcp://localhost:26657
 export NAME=validator
-export FS_CONTRACT_ADDRESS=<FS_CONTRACT_ADDRESS>
 export TS_CONTRACT_ADDRESS=<TS_CONTRACT_ADDRESS>
-export AH_CONTRACT_ADDRESS=<AH_CONTRACT_ADDRESS>
 ```
 
-Replace `<FS_CONTRACT_ADDRESS>`, `<TS_CONTRACT_ADDRESS>`, and `<AH_CONTRACT_ADDRESS>` with the actual contract addresses provided by the deployment script.
+Replace `<TS_CONTRACT_ADDRESS>` with the actual contract addresses provided by the deployment script.
 
 ## Additional Configuration
 

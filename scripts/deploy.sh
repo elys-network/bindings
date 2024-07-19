@@ -19,13 +19,11 @@ if [ -n "$CI" ]; then
     NAME=contract-initiator
 
     # contract addresses
-    FS_CONTRACT_ADDRESS=elys1g2xwx805epc897rwyrykskjque07yxfmc4qq2p4ef5dwd6znl30qnxje76
     TS_CONTRACT_ADDRESS=elys1m3hduhk4uzxn8mxuvpz02ysndxfwgy5mq60h4c34qqn67xud584qeee3m4
-    AH_CONTRACT_ADDRESS=elys1s37xz7tzrru2cpl96juu9lfqrsd4jh73j9slyv440q5vttx2uyesetjpne
 
     # set elysd path
     ELYSD=/tmp/elysd
-    URL=https://github.com/elys-network/elys/releases/download/v0.29.26/elysd-v0.29.26-linux-amd64
+    URL=https://github.com/elys-network/elys/releases/download/v0.39.0/elysd-v0.39.0-linux-amd64
 
     # download elysd and binary to path
     wget $URL -O $ELYSD
@@ -82,23 +80,6 @@ wait_for_tx() {
     done
 }
 
-# store and init/migrate financial snapshot contract
-txhash=$(elysd tx wasm store $OPTIONS --sequence $(($sequence + 1)) artifacts/financial_snapshot_contract.wasm | extract_txhash)
-echo "fs store txhash: $txhash"
-wait_for_tx $txhash
-codeid=$(elysd q tx $txhash --node $NODE | extract_code_id)
-echo "fs code id: $codeid"
-if [ -n "$FS_CONTRACT_ADDRESS" ]; then
-    txhash=$(elysd tx wasm migrate $OPTIONS --sequence $(($sequence + 2)) $FS_CONTRACT_ADDRESS $codeid '{}' | extract_txhash)
-    echo "fs migrate txhash: $txhash"
-else
-    txhash=$(elysd tx wasm init $OPTIONS --sequence $(($sequence + 2)) --label "fs" --admin $NAME $codeid '{}' | extract_txhash)
-    echo "fs init txhash: $txhash"
-fi
-wait_for_tx $txhash
-export fs_contract_address=$(elysd q tx $txhash --node $NODE | extract_contract_address)
-echo "fs_contract_address: $fs_contract_address"
-
 # store and init/migrate trade shield contract
 txhash=$(elysd tx wasm store $OPTIONS --sequence $(($sequence + 3)) artifacts/trade_shield_contract.wasm | extract_txhash)
 echo "ts store txhash: $txhash"
@@ -106,51 +87,18 @@ wait_for_tx $txhash
 codeid=$(elysd q tx $txhash --node $NODE | extract_code_id)
 echo "ts code id: $codeid"
 if [ -n "$TS_CONTRACT_ADDRESS" ]; then
-    txhash=$(elysd tx wasm migrate $OPTIONS --sequence $(($sequence + 4)) $TS_CONTRACT_ADDRESS $codeid '{
-        "account_history_address": "'"$AH_CONTRACT_ADDRESS"'"
-    }' | extract_txhash)
+    txhash=$(elysd tx wasm migrate $OPTIONS --sequence $(($sequence + 4)) $TS_CONTRACT_ADDRESS $codeid '{}' | extract_txhash)
     echo "ts migrate txhash: $txhash"
 else
-    # set localnet AH deterministic address as param
-    txhash=$(elysd tx wasm init $OPTIONS --sequence $(($sequence + 4)) --label "ts" --admin $NAME $codeid '{
-        "account_history_address": "elys17p9rzwnnfxcjp32un9ug7yhhzgtkhvl9jfksztgw5uh69wac2pgs98tvuy"
-    }' | extract_txhash)
+    txhash=$(elysd tx wasm init $OPTIONS --sequence $(($sequence + 4)) --label "ts" --admin $NAME $codeid '{}' | extract_txhash)
     echo "ts init txhash: $txhash"
 fi
 wait_for_tx $txhash
 export ts_contract_address=$(elysd q tx $txhash --node $NODE | extract_contract_address)
 echo "ts_contract_address: $ts_contract_address"
 
-# store and init/migrate account history contract
-txhash=$(elysd tx wasm store artifacts/account_history_contract.wasm $OPTIONS --sequence $(($sequence + 5)) | extract_txhash)
-echo "ah store txhash: $txhash"
-wait_for_tx $txhash
-codeid=$(elysd q tx $txhash --node $NODE | extract_code_id)
-echo "ah code id: $codeid"
-if [ -n "$AH_CONTRACT_ADDRESS" ]; then
-    txhash=$(elysd tx wasm migrate $OPTIONS --sequence $(($sequence + 6)) $AH_CONTRACT_ADDRESS $codeid '{
-        "trade_shield_address": "'"$TS_CONTRACT_ADDRESS"'",
-        "limit": 1
-    }' | extract_txhash)
-    echo "ah migrate txhash: $txhash"
-else
-    txhash=$(elysd tx wasm init $OPTIONS --sequence $(($sequence + 6)) --label "ah" --admin $NAME $codeid '{
-        "limit": 300,
-        "expiration": {
-            "at_time": "604800000000000"
-        },
-        "trade_shield_address": "'"$ts_contract_address"'"
-    }' | extract_txhash)
-    echo "ah init txhash: $txhash"
-fi
-wait_for_tx $txhash
-ah_contract_address=$(elysd q tx $txhash --node $NODE | extract_contract_address)
-echo "ah_contract_address: $ah_contract_address"
-
 # print environment variables to set
 printf "\nset those environment variables to use the contracts:\n\n"
 printf "export NODE=%s\n" "$NODE"
 printf "export NAME=%s\n" "$NAME"
-printf "export FS_CONTRACT_ADDRESS=%s\n" "$fs_contract_address"
 printf "export TS_CONTRACT_ADDRESS=%s\n" "$ts_contract_address"
-printf "export AH_CONTRACT_ADDRESS=%s\n" "$ah_contract_address"

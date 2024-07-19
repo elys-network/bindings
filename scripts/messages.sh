@@ -105,16 +105,6 @@ if ! elysd keys show $NAME &>/dev/null; then
 fi
 
 # Contract addresses
-if [ -n "$AH_CONTRACT_ADDRESS" ]; then
-    ah_contract_address=$AH_CONTRACT_ADDRESS
-else
-    ah_contract_address="elys1s37xz7tzrru2cpl96juu9lfqrsd4jh73j9slyv440q5vttx2uyesetjpne"
-fi
-if [ -n "$FS_CONTRACT_ADDRESS" ]; then
-    fs_contract_address=$FS_CONTRACT_ADDRESS
-else
-    fs_contract_address="elys1g2xwx805epc897rwyrykskjque07yxfmc4qq2p4ef5dwd6znl30qnxje76"
-fi
 if [ -n "$TS_CONTRACT_ADDRESS" ]; then
     ts_contract_address=$TS_CONTRACT_ADDRESS
 else
@@ -122,8 +112,6 @@ else
 fi
 
 # Print contract addresses
-printf "# AH contract address: %s\n" "$ah_contract_address"
-printf "# FS contract address: %s\n" "$fs_contract_address"
 printf "# TS contract address: %s\n" "$ts_contract_address"
 
 # Denoms
@@ -501,15 +489,6 @@ function stake_request() {
         delegate
 }
 
-function update_account() {
-    printf "\n# Update Account\n"
-    execute_message \
-        "$ah_contract_address" \
-        '{
-            "update_account": {}
-        }'
-}
-
 # function(s) to run based on the provided argument
 case "$1" in
 "amm_swap_exact_amount_in")
@@ -586,9 +565,6 @@ case "$1" in
     ;;
 "stake_request")
     stake_request $2
-    ;;
-"update_account")
-    update_account
     ;;
 *)
     # Default case: run all functions

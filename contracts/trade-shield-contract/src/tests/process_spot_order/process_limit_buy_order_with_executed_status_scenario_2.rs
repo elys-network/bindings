@@ -5,7 +5,7 @@ use crate::tests::test_order_status::test_spot_order_status;
 use anyhow::{bail, Ok, Result as AnyResult};
 use cosmwasm_std::{
     coin, to_json_binary, Addr, BankMsg, BlockInfo, Decimal, Empty, Int64, SignedDecimal, StdError,
-    Timestamp, Uint128,
+    Timestamp,
 };
 use cw_multi_test::BankSudo;
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
@@ -373,7 +373,6 @@ fn process_limit_buy_order_with_executed_status_scenario_2() {
 
     // Create a mock message to instantiate the contract with the dummy order.
     let instantiate_msg = InstantiateMockMsg {
-        account_history_address: None,
         spot_orders: vec![order.clone()],
         perpetual_orders: vec![],
     };
