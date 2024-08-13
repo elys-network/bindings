@@ -1,5 +1,4 @@
 use crate::action::execute::clean_up_storage;
-use crate::action::sudo::update_metadata_prices;
 use crate::states::DELETE_OLD_DATA_ENABLED;
 use crate::{msg::SudoMsg, states::DELETE_EPOCH};
 use cosmwasm_std::{entry_point, DepsMut, Env, Response, StdResult};
@@ -13,7 +12,6 @@ pub fn sudo(mut deps: DepsMut<ElysQuery>, _env: Env, msg: SudoMsg) -> StdResult<
             if DELETE_OLD_DATA_ENABLED.load(deps.storage)? == true {
                 clean_up_storage(&mut deps, epoch)?;
             }
-            update_metadata_prices(deps)?;
             Ok(Response::new())
         }
     }
