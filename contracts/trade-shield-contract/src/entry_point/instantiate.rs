@@ -12,7 +12,7 @@ pub fn instantiate(
     deps: DepsMut<ElysQuery>,
     _env: Env,
     _info: MessageInfo,
-    msg: InstantiateMsg,
+    _msg: InstantiateMsg,
 ) -> StdResult<Response<ElysMsg>> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     MAX_REPLY_ID.save(deps.storage, &0)?;

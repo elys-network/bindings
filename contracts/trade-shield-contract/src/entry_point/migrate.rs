@@ -16,7 +16,7 @@ use semver::Version;
 pub fn migrate(
     deps: DepsMut<ElysQuery>,
     _env: Env,
-    msg: MigrateMsg,
+    _msg: MigrateMsg,
 ) -> StdResult<Response<ElysMsg>> {
     let admin = "elys16xffmfa6k45j340cx5zyp66lqvuw62a0neaa7w".to_string();
     PARAMS_ADMIN.save(deps.storage, &admin)?;
