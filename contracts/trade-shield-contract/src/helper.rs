@@ -48,10 +48,7 @@ pub fn get_discount(
     }
 
     let val = Uint128::from_str(&discount_str)?;
-    let discount_str = match Decimal::from_atomics(val, 2) {
-        Ok(resp) => resp,
-        Err(_) => Decimal::zero(),
-    };
+    let discount_str = Decimal::from_atomics(val, 2).unwrap_or_default();
     Ok(discount_str)
 }
 
