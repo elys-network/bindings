@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use cosmwasm_std::{
     from_json, BankMsg, Decimal, OverflowError, OverflowOperation, QuerierWrapper, Response,
     StdError, StdResult, Storage, SubMsgResult, Uint128,
@@ -41,14 +43,12 @@ pub fn get_discount(
         Err(_) => "0".to_string(),
     };
 
-    let discount = match discount_str.parse::<Decimal>() {
-        Ok(discount) => discount
-            .checked_div(Decimal::new(Uint128::from(100u64)))
-            .unwrap_or_default(),
+    let val = Uint128::from_str(&discount_str)?;
+    let discount_str = match Decimal::from_atomics(val, 2) {
+        Ok(resp) => resp,
         Err(_) => Decimal::zero(),
     };
-
-    Ok(discount)
+    Ok(discount_str)
 }
 
 pub fn remove_spot_order(
