@@ -1,4 +1,5 @@
-use crate::account_history::types::{CoinValue, Reward};
+use crate::account_history::types::Reward;
+use crate::trade_shield::types::CoinValue;
 
 use cosmwasm_schema::cw_serde;
 

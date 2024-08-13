@@ -1,7 +1,8 @@
 use crate::{
-    account_history::types::{AprElys, CoinValue, ElysDenom},
+    account_history::types::{AprElys, ElysDenom},
     query_resp::StakedAvailable,
     trade_shield::types::BalanceAvailable,
+    trade_shield::types::CoinValue,
     types::VestingDetail,
 };
 

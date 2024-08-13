@@ -9,9 +9,8 @@ use elys_bindings::{
     account_history::{
         msg::query_resp::{GetRewardsResp, StakeAssetBalanceBreakdown, StakedAssetsResponse},
         types::{
-            AccountSnapshot, CoinValue, ElysDenom, LiquidAsset, Metadata, PerpetualAsset,
-            PerpetualAssets, PoolBalances, PortfolioBalanceSnapshot, Reward, StakedAssets,
-            TotalBalance,
+            AccountSnapshot, ElysDenom, LiquidAsset, Metadata, PerpetualAsset, PerpetualAssets,
+            PoolBalances, PortfolioBalanceSnapshot, Reward, StakedAssets, TotalBalance,
         },
     },
     query_resp::{
@@ -26,8 +25,8 @@ use elys_bindings::{
             QueryMsg::{GetPerpetualOrders, GetSpotOrders, PerpetualGetPositionsForAddress},
         },
         types::{
-            OracleAssetInfo, PerpetualOrder, PerpetualOrderPlus, PerpetualOrderType, SpotOrder,
-            Status,
+            CoinValue, OracleAssetInfo, PerpetualOrder, PerpetualOrderPlus, PerpetualOrderType,
+            SpotOrder, Status,
         },
     },
     ElysQuerier, ElysQuery,

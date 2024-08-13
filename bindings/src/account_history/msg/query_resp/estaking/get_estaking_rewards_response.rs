@@ -1,7 +1,7 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::Coin;
 
-use crate::account_history::types::CoinValue;
+use crate::trade_shield::types::CoinValue;
 
 #[cw_serde]
 pub struct GetEstakingRewardsResponse {

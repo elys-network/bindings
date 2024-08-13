@@ -1,6 +1,6 @@
 use cosmwasm_std::{Deps, StdResult};
 use elys_bindings::account_history::msg::query_resp::estaking::GetEstakingRewardsResponse;
-use elys_bindings::account_history::types::CoinValue;
+use elys_bindings::trade_shield::types::CoinValue;
 use elys_bindings::{ElysQuerier, ElysQuery};
 
 /**

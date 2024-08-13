@@ -1,7 +1,7 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{DecCoin, Decimal256};
 
-use super::CoinValue;
+use crate::trade_shield::types::CoinValue;
 
 #[cw_serde]
 pub struct LiquidAsset {

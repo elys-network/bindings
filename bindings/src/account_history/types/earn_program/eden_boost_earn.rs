@@ -1,7 +1,8 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::Uint128;
 
-use crate::account_history::types::{earn_detail::earn_detail::AprEdenBoost, CoinValue};
+use crate::account_history::types::earn_detail::earn_detail::AprEdenBoost;
+use crate::trade_shield::types::CoinValue;
 
 #[cw_serde]
 pub struct EdenBoostEarnProgram {

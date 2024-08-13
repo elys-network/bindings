@@ -1,6 +1,7 @@
 use crate::{
-    account_history::types::{AprUsdc, CoinValue},
+    account_history::types::AprUsdc,
     query_resp::{BalanceBorrowed, StakedAvailable},
+    trade_shield::types::CoinValue,
     types::BalanceAvailable,
 };
 

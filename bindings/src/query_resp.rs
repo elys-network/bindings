@@ -627,7 +627,6 @@ pub struct LeveragelpPosition {
     pub interest_rate_hour_usd: Decimal,
 }
 
-
 #[cw_serde]
 pub struct LeveragelpPositionResponse {
     pub position: Option<LeveragelpPosition>,

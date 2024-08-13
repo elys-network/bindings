@@ -1,5 +1,5 @@
 use cosmwasm_std::{Decimal, Deps, Env, StdResult};
-use elys_bindings::{account_history::types::CoinValue, ElysQuerier, ElysQuery};
+use elys_bindings::{trade_shield::types::CoinValue, ElysQuerier, ElysQuery};
 
 use crate::{
     msg::query_resp::{GetLiquidAssetsResp, LiquidAsset},

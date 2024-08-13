@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use cosmwasm_schema::cw_serde;
 
-use crate::account_history::types::CoinValue;
+use crate::trade_shield::types::CoinValue;
 
 #[cw_serde]
 #[derive(Default)]
