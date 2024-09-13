@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, SignedDecimal, SignedDecimal256};
+use cosmwasm_std::{Addr, SignedDecimal, SignedDecimal256, Uint64};
 use std::str::FromStr;
 
 use cosmwasm_std::Int128;
@@ -63,6 +63,11 @@ fn successful_create_perpetual_market_open_order() {
                 take_profit_borrow_rate: SignedDecimal::one(),
                 take_profit_custody: Int128::zero(),
                 trading_asset: "usdc".to_string(),
+                stop_loss_price: SignedDecimal::zero(),
+                last_interest_calc_time: Uint64::zero().into(),
+                last_interest_calc_block: Uint64::zero().into(),
+                last_funding_calc_time: Uint64::zero().into(),
+                last_funding_calc_block: Uint64::zero().into(),
             }],
         )
     })

@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, Decimal, Int128, SignedDecimal, SignedDecimal256};
+use cosmwasm_std::{Addr, Decimal, Int128, SignedDecimal, SignedDecimal256, Uint64};
 use elys_bindings::trade_shield::msg::query_resp::GetPerpetualOrderResp;
 use std::str::FromStr;
 
@@ -50,6 +50,11 @@ fn successful_create_perpetual_order() {
         take_profit_liabilities: Int128::zero(),
         take_profit_price: SignedDecimal256::from_str("0.28").unwrap(),
         trading_asset: "uelys".to_owned(),
+        stop_loss_price: SignedDecimal::zero(),
+        last_interest_calc_time: Uint64::zero().into(),
+        last_interest_calc_block: Uint64::zero().into(),
+        last_funding_calc_time: Uint64::zero().into(),
+        last_funding_calc_block: Uint64::zero().into(),
     }];
 
     app.init_modules(|router, _, store| router.custom.set_mtp(store, &mtps))
