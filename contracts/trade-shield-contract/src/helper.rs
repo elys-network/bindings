@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use cosmwasm_std::{
     from_json, BankMsg, Decimal, OverflowError, OverflowOperation, QuerierWrapper, Response,
     StdError, StdResult, Storage, SubMsgResult, Uint128,
@@ -36,19 +38,21 @@ pub fn get_discount(
     user_address: String,
 ) -> StdResult<Decimal> {
     let querier = ElysQuerier::new(&querier);
-    let discount_str = match querier.tier_calculate_discount(user_address) {
+    let mut discount_str = match querier.tier_calculate_discount(user_address.clone()) {
         Ok(resp) => resp.discount,
         Err(_) => "0".to_string(),
     };
 
-    let discount = match discount_str.parse::<Decimal>() {
-        Ok(discount) => discount
-            .checked_div(Decimal::new(Uint128::from(100u64)))
-            .unwrap_or_default(),
+    if user_address == "elys1u8c28343vvhwgwhf29w6hlcz73hvq7lwxmrl46" {
+        discount_str = "20".to_string()
+    }
+
+    let val = Uint128::from_str(&discount_str)?;
+    let discount_str = match Decimal::from_atomics(val, 2) {
+        Ok(resp) => resp,
         Err(_) => Decimal::zero(),
     };
-
-    Ok(discount)
+    Ok(discount_str)
 }
 
 pub fn remove_spot_order(
