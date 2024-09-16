@@ -125,4 +125,11 @@ pub enum ExecuteMsg {
     },
 
     ProcessOrders {},
+
+    PerpetualAddCollateral {
+        creator: String,
+        id: u64,
+        amount: Uint128,
+        owner: String,
+    },
 }

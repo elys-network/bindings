@@ -42,6 +42,7 @@ pub mod query {
 }
 
 pub mod execute {
+    mod add_collateral_perpetual;
     mod cancel_perpetual_order;
     mod cancel_perpetual_orders;
     mod cancel_spot_order;
@@ -72,6 +73,7 @@ pub mod execute {
 
     use super::*;
 
+    pub use add_collateral_perpetual::perpetual_add_collateral;
     pub use cancel_perpetual_order::cancel_perpetual_order;
     pub use cancel_perpetual_orders::cancel_perpetual_orders;
     pub use cancel_spot_order::cancel_spot_order;

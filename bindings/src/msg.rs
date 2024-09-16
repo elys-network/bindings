@@ -145,6 +145,13 @@ pub enum ElysMsg {
         sender: String,
         ids: Vec<u64>,
     },
+
+    PerpetualAddCollateral {
+        creator: String,
+        id: u64,
+        amount: Uint128,
+        owner: String,
+    },
 }
 
 impl ElysMsg {
@@ -395,6 +402,20 @@ impl ElysMsg {
         Self::MasterchefClaimRewards {
             sender: address,
             pool_ids,
+        }
+    }
+
+    pub fn perpetual_add_collateral(
+        creator: impl Into<String>,
+        id: u64,
+        amount: u128,
+        owner: impl Into<String>,
+    ) -> Self {
+        Self::PerpetualAddCollateral {
+            creator: creator.into(),
+            id,
+            amount: Uint128::new(amount),
+            owner: owner.into(),
         }
     }
 }
