@@ -223,7 +223,10 @@ pub fn execute(
             let resp = process_orders(deps, env)?;
             Ok(resp)
         }
-        PerpetualAddCollateral {} => {}
+        PerpetualAddCollateral { id } => {
+            let resp = perpetual_add_collateral(info, deps, env, id);
+            resp
+        }
     }?;
 
     Ok(resp)
