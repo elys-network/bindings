@@ -362,6 +362,15 @@ query_contract "$ts_contract_address" '{
     }'
 }
 
+function perpetual_assets() {
+    printf "\n# Get Perpetual Assets"
+query_contract "$ts_contract_address" '{
+    "get_perpetual_asset": {
+        "address" : "'"$user_address"'"
+    }
+}'
+}
+
 # function(s) to run based on the provided argument
 case "$2" in
 "swap_estimation_by_denom_elys_usdc_elys")
@@ -489,6 +498,9 @@ case "$2" in
     ;;
 "parameter_params")
     parameter_params
+    ;;
+"perpetual_assets")
+    perpetual_assets
     ;;
 *)
     # Default case: run all functions
