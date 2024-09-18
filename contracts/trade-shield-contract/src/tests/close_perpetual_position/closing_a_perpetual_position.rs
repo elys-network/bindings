@@ -36,10 +36,10 @@ fn closing_perpetualg_position() {
         take_profit_price: SignedDecimal256::from_str("30").unwrap(),
         trading_asset: "uatom".to_string(),
         stop_loss_price: SignedDecimal::zero(),
-        last_interest_calc_time: Uint64::zero().into(),
-        last_interest_calc_block: Uint64::zero().into(),
-        last_funding_calc_time: Uint64::zero().into(),
-        last_funding_calc_block: Uint64::zero().into(),
+        last_interest_calc_time: None,
+        last_interest_calc_block: None,
+        last_funding_calc_time: None,
+        last_funding_calc_block: None,
     }];
 
     // Create a mock message to instantiate the contract with no initial orders.

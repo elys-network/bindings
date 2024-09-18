@@ -287,10 +287,10 @@ pub struct Mtp {
     pub take_profit_price: SignedDecimal256,
     pub trading_asset: String,
     pub stop_loss_price: SignedDecimal,
-    pub last_interest_calc_time: u64,
-    pub last_interest_calc_block: u64,
-    pub last_funding_calc_time: u64,
-    pub last_funding_calc_block: u64,
+    pub last_interest_calc_time: Option<u64>,
+    pub last_interest_calc_block: Option<u64>,
+    pub last_funding_calc_time: Option<u64>,
+    pub last_funding_calc_block: Option<u64>,
 }
 
 #[cw_serde]

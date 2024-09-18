@@ -802,10 +802,10 @@ impl Module for ElysModule {
                     take_profit_custody: Int128::zero(),
                     trading_asset,
                     stop_loss_price: SignedDecimal::zero(),
-                    last_interest_calc_time: Uint64::zero().into(),
-                    last_interest_calc_block: Uint64::zero().into(),
-                    last_funding_calc_time: Uint64::zero().into(),
-                    last_funding_calc_block: Uint64::zero().into(),
+                    last_interest_calc_time: None,
+                    last_interest_calc_block: None,
+                    last_funding_calc_time: None,
+                    last_funding_calc_block: None,
                 };
 
                 let msg_resp = PerpetualOpenResponse { id: mtp.id };

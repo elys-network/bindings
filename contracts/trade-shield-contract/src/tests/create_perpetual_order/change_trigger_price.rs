@@ -51,10 +51,10 @@ fn successful_create_perpetual_order() {
         take_profit_price: SignedDecimal256::from_str("0.28").unwrap(),
         trading_asset: "uelys".to_owned(),
         stop_loss_price: SignedDecimal::zero(),
-        last_interest_calc_time: Uint64::zero().into(),
-        last_interest_calc_block: Uint64::zero().into(),
-        last_funding_calc_time: Uint64::zero().into(),
-        last_funding_calc_block: Uint64::zero().into(),
+        last_interest_calc_time: None,
+        last_interest_calc_block: None,
+        last_funding_calc_time: None,
+        last_funding_calc_block: None,
     }];
 
     app.init_modules(|router, _, store| router.custom.set_mtp(store, &mtps))
