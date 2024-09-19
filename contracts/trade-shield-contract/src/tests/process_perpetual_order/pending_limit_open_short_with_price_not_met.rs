@@ -5,7 +5,7 @@ use crate::tests::get_order_id_from_events::get_attr_from_events;
 use anyhow::{bail, Result as AnyResult};
 use cosmwasm_std::{
     coin, coins, to_json_binary, Addr, BankMsg, Decimal, Empty, Int128, SignedDecimal,
-    SignedDecimal256, StdError,
+    SignedDecimal256, StdError, Uint64,
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::msg_resp::PerpetualOpenResponse;
@@ -230,6 +230,11 @@ impl Module for ElysModuleWrapper {
                     take_profit_borrow_rate: SignedDecimal::zero(),
                     take_profit_custody: Int128::zero(),
                     trading_asset,
+                    stop_loss_price: SignedDecimal::zero(),
+                    last_interest_calc_time: None,
+                    last_interest_calc_block: None,
+                    last_funding_calc_time: None,
+                    last_funding_calc_block: None,
                 };
 
                 let msg_resp = PerpetualOpenResponse { id: mtp.id };

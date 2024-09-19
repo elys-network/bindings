@@ -1,6 +1,6 @@
 use cosmwasm_std::{
     coin, coins, Addr, Coin, Decimal, Int128, Int64, SignedDecimal, SignedDecimal256, StdError,
-    Uint128,
+    Uint128, Uint64,
 };
 use cw_multi_test::Executor;
 use elys_bindings::{
@@ -155,6 +155,11 @@ fn query_positions() {
         take_profit_borrow_rate: SignedDecimal::zero(),
         take_profit_custody: Int128::zero(),
         trading_asset: "".to_string(),
+        stop_loss_price: SignedDecimal::zero(),
+        last_interest_calc_time: None,
+        last_interest_calc_block: None,
+        last_funding_calc_time: None,
+        last_funding_calc_block: None,
     }];
     let mut app = ElysApp::new();
 
@@ -198,6 +203,11 @@ fn query_single_mtp() {
         take_profit_borrow_rate: SignedDecimal::zero(),
         take_profit_custody: Int128::zero(),
         trading_asset: "".to_string(),
+        stop_loss_price: SignedDecimal::zero(),
+        last_interest_calc_time: None,
+        last_interest_calc_block: None,
+        last_funding_calc_time: None,
+        last_funding_calc_block: None,
     }];
     let mut app = ElysApp::new();
 

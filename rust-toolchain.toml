@@ -1,0 +1,4 @@
+[toolchain]
+channel = "1.79.0"  # or "nightly", "beta", or a specific version like "1.56.0"
+components = ["rustfmt", "clippy"]  # optional, specify additional components
+targets = ["wasm32-unknown-unknown"]  # optional, specify additional targets

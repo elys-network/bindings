@@ -11,7 +11,7 @@ use cosmwasm_std::{
     to_json_binary, Addr, BankMsg, BlockInfo, Coin, Decimal, Empty, Int64, Querier, StdError,
     StdResult, Storage,
 };
-use cosmwasm_std::{Int128, SignedDecimal, Uint128};
+use cosmwasm_std::{Int128, SignedDecimal, Uint128, Uint64};
 use cw_multi_test::{App, AppResponse, BankKeeper, BankSudo, BasicAppBuilder, Module, WasmKeeper};
 use cw_storage_plus::Item;
 use elys_bindings::{
@@ -801,6 +801,11 @@ impl Module for ElysModule {
                     take_profit_borrow_rate: SignedDecimal::zero(),
                     take_profit_custody: Int128::zero(),
                     trading_asset,
+                    stop_loss_price: SignedDecimal::zero(),
+                    last_interest_calc_time: None,
+                    last_interest_calc_block: None,
+                    last_funding_calc_time: None,
+                    last_funding_calc_block: None,
                 };
 
                 let msg_resp = PerpetualOpenResponse { id: mtp.id };
