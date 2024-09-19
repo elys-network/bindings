@@ -1073,6 +1073,7 @@ impl Module for ElysModule {
                 })
             }
             ElysMsg::LeveragelpClaimRewards { .. } => todo!(),
+            ElysMsg::PerpetualAddCollateral { .. } => todo!(),
         }
     }
 

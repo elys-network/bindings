@@ -125,4 +125,8 @@ pub enum ExecuteMsg {
     },
 
     ProcessOrders {},
+
+    PerpetualAddCollateral {
+        id: u64,
+    },
 }
