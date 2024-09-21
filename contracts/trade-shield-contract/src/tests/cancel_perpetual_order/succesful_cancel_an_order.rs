@@ -1,5 +1,5 @@
 use super::*;
-use cosmwasm_std::{Addr, Decimal, SignedDecimal, SignedDecimal256};
+use cosmwasm_std::{Addr, DecCoin, Decimal, Decimal256, SignedDecimal, SignedDecimal256};
 
 use cw_multi_test::BankSudo;
 
@@ -25,6 +25,10 @@ fn succesful_cancel_an_order() {
                 rate: Decimal::from_str("20000.0").unwrap(),
             }),
             &vec![],
+            DecCoin::new(Decimal256::zero(), ""),
+            SignedDecimal::zero(),
+            Fee::default(),
+            Fee::default(),
         )
         .unwrap()],
     };

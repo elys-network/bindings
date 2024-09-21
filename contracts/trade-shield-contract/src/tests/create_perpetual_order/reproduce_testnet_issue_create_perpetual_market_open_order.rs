@@ -1,6 +1,8 @@
 use anyhow::{bail, Result as AnyResult};
 
-use cosmwasm_std::{to_json_binary, Addr, BankMsg, Empty, Int128, Int64, SignedDecimal, StdError};
+use cosmwasm_std::{
+    to_json_binary, Addr, BankMsg, Coin, Empty, Int128, Int64, SignedDecimal, StdError,
+};
 use cw_multi_test::{AppResponse, BasicAppBuilder, Module};
 use elys_bindings::{
     msg_resp::PerpetualOpenResponse,
@@ -155,6 +157,8 @@ impl Module for ElysModule {
                         .unwrap()
                         .to_string(),
                     slippage: Decimal::zero().to_string(),
+                    borrow_fee: Coin::default(),
+                    funding_fee: Coin::default(),
                 };
 
                 return Ok(to_json_binary(&resp)?);

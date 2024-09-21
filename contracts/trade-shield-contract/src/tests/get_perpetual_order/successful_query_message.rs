@@ -1,5 +1,5 @@
 use crate::msg::query_resp::GetPerpetualOrderResp;
-use cosmwasm_std::{Addr, Decimal, SignedDecimal, SignedDecimal256};
+use cosmwasm_std::{Addr, DecCoin, Decimal, Decimal256, SignedDecimal, SignedDecimal256};
 
 use super::*;
 // This test case verifies the successful query of an existing order in the contract.
@@ -22,6 +22,10 @@ fn successful_query_message() {
             rate: Decimal::from_str("35").unwrap(),
         }),
         &vec![],
+        DecCoin::new(Decimal256::zero(), ""),
+        SignedDecimal::zero(),
+        Fee::default(),
+        Fee::default(),
     )
     .unwrap();
 
