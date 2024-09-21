@@ -2,8 +2,8 @@ use crate::{helper::get_discount, msg::ReplyType};
 
 use super::*;
 use cosmwasm_std::{
-    coin, to_json_binary, OverflowError, OverflowOperation, SignedDecimal, SignedDecimal256,
-    StdError, StdResult, SubMsg,
+    coin, to_json_binary, Coin, DecCoin, Decimal256, OverflowError, OverflowOperation,
+    SignedDecimal, SignedDecimal256, StdError, StdResult, SubMsg,
 };
 use cw_utils;
 use elys_bindings::query_resp::{Entry, QueryGetEntryResponse};
@@ -175,6 +175,8 @@ fn create_perpetual_open_order(
         }
     }
 
+    let amount = Decimal256::new(open_estimation.position_size.amount.into());
+
     let order = PerpetualOrder::new_open(
         &info.sender,
         &position,
@@ -185,6 +187,25 @@ fn create_perpetual_open_order(
         &take_profit_price,
         &trigger_price,
         &orders,
+        DecCoin {
+            denom: open_estimation.position_size.denom,
+            amount,
+        },
+        open_estimation.liquidation_price,
+        Fee {
+            percent: open_estimation.borrow_interest_rate.to_string(),
+            amount: Coin {
+                denom: open_estimation.collateral.denom,
+                amount: todo!(),
+            },
+        },
+        Fee {
+            percent: open_estimation.funding_rate.to_string(),
+            amount: Coin {
+                denom: open_estimation.trading_asset,
+                amount: todo!(),
+            },
+        },
     )?;
 
     let order_id = order.order_id;
@@ -360,6 +381,10 @@ fn create_perpetual_close_order(
         &trigger_price,
         &Some(mtp.take_profit_price),
         &orders,
+        DecCoin::new(Decimal256::zero(), ""),
+        SignedDecimal::zero(),
+        Fee::default(),
+        Fee::default(),
     )?;
 
     let order_id = order.order_id;

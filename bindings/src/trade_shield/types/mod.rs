@@ -13,6 +13,7 @@ mod spot_order {
 mod coin_value;
 mod date;
 mod denom;
+mod fees;
 mod perpetual_assets;
 mod perpetual_order;
 mod perpetual_order_plus;
@@ -25,6 +26,7 @@ pub use crate::types::*;
 pub use coin_value::CoinValue;
 pub use date::Date;
 pub use denom::ElysDenom;
+pub use fees::Fee;
 pub use perpetual_assets::{PerpetualAsset, PerpetualAssets};
 pub use perpetual_order::PerpetualOrder;
 pub use perpetual_order_plus::PerpetualOrderPlus;
