@@ -194,17 +194,11 @@ fn create_perpetual_open_order(
         open_estimation.liquidation_price,
         Fee {
             percent: open_estimation.borrow_interest_rate.to_string(),
-            amount: Coin {
-                denom: open_estimation.collateral.denom,
-                amount: todo!(),
-            },
+            amount: open_estimation.borrow_fee,
         },
         Fee {
             percent: open_estimation.funding_rate.to_string(),
-            amount: Coin {
-                denom: open_estimation.trading_asset,
-                amount: todo!(),
-            },
+            amount: open_estimation.funding_fee,
         },
     )?;
 

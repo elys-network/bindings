@@ -123,6 +123,8 @@ pub struct PerpetualOpenEstimationRawResponse {
     pub borrow_interest_rate: String,
     pub funding_rate: String,
     pub price_impact: String,
+    pub borrow_fee: Coin,
+    pub funding_fee: Coin,
 }
 
 #[cw_serde]
@@ -147,6 +149,8 @@ pub struct PerpetualOpenEstimationResponse {
     pub borrow_interest_rate: SignedDecimal,
     pub funding_rate: SignedDecimal,
     pub price_impact: SignedDecimal,
+    pub borrow_fee: Coin,
+    pub funding_fee: Coin,
 }
 
 #[cw_serde]
