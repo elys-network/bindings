@@ -8,7 +8,7 @@ fn successful_query_message() {
     // Initialize the ElysApp instance.
     let mut app = ElysApp::new();
 
-    let order = PerpetualOrder::new_open(
+    let order = PerpetualOrderV2::new_open(
         "user",
         &PerpetualPosition::Long,
         &PerpetualOrderType::MarketOpen,

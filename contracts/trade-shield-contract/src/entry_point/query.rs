@@ -7,10 +7,10 @@ use elys_bindings::trade_shield::{
     },
     states::{
         LEVERAGE_ENABLED, LIMIT_PROCESS_ORDER, MARKET_ORDER_ENABLED, PARAMS_ADMIN,
-        PENDING_PERPETUAL_ORDER, PENDING_SPOT_ORDER, PERPETUAL_ENABLED, PROCESS_ORDERS_ENABLED,
+        PENDING_PERPETUAL_ORDER_V2, PENDING_SPOT_ORDER, PERPETUAL_ENABLED, PROCESS_ORDERS_ENABLED,
         REWARD_ENABLED, SORTED_PENDING_SPOT_ORDER, SPOT_ORDER, STAKE_ENABLED, SWAP_ENABLED,
     },
-    types::{Date, OrderPrice, PerpetualOrder, SpotOrder, Status},
+    types::{Date, OrderPrice, PerpetualOrderV2, SpotOrder, Status},
 };
 use msg::QueryMsg;
 
@@ -105,7 +105,7 @@ pub fn query(deps: Deps<ElysQuery>, env: Env, msg: QueryMsg) -> Result<Binary, C
                 .prefix_range(deps.storage, None, None, Order::Ascending)
                 .filter_map(|res| res.ok().map(|r| r.1))
                 .collect();
-            let perpetual_orders: Vec<PerpetualOrder> = PENDING_PERPETUAL_ORDER
+            let perpetual_orders: Vec<PerpetualOrderV2> = PENDING_PERPETUAL_ORDER_V2
                 .prefix_range(deps.storage, None, None, Order::Ascending)
                 .filter_map(|res| res.ok().map(|r| r.1))
                 .collect();

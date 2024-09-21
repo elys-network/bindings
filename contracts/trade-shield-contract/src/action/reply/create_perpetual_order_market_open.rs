@@ -20,7 +20,7 @@ pub fn reply_to_create_perpetual_market_open(
         return Err(StdError::generic_err("no data from response").into());
     }
 
-    let mut order: PerpetualOrder = match PERPETUAL_ORDER.may_load(deps.storage, order_id)? {
+    let mut order: PerpetualOrderV2 = match PERPETUAL_ORDER_V2.may_load(deps.storage, order_id)? {
         Some(order) => order,
         None => return Err(ContractError::OrderNotFound { order_id }),
     };
@@ -33,7 +33,7 @@ pub fn reply_to_create_perpetual_market_open(
     order.status = Status::Executed;
     order.position_id = Some(perpetual_resp.id);
 
-    PERPETUAL_ORDER.save(deps.storage, order_id, &order)?;
+    PERPETUAL_ORDER_V2.save(deps.storage, order_id, &order)?;
 
     let resp = Response::new().add_event(
         Event::new("reply_to_create_perpetual_market_open")

@@ -2,8 +2,8 @@ use crate::{helper::get_discount, msg::ReplyType};
 
 use super::*;
 use cosmwasm_std::{
-    coin, to_json_binary, Coin, DecCoin, Decimal256, OverflowError, OverflowOperation,
-    SignedDecimal, SignedDecimal256, StdError, StdResult, SubMsg,
+    coin, to_json_binary, DecCoin, Decimal256, OverflowError, OverflowOperation, SignedDecimal,
+    SignedDecimal256, StdError, StdResult, SubMsg,
 };
 use cw_utils;
 use elys_bindings::query_resp::{Entry, QueryGetEntryResponse};
@@ -120,7 +120,7 @@ fn create_perpetual_open_order(
 ) -> Result<Response<ElysMsg>, ContractError> {
     let collateral = cw_utils::one_coin(&info)?;
 
-    let orders: Vec<PerpetualOrder> = PERPETUAL_ORDER
+    let orders: Vec<PerpetualOrderV2> = PERPETUAL_ORDER_V2
         .prefix_range(deps.storage, None, None, Order::Ascending)
         .filter_map(|res| res.ok().map(|r| r.1))
         .collect();
@@ -177,7 +177,7 @@ fn create_perpetual_open_order(
 
     let amount = Decimal256::new(open_estimation.position_size.amount.into());
 
-    let order = PerpetualOrder::new_open(
+    let order = PerpetualOrderV2::new_open(
         &info.sender,
         &position,
         &order_type,
@@ -204,19 +204,19 @@ fn create_perpetual_open_order(
 
     let order_id = order.order_id;
 
-    PERPETUAL_ORDER.save(deps.storage, order_id, &order)?;
+    PERPETUAL_ORDER_V2.save(deps.storage, order_id, &order)?;
     let mut ids = USER_PERPETUAL_ORDER
         .may_load(deps.storage, order.owner.as_str())?
         .unwrap_or(vec![]);
     ids.push(order.order_id);
     USER_PERPETUAL_ORDER.save(deps.storage, order.owner.as_str(), &ids)?;
     if order.order_type != PerpetualOrderType::MarketOpen {
-        PENDING_PERPETUAL_ORDER.save(deps.storage, order_id, &order)?;
+        PENDING_PERPETUAL_ORDER_V2.save(deps.storage, order_id, &order)?;
         let key = order.gen_key()?;
         let mut vec = SORTED_PENDING_PERPETUAL_ORDER
             .may_load(deps.storage, key.as_str())?
             .unwrap_or(vec![]);
-        let index = PerpetualOrder::binary_search(&order.trigger_price, deps.storage, &vec)?;
+        let index = PerpetualOrderV2::binary_search(&order.trigger_price, deps.storage, &vec)?;
         if vec.len() <= index {
             vec.push(order.order_id)
         } else {
@@ -298,7 +298,7 @@ fn create_perpetual_close_order(
         return Err(StdError::not_found("perpetual trading position").into());
     };
 
-    let orders: Vec<PerpetualOrder> = PERPETUAL_ORDER
+    let orders: Vec<PerpetualOrderV2> = PERPETUAL_ORDER_V2
         .prefix_range(deps.storage, None, None, Order::Ascending)
         .filter_map(|res| res.ok().map(|r| r.1))
         .collect();
@@ -339,15 +339,15 @@ fn create_perpetual_close_order(
         .cloned()
     {
         order.trigger_price = trigger_price;
-        PERPETUAL_ORDER.save(deps.storage, order.order_id, &order)?;
+        PERPETUAL_ORDER_V2.save(deps.storage, order.order_id, &order)?;
 
         if order.order_type != PerpetualOrderType::MarketClose {
-            PENDING_PERPETUAL_ORDER.save(deps.storage, order.order_id, &order)?;
+            PENDING_PERPETUAL_ORDER_V2.save(deps.storage, order.order_id, &order)?;
             let key = order.gen_key()?;
             let mut vec = SORTED_PENDING_PERPETUAL_ORDER
                 .may_load(deps.storage, key.as_str())?
                 .unwrap_or(vec![]);
-            let index = PerpetualOrder::binary_search(&order.trigger_price, deps.storage, &vec)?;
+            let index = PerpetualOrderV2::binary_search(&order.trigger_price, deps.storage, &vec)?;
             if vec.len() <= index {
                 vec.push(order.order_id)
             } else {
@@ -364,7 +364,7 @@ fn create_perpetual_close_order(
         return Ok(resp);
     };
 
-    let order = PerpetualOrder::new_close(
+    let order = PerpetualOrderV2::new_close(
         &info.sender,
         mtp.position,
         &order_type,
@@ -375,22 +375,18 @@ fn create_perpetual_close_order(
         &trigger_price,
         &Some(mtp.take_profit_price),
         &orders,
-        DecCoin::new(Decimal256::zero(), ""),
-        SignedDecimal::zero(),
-        Fee::default(),
-        Fee::default(),
     )?;
 
     let order_id = order.order_id;
 
-    PERPETUAL_ORDER.save(deps.storage, order_id, &order)?;
+    PERPETUAL_ORDER_V2.save(deps.storage, order_id, &order)?;
     let mut ids = USER_PERPETUAL_ORDER
         .may_load(deps.storage, order.owner.as_str())?
         .unwrap_or(vec![]);
     ids.push(order.order_id);
     USER_PERPETUAL_ORDER.save(deps.storage, order.owner.as_str(), &ids)?;
     if order.order_type != PerpetualOrderType::MarketClose {
-        PENDING_PERPETUAL_ORDER.save(deps.storage, order_id, &order)?;
+        PENDING_PERPETUAL_ORDER_V2.save(deps.storage, order_id, &order)?;
     }
 
     let resp = Response::new().add_event(

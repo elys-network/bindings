@@ -11,7 +11,7 @@ fn succesful_cancel_an_order() {
     // Create a mock message to instantiate the contract with no initial orders.
     let instantiate_msg = InstantiateMockMsg {
         spot_orders: vec![],
-        perpetual_orders: vec![PerpetualOrder::new_open(
+        perpetual_orders: vec![PerpetualOrderV2::new_open(
             "user",
             &PerpetualPosition::Long,
             &PerpetualOrderType::LimitOpen,

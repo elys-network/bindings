@@ -1,11 +1,11 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{coin, Coin, Decimal, SignedDecimal, StdError, StdResult};
 
-use super::{OrderPrice, PerpetualOrder};
+use super::{OrderPrice, PerpetualOrderV2};
 
 #[cw_serde]
 pub struct PerpetualOrderPlus {
-    pub order: PerpetualOrder,
+    pub order: PerpetualOrderV2,
     pub order_price: Option<Decimal>,
     pub custody: Coin,
 }
@@ -38,7 +38,7 @@ impl PerpetualOrderPlus {
         Ok(coin(custody_value.to_uint_floor().u128(), trading_asset))
     }
 
-    pub fn new(order: PerpetualOrder) -> StdResult<Self> {
+    pub fn new(order: PerpetualOrderV2) -> StdResult<Self> {
         if order.trigger_price.is_none() {
             return Ok(Self {
                 custody: coin(0, &order.trading_asset),

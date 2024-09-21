@@ -5,10 +5,11 @@ use cosmwasm_std::{
     StdError, StdResult, Storage, SubMsgResult, Uint128,
 };
 use elys_bindings::trade_shield::states::{
-    NUMBER_OF_EXECUTED_ORDER, NUMBER_OF_PENDING_ORDER, PENDING_PERPETUAL_ORDER, PENDING_SPOT_ORDER,
-    PERPETUAL_ORDER, SORTED_PENDING_PERPETUAL_ORDER, SORTED_PENDING_SPOT_ORDER, SPOT_ORDER,
+    NUMBER_OF_EXECUTED_ORDER, NUMBER_OF_PENDING_ORDER, PENDING_PERPETUAL_ORDER_V2,
+    PENDING_SPOT_ORDER, PERPETUAL_ORDER_V2, SORTED_PENDING_PERPETUAL_ORDER,
+    SORTED_PENDING_SPOT_ORDER, SPOT_ORDER,
 };
-use elys_bindings::trade_shield::types::{PerpetualOrder, PerpetualOrderType, SpotOrder, Status};
+use elys_bindings::trade_shield::types::{PerpetualOrderType, PerpetualOrderV2, SpotOrder, Status};
 use elys_bindings::ElysMsg;
 use elys_bindings::{ElysQuerier, ElysQuery};
 
@@ -94,10 +95,10 @@ pub fn remove_perpetual_order(
     storage: &mut dyn Storage,
     position_id: Option<u64>,
 ) -> StdResult<Option<BankMsg>> {
-    let mut order = PENDING_PERPETUAL_ORDER.load(storage, order_id).unwrap();
+    let mut order = PENDING_PERPETUAL_ORDER_V2.load(storage, order_id).unwrap();
     let key = order.gen_key()?;
     let mut vec: Vec<u64> = SORTED_PENDING_PERPETUAL_ORDER.load(storage, key.as_str())?;
-    let mut index = PerpetualOrder::binary_search(&order.trigger_price, storage, &vec)?;
+    let mut index = PerpetualOrderV2::binary_search(&order.trigger_price, storage, &vec)?;
     let size_of_vec = vec.len();
     while vec[index] != order_id && index < size_of_vec {
         index += 1;
@@ -111,8 +112,8 @@ pub fn remove_perpetual_order(
     vec.remove(index);
     SORTED_PENDING_PERPETUAL_ORDER.save(storage, key.as_str(), &vec)?;
     order.status = new_status;
-    PERPETUAL_ORDER.save(storage, order.order_id, &order)?;
-    PENDING_PERPETUAL_ORDER.remove(storage, order.order_id);
+    PERPETUAL_ORDER_V2.save(storage, order.order_id, &order)?;
+    PENDING_PERPETUAL_ORDER_V2.remove(storage, order.order_id);
     change_the_number_of_order(storage, &order.status)?;
     let bank_msg =
         if order.status == Status::Canceled && order.order_type == PerpetualOrderType::LimitOpen {
