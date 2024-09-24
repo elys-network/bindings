@@ -11,7 +11,7 @@ use cosmwasm_std::{
     to_json_binary, Addr, BankMsg, BlockInfo, Coin, Decimal, Empty, Int64, Querier, StdError,
     StdResult, Storage,
 };
-use cosmwasm_std::{Int128, SignedDecimal, Uint128, Uint64};
+use cosmwasm_std::{Int128, SignedDecimal, Uint128};
 use cw_multi_test::{App, AppResponse, BankKeeper, BankSudo, BasicAppBuilder, Module, WasmKeeper};
 use cw_storage_plus::Item;
 use elys_bindings::{
@@ -664,6 +664,7 @@ impl Module for ElysModule {
             }
             ElysQuery::CommitmentNumberOfCommitments {} => todo!("CommitmentNumberOfCommitments"),
             ElysQuery::LeveragelpRewards { .. } => todo!(),
+            ElysQuery::PerpetualParams {} => todo!(),
         }
     }
 
