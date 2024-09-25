@@ -10,9 +10,7 @@ use cosmwasm_std::{
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::msg_resp::PerpetualOpenResponse;
 use elys_bindings::query_resp::{
-    OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponseRaw,
-    PerpetualOpenEstimationRawResponse, QueryGetEntryResponseRaw, QueryGetPriceResponse, RawEntry,
-    TierCalculateDiscountResponse,
+    OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponseRaw, PerpetualOpenEstimationRawResponse, PerpetualParamsRaw, PerpetualParamsResponseRaw, QueryGetEntryResponseRaw, QueryGetPriceResponse, RawEntry, TierCalculateDiscountResponse
 };
 use elys_bindings::trade_shield::msg::query_resp::GetPerpetualOrderResp;
 use elys_bindings::trade_shield::msg::{ExecuteMsg, QueryMsg, SudoMsg};
@@ -154,6 +152,13 @@ impl Module for ElysModuleWrapper {
                     portfolio: "10".to_string(),
                 };
                 Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::PerpetualParams {} => {
+                let mut default_perpetual_raw = PerpetualParamsRaw::default();
+                default_perpetual_raw.max_limit_order = Some(10000i64);
+                Ok(to_json_binary(&PerpetualParamsResponseRaw {
+                    params: Some(default_perpetual_raw),
+                })?)
             }
             _ => panic!("not implemented {request:?}"),
         }

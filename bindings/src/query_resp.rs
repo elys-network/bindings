@@ -598,6 +598,7 @@ pub struct LeveragelpParams {
 }
 
 #[cw_serde]
+#[derive(Default)]
 pub struct PerpetualParamsRaw {
     pub option: Option<bool>,
     pub leverage_max: Option<Decimal>,

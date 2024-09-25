@@ -20,17 +20,7 @@ use elys_bindings::{
         PerpetualOpenResponse,
     },
     query_resp::{
-        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse,
-        BalanceBorrowed, Commitments, Entry, EstakingRewardsResponse,
-        LeveragelpIsWhitelistedResponse, LeveragelpParams, LeveragelpParamsResponse,
-        LeveragelpStatusResponse, LeveragelpWhitelistResponse, MasterchefUserPendingRewardResponse,
-        OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
-        PerpetualOpenEstimationRawResponse, PerpetualQueryPositionsResponse, PoolApr,
-        QueryAprResponse, QueryAprsResponse, QueryGetEntryAllResponse, QueryGetEntryResponse,
-        QueryGetPriceResponse, QueryPoolAprsResponse, QueryShowCommitmentsResponse,
-        QueryStableStakeAprResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
-        QueryVestingInfoResponse, StableStakeParamsData, StableStakeParamsResp,
-        TierCalculateDiscountResponse,
+        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse, BalanceBorrowed, Commitments, Entry, EstakingRewardsResponse, LeveragelpIsWhitelistedResponse, LeveragelpParams, LeveragelpParamsResponse, LeveragelpStatusResponse, LeveragelpWhitelistResponse, MasterchefUserPendingRewardResponse, OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse, PerpetualOpenEstimationRawResponse, PerpetualParamsRaw, PerpetualParamsResponseRaw, PerpetualQueryPositionsResponse, PoolApr, QueryAprResponse, QueryAprsResponse, QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse, QueryPoolAprsResponse, QueryShowCommitmentsResponse, QueryStableStakeAprResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryVestingInfoResponse, StableStakeParamsData, StableStakeParamsResp, TierCalculateDiscountResponse
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
@@ -664,7 +654,13 @@ impl Module for ElysModule {
             }
             ElysQuery::CommitmentNumberOfCommitments {} => todo!("CommitmentNumberOfCommitments"),
             ElysQuery::LeveragelpRewards { .. } => todo!(),
-            ElysQuery::PerpetualParams {} => todo!(),
+            ElysQuery::PerpetualParams {} => {
+                let mut default_perpetual_raw = PerpetualParamsRaw::default();
+                default_perpetual_raw.max_limit_order = Some(10000i64);
+                Ok(to_json_binary(&PerpetualParamsResponseRaw {
+                    params: Some(default_perpetual_raw),
+                })?)
+            }
         }
     }
 

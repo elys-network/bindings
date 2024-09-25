@@ -226,14 +226,11 @@ fn create_perpetual_open_order(
             .query_perpetual_params()?
             .params
             .ok_or(StdError::generic_err("Perpetual Params are not present"))?;
-        if number_of_pending_order
-            .sub(&(max_limit_order as u64))
-            .gt(&0u64)
-        {
-            return Err(ContractError::StdError(StdError::generic_err(
+        (max_limit_order as u128)
+            .checked_sub(number_of_pending_order as u128)
+            .ok_or(StdError::generic_err(
                 "Number of pending orders cannot be greater than maximum number of limit order",
-            )));
-        }
+            ))?;
 
         NUMBER_OF_PENDING_ORDER.save(deps.storage, &number_of_pending_order)?;
 
