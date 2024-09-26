@@ -5,14 +5,14 @@ use crate::tests::get_order_id_from_events::get_attr_from_events;
 use anyhow::{bail, Result as AnyResult};
 use cosmwasm_std::{
     coin, coins, to_json_binary, Addr, BankMsg, Coin, Decimal, Empty, Int128, SignedDecimal,
-    SignedDecimal256, StdError, Uint64,
+    SignedDecimal256, StdError,
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::msg_resp::PerpetualOpenResponse;
 use elys_bindings::query_resp::{
     OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponseRaw,
-    PerpetualOpenEstimationRawResponse, QueryGetEntryResponseRaw, QueryGetPriceResponse, RawEntry,
-    TierCalculateDiscountResponse,
+    PerpetualOpenEstimationRawResponse, PerpetualParamsRaw, PerpetualParamsResponseRaw,
+    QueryGetEntryResponseRaw, QueryGetPriceResponse, RawEntry, TierCalculateDiscountResponse,
 };
 use elys_bindings::trade_shield::msg::query_resp::GetPerpetualOrderResp;
 use elys_bindings::trade_shield::msg::{ExecuteMsg, QueryMsg, SudoMsg};
@@ -156,6 +156,13 @@ impl Module for ElysModuleWrapper {
                     portfolio: "10".to_string(),
                 };
                 Ok(to_json_binary(&resp)?)
+            }
+            ElysQuery::PerpetualParams {} => {
+                let mut default_perpetual_raw = PerpetualParamsRaw::default();
+                default_perpetual_raw.max_limit_order = Some(10000i64);
+                Ok(to_json_binary(&PerpetualParamsResponseRaw {
+                    params: Some(default_perpetual_raw),
+                })?)
             }
             _ => panic!("not implemented {request:?}"),
         }

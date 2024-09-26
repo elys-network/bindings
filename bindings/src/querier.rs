@@ -1139,6 +1139,14 @@ impl<'a> ElysQuerier<'a> {
         Ok(ParameterParamsResponse { params })
     }
 
+    pub fn query_perpetual_params(&self) -> StdResult<PerpetualParamsResponse> {
+        let query = ElysQuery::query_perpetual_params();
+        let request = QueryRequest::Custom(query);
+        let PerpetualParamsResponseRaw { params: raw_params } = self.querier.query(&request)?;
+        let params: Option<PerpetualParams> = raw_params.map(|val| val.into());
+        Ok(PerpetualParamsResponse { params })
+    }
+
     #[allow(dead_code)]
     #[cfg(feature = "debug")]
     fn query_binary(&self, request: &QueryRequest<ElysQuery>) -> StdResult<Binary> {

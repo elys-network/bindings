@@ -189,6 +189,9 @@ pub enum ElysQuery {
     // Define Tier
     #[returns(TierCalculateDiscountResponse)]
     TierCalculateDiscount { user: String },
+    // Define PerpetualParams
+    #[returns(PerpetualParamsResponse)]
+    PerpetualParams {},
 }
 
 impl CustomQuery for ElysQuery {}
@@ -468,5 +471,9 @@ impl ElysQuery {
     }
     pub fn query_leverage_lp_rewards(address: String, ids: Vec<u64>) -> Self {
         Self::LeveragelpRewards { address, ids }
+    }
+
+    pub fn query_perpetual_params() -> Self {
+        Self::PerpetualParams {}
     }
 }

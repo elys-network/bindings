@@ -602,13 +602,82 @@ pub struct LeveragelpParams {
 }
 
 #[cw_serde]
+#[derive(Default)]
+pub struct PerpetualParamsRaw {
+    pub option: Option<bool>,
+    pub leverage_max: Option<Decimal>,
+    pub borrow_interest_rate_max: Option<Decimal>,
+    pub borrow_interest_rate_min: Option<Decimal>,
+    pub borrow_interest_rate_increase: Option<Decimal>,
+    pub borrow_interest_rate_decrease: Option<Decimal>,
+    pub health_gain_factor: Option<Decimal>,
+    pub epoch_length: Option<i64>,
+    pub max_open_positions: Option<i64>,
+    pub pool_open_threshold: Option<Decimal>,
+    pub force_close_fund_percentage: Option<Decimal>,
+    pub force_close_fund_address: Option<String>,
+    pub incremental_borrow_interest_payment_fund_percentage: Option<Decimal>,
+    pub incremental_borrow_interest_payment_fund_address: Option<String>,
+    pub safety_factor: Option<Decimal>,
+    pub incremental_borrow_interest_payment_enabled: Option<bool>,
+    pub whitelisting_enabled: Option<bool>,
+    pub invariant_check_epoch: Option<String>,
+    pub take_profit_borrow_interest_rate_min: Option<Decimal>,
+    pub funding_fee_base_rate: Option<Decimal>,
+    pub funding_fee_max_rate: Option<Decimal>,
+    pub funding_fee_min_rate: Option<Decimal>,
+    pub funding_fee_collection_address: Option<String>,
+    pub swap_fee: Option<Decimal>,
+    pub max_limit_order: Option<i64>,
+}
+
+#[cw_serde]
+pub struct PerpetualParams {
+    pub option: bool,
+    pub leverage_max: Decimal,
+    pub borrow_interest_rate_max: Decimal,
+    pub borrow_interest_rate_min: Decimal,
+    pub borrow_interest_rate_increase: Decimal,
+    pub borrow_interest_rate_decrease: Decimal,
+    pub health_gain_factor: Decimal,
+    pub epoch_length: i64,
+    pub max_open_positions: i64,
+    pub pool_open_threshold: Decimal,
+    pub force_close_fund_percentage: Decimal,
+    pub force_close_fund_address: String,
+    pub incremental_borrow_interest_payment_fund_percentage: Decimal,
+    pub incremental_borrow_interest_payment_fund_address: String,
+    pub safety_factor: Decimal,
+    pub incremental_borrow_interest_payment_enabled: bool,
+    pub whitelisting_enabled: bool,
+    pub invariant_check_epoch: String,
+    pub take_profit_borrow_interest_rate_min: Decimal,
+    pub funding_fee_base_rate: Decimal,
+    pub funding_fee_max_rate: Decimal,
+    pub funding_fee_min_rate: Decimal,
+    pub funding_fee_collection_address: String,
+    pub swap_fee: Decimal,
+    pub max_limit_order: i64,
+}
+
+#[cw_serde]
 pub struct LeveragelpParamsResponseRaw {
     pub params: Option<LeveragelpParamsRaw>,
 }
 
 #[cw_serde]
+pub struct PerpetualParamsResponseRaw {
+    pub params: Option<PerpetualParamsRaw>,
+}
+
+#[cw_serde]
 pub struct LeveragelpParamsResponse {
     pub params: Option<LeveragelpParams>,
+}
+
+#[cw_serde]
+pub struct PerpetualParamsResponse {
+    pub params: Option<PerpetualParams>,
 }
 
 #[cw_serde]
@@ -1148,4 +1217,44 @@ pub struct ParameterParamsResponseRaw {
 #[cw_serde]
 pub struct ParameterParamsResponse {
     pub params: ParameterParams,
+}
+
+impl Into<PerpetualParams> for PerpetualParamsRaw {
+    fn into(self) -> PerpetualParams {
+        PerpetualParams {
+            option: self.option.unwrap_or_default(),
+            leverage_max: self.leverage_max.unwrap_or_default(),
+            borrow_interest_rate_max: self.borrow_interest_rate_max.unwrap_or_default(),
+            borrow_interest_rate_min: self.borrow_interest_rate_min.unwrap_or_default(),
+            borrow_interest_rate_increase: self.borrow_interest_rate_increase.unwrap_or_default(),
+            borrow_interest_rate_decrease: self.borrow_interest_rate_decrease.unwrap_or_default(),
+            health_gain_factor: self.health_gain_factor.unwrap_or_default(),
+            epoch_length: self.epoch_length.unwrap_or_default(),
+            max_open_positions: self.max_open_positions.unwrap_or_default(),
+            pool_open_threshold: self.pool_open_threshold.unwrap_or_default(),
+            force_close_fund_percentage: self.force_close_fund_percentage.unwrap_or_default(),
+            force_close_fund_address: self.force_close_fund_address.unwrap_or_default(),
+            incremental_borrow_interest_payment_fund_percentage: self
+                .incremental_borrow_interest_payment_fund_percentage
+                .unwrap_or_default(),
+            incremental_borrow_interest_payment_fund_address: self
+                .incremental_borrow_interest_payment_fund_address
+                .unwrap_or_default(),
+            safety_factor: self.safety_factor.unwrap_or_default(),
+            incremental_borrow_interest_payment_enabled: self
+                .incremental_borrow_interest_payment_enabled
+                .unwrap_or_default(),
+            whitelisting_enabled: self.whitelisting_enabled.unwrap_or_default(),
+            invariant_check_epoch: self.invariant_check_epoch.unwrap_or_default(),
+            take_profit_borrow_interest_rate_min: self
+                .take_profit_borrow_interest_rate_min
+                .unwrap_or_default(),
+            funding_fee_base_rate: self.funding_fee_base_rate.unwrap_or_default(),
+            funding_fee_max_rate: self.funding_fee_max_rate.unwrap_or_default(),
+            funding_fee_min_rate: self.funding_fee_min_rate.unwrap_or_default(),
+            funding_fee_collection_address: self.funding_fee_collection_address.unwrap_or_default(),
+            swap_fee: self.swap_fee.unwrap_or_default(),
+            max_limit_order: self.max_limit_order.unwrap_or_default(),
+        }
+    }
 }

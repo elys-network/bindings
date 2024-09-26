@@ -1,3 +1,5 @@
+use std::ops::Sub;
+
 use crate::{helper::get_discount, msg::ReplyType};
 
 use super::*;
@@ -7,6 +9,7 @@ use cosmwasm_std::{
 };
 use cw_utils;
 use elys_bindings::query_resp::{Entry, QueryGetEntryResponse};
+use query_resp::PerpetualParams;
 use PerpetualOrderType::*;
 
 pub fn create_perpetual_order(
@@ -232,6 +235,18 @@ fn create_perpetual_open_order(
 
     if order_type != MarketOpen {
         let number_of_pending_order = NUMBER_OF_PENDING_ORDER.load(deps.storage)? + 1;
+        let PerpetualParams {
+            max_limit_order, ..
+        } = querier
+            .query_perpetual_params()?
+            .params
+            .ok_or(StdError::generic_err("Perpetual Params are not present"))?;
+        (max_limit_order as u128)
+            .checked_sub(number_of_pending_order as u128)
+            .ok_or(StdError::generic_err(
+                "Number of pending orders cannot be greater than maximum number of limit order",
+            ))?;
+
         NUMBER_OF_PENDING_ORDER.save(deps.storage, &number_of_pending_order)?;
 
         return Ok(resp);

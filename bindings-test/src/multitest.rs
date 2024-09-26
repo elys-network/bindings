@@ -11,7 +11,7 @@ use cosmwasm_std::{
     to_json_binary, Addr, BankMsg, BlockInfo, Coin, Decimal, Empty, Int64, Querier, StdError,
     StdResult, Storage,
 };
-use cosmwasm_std::{Int128, SignedDecimal, Uint128, Uint64};
+use cosmwasm_std::{Int128, SignedDecimal, Uint128};
 use cw_multi_test::{App, AppResponse, BankKeeper, BankSudo, BasicAppBuilder, Module, WasmKeeper};
 use cw_storage_plus::Item;
 use elys_bindings::{
@@ -25,12 +25,12 @@ use elys_bindings::{
         LeveragelpIsWhitelistedResponse, LeveragelpParams, LeveragelpParamsResponse,
         LeveragelpStatusResponse, LeveragelpWhitelistResponse, MasterchefUserPendingRewardResponse,
         OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
-        PerpetualOpenEstimationRawResponse, PerpetualQueryPositionsResponse, PoolApr,
-        QueryAprResponse, QueryAprsResponse, QueryGetEntryAllResponse, QueryGetEntryResponse,
-        QueryGetPriceResponse, QueryPoolAprsResponse, QueryShowCommitmentsResponse,
-        QueryStableStakeAprResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse,
-        QueryVestingInfoResponse, StableStakeParamsData, StableStakeParamsResp,
-        TierCalculateDiscountResponse,
+        PerpetualOpenEstimationRawResponse, PerpetualParamsRaw, PerpetualParamsResponseRaw,
+        PerpetualQueryPositionsResponse, PoolApr, QueryAprResponse, QueryAprsResponse,
+        QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse,
+        QueryPoolAprsResponse, QueryShowCommitmentsResponse, QueryStableStakeAprResponse,
+        QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryVestingInfoResponse,
+        StableStakeParamsData, StableStakeParamsResp, TierCalculateDiscountResponse,
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
@@ -666,6 +666,13 @@ impl Module for ElysModule {
             }
             ElysQuery::CommitmentNumberOfCommitments {} => todo!("CommitmentNumberOfCommitments"),
             ElysQuery::LeveragelpRewards { .. } => todo!(),
+            ElysQuery::PerpetualParams {} => {
+                let mut default_perpetual_raw = PerpetualParamsRaw::default();
+                default_perpetual_raw.max_limit_order = Some(10000i64);
+                Ok(to_json_binary(&PerpetualParamsResponseRaw {
+                    params: Some(default_perpetual_raw),
+                })?)
+            }
         }
     }
 
