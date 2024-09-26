@@ -1,6 +1,6 @@
 use cosmwasm_std::{
     coin, coins, Addr, Coin, Decimal, Int128, Int64, SignedDecimal, SignedDecimal256, StdError,
-    Uint128, Uint64,
+    Uint128,
 };
 use cw_multi_test::Executor;
 use elys_bindings::{

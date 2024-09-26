@@ -4,8 +4,6 @@ use crate::ElysQuerier;
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{DecCoin, Decimal, Decimal256, SignedDecimal, StdError, StdResult, Uint128};
 
-use super::Fee;
-
 #[cw_serde]
 pub struct PerpetualAssets {
     pub total_perpetual_asset_balance: DecCoin,
@@ -26,8 +24,7 @@ pub struct PerpetualAsset {
     pub health: SignedDecimal,
     pub profit_price: DecCoin,
     pub stop_loss: Option<DecCoin>,
-    pub borrow_fee: Fee,
-    pub funding_fee: Fee,
+    pub fees: Decimal,
 }
 
 impl PerpetualAsset {
@@ -94,8 +91,16 @@ impl PerpetualAsset {
                 }),
                 None => None,
             },
-            borrow_fee: Fee::default(),
-            funding_fee: Fee::default(),
+            fees: Decimal::from_atomics(
+                Uint128::new(mtp.mtp.borrow_interest_paid_collateral.i128() as u128),
+                collateral_info.asset_info.decimal as u32,
+            )
+            .map_err(|e| {
+                StdError::generic_err(format!(
+                    "failed to convert borrow_interest_paid_collateral to Decimal256: {}",
+                    e
+                ))
+            })?,
         })
     }
 }
