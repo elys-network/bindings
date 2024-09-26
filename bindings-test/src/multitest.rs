@@ -381,6 +381,8 @@ impl Module for ElysModule {
                     borrow_interest_rate: Decimal::zero().to_string(),
                     funding_rate: Decimal::zero().to_string(),
                     price_impact: Decimal::zero().to_string(),
+                    borrow_fee: Coin::new(0, ""),
+                    funding_fee: Coin::new(0, ""),
                 })?)
             }
             ElysQuery::AssetProfileEntryAll { .. } => {

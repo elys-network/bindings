@@ -123,7 +123,7 @@ pub fn process_orders(
             break;
         }
         let (order_position_type, order_type, base_denom, quote_denom) =
-            PerpetualOrder::from_key(key.as_str())?;
+            PerpetualOrderV2::from_key(key.as_str())?;
 
         //get the price in usdc
         let market_price =
@@ -135,7 +135,7 @@ pub fn process_orders(
                 }
             };
 
-        let closest_index = PerpetualOrder::binary_search(
+        let closest_index = PerpetualOrderV2::binary_search(
             &Some(OrderPrice {
                 base_denom,
                 quote_denom,
@@ -187,7 +187,7 @@ fn process_perpetual_order(
     creator: &str,
 ) -> StdResult<()> {
     for id in orders_ids {
-        let order = PENDING_PERPETUAL_ORDER.load(storage, id)?;
+        let order = PENDING_PERPETUAL_ORDER_V2.load(storage, id)?;
 
         let (msg, reply_type) = if order.order_type == PerpetualOrderType::LimitOpen {
             (
@@ -266,7 +266,7 @@ fn split_perpetual_order(
 
     let order_price = if closest_index < ids.len() {
         Some(
-            PENDING_PERPETUAL_ORDER
+            PENDING_PERPETUAL_ORDER_V2
                 .load(storage, ids[closest_index])?
                 .trigger_price
                 .unwrap()
@@ -519,10 +519,10 @@ fn cancel_perpetual_orders(
         ids.clone()
     };
     for id in order_to_remove {
-        let mut perpetual_order = PERPETUAL_ORDER.load(storage, id)?;
+        let mut perpetual_order = PERPETUAL_ORDER_V2.load(storage, id)?;
         perpetual_order.status = Status::Canceled;
-        PENDING_PERPETUAL_ORDER.remove(storage, id);
-        PERPETUAL_ORDER.save(storage, id, &perpetual_order)?;
+        PENDING_PERPETUAL_ORDER_V2.remove(storage, id);
+        PERPETUAL_ORDER_V2.save(storage, id, &perpetual_order)?;
         if perpetual_order.order_type == PerpetualOrderType::LimitOpen {
             bank_msg.push(BankMsg::Send {
                 to_address: perpetual_order.owner,

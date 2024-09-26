@@ -193,6 +193,8 @@ impl<'a> ElysQuerier<'a> {
                 .map_or(SignedDecimal::zero(), |funding_rate| funding_rate),
             price_impact: SignedDecimal::from_str(&raw_resp.price_impact)
                 .map_or(SignedDecimal::zero(), |price_impact| price_impact),
+            borrow_fee: raw_resp.borrow_fee,
+            funding_fee: raw_resp.funding_fee,
         };
 
         Ok(resp)

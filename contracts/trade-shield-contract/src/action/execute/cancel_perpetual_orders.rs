@@ -13,14 +13,14 @@ pub fn cancel_perpetual_orders(
     if PERPETUAL_ENABLED.load(deps.storage)? == false {
         return Err(StdError::generic_err("perpetual endpoint are disable").into());
     }
-    let orders: Vec<PerpetualOrder> = if let Some(ids) = &order_ids {
+    let orders: Vec<PerpetualOrderV2> = if let Some(ids) = &order_ids {
         if ids.is_empty() {
             return Err(StdError::generic_err("order_ids is defined empty").into());
         };
         let orders = ids
             .iter()
-            .map(|id| PERPETUAL_ORDER.load(deps.storage, *id))
-            .collect::<Result<Vec<PerpetualOrder>, StdError>>()?;
+            .map(|id| PERPETUAL_ORDER_V2.load(deps.storage, *id))
+            .collect::<Result<Vec<PerpetualOrderV2>, StdError>>()?;
 
         if orders
             .iter()
@@ -44,11 +44,11 @@ pub fn cancel_perpetual_orders(
 
         orders
     } else {
-        let orders: Vec<PerpetualOrder> =
+        let orders: Vec<PerpetualOrderV2> =
             match USER_PERPETUAL_ORDER.may_load(deps.storage, info.sender.as_str())? {
                 Some(v) => v
                     .iter()
-                    .filter_map(|id| match PERPETUAL_ORDER.load(deps.storage, *id) {
+                    .filter_map(|id| match PERPETUAL_ORDER_V2.load(deps.storage, *id) {
                         Ok(order)
                             if order.status == Status::Pending
                                 && order.order_type != PerpetualOrderType::MarketOpen
@@ -92,15 +92,15 @@ pub fn cancel_perpetual_orders(
 }
 
 fn filter_order_by_type(
-    orders: Vec<PerpetualOrder>,
+    orders: Vec<PerpetualOrderV2>,
     order_type: Option<PerpetualOrderType>,
-) -> Result<Vec<PerpetualOrder>, ContractError> {
+) -> Result<Vec<PerpetualOrderV2>, ContractError> {
     let order_type = match order_type {
         Some(order_type) => order_type,
         None => return Ok(orders),
     };
 
-    let filtered_order: Vec<PerpetualOrder> = orders
+    let filtered_order: Vec<PerpetualOrderV2> = orders
         .iter()
         .filter(|order| order.order_type == order_type)
         .cloned()

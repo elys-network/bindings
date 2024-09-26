@@ -4,7 +4,7 @@ pub fn get_perpetual_order(
     deps: Deps<ElysQuery>,
     id: u64,
 ) -> Result<GetPerpetualOrderResp, ContractError> {
-    let order = PERPETUAL_ORDER.may_load(deps.storage, id)?;
+    let order = PERPETUAL_ORDER_V2.may_load(deps.storage, id)?;
 
     let order = match order {
         Some(order) => order,

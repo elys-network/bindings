@@ -1,15 +1,16 @@
 use std::str::FromStr;
 
-use crate::{trade_shield::states::PENDING_PERPETUAL_ORDER, types::PerpetualPosition};
+use crate::{trade_shield::states::PENDING_PERPETUAL_ORDER_V2, types::PerpetualPosition};
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    Coin, DecCoin, OverflowError, SignedDecimal, SignedDecimal256, StdError, StdResult, Storage,
+    Coin, DecCoin, Decimal256, OverflowError, SignedDecimal, SignedDecimal256, StdError, StdResult,
+    Storage,
 };
 
 use super::{Fee, OrderPrice, PerpetualOrderType, Status};
 
 #[cw_serde]
-pub struct PerpetualOrder {
+pub struct PerpetualOrderV2 {
     pub order_id: u64,
     pub owner: String,
     pub order_type: PerpetualOrderType,
@@ -21,13 +22,13 @@ pub struct PerpetualOrder {
     pub take_profit_price: Option<SignedDecimal256>,
     pub position_id: Option<u64>,
     pub status: Status,
-    pub size: DecCoin,
-    pub liquidation: SignedDecimal,
-    pub borrow_fee: Fee,
-    pub funding_fee: Fee,
+    pub size: Option<DecCoin>,
+    pub liquidation: Option<SignedDecimal>,
+    pub borrow_fee: Option<Fee>,
+    pub funding_fee: Option<Fee>,
 }
 
-impl PerpetualOrder {
+impl PerpetualOrderV2 {
     pub fn new_open(
         owner: impl Into<String>,
         position: &PerpetualPosition,
@@ -37,7 +38,7 @@ impl PerpetualOrder {
         leverage: &SignedDecimal,
         take_profit_price: &Option<SignedDecimal256>,
         trigger_price: &Option<OrderPrice>,
-        order_vec: &Vec<PerpetualOrder>,
+        order_vec: &Vec<PerpetualOrderV2>,
         size: DecCoin,
         liquidation: SignedDecimal,
         borrow_fee: Fee,
@@ -63,10 +64,10 @@ impl PerpetualOrder {
             trigger_price: trigger_price.to_owned(),
             status,
             position_id: None,
-            size,
-            liquidation,
-            borrow_fee,
-            funding_fee,
+            size: Some(size),
+            liquidation: Some(liquidation),
+            borrow_fee: Some(borrow_fee),
+            funding_fee: Some(funding_fee),
         };
 
         return Ok(order);
@@ -81,11 +82,7 @@ impl PerpetualOrder {
         position_id: u64,
         trigger_price: &Option<OrderPrice>,
         take_profit_price: &Option<SignedDecimal256>,
-        order_vec: &Vec<PerpetualOrder>,
-        size: DecCoin,
-        liquidation: SignedDecimal,
-        borrow_fee: Fee,
-        funding_fee: Fee,
+        order_vec: &Vec<PerpetualOrderV2>,
     ) -> StdResult<Self> {
         let order_id: u64 = get_new_id(&order_vec)?;
 
@@ -97,7 +94,7 @@ impl PerpetualOrder {
 
         let position = PerpetualPosition::try_from_i32(position)?;
 
-        let order: PerpetualOrder = Self {
+        let order: PerpetualOrderV2 = Self {
             order_id,
             status,
             order_type: order_type.to_owned(),
@@ -109,10 +106,10 @@ impl PerpetualOrder {
             position_id: Some(position_id),
             leverage: leverage.to_owned(),
             take_profit_price: take_profit_price.to_owned(),
-            size,
-            liquidation,
-            borrow_fee,
-            funding_fee,
+            size: Some(DecCoin::new(Decimal256::zero(), "")),
+            liquidation: Some(SignedDecimal::zero()),
+            borrow_fee: Some(Fee::default()),
+            funding_fee: Some(Fee::default()),
         };
 
         Ok(order)
@@ -136,8 +133,8 @@ impl PerpetualOrder {
 
         while low < high {
             let mid = low + (high - low) / 2;
-            let PerpetualOrder { trigger_price, .. } =
-                match PENDING_PERPETUAL_ORDER.may_load(storage, list[mid])? {
+            let PerpetualOrderV2 { trigger_price, .. } =
+                match PENDING_PERPETUAL_ORDER_V2.may_load(storage, list[mid])? {
                     Some(order) => order,
                     None => {
                         return Err(StdError::generic_err(
@@ -204,7 +201,7 @@ impl PerpetualOrder {
     }
 }
 
-fn get_new_id(orders: &[PerpetualOrder]) -> StdResult<u64> {
+fn get_new_id(orders: &[PerpetualOrderV2]) -> StdResult<u64> {
     match orders.iter().max_by_key(|s| s.order_id) {
         Some(order) => match order.order_id.checked_add(1) {
             Some(id) => Ok(id),

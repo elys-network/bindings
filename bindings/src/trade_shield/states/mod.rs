@@ -2,6 +2,7 @@ mod limit_order;
 mod number_of_order;
 mod params;
 mod perpetual_order;
+mod perpetual_order_v2;
 mod reply_info;
 mod spot_order;
 
@@ -14,6 +15,7 @@ pub use params::{
 pub use perpetual_order::{
     PENDING_PERPETUAL_ORDER, PERPETUAL_ORDER, SORTED_PENDING_PERPETUAL_ORDER, USER_PERPETUAL_ORDER,
 };
+pub use perpetual_order_v2::{PENDING_PERPETUAL_ORDER_V2, PERPETUAL_ORDER_V2};
 pub use reply_info::{MAX_REPLY_ID, REPLY_INFO};
 pub use spot_order::{
     PENDING_SPOT_ORDER, SORTED_PENDING_SPOT_ORDER, SPOT_ORDER, SPOT_ORDER_MAX_ID, USER_SPOT_ORDER,

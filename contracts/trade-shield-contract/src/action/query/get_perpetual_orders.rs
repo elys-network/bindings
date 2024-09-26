@@ -9,15 +9,15 @@ pub fn get_perpetual_orders(
     order_type: Option<PerpetualOrderType>,
     order_status: Option<Status>,
 ) -> Result<GetPerpetualOrdersResp, ContractError> {
-    let orders: Vec<PerpetualOrder> = match order_owner {
+    let orders: Vec<PerpetualOrderV2> = match order_owner {
         Some(addr) => match USER_PERPETUAL_ORDER.may_load(deps.storage, &addr)? {
             Some(v) => v
                 .iter()
-                .filter_map(|id| PERPETUAL_ORDER.load(deps.storage, *id).ok())
+                .filter_map(|id| PERPETUAL_ORDER_V2.load(deps.storage, *id).ok())
                 .collect(), // Collect the filtered orders into a vector
             None => vec![], // Provide an empty vector for the None case
         },
-        None => PERPETUAL_ORDER
+        None => PERPETUAL_ORDER_V2
             .prefix_range(deps.storage, None, None, Order::Ascending)
             .filter_map(|res| res.ok().map(|r| r.1))
             .collect(),

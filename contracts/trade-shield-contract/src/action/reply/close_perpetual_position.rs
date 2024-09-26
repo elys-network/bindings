@@ -11,11 +11,11 @@ pub fn reply_to_close_perpetual_order(
 ) -> Result<Response<ElysMsg>, ContractError> {
     let order_id: u64 = from_json(&data.unwrap()).unwrap();
 
-    let mut order: PerpetualOrder = PERPETUAL_ORDER.load(deps.storage, order_id)?;
+    let mut order: PerpetualOrderV2 = PERPETUAL_ORDER_V2.load(deps.storage, order_id)?;
 
     let key = order.gen_key()?;
     let mut vec: Vec<u64> = SORTED_PENDING_PERPETUAL_ORDER.load(deps.storage, key.as_str())?;
-    let mut index = PerpetualOrder::binary_search(&order.trigger_price, deps.storage, &vec)?;
+    let mut index = PerpetualOrderV2::binary_search(&order.trigger_price, deps.storage, &vec)?;
     let size_of_vec = vec.len();
     while vec[index] != order_id && index < size_of_vec {
         index += 1;
@@ -27,16 +27,16 @@ pub fn reply_to_close_perpetual_order(
         Ok(expr) => expr,
         Err(err) => {
             order.status = Status::Canceled;
-            PERPETUAL_ORDER.save(deps.storage, order_id, &order)?;
-            PENDING_PERPETUAL_ORDER.remove(deps.storage, order.order_id);
+            PERPETUAL_ORDER_V2.save(deps.storage, order_id, &order)?;
+            PENDING_PERPETUAL_ORDER_V2.remove(deps.storage, order.order_id);
             return Ok(err);
         }
     };
 
     order.status = Status::Executed;
 
-    PENDING_PERPETUAL_ORDER.remove(deps.storage, order.order_id);
-    PERPETUAL_ORDER.save(deps.storage, order_id, &order)?;
+    PENDING_PERPETUAL_ORDER_V2.remove(deps.storage, order.order_id);
+    PERPETUAL_ORDER_V2.save(deps.storage, order_id, &order)?;
 
     let resp: Response<ElysMsg> = Response::new().add_event(
         Event::new("reply_to_close_perpetual_order")

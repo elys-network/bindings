@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     states::*,
-    types::{PerpetualOrder, SpotOrder, Status},
+    types::{PerpetualOrderV2, SpotOrder, Status},
 };
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{DepsMut, Env, MessageInfo, Response, StdError, StdResult};
@@ -11,7 +11,7 @@ use elys_bindings::{ElysMsg, ElysQuery};
 #[cw_serde]
 pub struct InstantiateMockMsg {
     pub spot_orders: Vec<SpotOrder>,
-    pub perpetual_orders: Vec<PerpetualOrder>,
+    pub perpetual_orders: Vec<PerpetualOrderV2>,
 }
 
 pub fn instantiate(
@@ -57,16 +57,16 @@ pub fn instantiate(
     for order in msg.perpetual_orders.iter() {
         let owner = order.owner.clone();
 
-        PERPETUAL_ORDER.save(deps.storage, order.order_id, order)?;
+        PERPETUAL_ORDER_V2.save(deps.storage, order.order_id, order)?;
         if order.status == Status::Pending {
-            PENDING_PERPETUAL_ORDER.save(deps.storage, order.order_id, order)?;
+            PENDING_PERPETUAL_ORDER_V2.save(deps.storage, order.order_id, order)?;
 
-            PENDING_PERPETUAL_ORDER.save(deps.storage, order.order_id, &order)?;
+            PENDING_PERPETUAL_ORDER_V2.save(deps.storage, order.order_id, &order)?;
             let key = order.gen_key()?;
             let mut vec = SORTED_PENDING_PERPETUAL_ORDER
                 .may_load(deps.storage, key.as_str())?
                 .unwrap_or(vec![]);
-            let index = PerpetualOrder::binary_search(&order.trigger_price, deps.storage, &vec)?;
+            let index = PerpetualOrderV2::binary_search(&order.trigger_price, deps.storage, &vec)?;
             if vec.len() <= index {
                 vec.push(order.order_id)
             } else {

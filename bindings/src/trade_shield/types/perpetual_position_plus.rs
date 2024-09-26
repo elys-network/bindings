@@ -2,7 +2,7 @@ use crate::{types::Mtp, ElysQuerier};
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Order, SignedDecimal, StdError, StdResult, Storage};
 
-use crate::trade_shield::{states::PENDING_PERPETUAL_ORDER, types::PerpetualOrder};
+use crate::trade_shield::{states::PENDING_PERPETUAL_ORDER_V2, types::PerpetualOrderV2};
 
 use super::{OrderPrice, PerpetualOrderType, PerpetualPosition};
 
@@ -153,7 +153,7 @@ impl PerpetualPositionPlus {
     }
 
     fn get_stop_loss_price(mtp: &Mtp, storage: &dyn Storage) -> Option<OrderPrice> {
-        let perpetual_order: Option<PerpetualOrder> = PENDING_PERPETUAL_ORDER
+        let perpetual_order: Option<PerpetualOrderV2> = PENDING_PERPETUAL_ORDER_V2
             .prefix_range(storage, None, None, Order::Ascending)
             .filter_map(|res| res.ok().map(|r| r.1))
             .find(|order| {
@@ -168,7 +168,7 @@ impl PerpetualPositionPlus {
     }
 
     fn get_stop_loss_prices(mtps: &Vec<Mtp>, storage: &dyn Storage) -> Vec<Option<OrderPrice>> {
-        let perpetual_orders: Vec<PerpetualOrder> = PENDING_PERPETUAL_ORDER
+        let perpetual_orders: Vec<PerpetualOrderV2> = PENDING_PERPETUAL_ORDER_V2
             .prefix_range(storage, None, None, Order::Ascending)
             .filter_map(|res| res.ok().map(|r| r.1))
             .collect();
