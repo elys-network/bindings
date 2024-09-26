@@ -102,27 +102,27 @@ pub struct AmmSwapEstimationByDenomResponse {
 }
 #[cw_serde]
 pub struct PerpetualOpenEstimationRawResponse {
-    pub position: i32,
-    pub leverage: String,
-    pub trading_asset: String,
-    pub collateral: Coin,
-    pub interest_amount: Int128,
-    pub position_size: Coin,
-    pub swap_fee: String,
-    pub discount: String,
-    pub open_price: String,
-    pub take_profit_price: String,
-    pub liquidation_price: String,
-    pub estimated_pnl: Int128,
-    pub estimated_pnl_denom: String,
-    pub available_liquidity: Coin,
-    pub slippage: String,
-    pub weight_balance_ratio: String,
-    pub borrow_interest_rate: String,
-    pub funding_rate: String,
-    pub price_impact: String,
-    pub borrow_fee: Coin,
-    pub funding_fee: Coin,
+    pub position: Option<i32>,
+    pub leverage: Option<String>,
+    pub trading_asset: Option<String>,
+    pub collateral: Option<Coin>,
+    pub interest_amount: Option<Int128>,
+    pub position_size: Option<Coin>,
+    pub swap_fee: Option<String>,
+    pub discount: Option<String>,
+    pub open_price: Option<String>,
+    pub take_profit_price: Option<String>,
+    pub liquidation_price: Option<String>,
+    pub estimated_pnl: Option<Int128>,
+    pub estimated_pnl_denom: Option<String>,
+    pub available_liquidity: Option<Coin>,
+    pub slippage: Option<String>,
+    pub weight_balance_ratio: Option<String>,
+    pub borrow_interest_rate: Option<String>,
+    pub funding_rate: Option<String>,
+    pub price_impact: Option<String>,
+    pub borrow_fee: Option<Coin>,
+    pub funding_fee: Option<Coin>,
 }
 
 #[cw_serde]
@@ -153,44 +153,46 @@ pub struct PerpetualOpenEstimationResponse {
 impl Into<StdResult<PerpetualOpenEstimationResponse>> for PerpetualOpenEstimationRawResponse {
     fn into(self) -> StdResult<PerpetualOpenEstimationResponse> {
         Ok(PerpetualOpenEstimationResponse {
-            position: PerpetualPosition::try_from_i32(self.position)?,
-            leverage: SignedDecimal::from_str(&self.leverage)
-                .map_or(SignedDecimal::zero(), |leverage| leverage),
-            interest_amount: self.interest_amount,
-            trading_asset: self.trading_asset,
-            collateral: self.collateral,
-            position_size: self.position_size,
-            swap_fee: Decimal::from_str(&self.swap_fee)
-                .map_or(Decimal::zero(), |swap_fee| swap_fee),
-            discount: Decimal::from_str(&self.discount)
-                .map_or(Decimal::zero(), |discount| discount),
-            open_price: Decimal::from_str(&self.open_price)
-                .map_or(Decimal::zero(), |open_price| open_price),
-            take_profit_price: SignedDecimal256::from_str(&self.take_profit_price)
-                .map_or(SignedDecimal256::zero(), |take_profit_price| {
-                    take_profit_price
-                }),
-            liquidation_price: SignedDecimal::from_str(&self.liquidation_price)
-                .map_or(SignedDecimal::zero(), |liquidation_price| liquidation_price),
-            estimated_pnl: self.estimated_pnl,
-            estimated_pnl_denom: self.estimated_pnl_denom,
-            available_liquidity: self.available_liquidity,
-            slippage: Decimal::from_str(&self.slippage)
-                .map_or(Decimal::zero(), |slippage| slippage),
-            weight_balance_ratio: SignedDecimal::from_str(&self.weight_balance_ratio)
-                .map_or(SignedDecimal::zero(), |weight_balance_ratio| {
-                    weight_balance_ratio
-                }),
-            borrow_interest_rate: SignedDecimal::from_str(&self.borrow_interest_rate)
-                .map_or(SignedDecimal::zero(), |borrow_interest_rate| {
-                    borrow_interest_rate
-                }),
-            funding_rate: SignedDecimal::from_str(&self.funding_rate)
-                .map_or(SignedDecimal::zero(), |funding_rate| funding_rate),
-            price_impact: SignedDecimal::from_str(&self.price_impact)
-                .map_or(SignedDecimal::zero(), |price_impact| price_impact),
-            borrow_fee: self.borrow_fee,
-            funding_fee: self.funding_fee,
+            position: PerpetualPosition::try_from_i32(self.position.unwrap_or_default())?,
+            leverage: SignedDecimal::from_str(self.leverage.unwrap_or_default().as_str())
+                .unwrap_or_default(),
+            trading_asset: self.trading_asset.unwrap_or_default(),
+            collateral: self.collateral.unwrap_or_default(),
+            interest_amount: self.interest_amount.unwrap_or_default(),
+            position_size: self.position_size.unwrap_or_default(),
+            swap_fee: Decimal::from_str(self.swap_fee.unwrap_or_default().as_str())
+                .unwrap_or_default(),
+            discount: Decimal::from_str(self.discount.unwrap_or_default().as_str())
+                .unwrap_or_default(),
+            open_price: Decimal::from_str(self.open_price.unwrap_or_default().as_str())
+                .unwrap_or_default(),
+            take_profit_price: SignedDecimal256::from_str(
+                self.take_profit_price.unwrap_or_default().as_str(),
+            )
+            .unwrap_or_default(),
+            liquidation_price: SignedDecimal::from_str(
+                self.liquidation_price.unwrap_or_default().as_str(),
+            )
+            .unwrap_or_default(),
+            estimated_pnl: self.estimated_pnl.unwrap_or_default(),
+            estimated_pnl_denom: self.estimated_pnl_denom.unwrap_or_default(),
+            available_liquidity: self.available_liquidity.unwrap_or_default(),
+            slippage: Decimal::from_str(self.slippage.unwrap_or_default().as_str())
+                .unwrap_or_default(),
+            weight_balance_ratio: SignedDecimal::from_str(
+                self.weight_balance_ratio.unwrap_or_default().as_str(),
+            )
+            .unwrap_or_default(),
+            borrow_interest_rate: SignedDecimal::from_str(
+                self.borrow_interest_rate.unwrap_or_default().as_str(),
+            )
+            .unwrap_or_default(),
+            funding_rate: SignedDecimal::from_str(self.funding_rate.unwrap_or_default().as_str())
+                .unwrap_or_default(),
+            price_impact: SignedDecimal::from_str(self.price_impact.unwrap_or_default().as_str())
+                .unwrap_or_default(),
+            borrow_fee: self.borrow_fee.unwrap_or_default(),
+            funding_fee: self.funding_fee.unwrap_or_default(),
         })
     }
 }
@@ -646,10 +648,10 @@ pub struct LeveragelpParams {
 #[cw_serde]
 #[derive(Default)]
 pub struct PerpetualParamsRaw {
-    pub option: Option<bool>,
     pub leverage_max: Option<Decimal>,
     pub borrow_interest_rate_max: Option<Decimal>,
     pub borrow_interest_rate_min: Option<Decimal>,
+    pub min_borrow_interest_amount: Option<Uint128>,
     pub borrow_interest_rate_increase: Option<Decimal>,
     pub borrow_interest_rate_decrease: Option<Decimal>,
     pub health_gain_factor: Option<Decimal>,
@@ -675,10 +677,10 @@ pub struct PerpetualParamsRaw {
 
 #[cw_serde]
 pub struct PerpetualParams {
-    pub option: bool,
     pub leverage_max: Decimal,
     pub borrow_interest_rate_max: Decimal,
     pub borrow_interest_rate_min: Decimal,
+    pub min_borrow_interest_amount: Uint128,
     pub borrow_interest_rate_increase: Decimal,
     pub borrow_interest_rate_decrease: Decimal,
     pub health_gain_factor: Decimal,
@@ -1264,7 +1266,7 @@ pub struct ParameterParamsResponse {
 impl Into<PerpetualParams> for PerpetualParamsRaw {
     fn into(self) -> PerpetualParams {
         PerpetualParams {
-            option: self.option.unwrap_or_default(),
+            min_borrow_interest_amount: self.min_borrow_interest_amount.unwrap_or_default(),
             leverage_max: self.leverage_max.unwrap_or_default(),
             borrow_interest_rate_max: self.borrow_interest_rate_max.unwrap_or_default(),
             borrow_interest_rate_min: self.borrow_interest_rate_min.unwrap_or_default(),
