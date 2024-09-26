@@ -116,11 +116,8 @@ impl Module for ElysModule {
                     leverage: leverage.clone().to_string(),
                     trading_asset: trading_asset.clone(),
                     collateral: collateral.clone(),
-                    min_collateral: coin(
-                        8333333,
-                        "ibc/2180E84E20F5679FCC760D8C165B60F42065DEF7F46A72B447CFF1B7DC6C0A65",
-                    ),
-                    valid_collateral: Some(true),
+                    // TODO: Fix
+                    interest_amount: Int128::zero(),
                     position_size: collateral.clone(),
                     swap_fee: Decimal::zero().to_string(),
                     discount: discount.clone().to_string(),

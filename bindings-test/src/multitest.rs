@@ -362,13 +362,13 @@ impl Module for ElysModule {
             } => {
                 return Ok(to_json_binary(&PerpetualOpenEstimationRawResponse {
                     position,
-                    min_collateral: coin(0, &collateral.denom),
                     available_liquidity: coin(99999999, &trading_asset),
                     leverage: leverage.to_string(),
                     collateral,
                     trading_asset,
                     discount: discount.to_string(),
-                    valid_collateral: Some(true),
+                    // TODO: Fix
+                    interest_amount: Int128::zero(),
                     position_size: coin(1, "btc"),
                     swap_fee: Decimal::zero().to_string(),
                     open_price: Decimal::zero().to_string(),
@@ -383,7 +383,7 @@ impl Module for ElysModule {
                     price_impact: Decimal::zero().to_string(),
                     borrow_fee: Coin::new(0, ""),
                     funding_fee: Coin::new(0, ""),
-                })?)
+                })?);
             }
             ElysQuery::AssetProfileEntryAll { .. } => {
                 let asset_info = ASSET_INFO.load(storage)?;
