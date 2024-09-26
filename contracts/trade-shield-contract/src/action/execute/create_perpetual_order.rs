@@ -1,5 +1,3 @@
-use std::ops::Sub;
-
 use crate::{helper::get_discount, msg::ReplyType};
 
 use super::*;

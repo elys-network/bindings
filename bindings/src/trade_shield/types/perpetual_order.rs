@@ -3,10 +3,10 @@ use std::str::FromStr;
 use crate::{trade_shield::states::PENDING_PERPETUAL_ORDER, types::PerpetualPosition};
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    Coin, DecCoin, OverflowError, SignedDecimal, SignedDecimal256, StdError, StdResult, Storage,
+    Coin, OverflowError, SignedDecimal, SignedDecimal256, StdError, StdResult, Storage,
 };
 
-use super::{Fee, OrderPrice, PerpetualOrderType, Status};
+use super::{OrderPrice, PerpetualOrderType, Status};
 
 #[cw_serde]
 pub struct PerpetualOrder {
@@ -21,10 +21,6 @@ pub struct PerpetualOrder {
     pub take_profit_price: Option<SignedDecimal256>,
     pub position_id: Option<u64>,
     pub status: Status,
-    pub size: DecCoin,
-    pub liquidation: SignedDecimal,
-    pub borrow_fee: Fee,
-    pub funding_fee: Fee,
 }
 
 impl PerpetualOrder {
@@ -38,10 +34,6 @@ impl PerpetualOrder {
         take_profit_price: &Option<SignedDecimal256>,
         trigger_price: &Option<OrderPrice>,
         order_vec: &Vec<PerpetualOrder>,
-        size: DecCoin,
-        liquidation: SignedDecimal,
-        borrow_fee: Fee,
-        funding_fee: Fee,
     ) -> StdResult<Self> {
         let status = if order_type == &PerpetualOrderType::MarketOpen {
             Status::Executed
@@ -63,10 +55,6 @@ impl PerpetualOrder {
             trigger_price: trigger_price.to_owned(),
             status,
             position_id: None,
-            size,
-            liquidation,
-            borrow_fee,
-            funding_fee,
         };
 
         return Ok(order);
@@ -82,10 +70,6 @@ impl PerpetualOrder {
         trigger_price: &Option<OrderPrice>,
         take_profit_price: &Option<SignedDecimal256>,
         order_vec: &Vec<PerpetualOrder>,
-        size: DecCoin,
-        liquidation: SignedDecimal,
-        borrow_fee: Fee,
-        funding_fee: Fee,
     ) -> StdResult<Self> {
         let order_id: u64 = get_new_id(&order_vec)?;
 
@@ -109,10 +93,6 @@ impl PerpetualOrder {
             position_id: Some(position_id),
             leverage: leverage.to_owned(),
             take_profit_price: take_profit_price.to_owned(),
-            size,
-            liquidation,
-            borrow_fee,
-            funding_fee,
         };
 
         Ok(order)
