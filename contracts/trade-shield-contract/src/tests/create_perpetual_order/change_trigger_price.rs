@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, Decimal, Int128, SignedDecimal, SignedDecimal256, Uint64};
+use cosmwasm_std::{Addr, Decimal, Int128, SignedDecimal, SignedDecimal256};
 use elys_bindings::trade_shield::msg::query_resp::GetPerpetualOrderResp;
 use std::str::FromStr;
 

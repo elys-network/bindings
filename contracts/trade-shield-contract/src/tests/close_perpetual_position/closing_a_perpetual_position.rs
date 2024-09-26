@@ -1,4 +1,4 @@
-use cosmwasm_std::{Int128, SignedDecimal, SignedDecimal256, Uint64};
+use cosmwasm_std::{Int128, SignedDecimal, SignedDecimal256};
 use elys_bindings::{query_resp::PerpetualGetPositionsForAddressResponse, ElysQuery};
 
 use super::*;

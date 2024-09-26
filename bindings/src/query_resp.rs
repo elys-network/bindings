@@ -100,15 +100,13 @@ pub struct AmmSwapEstimationByDenomResponse {
     pub price_impact: SignedDecimal,
     pub slippage: Decimal,
 }
-
 #[cw_serde]
 pub struct PerpetualOpenEstimationRawResponse {
     pub position: i32,
     pub leverage: String,
     pub trading_asset: String,
     pub collateral: Coin,
-    pub min_collateral: Coin,
-    pub valid_collateral: Option<bool>,
+    pub interest_amount: Int128,
     pub position_size: Coin,
     pub swap_fee: String,
     pub discount: String,
@@ -133,8 +131,7 @@ pub struct PerpetualOpenEstimationResponse {
     pub leverage: SignedDecimal,
     pub trading_asset: String,
     pub collateral: Coin,
-    pub min_collateral: Coin,
-    pub valid_collateral: bool,
+    pub interest_amount: Int128,
     pub position_size: Coin,
     pub swap_fee: Decimal,
     pub discount: Decimal,
@@ -151,6 +148,51 @@ pub struct PerpetualOpenEstimationResponse {
     pub price_impact: SignedDecimal,
     pub borrow_fee: Coin,
     pub funding_fee: Coin,
+}
+
+impl Into<StdResult<PerpetualOpenEstimationResponse>> for PerpetualOpenEstimationRawResponse {
+    fn into(self) -> StdResult<PerpetualOpenEstimationResponse> {
+        Ok(PerpetualOpenEstimationResponse {
+            position: PerpetualPosition::try_from_i32(self.position)?,
+            leverage: SignedDecimal::from_str(&self.leverage)
+                .map_or(SignedDecimal::zero(), |leverage| leverage),
+            interest_amount: self.interest_amount,
+            trading_asset: self.trading_asset,
+            collateral: self.collateral,
+            position_size: self.position_size,
+            swap_fee: Decimal::from_str(&self.swap_fee)
+                .map_or(Decimal::zero(), |swap_fee| swap_fee),
+            discount: Decimal::from_str(&self.discount)
+                .map_or(Decimal::zero(), |discount| discount),
+            open_price: Decimal::from_str(&self.open_price)
+                .map_or(Decimal::zero(), |open_price| open_price),
+            take_profit_price: SignedDecimal256::from_str(&self.take_profit_price)
+                .map_or(SignedDecimal256::zero(), |take_profit_price| {
+                    take_profit_price
+                }),
+            liquidation_price: SignedDecimal::from_str(&self.liquidation_price)
+                .map_or(SignedDecimal::zero(), |liquidation_price| liquidation_price),
+            estimated_pnl: self.estimated_pnl,
+            estimated_pnl_denom: self.estimated_pnl_denom,
+            available_liquidity: self.available_liquidity,
+            slippage: Decimal::from_str(&self.slippage)
+                .map_or(Decimal::zero(), |slippage| slippage),
+            weight_balance_ratio: SignedDecimal::from_str(&self.weight_balance_ratio)
+                .map_or(SignedDecimal::zero(), |weight_balance_ratio| {
+                    weight_balance_ratio
+                }),
+            borrow_interest_rate: SignedDecimal::from_str(&self.borrow_interest_rate)
+                .map_or(SignedDecimal::zero(), |borrow_interest_rate| {
+                    borrow_interest_rate
+                }),
+            funding_rate: SignedDecimal::from_str(&self.funding_rate)
+                .map_or(SignedDecimal::zero(), |funding_rate| funding_rate),
+            price_impact: SignedDecimal::from_str(&self.price_impact)
+                .map_or(SignedDecimal::zero(), |price_impact| price_impact),
+            borrow_fee: self.borrow_fee,
+            funding_fee: self.funding_fee,
+        })
+    }
 }
 
 #[cw_serde]

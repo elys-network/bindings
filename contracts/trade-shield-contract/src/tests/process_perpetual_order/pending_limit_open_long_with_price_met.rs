@@ -117,11 +117,11 @@ impl Module for ElysModuleWrapper {
                 position,
                 leverage: leverage.to_string(),
                 trading_asset,
-                min_collateral: collateral.clone(),
                 position_size: coin(0, ""),
                 collateral,
                 available_liquidity: coin(0, ""),
-                valid_collateral: Some(true),
+                // TODO: Fix
+                interest_amount: Int128::zero(),
                 swap_fee: Decimal::zero().to_string(),
                 discount: discount.to_string(),
                 open_price: Decimal::zero().to_string(),

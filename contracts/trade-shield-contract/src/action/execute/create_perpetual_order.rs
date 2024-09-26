@@ -148,14 +148,6 @@ fn create_perpetual_open_order(
         get_discount(deps.querier, info.sender.to_string())?,
     )?;
 
-    if !open_estimation.valid_collateral {
-        return Err(StdError::generic_err(format!(
-            "not valid collateral: min collateral: {}",
-            open_estimation.min_collateral.amount
-        ))
-        .into());
-    }
-
     if let Some(price) = &trigger_price {
         if price.rate.is_zero() {
             return Err(StdError::generic_err("trigger_price: The rate cannot be zero").into());

@@ -153,51 +153,9 @@ impl<'a> ElysQuerier<'a> {
 
         let raw_resp: PerpetualOpenEstimationRawResponse = self.querier.query(&request)?;
 
-        let resp: PerpetualOpenEstimationResponse = PerpetualOpenEstimationResponse {
-            position: PerpetualPosition::try_from_i32(raw_resp.position)?,
-            leverage: SignedDecimal::from_str(&raw_resp.leverage)
-                .map_or(SignedDecimal::zero(), |leverage| leverage),
-            trading_asset: raw_resp.trading_asset,
-            collateral: raw_resp.collateral,
-            min_collateral: raw_resp.min_collateral,
-            valid_collateral: raw_resp
-                .valid_collateral
-                .map_or(false, |valid_collateral| valid_collateral),
-            position_size: raw_resp.position_size,
-            swap_fee: Decimal::from_str(&raw_resp.swap_fee)
-                .map_or(Decimal::zero(), |swap_fee| swap_fee),
-            discount: Decimal::from_str(&raw_resp.discount)
-                .map_or(Decimal::zero(), |discount| discount),
-            open_price: Decimal::from_str(&raw_resp.open_price)
-                .map_or(Decimal::zero(), |open_price| open_price),
-            take_profit_price: SignedDecimal256::from_str(&raw_resp.take_profit_price)
-                .map_or(SignedDecimal256::zero(), |take_profit_price| {
-                    take_profit_price
-                }),
-            liquidation_price: SignedDecimal::from_str(&raw_resp.liquidation_price)
-                .map_or(SignedDecimal::zero(), |liquidation_price| liquidation_price),
-            estimated_pnl: raw_resp.estimated_pnl,
-            estimated_pnl_denom: raw_resp.estimated_pnl_denom,
-            available_liquidity: raw_resp.available_liquidity,
-            slippage: Decimal::from_str(&raw_resp.slippage)
-                .map_or(Decimal::zero(), |slippage| slippage),
-            weight_balance_ratio: SignedDecimal::from_str(&raw_resp.weight_balance_ratio)
-                .map_or(SignedDecimal::zero(), |weight_balance_ratio| {
-                    weight_balance_ratio
-                }),
-            borrow_interest_rate: SignedDecimal::from_str(&raw_resp.borrow_interest_rate)
-                .map_or(SignedDecimal::zero(), |borrow_interest_rate| {
-                    borrow_interest_rate
-                }),
-            funding_rate: SignedDecimal::from_str(&raw_resp.funding_rate)
-                .map_or(SignedDecimal::zero(), |funding_rate| funding_rate),
-            price_impact: SignedDecimal::from_str(&raw_resp.price_impact)
-                .map_or(SignedDecimal::zero(), |price_impact| price_impact),
-            borrow_fee: raw_resp.borrow_fee,
-            funding_fee: raw_resp.funding_fee,
-        };
+        let resp: StdResult<PerpetualOpenEstimationResponse> = raw_resp.into();
 
-        Ok(resp)
+        resp
     }
 
     pub fn get_all_asset_profile(

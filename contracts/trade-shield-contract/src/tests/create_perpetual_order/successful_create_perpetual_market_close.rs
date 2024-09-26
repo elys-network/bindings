@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, SignedDecimal, SignedDecimal256, Uint64};
+use cosmwasm_std::{Addr, SignedDecimal, SignedDecimal256};
 use std::str::FromStr;
 
 use cosmwasm_std::Int128;
