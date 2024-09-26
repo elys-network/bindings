@@ -1,7 +1,7 @@
 use self::instantiate::{CONTRACT_NAME, CONTRACT_VERSION};
 
 use super::*;
-use cosmwasm_std::StdError;
+use cosmwasm_std::{Order, StdError};
 use cw2::set_contract_version;
 use elys_bindings::trade_shield::{
     msg::MigrateMsg,
@@ -11,6 +11,12 @@ use elys_bindings::trade_shield::{
     },
 };
 use semver::Version;
+use trade_shield::{
+    states::{
+        PENDING_PERPETUAL_ORDER, PENDING_PERPETUAL_ORDER_V2, PERPETUAL_ORDER, PERPETUAL_ORDER_V2,
+    },
+    types::PerpetualOrder,
+};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(
@@ -58,6 +64,29 @@ pub fn migrate(
         );
         return Err(StdError::generic_err(err_version).into());
     }
+    // migrate perpetual orders to v2
+    let perpetual_data_result: StdResult<Vec<(u64, PerpetualOrder)>> = PERPETUAL_ORDER
+        .range(deps.storage, None, None, Order::Ascending)
+        .collect();
+    let perpetual_data = perpetual_data_result?;
+
+    for (order_id, order) in perpetual_data {
+        PERPETUAL_ORDER_V2.save(deps.storage, order_id, &order.into())?;
+    }
+    // migrate pending perpetual orders to v2
+    let pending_perpetual_data_result: StdResult<Vec<(u64, PerpetualOrder)>> =
+        PENDING_PERPETUAL_ORDER
+            .range(deps.storage, None, None, Order::Ascending)
+            .collect();
+    let pending_perpetual_data = pending_perpetual_data_result?;
+
+    for (order_id, order) in pending_perpetual_data {
+        PENDING_PERPETUAL_ORDER_V2.save(deps.storage, order_id, &order.into())?;
+    }
+    // remove old storages
+    deps.storage.remove(PERPETUAL_ORDER.namespace());
+    deps.storage.remove(PENDING_PERPETUAL_ORDER.namespace());
+
     // set the new version
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     Ok(Response::new())

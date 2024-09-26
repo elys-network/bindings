@@ -4,13 +4,15 @@ use crate::entry_point::{execute, query, sudo};
 use crate::tests::get_order_id_from_events::get_attr_from_events;
 use anyhow::{bail, Result as AnyResult};
 use cosmwasm_std::{
-    coin, coins, to_json_binary, Addr, BankMsg, Decimal, Empty, Int128, SignedDecimal,
-    SignedDecimal256, StdError, Uint64,
+    coin, coins, to_json_binary, Addr, BankMsg, Coin, Decimal, Empty, Int128, SignedDecimal,
+    SignedDecimal256, StdError,
 };
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::msg_resp::PerpetualOpenResponse;
 use elys_bindings::query_resp::{
-    OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponseRaw, PerpetualOpenEstimationRawResponse, PerpetualParamsRaw, PerpetualParamsResponseRaw, QueryGetEntryResponseRaw, QueryGetPriceResponse, RawEntry, TierCalculateDiscountResponse
+    OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponseRaw,
+    PerpetualOpenEstimationRawResponse, PerpetualParamsRaw, PerpetualParamsResponseRaw,
+    QueryGetEntryResponseRaw, QueryGetPriceResponse, RawEntry, TierCalculateDiscountResponse,
 };
 use elys_bindings::trade_shield::msg::query_resp::GetPerpetualOrderResp;
 use elys_bindings::trade_shield::msg::{ExecuteMsg, QueryMsg, SudoMsg};
@@ -132,6 +134,8 @@ impl Module for ElysModuleWrapper {
                 borrow_interest_rate: Decimal::zero().to_string(),
                 funding_rate: Decimal::zero().to_string(),
                 price_impact: Decimal::zero().to_string(),
+                borrow_fee: Coin::new(0, ""),
+                funding_fee: Coin::new(0, ""),
             })?),
             //ignoring address here since we only use one user
             ElysQuery::PerpetualGetPositionsForAddress { .. } => {

@@ -12,7 +12,7 @@ pub fn cancel_perpetual_order(
     if PERPETUAL_ENABLED.load(deps.storage)? == false {
         return Err(StdError::generic_err("perpetual endpoint are disable").into());
     }
-    let order = match PERPETUAL_ORDER.may_load(deps.storage, order_id)? {
+    let order = match PERPETUAL_ORDER_V2.may_load(deps.storage, order_id)? {
         Some(order) => order,
         None => return Err(ContractError::OrderNotFound { order_id }),
     };

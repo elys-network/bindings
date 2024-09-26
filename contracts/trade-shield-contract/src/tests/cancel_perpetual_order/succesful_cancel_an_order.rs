@@ -1,5 +1,5 @@
 use super::*;
-use cosmwasm_std::{Addr, Decimal, SignedDecimal, SignedDecimal256};
+use cosmwasm_std::{Addr, DecCoin, Decimal, Decimal256, SignedDecimal, SignedDecimal256};
 
 use cw_multi_test::BankSudo;
 
@@ -11,7 +11,7 @@ fn succesful_cancel_an_order() {
     // Create a mock message to instantiate the contract with no initial orders.
     let instantiate_msg = InstantiateMockMsg {
         spot_orders: vec![],
-        perpetual_orders: vec![PerpetualOrder::new_open(
+        perpetual_orders: vec![PerpetualOrderV2::new_open(
             "user",
             &PerpetualPosition::Long,
             &PerpetualOrderType::LimitOpen,
@@ -25,6 +25,10 @@ fn succesful_cancel_an_order() {
                 rate: Decimal::from_str("20000.0").unwrap(),
             }),
             &vec![],
+            DecCoin::new(Decimal256::zero(), ""),
+            SignedDecimal::zero(),
+            Fee::default(),
+            Fee::default(),
         )
         .unwrap()],
     };

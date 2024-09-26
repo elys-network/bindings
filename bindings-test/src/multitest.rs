@@ -20,7 +20,17 @@ use elys_bindings::{
         PerpetualOpenResponse,
     },
     query_resp::{
-        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse, BalanceBorrowed, Commitments, Entry, EstakingRewardsResponse, LeveragelpIsWhitelistedResponse, LeveragelpParams, LeveragelpParamsResponse, LeveragelpStatusResponse, LeveragelpWhitelistResponse, MasterchefUserPendingRewardResponse, OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse, PerpetualOpenEstimationRawResponse, PerpetualParamsRaw, PerpetualParamsResponseRaw, PerpetualQueryPositionsResponse, PoolApr, QueryAprResponse, QueryAprsResponse, QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse, QueryPoolAprsResponse, QueryShowCommitmentsResponse, QueryStableStakeAprResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryVestingInfoResponse, StableStakeParamsData, StableStakeParamsResp, TierCalculateDiscountResponse
+        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse,
+        BalanceBorrowed, Commitments, Entry, EstakingRewardsResponse,
+        LeveragelpIsWhitelistedResponse, LeveragelpParams, LeveragelpParamsResponse,
+        LeveragelpStatusResponse, LeveragelpWhitelistResponse, MasterchefUserPendingRewardResponse,
+        OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
+        PerpetualOpenEstimationRawResponse, PerpetualParamsRaw, PerpetualParamsResponseRaw,
+        PerpetualQueryPositionsResponse, PoolApr, QueryAprResponse, QueryAprsResponse,
+        QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse,
+        QueryPoolAprsResponse, QueryShowCommitmentsResponse, QueryStableStakeAprResponse,
+        QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryVestingInfoResponse,
+        StableStakeParamsData, StableStakeParamsResp, TierCalculateDiscountResponse,
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
@@ -371,6 +381,8 @@ impl Module for ElysModule {
                     borrow_interest_rate: Decimal::zero().to_string(),
                     funding_rate: Decimal::zero().to_string(),
                     price_impact: Decimal::zero().to_string(),
+                    borrow_fee: Coin::new(0, ""),
+                    funding_fee: Coin::new(0, ""),
                 })?)
             }
             ElysQuery::AssetProfileEntryAll { .. } => {
