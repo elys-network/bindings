@@ -20,7 +20,17 @@ use elys_bindings::{
         PerpetualOpenResponse,
     },
     query_resp::{
-        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse, BalanceBorrowed, Commitments, Entry, EstakingRewardsResponse, LeveragelpIsWhitelistedResponse, LeveragelpParams, LeveragelpParamsResponse, LeveragelpStatusResponse, LeveragelpWhitelistResponse, MasterchefUserPendingRewardResponse, OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse, PerpetualOpenEstimationRawResponse, PerpetualParamsRaw, PerpetualParamsResponseRaw, PerpetualQueryPositionsResponse, PoolApr, QueryAprResponse, QueryAprsResponse, QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse, QueryPoolAprsResponse, QueryShowCommitmentsResponse, QueryStableStakeAprResponse, QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryVestingInfoResponse, StableStakeParamsData, StableStakeParamsResp, TierCalculateDiscountResponse
+        AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse,
+        BalanceBorrowed, Commitments, Entry, EstakingRewardsResponse,
+        LeveragelpIsWhitelistedResponse, LeveragelpParams, LeveragelpParamsResponse,
+        LeveragelpStatusResponse, LeveragelpWhitelistResponse, MasterchefUserPendingRewardResponse,
+        OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
+        PerpetualOpenEstimationRawResponse, PerpetualParamsRaw, PerpetualParamsResponseRaw,
+        PerpetualQueryPositionsResponse, PoolApr, QueryAprResponse, QueryAprsResponse,
+        QueryGetEntryAllResponse, QueryGetEntryResponse, QueryGetPriceResponse,
+        QueryPoolAprsResponse, QueryShowCommitmentsResponse, QueryStableStakeAprResponse,
+        QueryStakedPositionResponse, QueryUnstakedPositionResponse, QueryVestingInfoResponse,
+        StableStakeParamsData, StableStakeParamsResp, TierCalculateDiscountResponse,
     },
     types::{
         BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
