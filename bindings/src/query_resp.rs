@@ -74,7 +74,7 @@ pub struct PerpetualQueryPositionsResponse {
 
 #[cw_serde]
 pub struct PerpetualMtpResponse {
-    pub mtp: Option<Mtp>,
+    pub mtp: Option<MtpAndPrice>,
 }
 
 #[cw_serde]

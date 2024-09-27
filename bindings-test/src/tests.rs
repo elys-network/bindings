@@ -225,7 +225,7 @@ fn query_single_mtp() {
 
     let mtp_found: PerpetualMtpResponse = app.wrap().query(&req).unwrap();
 
-    assert_eq!(mtps[0], mtp_found.mtp.unwrap());
+    assert_eq!(mtps[0], mtp_found.mtp.unwrap().mtp);
 }
 
 #[test]

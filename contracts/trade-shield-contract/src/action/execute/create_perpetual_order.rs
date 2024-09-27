@@ -326,7 +326,7 @@ fn create_perpetual_close_order(
             .into());
         }
 
-        if price.quote_denom != mtp.trading_asset {
+        if price.quote_denom != mtp.mtp.trading_asset {
             return Err(StdError::generic_err(
                 "trigger_price: The quote denom should be the trading asset denom",
             )
@@ -371,14 +371,14 @@ fn create_perpetual_close_order(
 
     let order = PerpetualOrderV2::new_close(
         &info.sender,
-        mtp.position,
+        mtp.mtp.position,
         &order_type,
-        &coin(mtp.collateral.i128() as u128, &mtp.collateral_asset),
-        &mtp.trading_asset,
-        &mtp.leverage,
+        &coin(mtp.mtp.collateral.i128() as u128, &mtp.mtp.collateral_asset),
+        &mtp.mtp.trading_asset,
+        &mtp.mtp.leverage,
         position_id,
         &trigger_price,
-        &Some(mtp.take_profit_price),
+        &Some(mtp.mtp.take_profit_price),
         &orders,
     )?;
 
@@ -409,8 +409,12 @@ fn create_perpetual_close_order(
     let number_of_executed_order = NUMBER_OF_EXECUTED_ORDER.load(deps.storage)? + 1;
     NUMBER_OF_EXECUTED_ORDER.save(deps.storage, &number_of_executed_order)?;
 
-    let msg =
-        ElysMsg::perpetual_close_position(creator, position_id, mtp.custody.i128(), &info.sender);
+    let msg = ElysMsg::perpetual_close_position(
+        creator,
+        position_id,
+        mtp.mtp.custody.i128(),
+        &info.sender,
+    );
 
     let reply_info_max_id = MAX_REPLY_ID.load(deps.storage)?;
 

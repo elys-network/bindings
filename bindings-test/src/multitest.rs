@@ -330,7 +330,12 @@ impl Module for ElysModule {
                     .find(|mtp| mtp.id == id && mtp.address == address)
                     .cloned()
                 {
-                    Ok(to_json_binary(&PerpetualMtpResponse { mtp: Some(mtp) })?)
+                    Ok(to_json_binary(&PerpetualMtpResponse {
+                        mtp: Some(MtpAndPrice {
+                            mtp: mtp,
+                            trading_asset_price: Decimal::zero(),
+                        }),
+                    })?)
                 } else {
                     return Err(Error::new(StdError::not_found(
                         "perpetual trading position",
