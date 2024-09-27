@@ -10,7 +10,7 @@ use cosmwasm_std::{
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::msg_resp::PerpetualOpenResponse;
 use elys_bindings::query_resp::{
-    OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponseRaw,
+    CoinNeg, OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponseRaw,
     PerpetualOpenEstimationRawResponse, PerpetualParamsRaw, PerpetualParamsResponseRaw,
     QueryGetEntryResponseRaw, QueryGetPriceResponse, RawEntry, TierCalculateDiscountResponse,
 };
@@ -137,7 +137,7 @@ impl Module for ElysModuleWrapper {
                 funding_rate: Some(Decimal::zero().to_string()),
                 price_impact: Some(Decimal::zero().to_string()),
                 borrow_fee: Some(Coin::new(0, "")),
-                funding_fee: Some(Coin::new(0, "")),
+                funding_fee: Some(CoinNeg::default()),
             })?),
             //ignoring address here since we only use one user
             ElysQuery::PerpetualGetPositionsForAddress { .. } => {

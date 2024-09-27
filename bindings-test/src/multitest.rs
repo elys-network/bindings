@@ -21,7 +21,7 @@ use elys_bindings::{
     },
     query_resp::{
         AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse,
-        BalanceBorrowed, Commitments, Entry, EstakingRewardsResponse,
+        BalanceBorrowed, CoinNeg, Commitments, Entry, EstakingRewardsResponse,
         LeveragelpIsWhitelistedResponse, LeveragelpParams, LeveragelpParamsResponse,
         LeveragelpStatusResponse, LeveragelpWhitelistResponse, MasterchefUserPendingRewardResponse,
         OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
@@ -394,7 +394,10 @@ impl Module for ElysModule {
                     funding_rate: Some(Decimal::zero().to_string()),
                     price_impact: Some(Decimal::zero().to_string()),
                     borrow_fee: Some(Coin::new(0, "")),
-                    funding_fee: Some(Coin::new(0, "")),
+                    funding_fee: Some(CoinNeg {
+                        amount: Int128::zero(),
+                        denom: "".to_string(),
+                    }),
                 })?);
             }
             ElysQuery::AssetProfileEntryAll { .. } => {

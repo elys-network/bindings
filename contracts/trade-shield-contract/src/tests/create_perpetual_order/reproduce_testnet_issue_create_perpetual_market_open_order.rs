@@ -6,7 +6,7 @@ use cosmwasm_std::{
 use cw_multi_test::{AppResponse, BasicAppBuilder, Module};
 use elys_bindings::{
     msg_resp::PerpetualOpenResponse,
-    query_resp::{Entry, PerpetualOpenEstimationRawResponse, QueryGetEntryResponse},
+    query_resp::{CoinNeg, Entry, PerpetualOpenEstimationRawResponse, QueryGetEntryResponse},
     ElysMsg, ElysQuery,
 };
 
@@ -165,7 +165,7 @@ impl Module for ElysModule {
                     ),
                     slippage: Some(Decimal::zero().to_string()),
                     borrow_fee: Some(Coin::default()),
-                    funding_fee: Some(Coin::default()),
+                    funding_fee: Some(CoinNeg::default()),
                 };
 
                 return Ok(to_json_binary(&resp)?);

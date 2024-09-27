@@ -7,7 +7,7 @@ use cosmwasm_std::{
     Storage,
 };
 
-use super::{Fee, OrderPrice, PerpetualOrderType, Status};
+use super::{fees::FeeNeg, Fee, OrderPrice, PerpetualOrderType, Status};
 
 #[cw_serde]
 pub struct PerpetualOrderV2 {
@@ -25,7 +25,7 @@ pub struct PerpetualOrderV2 {
     pub size: Option<DecCoin>,
     pub liquidation: Option<SignedDecimal>,
     pub borrow_fee: Option<Fee>,
-    pub funding_fee: Option<Fee>,
+    pub funding_fee: Option<FeeNeg>,
 }
 
 impl PerpetualOrderV2 {
@@ -42,7 +42,7 @@ impl PerpetualOrderV2 {
         size: DecCoin,
         liquidation: SignedDecimal,
         borrow_fee: Fee,
-        funding_fee: Fee,
+        funding_fee: FeeNeg,
     ) -> StdResult<Self> {
         let status = if order_type == &PerpetualOrderType::MarketOpen {
             Status::Executed
@@ -109,7 +109,7 @@ impl PerpetualOrderV2 {
             size: Some(DecCoin::new(Decimal256::zero(), "")),
             liquidation: Some(SignedDecimal::zero()),
             borrow_fee: Some(Fee::default()),
-            funding_fee: Some(Fee::default()),
+            funding_fee: Some(FeeNeg::default()),
         };
 
         Ok(order)

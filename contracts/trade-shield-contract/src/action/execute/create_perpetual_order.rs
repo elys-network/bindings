@@ -189,7 +189,7 @@ fn create_perpetual_open_order(
             percent: open_estimation.borrow_interest_rate.to_string(),
             amount: open_estimation.borrow_fee,
         },
-        Fee {
+        FeeNeg {
             percent: open_estimation.funding_rate.to_string(),
             amount: open_estimation.funding_fee,
         },

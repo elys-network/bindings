@@ -29,6 +29,7 @@ pub use coin_value::CoinValue;
 pub use date::Date;
 pub use denom::ElysDenom;
 pub use fees::Fee;
+pub use fees::FeeNeg;
 pub use perpetual_assets::{PerpetualAsset, PerpetualAssets};
 pub use perpetual_order::PerpetualOrder;
 pub use perpetual_order_plus::PerpetualOrderPlus;
