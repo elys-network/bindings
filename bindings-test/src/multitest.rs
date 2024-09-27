@@ -21,7 +21,7 @@ use elys_bindings::{
     },
     query_resp::{
         AmmSwapEstimationByDenomResponse, AmmSwapEstimationResponse, AuthAddressesResponse,
-        BalanceBorrowed, Commitments, Entry, EstakingRewardsResponse,
+        BalanceBorrowed, CoinNeg, Commitments, Entry, EstakingRewardsResponse,
         LeveragelpIsWhitelistedResponse, LeveragelpParams, LeveragelpParamsResponse,
         LeveragelpStatusResponse, LeveragelpWhitelistResponse, MasterchefUserPendingRewardResponse,
         OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponse, PerpetualMtpResponse,
@@ -33,8 +33,8 @@ use elys_bindings::{
         StableStakeParamsData, StableStakeParamsResp, TierCalculateDiscountResponse,
     },
     types::{
-        BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
-        SwapAmountOutRoute,
+        BalanceAvailable, Mtp, MtpAndPrice, OracleAssetInfo, PageResponse, Price,
+        SwapAmountInRoute, SwapAmountOutRoute,
     },
     ElysMsg, ElysQuery,
 };
@@ -330,7 +330,12 @@ impl Module for ElysModule {
                     .find(|mtp| mtp.id == id && mtp.address == address)
                     .cloned()
                 {
-                    Ok(to_json_binary(&PerpetualMtpResponse { mtp: Some(mtp) })?)
+                    Ok(to_json_binary(&PerpetualMtpResponse {
+                        mtp: Some(MtpAndPrice {
+                            mtp: mtp,
+                            trading_asset_price: Decimal::zero(),
+                        }),
+                    })?)
                 } else {
                     return Err(Error::new(StdError::not_found(
                         "perpetual trading position",
@@ -341,7 +346,14 @@ impl Module for ElysModule {
                 let mtps = PERPETUAL_OPENED_POSITION.load(storage)?;
                 let (mtps, page_resp) = pagination.filter(mtps)?;
                 Ok(to_json_binary(&PerpetualQueryPositionsResponse {
-                    mtps: Some(mtps),
+                    mtps: Some(
+                        mtps.iter()
+                            .map(|mtp| MtpAndPrice {
+                                mtp: mtp.clone(),
+                                trading_asset_price: Decimal::default(),
+                            })
+                            .collect(),
+                    ),
                     pagination: page_resp,
                 })?)
             }
@@ -382,7 +394,10 @@ impl Module for ElysModule {
                     funding_rate: Some(Decimal::zero().to_string()),
                     price_impact: Some(Decimal::zero().to_string()),
                     borrow_fee: Some(Coin::new(0, "")),
-                    funding_fee: Some(Coin::new(0, "")),
+                    funding_fee: Some(CoinNeg {
+                        amount: Int128::zero(),
+                        denom: "".to_string(),
+                    }),
                 })?);
             }
             ElysQuery::AssetProfileEntryAll { .. } => {
@@ -503,7 +518,13 @@ impl Module for ElysModule {
                     .collect();
 
                 Ok(to_json_binary(&PerpetualGetPositionsForAddressResponse {
-                    mtps: user_mtps,
+                    mtps: user_mtps
+                        .iter()
+                        .map(|v| MtpAndPrice {
+                            trading_asset_price: Decimal::zero(),
+                            mtp: v.clone(),
+                        })
+                        .collect::<Vec<_>>(),
                     pagination: PageResponse::empty(false),
                 })?)
             }

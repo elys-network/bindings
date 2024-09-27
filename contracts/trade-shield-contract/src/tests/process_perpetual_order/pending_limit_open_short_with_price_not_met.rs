@@ -10,7 +10,7 @@ use cosmwasm_std::{
 use cw_multi_test::{AppResponse, BasicAppBuilder, ContractWrapper, Executor, Module};
 use elys_bindings::msg_resp::PerpetualOpenResponse;
 use elys_bindings::query_resp::{
-    OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponseRaw,
+    CoinNeg, OracleAssetInfoResponse, PerpetualGetPositionsForAddressResponseRaw,
     PerpetualOpenEstimationRawResponse, PerpetualParamsRaw, PerpetualParamsResponseRaw,
     QueryGetEntryResponseRaw, QueryGetPriceResponse, RawEntry, TierCalculateDiscountResponse,
 };
@@ -19,7 +19,9 @@ use elys_bindings::trade_shield::msg::{ExecuteMsg, QueryMsg, SudoMsg};
 use elys_bindings::trade_shield::types::{
     OrderPrice, PerpetualOrderPlus, PerpetualOrderType, Status,
 };
-use elys_bindings::types::{Mtp, OracleAssetInfo, PageResponse, PerpetualPosition, Price};
+use elys_bindings::types::{
+    Mtp, MtpAndPrice, OracleAssetInfo, PageResponse, PerpetualPosition, Price,
+};
 use elys_bindings::{ElysMsg, ElysQuery};
 use elys_bindings_test::{
     ElysModule, ACCOUNT, ASSET_INFO, LAST_MODULE_USED, PERPETUAL_OPENED_POSITION, PRICES,
@@ -135,12 +137,23 @@ impl Module for ElysModuleWrapper {
                 funding_rate: Some(Decimal::zero().to_string()),
                 price_impact: Some(Decimal::zero().to_string()),
                 borrow_fee: Some(Coin::new(0, "")),
-                funding_fee: Some(Coin::new(0, "")),
+                funding_fee: Some(CoinNeg::default()),
             })?),
             //ignoring address here since we only use one user
             ElysQuery::PerpetualGetPositionsForAddress { .. } => {
                 let mtps = PERPETUAL_OPENED_POSITION.load(storage)?;
-                let mtps = if mtps.is_empty() { None } else { Some(mtps) };
+                let mtps = if mtps.is_empty() {
+                    None
+                } else {
+                    Some(
+                        mtps.iter()
+                            .map(|d| MtpAndPrice {
+                                mtp: d.clone(),
+                                trading_asset_price: Decimal::zero(),
+                            })
+                            .collect::<Vec<_>>(),
+                    )
+                };
 
                 Ok(to_json_binary(
                     &PerpetualGetPositionsForAddressResponseRaw {

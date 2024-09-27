@@ -170,7 +170,14 @@ fn query_positions() {
 
     let mtps_found: PerpetualQueryPositionsResponse = app.wrap().query(&req).unwrap();
 
-    assert_eq!(mtps_found.mtps.unwrap(), mtps);
+    let u_mtps = mtps_found
+        .mtps
+        .unwrap()
+        .iter()
+        .map(|v| v.get_mtp())
+        .collect::<Vec<_>>();
+
+    assert_eq!(u_mtps, mtps);
 }
 
 #[test]
@@ -218,7 +225,7 @@ fn query_single_mtp() {
 
     let mtp_found: PerpetualMtpResponse = app.wrap().query(&req).unwrap();
 
-    assert_eq!(mtps[0], mtp_found.mtp.unwrap());
+    assert_eq!(mtps[0], mtp_found.mtp.unwrap().mtp);
 }
 
 #[test]

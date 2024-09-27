@@ -1,6 +1,5 @@
 use cosmwasm_std::{DecCoin, Decimal256, Deps, Env, StdResult};
 use elys_bindings::{
-    query_resp::PerpetualGetPositionsForAddressResponse,
     trade_shield::types::{ElysDenom, PerpetualAsset, PerpetualAssets, PerpetualPositionPlus},
     ElysQuerier, ElysQuery,
 };
@@ -12,8 +11,10 @@ pub fn get_perpetuals_assets(
 ) -> StdResult<PerpetualAssets> {
     let querier = ElysQuerier::new(&deps.querier);
 
-    let PerpetualGetPositionsForAddressResponse { mtps, .. } =
+    let perpetual_get_position_for_address_result =
         querier.perpetual_get_position_for_address(address, None)?;
+
+    let mtps = perpetual_get_position_for_address_result.get_mtp_vec();
 
     let mtps = PerpetualPositionPlus::news(mtps, deps.storage, &querier)?;
     let mut perpetual_vec: Vec<PerpetualAsset> = vec![];

@@ -257,6 +257,17 @@ impl FromStr for PerpetualPosition {
     }
 }
 #[cw_serde]
+pub struct MtpAndPrice {
+    pub trading_asset_price: Decimal,
+    pub mtp: Mtp,
+}
+
+impl MtpAndPrice {
+    pub fn get_mtp(&self) -> Mtp {
+        self.mtp.clone()
+    }
+}
+#[cw_serde]
 pub struct Mtp {
     pub address: String,
     pub collateral_asset: String,

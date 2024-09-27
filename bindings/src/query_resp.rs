@@ -11,8 +11,9 @@ use crate::{
         AmmPool, AmmPoolRaw, CoinValue, PerpetualPosition, PoolExtraInfo, StakedPositionRaw,
     },
     types::{
-        BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, PoolAsset, Price, StakedPosition,
-        SwapAmountInRoute, SwapAmountOutRoute, UnstakedPosition, ValidatorDetail, VestingDetail,
+        BalanceAvailable, Mtp, MtpAndPrice, OracleAssetInfo, PageResponse, PoolAsset, Price,
+        StakedPosition, SwapAmountInRoute, SwapAmountOutRoute, UnstakedPosition, ValidatorDetail,
+        VestingDetail,
     },
     ElysQuerier,
 };
@@ -67,13 +68,13 @@ pub struct OracleAssetInfoResponse {
 
 #[cw_serde]
 pub struct PerpetualQueryPositionsResponse {
-    pub mtps: Option<Vec<Mtp>>,
+    pub mtps: Option<Vec<MtpAndPrice>>,
     pub pagination: PageResponse,
 }
 
 #[cw_serde]
 pub struct PerpetualMtpResponse {
-    pub mtp: Option<Mtp>,
+    pub mtp: Option<MtpAndPrice>,
 }
 
 #[cw_serde]
@@ -100,6 +101,22 @@ pub struct AmmSwapEstimationByDenomResponse {
     pub price_impact: SignedDecimal,
     pub slippage: Decimal,
 }
+
+#[cw_serde]
+pub struct CoinNeg {
+    pub denom: String,
+    pub amount: Int128,
+}
+
+impl Default for CoinNeg {
+    fn default() -> Self {
+        Self {
+            denom: "".to_string(),
+            amount: Int128::zero(),
+        }
+    }
+}
+
 #[cw_serde]
 pub struct PerpetualOpenEstimationRawResponse {
     pub position: Option<i32>,
@@ -122,7 +139,7 @@ pub struct PerpetualOpenEstimationRawResponse {
     pub funding_rate: Option<String>,
     pub price_impact: Option<String>,
     pub borrow_fee: Option<Coin>,
-    pub funding_fee: Option<Coin>,
+    pub funding_fee: Option<CoinNeg>,
 }
 
 #[cw_serde]
@@ -147,7 +164,7 @@ pub struct PerpetualOpenEstimationResponse {
     pub funding_rate: SignedDecimal,
     pub price_impact: SignedDecimal,
     pub borrow_fee: Coin,
-    pub funding_fee: Coin,
+    pub funding_fee: CoinNeg,
 }
 
 impl Into<StdResult<PerpetualOpenEstimationResponse>> for PerpetualOpenEstimationRawResponse {
@@ -192,21 +209,33 @@ impl Into<StdResult<PerpetualOpenEstimationResponse>> for PerpetualOpenEstimatio
             price_impact: SignedDecimal::from_str(self.price_impact.unwrap_or_default().as_str())
                 .unwrap_or_default(),
             borrow_fee: self.borrow_fee.unwrap_or_default(),
-            funding_fee: self.funding_fee.unwrap_or_default(),
+            funding_fee: self.funding_fee.unwrap_or(CoinNeg {
+                denom: "".to_string(),
+                amount: Int128::zero(),
+            }),
         })
     }
 }
 
 #[cw_serde]
 pub struct PerpetualGetPositionsForAddressResponseRaw {
-    pub mtps: Option<Vec<Mtp>>,
+    pub mtps: Option<Vec<MtpAndPrice>>,
     pub pagination: PageResponse,
 }
 
 #[cw_serde]
 pub struct PerpetualGetPositionsForAddressResponse {
-    pub mtps: Vec<Mtp>,
+    pub mtps: Vec<MtpAndPrice>,
     pub pagination: PageResponse,
+}
+
+impl PerpetualGetPositionsForAddressResponse {
+    pub fn get_mtp_vec(&self) -> Vec<Mtp> {
+        self.mtps
+            .iter()
+            .map(|mtp_and_price| mtp_and_price.get_mtp())
+            .collect()
+    }
 }
 
 #[cw_serde]

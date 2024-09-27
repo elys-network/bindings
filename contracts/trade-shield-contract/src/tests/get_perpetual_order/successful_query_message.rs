@@ -25,7 +25,7 @@ fn successful_query_message() {
         DecCoin::new(Decimal256::zero(), ""),
         SignedDecimal::zero(),
         Fee::default(),
-        Fee::default(),
+        FeeNeg::default(),
     )
     .unwrap();
 

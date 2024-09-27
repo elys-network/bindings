@@ -14,7 +14,7 @@ pub fn get_perpetual_position(
         None => return Err(StdError::not_found("perpetual trading position").into()),
     };
 
-    let mtp_plus = PerpetualPositionPlus::new(mtp, deps.storage, &querier)?;
+    let mtp_plus = PerpetualPositionPlus::new(mtp.mtp, deps.storage, &querier)?;
 
     Ok(GetPerpetualPositionResp { mtp: mtp_plus })
 }

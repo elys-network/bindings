@@ -15,7 +15,11 @@ pub fn get_perpetual_positions(
         });
     }
 
-    let mtps = PerpetualPositionPlus::news(mtps.unwrap(), deps.storage, &querier)?;
+    let mtps = PerpetualPositionPlus::news(
+        mtps.unwrap().iter().map(|v| v.get_mtp()).collect(),
+        deps.storage,
+        &querier,
+    )?;
 
     Ok(GetPerpetualPositionsResp { mtps, pagination })
 }

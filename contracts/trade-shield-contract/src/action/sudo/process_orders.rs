@@ -214,7 +214,7 @@ fn process_perpetual_order(
                 }
             };
 
-            let amount = mtp.custody.i128();
+            let amount = mtp.mtp.custody.i128();
             (
                 ElysMsg::perpetual_close_position(
                     creator,
