@@ -256,7 +256,6 @@ impl FromStr for PerpetualPosition {
         })
     }
 }
-
 #[cw_serde]
 pub struct MtpAndPrice {
     pub trading_asset_price: Decimal,
