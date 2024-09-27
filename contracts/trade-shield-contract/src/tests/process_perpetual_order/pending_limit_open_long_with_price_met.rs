@@ -19,7 +19,9 @@ use elys_bindings::trade_shield::msg::{ExecuteMsg, QueryMsg, SudoMsg};
 use elys_bindings::trade_shield::types::{
     OrderPrice, PerpetualOrderPlus, PerpetualOrderType, Status,
 };
-use elys_bindings::types::{Mtp, OracleAssetInfo, PageResponse, PerpetualPosition, Price};
+use elys_bindings::types::{
+    Mtp, MtpAndPrice, OracleAssetInfo, PageResponse, PerpetualPosition, Price,
+};
 use elys_bindings::{ElysMsg, ElysQuery};
 use elys_bindings_test::{
     ElysModule, ACCOUNT, ASSET_INFO, LAST_MODULE_USED, PERPETUAL_OPENED_POSITION, PRICES,
@@ -140,7 +142,18 @@ impl Module for ElysModuleWrapper {
             //ignoring address here since we only use one user
             ElysQuery::PerpetualGetPositionsForAddress { .. } => {
                 let mtps = PERPETUAL_OPENED_POSITION.load(storage)?;
-                let mtps = if mtps.is_empty() { None } else { Some(mtps) };
+                let mtps = if mtps.is_empty() {
+                    None
+                } else {
+                    Some(
+                        mtps.iter()
+                            .map(|d| MtpAndPrice {
+                                mtp: d.clone(),
+                                trading_asset_price: Decimal::zero(),
+                            })
+                            .collect::<Vec<_>>(),
+                    )
+                };
 
                 Ok(to_json_binary(
                     &PerpetualGetPositionsForAddressResponseRaw {

@@ -510,7 +510,13 @@ impl Module for ElysModule {
                     .collect();
 
                 Ok(to_json_binary(&PerpetualGetPositionsForAddressResponse {
-                    mtps: user_mtps,
+                    mtps: user_mtps
+                        .iter()
+                        .map(|v| MtpAndPrice {
+                            trading_asset_price: Decimal::zero(),
+                            mtp: v.clone(),
+                        })
+                        .collect::<Vec<_>>(),
                     pagination: PageResponse::empty(false),
                 })?)
             }

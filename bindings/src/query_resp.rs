@@ -200,14 +200,23 @@ impl Into<StdResult<PerpetualOpenEstimationResponse>> for PerpetualOpenEstimatio
 
 #[cw_serde]
 pub struct PerpetualGetPositionsForAddressResponseRaw {
-    pub mtps: Option<Vec<Mtp>>,
+    pub mtps: Option<Vec<MtpAndPrice>>,
     pub pagination: PageResponse,
 }
 
 #[cw_serde]
 pub struct PerpetualGetPositionsForAddressResponse {
-    pub mtps: Vec<Mtp>,
+    pub mtps: Vec<MtpAndPrice>,
     pub pagination: PageResponse,
+}
+
+impl PerpetualGetPositionsForAddressResponse {
+    pub fn get_mtp_vec(&self) -> Vec<Mtp> {
+        self.mtps
+            .iter()
+            .map(|mtp_and_price| mtp_and_price.get_mtp())
+            .collect()
+    }
 }
 
 #[cw_serde]

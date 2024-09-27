@@ -7,10 +7,17 @@ pub fn perpetual_get_position_for_address(
 ) -> Result<GetPerpetualPositionsForAddressResp, ContractError> {
     let querier = ElysQuerier::new(&deps.querier);
 
-    let PerpetualGetPositionsForAddressResponse { mtps, pagination } =
+    let perpetual_get_position_for_address_result =
         querier.perpetual_get_position_for_address(address, pagination)?;
 
-    let mtps = PerpetualPositionPlus::news(mtps, deps.storage, &querier)?;
+    let mtps = PerpetualPositionPlus::news(
+        perpetual_get_position_for_address_result.get_mtp_vec(),
+        deps.storage,
+        &querier,
+    )?;
 
-    Ok(GetPerpetualPositionsForAddressResp { mtps, pagination })
+    Ok(GetPerpetualPositionsForAddressResp {
+        mtps,
+        pagination: perpetual_get_position_for_address_result.pagination,
+    })
 }
