@@ -153,7 +153,7 @@ pub enum ElysQuery {
     PerpetualQueryPositions { pagination: PageRequest },
     #[returns(PerpetualMtpResponse)]
     PerpetualMtp { address: String, id: u64 },
-    #[returns(PerpetualOpenEstimationResponse)]
+    #[returns(PerpetualOpenEstimationRawResponse)]
     PerpetualOpenEstimation {
         position: i32,
         leverage: SignedDecimal,
