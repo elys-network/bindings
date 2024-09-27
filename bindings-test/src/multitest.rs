@@ -33,8 +33,8 @@ use elys_bindings::{
         StableStakeParamsData, StableStakeParamsResp, TierCalculateDiscountResponse,
     },
     types::{
-        BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, Price, SwapAmountInRoute,
-        SwapAmountOutRoute,
+        BalanceAvailable, Mtp, MtpAndPrice, OracleAssetInfo, PageResponse, Price,
+        SwapAmountInRoute, SwapAmountOutRoute,
     },
     ElysMsg, ElysQuery,
 };
@@ -341,7 +341,14 @@ impl Module for ElysModule {
                 let mtps = PERPETUAL_OPENED_POSITION.load(storage)?;
                 let (mtps, page_resp) = pagination.filter(mtps)?;
                 Ok(to_json_binary(&PerpetualQueryPositionsResponse {
-                    mtps: Some(mtps),
+                    mtps: Some(
+                        mtps.iter()
+                            .map(|mtp| MtpAndPrice {
+                                mtp: mtp.clone(),
+                                trading_asset_price: Decimal::default(),
+                            })
+                            .collect(),
+                    ),
                     pagination: page_resp,
                 })?)
             }

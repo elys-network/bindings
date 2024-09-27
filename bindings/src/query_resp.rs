@@ -11,8 +11,9 @@ use crate::{
         AmmPool, AmmPoolRaw, CoinValue, PerpetualPosition, PoolExtraInfo, StakedPositionRaw,
     },
     types::{
-        BalanceAvailable, Mtp, OracleAssetInfo, PageResponse, PoolAsset, Price, StakedPosition,
-        SwapAmountInRoute, SwapAmountOutRoute, UnstakedPosition, ValidatorDetail, VestingDetail,
+        BalanceAvailable, Mtp, MtpAndPrice, OracleAssetInfo, PageResponse, PoolAsset, Price,
+        StakedPosition, SwapAmountInRoute, SwapAmountOutRoute, UnstakedPosition, ValidatorDetail,
+        VestingDetail,
     },
     ElysQuerier,
 };
@@ -67,7 +68,7 @@ pub struct OracleAssetInfoResponse {
 
 #[cw_serde]
 pub struct PerpetualQueryPositionsResponse {
-    pub mtps: Option<Vec<Mtp>>,
+    pub mtps: Option<Vec<MtpAndPrice>>,
     pub pagination: PageResponse,
 }
 
